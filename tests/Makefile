@@ -1,13 +1,18 @@
 SRC_DIR := src
 OUT_DIR := out
 BIN_DIR := bin
+LOG_DIR := logs
 
 clean:
 	rm -f $(OUT_DIR)/*
 	rm -f $(BIN_DIR)/*
 
-%: %.S
-	arm-none-eabi-objcopy $(OUT_DIR)/$@.out -O binary $(BIN_DIR)/$@.gba
+%: %.gba
+	-visualboyadvance-m $(BIN_DIR)/$@.gba $(INSTRUCTIONS) &>/dev/null
+	mv out.log $(LOG_DIR)/$@_$(INSTRUCTIONS).log
 
-%.S:
-	arm-none-eabi-gcc $(SRC_DIR)/$@ -o $(OUT_DIR)/$(basename $(@)).out
+%.gba: %.out
+	arm-none-eabi-objcopy $(OUT_DIR)/$(basename $(@)).out -O binary $(BIN_DIR)/$@
+
+%.out:
+	arm-none-eabi-gcc $(SRC_DIR)/$(basename $(@)).S -o $(OUT_DIR)/$@
