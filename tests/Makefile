@@ -1,5 +1,13 @@
-all: simple
+SRC_DIR := src
+OUT_DIR := out
+BIN_DIR := bin
 
-simple:
-	arm-none-eabi-gcc src/simple.S -o out/simple.out
-	arm-none-eabi-objcopy out/simple.out -O binary bin/simple.gba
+clean:
+	rm -f $(OUT_DIR)/*
+	rm -f $(BIN_DIR)/*
+
+%: %.S
+	arm-none-eabi-objcopy $(OUT_DIR)/$@.out -O binary $(BIN_DIR)/$@.gba
+
+%.S:
+	arm-none-eabi-gcc $(SRC_DIR)/$@ -o $(OUT_DIR)/$(basename $(@)).out
