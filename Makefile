@@ -10,7 +10,7 @@ clean:
 	rm $(OBJ_DIR)/*.o
 	rm gba
 
-gba: $(OBJ_DIR)/gba.o $(OBJ_DIR)/memory.o
+gba: $(OBJ_DIR)/gba.o $(OBJ_DIR)/memory.o $(OBJ_DIR)/util.o
 	$(CC) -o gba $(OBJ_DIR)/*.o
 
 $(OBJ_DIR)/gba.o: $(SRC_DIR)/gba.cpp $(SRC_DIR)/gba.h $(OBJ_DIR)/memory.o
@@ -18,3 +18,6 @@ $(OBJ_DIR)/gba.o: $(SRC_DIR)/gba.cpp $(SRC_DIR)/gba.h $(OBJ_DIR)/memory.o
 
 $(OBJ_DIR)/memory.o: $(SRC_DIR)/memory.cpp
 	g++ -c $(SRC_DIR)/memory.cpp -o $(OBJ_DIR)/memory.o
+
+$(OBJ_DIR)/util.o: $(SRC_DIR)/util.cpp
+	g++ -c $(SRC_DIR)/util.cpp -o $(OBJ_DIR)/util.o

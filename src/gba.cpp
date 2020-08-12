@@ -6,14 +6,13 @@
 
 #include "gba.h"
 #include "memory.h"
+#include "util.h"
 
 extern Memory memory;
 
 int main(int argc, char *argv[]) {
     if (argc == 1) {
-        // some kind of error formatting
-        std::cerr << "Usage: ./gba <rom_name>" << std::endl;
-        exit(-1);
+        error("Usage: ./gba <rom_name>");
     }
     
     setup_memory();
@@ -45,8 +44,12 @@ void get_rom_as_bytes(char* rom_name, uint8_t* out, int out_length) {
     char* buffer = new char[length];
     infile.read(buffer, length);
 
-    int smaller_length = out_length < length ? out_length : length;
-    for (int i = 0; i < smaller_length; i++) {
+    if (out_length < length) {
+        out_length = length;
+        warning("ROM file too large, truncating.");
+    }
+
+    for (int i = 0; i < out_length; i++) {
         out[i] = buffer[i];
     }
 }
