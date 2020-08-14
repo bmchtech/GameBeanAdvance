@@ -185,13 +185,13 @@ for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):
     result_function = jumptable[i]
 
     if result_function != None:
-        function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "()"
+        function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "(int opcode)"
         header_file.write(function_name + ";\n")
         cpp_file.write(function_name + " {\n")
         cpp_file.write('\n'.join(result_function))
         cpp_file.write("\n}\n\n")
     else:
-        function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "()"
+        function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "(int opcode)"
         header_file.write(function_name + ";\n")
         cpp_file.write(function_name + " {\n")
         cpp_file.write('\n'.join(default_function))
@@ -199,7 +199,7 @@ for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):
 
 # and now we must loop again to put the actual jumptable in the cpp file
 function_names = list("run_" + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)))
-cpp_file.write("void (* jumptable [])() = {")
+cpp_file.write("void (* jumptable [])(int) = {")
 for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):
     if i % JUMPTABLE_FORMAT_WIDTH == 0:
         cpp_file.write("\n    ")

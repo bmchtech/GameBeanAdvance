@@ -18,103 +18,103 @@
 using namespace std;
 
 @DEFAULT()
-void nop() {
-
+void nop(int opcode) {
+    // NOP
 }
 
 // move shifted register
 @EXCLUDE(00011---)
-void run_000OPABC() {
+void run_000OPABC(int opcode) {
 
 }
 
 // add and subtract
-void run_000111OA() {
+void run_000111OA(int opcode) {
 
 }
 
 // move, compare, add, and subtract immediate
-void run_001OPABC() {
+void run_001OPABC(int opcode) {
 
 }
 
 // ALU operation
-void run_010000PC() {
+void run_010000PC(int opcode) {
 
 }
 
 // high register operations and branch exchange
-void run_010001OP() {
+void run_010001OP(int opcode) {
 
 }
 
 // pc-relative load
-void run_01001REG() {
+void run_01001REG(int opcode) {
 
 }
 
 // load and store with relative offset
-void run_0101LB0R() {
+void run_0101LB0R(int opcode) {
 
 }
 
 // load and store sign-extended byte and halfword
-void run_0101HS1R() {
+void run_0101HS1R(int opcode) {
 
 }
 
 // load and store with immediate offset
-void run_011BLOFS() {
+void run_011BLOFS(int opcode) {
 
 }
 
 // load and store halfword
-void run_1000LOFS() {
+void run_1000LOFS(int opcode) {
 
 }
 
 // sp-relative load and store
-void run_1001LREG() {
+void run_1001LREG(int opcode) {
 
 }
 
 // load address
-void run_1010SREG() {
+void run_1010SREG(int opcode) {
 
 }
 
 // add offset to stack pointer
-void run_10110000() {
+void run_10110000(int opcode) {
 
 }
 
-// push and pop registers()
-void run_1011L10R() {
+// push and pop registers(int opcode)
+void run_1011L10R(int opcode) {
 
 }
 
 // multiple load and store
-void run_1100LREG() {
+void run_1100LREG(int opcode) {
 
 }
 
 // conditional branch
 @EXCLUDE(11011111)
-void run_1101COND() {
+void run_1101COND(int opcode) {
 
 }
 
 // software interrupt
-void run_11011111() {
+void run_11011111(int opcode) {
 
 }
 
 // unconditional branch
-void run_11100OFS() {
+void run_11100OFS(int opcode) {
 
 }
 
 // long branch with link
-void run_1111HOFS() {
+void run_1111HOFS(int opcode) {
 
 }
