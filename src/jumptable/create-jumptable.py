@@ -11,6 +11,7 @@ INSTRUCTION_SIZE        = 8
 JUMPTABLE_BIT_WIDTH     = 6
 JUMPTABLE_EXCLUDED_BITS = INSTRUCTION_SIZE - JUMPTABLE_BIT_WIDTH
 CONDITIONAL_INCLUSION   = "@IF("
+JUMPTABLE_FORMAT_WIDTH  = 4
 
 
 # formatting for the output files
@@ -100,8 +101,7 @@ for i in range(0, len(lines)):
             for var in keys:
                 if get_nth_bit(current_iteration, keys.index(var)):
                     new_base = set_nth_bit(new_base, vars[var] - JUMPTABLE_EXCLUDED_BITS)
-                    print(new_base)
-            
+
             jumptable[new_base] = new_function
 
 
@@ -117,7 +117,6 @@ header_file.write(HEADER_FILE_HEADER)
 cpp_file.write(CPP_FILE_HEADER)
 
 # now we write the body
-i = 0
 for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):
     result_function = jumptable[i]
 
@@ -127,6 +126,17 @@ for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):
         cpp_file.write(function_name + " {\n")
         cpp_file.write('\n'.join(result_function))
         cpp_file.write("\n}\n\n")
+
+# and now we must loop again to put the actual jumptable in the cpp file
+function_names = list("run_" + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)))
+cpp_file.write("void (* jumptable [])() = {")
+for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):
+    if i % JUMPTABLE_FORMAT_WIDTH == 0:
+        cpp_file.write("\n    ")
+    cpp_file.write("&" + function_names[i])
+    if i != pow(2, JUMPTABLE_BIT_WIDTH) - 1:
+        cpp_file.write(", ")
+cpp_file.write("\n}\n\n")    
 
 # and now the footers
 header_file.write(HEADER_FILE_FOOTER)
