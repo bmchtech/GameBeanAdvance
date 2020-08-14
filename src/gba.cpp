@@ -30,6 +30,7 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+
 void get_rom_as_bytes(char* rom_name, uint8_t* out, int out_length) {
     // open file
     std::ifstream infile;
