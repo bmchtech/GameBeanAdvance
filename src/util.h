@@ -12,4 +12,7 @@ void warning(std::string message);
 // an error terminates the program and calls exit(EXIT_FAILURE);
 void error  (std::string message);
 
+// converts uint32_t to hex string
+std::string to_hex_string(uint32_t val);
+
 #endif

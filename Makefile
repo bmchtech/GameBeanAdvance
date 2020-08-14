@@ -21,3 +21,7 @@ $(OBJ_DIR)/memory.o: $(SRC_DIR)/memory.cpp
 
 $(OBJ_DIR)/util.o: $(SRC_DIR)/util.cpp
 	g++ -c $(SRC_DIR)/util.cpp -o $(OBJ_DIR)/util.o
+
+$(OBJ_DIR)/jumptable.o: $(SRC_DIR)/jumptable/jumptable.cpp
+	python ./$(SRC_DIR)/jumptable/make-jumptable.py
+	g++ -c $(SRC_DIR)/jumptable/jumptable.cpp -o $(OBJ_DIR)/jumptable.o

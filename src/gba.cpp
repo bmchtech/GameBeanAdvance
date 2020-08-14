@@ -1,3 +1,11 @@
+
+/* 
+    so, the general idea behind the GBA is this:
+    at least now, while im testing the THUMB. we're gonna skip all the ARM instructions
+    and just set the PC straight to the beginnings of THUMB. then, we're gonna see what
+    we can do from there by editing test-jumptable.cpp
+*/
+
 #include <fstream>
 #include <iterator>
 #include <vector>
@@ -25,11 +33,11 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < GAME_TITLE_SIZE; i++) {
         game_name[i] = memory.rom_1[GAME_TITLE_OFFSET + i];
     }
-    std::cout << game_name << std::endl;
+    //std::cout << game_name << std::endl;
 
+    test_thumb();
     return 0;
 }
-
 
 void get_rom_as_bytes(char* rom_name, uint8_t* out, int out_length) {
     // open file
@@ -45,12 +53,32 @@ void get_rom_as_bytes(char* rom_name, uint8_t* out, int out_length) {
     char* buffer = new char[length];
     infile.read(buffer, length);
 
+    length = infile.gcount();
     if (out_length < length) {
-        out_length = length;
         warning("ROM file too large, truncating.");
+        length = out_length;
     }
 
-    for (int i = 0; i < out_length; i++) {
+    for (int i = 0; i < length; i++) {
         out[i] = buffer[i];
     }
+}
+
+/*
+    anyway, as stated in the header of the file. all this is PLANNED TO CHANGE.
+    in fact, theres probably no way much of the following lines of code end up
+    in the final product. but, it'll help me figure out the THUMB, so
+*/
+
+// where we should start testing from
+#define TEST_PC 0x800010A - 2
+
+void test_thumb() {
+    *memory.pc = TEST_PC;
+    
+    // lets see if you can actually fetch anything
+    std::cout << to_hex_string(memory.main[*memory.pc]) << std::endl;
+    std::cout << to_hex_string(memory.main[*memory.pc + 1]) << std::endl;
+
+    std::cout << "everythings going well so far" << std::endl;
 }

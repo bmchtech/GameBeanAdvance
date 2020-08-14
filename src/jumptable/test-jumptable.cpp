@@ -1,5 +1,5 @@
 // NOTE: this code is not meant to be run in its raw form. it should first be parsed by make-jumptable.py
-// with these settings:
+// with these settings. this is automatically done by the makefile already:
 //     INSTRUCTION_SIZE        = 16
 //     JUMPTABLE_BIT_WIDTH     = 8
 //

@@ -10,5 +10,6 @@
 #define GAME_TITLE_SIZE   12
 
 void get_rom_as_bytes(char* rom_name, uint8_t* out, int out_length);
+void test_thumb();
 
 #endif
