@@ -121,7 +121,6 @@ void run_1100LREG(uint16_t opcode) {
 // conditional branch
 @EXCLUDE(11011111)
 void run_1101COND(uint16_t opcode) {
-    std::cout << "Penis" << std::endl;
 }
 
 // software uint16_terrupt
