@@ -7,131 +7,275 @@
 extern Memory memory;
 
 void run_00000000(uint16_t opcode) {
-    std::cout << "Logical Shift Right" << std::endl;
+    std::cout << "Logical Shift Left" << std::endl;
+
     uint8_t source = get_nth_bits(opcode, 3,  6);
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0)
-        memory.regs[source] = 0;
+    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+        memory.regs[dest] = 0;
     else
-        memory.regs[source] >>= shift;
+        memory.regs[dest] = (memory.regs[source] << shift);
+        flag_C = get_nth_bit(memory.regs[source], shift - 1);
+
+    flag_N = get_nth_bit(memory.regs[dest], 31);
+    flag_Z = memory.regs[dest] == 0;
 }
 
 void run_00000001(uint16_t opcode) {
-    std::cout << "Logical Shift Right" << std::endl;
+    std::cout << "Logical Shift Left" << std::endl;
+
     uint8_t source = get_nth_bits(opcode, 3,  6);
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0)
-        memory.regs[source] = 0;
+    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+        memory.regs[dest] = 0;
     else
-        memory.regs[source] >>= shift;
+        memory.regs[dest] = (memory.regs[source] << shift);
+        flag_C = get_nth_bit(memory.regs[source], shift - 1);
+
+    flag_N = get_nth_bit(memory.regs[dest], 31);
+    flag_Z = memory.regs[dest] == 0;
 }
 
 void run_00000010(uint16_t opcode) {
-    std::cout << "Logical Shift Right" << std::endl;
+    std::cout << "Logical Shift Left" << std::endl;
+
     uint8_t source = get_nth_bits(opcode, 3,  6);
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0)
-        memory.regs[source] = 0;
+    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+        memory.regs[dest] = 0;
     else
-        memory.regs[source] >>= shift;
+        memory.regs[dest] = (memory.regs[source] << shift);
+        flag_C = get_nth_bit(memory.regs[source], shift - 1);
+
+    flag_N = get_nth_bit(memory.regs[dest], 31);
+    flag_Z = memory.regs[dest] == 0;
 }
 
 void run_00000011(uint16_t opcode) {
-    std::cout << "Logical Shift Right" << std::endl;
+    std::cout << "Logical Shift Left" << std::endl;
+
     uint8_t source = get_nth_bits(opcode, 3,  6);
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0)
-        memory.regs[source] = 0;
+    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+        memory.regs[dest] = 0;
     else
-        memory.regs[source] >>= shift;
+        memory.regs[dest] = (memory.regs[source] << shift);
+        flag_C = get_nth_bit(memory.regs[source], shift - 1);
+
+    flag_N = get_nth_bit(memory.regs[dest], 31);
+    flag_Z = memory.regs[dest] == 0;
 }
 
 void run_00000100(uint16_t opcode) {
-    std::cout << "Logical Shift Right" << std::endl;
+    std::cout << "Logical Shift Left" << std::endl;
+
     uint8_t source = get_nth_bits(opcode, 3,  6);
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0)
-        memory.regs[source] = 0;
+    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+        memory.regs[dest] = 0;
     else
-        memory.regs[source] >>= shift;
+        memory.regs[dest] = (memory.regs[source] << shift);
+        flag_C = get_nth_bit(memory.regs[source], shift - 1);
+
+    flag_N = get_nth_bit(memory.regs[dest], 31);
+    flag_Z = memory.regs[dest] == 0;
 }
 
 void run_00000101(uint16_t opcode) {
-    std::cout << "Logical Shift Right" << std::endl;
+    std::cout << "Logical Shift Left" << std::endl;
+
     uint8_t source = get_nth_bits(opcode, 3,  6);
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0)
-        memory.regs[source] = 0;
+    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+        memory.regs[dest] = 0;
     else
-        memory.regs[source] >>= shift;
+        memory.regs[dest] = (memory.regs[source] << shift);
+        flag_C = get_nth_bit(memory.regs[source], shift - 1);
+
+    flag_N = get_nth_bit(memory.regs[dest], 31);
+    flag_Z = memory.regs[dest] == 0;
 }
 
 void run_00000110(uint16_t opcode) {
-    std::cout << "Logical Shift Right" << std::endl;
+    std::cout << "Logical Shift Left" << std::endl;
+
     uint8_t source = get_nth_bits(opcode, 3,  6);
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0)
-        memory.regs[source] = 0;
+    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+        memory.regs[dest] = 0;
     else
-        memory.regs[source] >>= shift;
+        memory.regs[dest] = (memory.regs[source] << shift);
+        flag_C = get_nth_bit(memory.regs[source], shift - 1);
+
+    flag_N = get_nth_bit(memory.regs[dest], 31);
+    flag_Z = memory.regs[dest] == 0;
 }
 
 void run_00000111(uint16_t opcode) {
-    std::cout << "Logical Shift Right" << std::endl;
+    std::cout << "Logical Shift Left" << std::endl;
+
     uint8_t source = get_nth_bits(opcode, 3,  6);
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0)
-        memory.regs[source] = 0;
+    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+        memory.regs[dest] = 0;
     else
-        memory.regs[source] >>= shift;
+        memory.regs[dest] = (memory.regs[source] << shift);
+        flag_C = get_nth_bit(memory.regs[source], shift - 1);
+
+    flag_N = get_nth_bit(memory.regs[dest], 31);
+    flag_Z = memory.regs[dest] == 0;
 }
 
 void run_00001000(uint16_t opcode) {
+    std::cout << "Logical Shift Right" << std::endl;
 
+    uint8_t source = get_nth_bits(opcode, 3,  6);
+    uint8_t dest   = get_nth_bits(opcode, 0,  3);
+    uint8_t shift  = get_nth_bits(opcode, 6,  11);
+
+    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+        memory.regs[dest] = 0;
+    else
+        memory.regs[dest] = (memory.regs[source] >> shift);
+        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
+
+    flag_N = get_nth_bit(memory.regs[dest], 31);
+    flag_Z = memory.regs[dest] == 0;
 }
 
 void run_00001001(uint16_t opcode) {
+    std::cout << "Logical Shift Right" << std::endl;
 
+    uint8_t source = get_nth_bits(opcode, 3,  6);
+    uint8_t dest   = get_nth_bits(opcode, 0,  3);
+    uint8_t shift  = get_nth_bits(opcode, 6,  11);
+
+    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+        memory.regs[dest] = 0;
+    else
+        memory.regs[dest] = (memory.regs[source] >> shift);
+        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
+
+    flag_N = get_nth_bit(memory.regs[dest], 31);
+    flag_Z = memory.regs[dest] == 0;
 }
 
 void run_00001010(uint16_t opcode) {
+    std::cout << "Logical Shift Right" << std::endl;
 
+    uint8_t source = get_nth_bits(opcode, 3,  6);
+    uint8_t dest   = get_nth_bits(opcode, 0,  3);
+    uint8_t shift  = get_nth_bits(opcode, 6,  11);
+
+    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+        memory.regs[dest] = 0;
+    else
+        memory.regs[dest] = (memory.regs[source] >> shift);
+        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
+
+    flag_N = get_nth_bit(memory.regs[dest], 31);
+    flag_Z = memory.regs[dest] == 0;
 }
 
 void run_00001011(uint16_t opcode) {
+    std::cout << "Logical Shift Right" << std::endl;
 
+    uint8_t source = get_nth_bits(opcode, 3,  6);
+    uint8_t dest   = get_nth_bits(opcode, 0,  3);
+    uint8_t shift  = get_nth_bits(opcode, 6,  11);
+
+    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+        memory.regs[dest] = 0;
+    else
+        memory.regs[dest] = (memory.regs[source] >> shift);
+        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
+
+    flag_N = get_nth_bit(memory.regs[dest], 31);
+    flag_Z = memory.regs[dest] == 0;
 }
 
 void run_00001100(uint16_t opcode) {
+    std::cout << "Logical Shift Right" << std::endl;
 
+    uint8_t source = get_nth_bits(opcode, 3,  6);
+    uint8_t dest   = get_nth_bits(opcode, 0,  3);
+    uint8_t shift  = get_nth_bits(opcode, 6,  11);
+
+    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+        memory.regs[dest] = 0;
+    else
+        memory.regs[dest] = (memory.regs[source] >> shift);
+        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
+
+    flag_N = get_nth_bit(memory.regs[dest], 31);
+    flag_Z = memory.regs[dest] == 0;
 }
 
 void run_00001101(uint16_t opcode) {
+    std::cout << "Logical Shift Right" << std::endl;
 
+    uint8_t source = get_nth_bits(opcode, 3,  6);
+    uint8_t dest   = get_nth_bits(opcode, 0,  3);
+    uint8_t shift  = get_nth_bits(opcode, 6,  11);
+
+    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+        memory.regs[dest] = 0;
+    else
+        memory.regs[dest] = (memory.regs[source] >> shift);
+        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
+
+    flag_N = get_nth_bit(memory.regs[dest], 31);
+    flag_Z = memory.regs[dest] == 0;
 }
 
 void run_00001110(uint16_t opcode) {
+    std::cout << "Logical Shift Right" << std::endl;
 
+    uint8_t source = get_nth_bits(opcode, 3,  6);
+    uint8_t dest   = get_nth_bits(opcode, 0,  3);
+    uint8_t shift  = get_nth_bits(opcode, 6,  11);
+
+    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+        memory.regs[dest] = 0;
+    else
+        memory.regs[dest] = (memory.regs[source] >> shift);
+        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
+
+    flag_N = get_nth_bit(memory.regs[dest], 31);
+    flag_Z = memory.regs[dest] == 0;
 }
 
 void run_00001111(uint16_t opcode) {
+    std::cout << "Logical Shift Right" << std::endl;
 
+    uint8_t source = get_nth_bits(opcode, 3,  6);
+    uint8_t dest   = get_nth_bits(opcode, 0,  3);
+    uint8_t shift  = get_nth_bits(opcode, 6,  11);
+
+    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+        memory.regs[dest] = 0;
+    else
+        memory.regs[dest] = (memory.regs[source] >> shift);
+        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
+
+    flag_N = get_nth_bit(memory.regs[dest], 31);
+    flag_Z = memory.regs[dest] == 0;
 }
 
 void run_00010000(uint16_t opcode) {
@@ -167,19 +311,19 @@ void run_00010111(uint16_t opcode) {
 }
 
 void run_00011000(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_00011001(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_00011010(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_00011011(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_00011100(uint16_t opcode) {
@@ -803,15 +947,15 @@ void run_10110000(uint16_t opcode) {
 }
 
 void run_10110001(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_10110010(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_10110011(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_10110100(uint16_t opcode) {
@@ -823,27 +967,27 @@ void run_10110101(uint16_t opcode) {
 }
 
 void run_10110110(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_10110111(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_10111000(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_10111001(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_10111010(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_10111011(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_10111100(uint16_t opcode) {
@@ -855,11 +999,11 @@ void run_10111101(uint16_t opcode) {
 }
 
 void run_10111110(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_10111111(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_11000000(uint16_t opcode) {
@@ -927,63 +1071,63 @@ void run_11001111(uint16_t opcode) {
 }
 
 void run_11010000(uint16_t opcode) {
-
+    std::cout << "Penis" << std::endl;
 }
 
 void run_11010001(uint16_t opcode) {
-
+    std::cout << "Penis" << std::endl;
 }
 
 void run_11010010(uint16_t opcode) {
-
+    std::cout << "Penis" << std::endl;
 }
 
 void run_11010011(uint16_t opcode) {
-
+    std::cout << "Penis" << std::endl;
 }
 
 void run_11010100(uint16_t opcode) {
-
+    std::cout << "Penis" << std::endl;
 }
 
 void run_11010101(uint16_t opcode) {
-
+    std::cout << "Penis" << std::endl;
 }
 
 void run_11010110(uint16_t opcode) {
-
+    std::cout << "Penis" << std::endl;
 }
 
 void run_11010111(uint16_t opcode) {
-
+    std::cout << "Penis" << std::endl;
 }
 
 void run_11011000(uint16_t opcode) {
-
+    std::cout << "Penis" << std::endl;
 }
 
 void run_11011001(uint16_t opcode) {
-
+    std::cout << "Penis" << std::endl;
 }
 
 void run_11011010(uint16_t opcode) {
-
+    std::cout << "Penis" << std::endl;
 }
 
 void run_11011011(uint16_t opcode) {
-
+    std::cout << "Penis" << std::endl;
 }
 
 void run_11011100(uint16_t opcode) {
-
+    std::cout << "Penis" << std::endl;
 }
 
 void run_11011101(uint16_t opcode) {
-
+    std::cout << "Penis" << std::endl;
 }
 
 void run_11011110(uint16_t opcode) {
-
+    std::cout << "Penis" << std::endl;
 }
 
 void run_11011111(uint16_t opcode) {
@@ -1023,35 +1167,35 @@ void run_11100111(uint16_t opcode) {
 }
 
 void run_11101000(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_11101001(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_11101010(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_11101011(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_11101100(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_11101101(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_11101110(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_11101111(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 void run_11110000(uint16_t opcode) {

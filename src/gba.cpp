@@ -92,6 +92,7 @@ void test_thumb() {
     // lets see if you can actually fetch anything
     execute(fetch());
     execute(fetch());
+    execute(fetch());
 
     std::cout << "everythings going well so far" << std::endl;
 }

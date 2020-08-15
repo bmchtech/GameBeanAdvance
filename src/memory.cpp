@@ -24,4 +24,7 @@ void setup_memory() {
     memory.rom_2        = &memory.main[OFFSET_ROM_2];
     memory.rom_3        = &memory.main[OFFSET_ROM_3];
     memory.sram         = &memory.main[OFFSET_SRAM];
+
+    // the program status register
+    memory.psr          = (uint32_t*) malloc(sizeof(uint32_t));
 }

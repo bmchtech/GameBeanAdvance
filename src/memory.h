@@ -43,6 +43,9 @@ typedef struct Memory {
     uint8_t* rom_3;        // 0xC000000 - 0xDFFFFFF
     uint8_t* sram;         // 0xE000000 - 0xE00FFFF
 
+    // program status register
+    // NZCV--------------------IFT43210
+    uint32_t* psr;
 } Memory;
 
 // heres a bunch of constants that summarize the information above
@@ -73,6 +76,12 @@ typedef struct Memory {
 #define OFFSET_SRAM         0xE000000
 
 #define NUM_REGISTERS       10
+
+// shortcuts for psr
+#define flag_N memory.psr[31]
+#define flag_Z memory.psr[30]
+#define flag_C memory.psr[29]
+#define flag_V memory.psr[28]
 
 // and for some functions
 void setup_memory();

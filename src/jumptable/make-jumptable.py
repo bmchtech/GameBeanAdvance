@@ -154,10 +154,16 @@ for i in range(0, len(lines)):
             for line in function:
                 if line.strip().startswith(CONDITIONAL_INCLUSION):
                     var = line.split(CONDITIONAL_INCLUSION)[1].split(")")[0]
+                    val = True
+
+                    if var[0] == "!":
+                        val = False
+                        var = var[1:]
+
                     # should we skip this line?
-                    if get_nth_bit(current_iteration, keys.index(var)):
+                    if get_nth_bit(current_iteration, keys.index(var)) == val:
                         tab = line.split(CONDITIONAL_INCLUSION)[0]
-                        new_function.append(tab + line.split(CONDITIONAL_INCLUSION)[1].split(")")[1].strip())
+                        new_function.append(tab + ')'.join(line.split(CONDITIONAL_INCLUSION)[1].split(")")[1:]).strip())
                     continue
 
                 # no? okay, lets add the line
@@ -166,6 +172,8 @@ for i in range(0, len(lines)):
             # and now we insert the function into the jumptable
             if (jumptable[new_base] != None):
                 print("Collision detected at: " + format(new_base, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:])
+                print("\n".join(jumptable[new_base]))
+                print("\n".join(new_function))
                 print("Terminating.")
                 exit(1)
 

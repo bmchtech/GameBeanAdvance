@@ -16,12 +16,14 @@
 
 @DEFAULT()
 void nop(uint16_t opcode) {
-    // NOP
+    std::cout << "NOP" << std::endl;
 }
 
 // logical shift left/right
-void run_00000ABC(uint16_t opcode) {
-    std::cout << "Logical Shift Right" << std::endl;
+void run_0000SABC(uint16_t opcode) {
+    @IF(S)  std::cout << "Logical Shift Right" << std::endl;
+    @IF(!S) std::cout << "Logical Shift Left" << std::endl;
+
     uint8_t source = get_nth_bits(opcode, 3,  6);
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
@@ -29,20 +31,13 @@ void run_00000ABC(uint16_t opcode) {
     if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
         memory.regs[dest] = 0;
     else
-        memory.regs[dest] = (memory.regs[source] >> shift);
-}
+        @IF(S)  memory.regs[dest] = (memory.regs[source] >> shift);
+        @IF(!S) memory.regs[dest] = (memory.regs[source] << shift);
+        @IF(S)  flag_C = get_nth_bit(memory.regs[source], 32 - shift);
+        @IF(!S) flag_C = get_nth_bit(memory.regs[source], shift - 1);
 
-// logical shift left
-void run_00001ABC(uint16_t opcode) {
-    std::cout << "Logical Shift Left" << std::endl;
-    uint8_t source = get_nth_bits(opcode, 3,  6);
-    uint8_t dest   = get_nth_bits(opcode, 0,  3);
-    uint8_t shift  = get_nth_bits(opcode, 6,  11);
-
-    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
-        memory.regs[dest] = 0;
-    else
-        memory.regs[dest] = (memory.regs[source] << shift);
+    flag_N = get_nth_bit(memory.regs[dest], 31);
+    flag_Z = memory.regs[dest] == 0;
 }
 
 // arithmetic shift left
@@ -126,7 +121,7 @@ void run_1100LREG(uint16_t opcode) {
 // conditional branch
 @EXCLUDE(11011111)
 void run_1101COND(uint16_t opcode) {
-
+    std::cout << "Penis" << std::endl;
 }
 
 // software uint16_terrupt
