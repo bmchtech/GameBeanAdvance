@@ -19,7 +19,7 @@ void nop(uint16_t opcode) {
     // NOP
 }
 
-// logical shift right
+// logical shift left/right
 void run_00000ABC(uint16_t opcode) {
     std::cout << "Logical Shift Right" << std::endl;
     uint8_t source = get_nth_bits(opcode, 3,  6);
@@ -34,7 +34,15 @@ void run_00000ABC(uint16_t opcode) {
 
 // logical shift left
 void run_00001ABC(uint16_t opcode) {
+    std::cout << "Logical Shift Left" << std::endl;
+    uint8_t source = get_nth_bits(opcode, 3,  6);
+    uint8_t dest   = get_nth_bits(opcode, 0,  3);
+    uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
+    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+        memory.regs[dest] = 0;
+    else
+        memory.regs[dest] = (memory.regs[source] << shift);
 }
 
 // arithmetic shift left
