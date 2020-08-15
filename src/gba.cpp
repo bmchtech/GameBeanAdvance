@@ -74,11 +74,23 @@ void get_rom_as_bytes(char* rom_name, uint8_t* out, int out_length) {
 // where we should start testing from
 #define TEST_PC 0x800010A - 2
 
+// fetch probably shouldnt be returning the opcode and instead hsould be storing it somewhere
+// in memory, but it's 12 am and im too tired i'll come up with a better solution later
+int fetch() {
+    uint16_t opcode = (memory.main[*memory.pc + 1] << 8) + memory.main[*memory.pc];
+    *memory.pc += 2;
+    return opcode;
+}
+
 void test_thumb() {
     *memory.pc = TEST_PC;
     
     // lets see if you can actually fetch anything
-    uint16_t opcode = (memory.main[*memory.pc + 1] << 8) + memory.main[*memory.pc];
+    uint16_t opcode = fetch();
+
+    // pre-fetches... these should be stored somewhere later.
+    fetch();
+
     std::cout << to_hex_string(opcode >> 8) << std::endl;
     jumptable[opcode >> 8](opcode);
 

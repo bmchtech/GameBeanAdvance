@@ -11,110 +11,110 @@
 //     that specific bit-variable is 1. if a function is preceded by @EXCLUDE(<some binary value>), then
 //     the function will not be inserted in the jumptable at that binary value. - is used as a wildcard in
 //     @EXCLUDE. @DEFAULT is used for a default function (in this case, the default is a nop function).
-//     default functions are used when no other function matches the jumptable. this all was intended as a way 
+//     default functions are used when no other function matches the jumptable. this all was uint16_tended as a way 
 //     to make the code cleaner and more readable.
 
-#include <iostream>
-using namespace std;
-
 @DEFAULT()
-void nop(int opcode) {
+void nop(uint16_t opcode) {
     // NOP
 }
 
 // move shifted register
 @EXCLUDE(00011---)
-void run_000OPABC(int opcode) {
+void run_000OPABC(uint16_t opcode) {
 
 }
 
 // add and subtract
-void run_000111OA(int opcode) {
+void run_000111OA(uint16_t opcode) {
 
 }
 
 // move, compare, add, and subtract immediate
-void run_001OPABC(int opcode) {
+void run_001OPABC(uint16_t opcode) {
 
 }
 
 // ALU operation
-void run_010000PC(int opcode) {
+void run_010000PC(uint16_t opcode) {
 
 }
 
 // high register operations and branch exchange
-void run_010001OP(int opcode) {
+void run_010001OP(uint16_t opcode) {
 
 }
 
 // pc-relative load
-void run_01001REG(int opcode) {
-    std::cout << opcode << std::endl;
+void run_01001REG(uint16_t opcode) {
+    std::cout << "PC-Relative Load: " << std::endl;
+    uint8_t  reg = get_nth_bits(opcode, 8,  11);
+    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc;
+    memory.regs[reg] = *((uint32_t*)(memory.main + loc));
 }
 
 // load and store with relative offset
-void run_0101LB0R(int opcode) {
+void run_0101LB0R(uint16_t opcode) {
 
 }
 
 // load and store sign-extended byte and halfword
-void run_0101HS1R(int opcode) {
+void run_0101HS1R(uint16_t opcode) {
 
 }
 
 // load and store with immediate offset
-void run_011BLOFS(int opcode) {
+void run_011BLOFS(uint16_t opcode) {
 
 }
 
 // load and store halfword
-void run_1000LOFS(int opcode) {
+void run_1000LOFS(uint16_t opcode) {
 
 }
 
 // sp-relative load and store
-void run_1001LREG(int opcode) {
+void run_1001LREG(uint16_t opcode) {
 
 }
 
 // load address
-void run_1010SREG(int opcode) {
+void run_1010SREG(uint16_t opcode) {
 
 }
 
-// add offset to stack pointer
-void run_10110000(int opcode) {
+// add offset to stack pouint16_ter
+void run_10110000(uint16_t opcode) {
 
 }
 
-// push and pop registers(int opcode)
-void run_1011L10R(int opcode) {
+// push and pop registers(uint16_t opcode)
+void run_1011L10R(uint16_t opcode) {
 
 }
 
 // multiple load and store
-void run_1100LREG(int opcode) {
+void run_1100LREG(uint16_t opcode) {
 
 }
 
 // conditional branch
 @EXCLUDE(11011111)
-void run_1101COND(int opcode) {
+void run_1101COND(uint16_t opcode) {
 
 }
 
-// software interrupt
-void run_11011111(int opcode) {
+// software uint16_terrupt
+void run_11011111(uint16_t opcode) {
 
 }
 
 // unconditional branch
-void run_11100OFS(int opcode) {
+void run_11100OFS(uint16_t opcode) {
 
 }
 
 // long branch with link
-void run_1111HOFS(int opcode) {
+void run_1111HOFS(uint16_t opcode) {
 
 }

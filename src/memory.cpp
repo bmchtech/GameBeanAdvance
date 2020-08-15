@@ -8,10 +8,10 @@ Memory memory;
 // allocates the data for the memory struct
 void setup_memory() {
     memory.main         = (uint8_t*)  malloc(SIZE_MAIN_MEMORY);
-    memory.registers    = (uint32_t*) malloc(NUM_REGISTERS * sizeof(uint32_t));
+    memory.regs         = (uint32_t*) malloc(NUM_REGISTERS * sizeof(uint32_t));
 
     // map a bunch of shortcut pointers
-    memory.pc           = &memory.registers[0xA];
+    memory.pc           = &memory.regs[0xA];
 
     memory.bios         = &memory.main[OFFSET_BIOS];
     memory.wram_board   = &memory.main[OFFSET_WRAM_BOARD];
@@ -24,5 +24,4 @@ void setup_memory() {
     memory.rom_2        = &memory.main[OFFSET_ROM_2];
     memory.rom_3        = &memory.main[OFFSET_ROM_3];
     memory.sram         = &memory.main[OFFSET_SRAM];
-
 }

@@ -3,12 +3,14 @@
 
 #include <cstdint>
 
+struct Memory;
+extern Memory memory;
+
 // for more details on the GBA memory map: https://problemkaputt.de/gbatek.htm#gbamemorymap
 // i'm going to probably have to split this struct into more specific values later,
 // but for now ill just do the ones i can see myself easily using.
 
 typedef struct Memory {
-
     // the main memory
     uint8_t* main;
 
@@ -16,7 +18,7 @@ typedef struct Memory {
     // note that register 8 is the stack pointer
     //           register 9 is the... (TODO) whatever LR means
     //           register A is the program counter
-    uint32_t* registers;
+    uint32_t* regs;
 
     // because doing things like register[0xA] to access the program counter 
     // is unreadable, here's a lot of shortcuts.
@@ -43,9 +45,7 @@ typedef struct Memory {
 
 } Memory;
 
-extern Memory memory;
-
-// and now heres a bunch of constants that summarize the information above:
+// heres a bunch of constants that summarize the information above
 // unsure if much of the size constants will be used, but ill keep them here for now
 #define SIZE_MAIN_MEMORY    0x10000000
 #define SIZE_BIOS           0x0003FFF - 0x0000000

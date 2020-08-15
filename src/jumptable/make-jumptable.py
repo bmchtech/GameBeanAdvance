@@ -26,7 +26,11 @@ HEADER_FILE_FOOTER      = '''
 CPP_FILE_HEADER         = '''
 #include <iostream>
 
-#include "jumptable.h"\n\n'''[1:]
+#include "jumptable.h"
+#include "../util.h"
+#include "../memory.h"
+
+extern Memory memory;\n\n'''[1:]
 
 CPP_FILE_FOOTER         = ''''''
 
@@ -187,13 +191,13 @@ for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):
     result_function = jumptable[i]
 
     if result_function != None:
-        function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "(int opcode)"
+        function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "(uint16_t opcode)"
         header_file.write(function_name + ";\n")
         cpp_file.write(function_name + " {\n")
         cpp_file.write('\n'.join(result_function))
         cpp_file.write("\n}\n\n")
     else:
-        function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "(int opcode)"
+        function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "(uint16_t opcode)"
         header_file.write(function_name + ";\n")
         cpp_file.write(function_name + " {\n")
         cpp_file.write('\n'.join(default_function))
@@ -201,7 +205,7 @@ for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):
 
 # and now we must loop again to put the actual jumptable in the header file
 # first we add the typedef and the extern
-header_file.write("\ntypedef void (*instruction)(int);\n")
+header_file.write("\ntypedef void (*instruction)(uint16_t);\n")
 header_file.write("extern instruction jumptable[];\n")
 
 # then we add the jumptable
