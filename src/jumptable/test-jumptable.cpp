@@ -27,9 +27,9 @@ void run_00000ABC(uint16_t opcode) {
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
     if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
-        memory.regs[source] = 0;
+        memory.regs[dest] = 0;
     else
-        memory.regs[source] >>= shift;
+        memory.regs[dest] = (memory.regs[source] >> shift);
 }
 
 // logical shift left
