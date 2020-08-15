@@ -7,35 +7,99 @@
 extern Memory memory;
 
 void run_00000000(uint16_t opcode) {
+    std::cout << "Logical Shift Right" << std::endl;
+    uint8_t source = get_nth_bits(opcode, 3,  6);
+    uint8_t dest   = get_nth_bits(opcode, 0,  3);
+    uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
+    if (shift == 0)
+        memory.regs[source] = 0;
+    else
+        memory.regs[source] >>= shift;
 }
 
 void run_00000001(uint16_t opcode) {
+    std::cout << "Logical Shift Right" << std::endl;
+    uint8_t source = get_nth_bits(opcode, 3,  6);
+    uint8_t dest   = get_nth_bits(opcode, 0,  3);
+    uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
+    if (shift == 0)
+        memory.regs[source] = 0;
+    else
+        memory.regs[source] >>= shift;
 }
 
 void run_00000010(uint16_t opcode) {
+    std::cout << "Logical Shift Right" << std::endl;
+    uint8_t source = get_nth_bits(opcode, 3,  6);
+    uint8_t dest   = get_nth_bits(opcode, 0,  3);
+    uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
+    if (shift == 0)
+        memory.regs[source] = 0;
+    else
+        memory.regs[source] >>= shift;
 }
 
 void run_00000011(uint16_t opcode) {
+    std::cout << "Logical Shift Right" << std::endl;
+    uint8_t source = get_nth_bits(opcode, 3,  6);
+    uint8_t dest   = get_nth_bits(opcode, 0,  3);
+    uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
+    if (shift == 0)
+        memory.regs[source] = 0;
+    else
+        memory.regs[source] >>= shift;
 }
 
 void run_00000100(uint16_t opcode) {
+    std::cout << "Logical Shift Right" << std::endl;
+    uint8_t source = get_nth_bits(opcode, 3,  6);
+    uint8_t dest   = get_nth_bits(opcode, 0,  3);
+    uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
+    if (shift == 0)
+        memory.regs[source] = 0;
+    else
+        memory.regs[source] >>= shift;
 }
 
 void run_00000101(uint16_t opcode) {
+    std::cout << "Logical Shift Right" << std::endl;
+    uint8_t source = get_nth_bits(opcode, 3,  6);
+    uint8_t dest   = get_nth_bits(opcode, 0,  3);
+    uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
+    if (shift == 0)
+        memory.regs[source] = 0;
+    else
+        memory.regs[source] >>= shift;
 }
 
 void run_00000110(uint16_t opcode) {
+    std::cout << "Logical Shift Right" << std::endl;
+    uint8_t source = get_nth_bits(opcode, 3,  6);
+    uint8_t dest   = get_nth_bits(opcode, 0,  3);
+    uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
+    if (shift == 0)
+        memory.regs[source] = 0;
+    else
+        memory.regs[source] >>= shift;
 }
 
 void run_00000111(uint16_t opcode) {
+    std::cout << "Logical Shift Right" << std::endl;
+    uint8_t source = get_nth_bits(opcode, 3,  6);
+    uint8_t dest   = get_nth_bits(opcode, 0,  3);
+    uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
+    if (shift == 0)
+        memory.regs[source] = 0;
+    else
+        memory.regs[source] >>= shift;
 }
 
 void run_00001000(uint16_t opcode) {
@@ -295,58 +359,58 @@ void run_01000111(uint16_t opcode) {
 }
 
 void run_01001000(uint16_t opcode) {
-    std::cout << "PC-Relative Load: " << std::endl;
-    uint8_t  reg = get_nth_bits(opcode, 8,  11);
-    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc;
+    std::cout << "PC-Relative Load" << std::endl;
+    uint8_t reg = get_nth_bits(opcode, 8,  11);
+    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc + 2;
     memory.regs[reg] = *((uint32_t*)(memory.main + loc));
 }
 
 void run_01001001(uint16_t opcode) {
-    std::cout << "PC-Relative Load: " << std::endl;
-    uint8_t  reg = get_nth_bits(opcode, 8,  11);
-    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc;
+    std::cout << "PC-Relative Load" << std::endl;
+    uint8_t reg = get_nth_bits(opcode, 8,  11);
+    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc + 2;
     memory.regs[reg] = *((uint32_t*)(memory.main + loc));
 }
 
 void run_01001010(uint16_t opcode) {
-    std::cout << "PC-Relative Load: " << std::endl;
-    uint8_t  reg = get_nth_bits(opcode, 8,  11);
-    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc;
+    std::cout << "PC-Relative Load" << std::endl;
+    uint8_t reg = get_nth_bits(opcode, 8,  11);
+    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc + 2;
     memory.regs[reg] = *((uint32_t*)(memory.main + loc));
 }
 
 void run_01001011(uint16_t opcode) {
-    std::cout << "PC-Relative Load: " << std::endl;
-    uint8_t  reg = get_nth_bits(opcode, 8,  11);
-    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc;
+    std::cout << "PC-Relative Load" << std::endl;
+    uint8_t reg = get_nth_bits(opcode, 8,  11);
+    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc + 2;
     memory.regs[reg] = *((uint32_t*)(memory.main + loc));
 }
 
 void run_01001100(uint16_t opcode) {
-    std::cout << "PC-Relative Load: " << std::endl;
-    uint8_t  reg = get_nth_bits(opcode, 8,  11);
-    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc;
+    std::cout << "PC-Relative Load" << std::endl;
+    uint8_t reg = get_nth_bits(opcode, 8,  11);
+    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc + 2;
     memory.regs[reg] = *((uint32_t*)(memory.main + loc));
 }
 
 void run_01001101(uint16_t opcode) {
-    std::cout << "PC-Relative Load: " << std::endl;
-    uint8_t  reg = get_nth_bits(opcode, 8,  11);
-    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc;
+    std::cout << "PC-Relative Load" << std::endl;
+    uint8_t reg = get_nth_bits(opcode, 8,  11);
+    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc + 2;
     memory.regs[reg] = *((uint32_t*)(memory.main + loc));
 }
 
 void run_01001110(uint16_t opcode) {
-    std::cout << "PC-Relative Load: " << std::endl;
-    uint8_t  reg = get_nth_bits(opcode, 8,  11);
-    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc;
+    std::cout << "PC-Relative Load" << std::endl;
+    uint8_t reg = get_nth_bits(opcode, 8,  11);
+    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc + 2;
     memory.regs[reg] = *((uint32_t*)(memory.main + loc));
 }
 
 void run_01001111(uint16_t opcode) {
-    std::cout << "PC-Relative Load: " << std::endl;
-    uint8_t  reg = get_nth_bits(opcode, 8,  11);
-    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc;
+    std::cout << "PC-Relative Load" << std::endl;
+    uint8_t reg = get_nth_bits(opcode, 8,  11);
+    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc + 2;
     memory.regs[reg] = *((uint32_t*)(memory.main + loc));
 }
 

@@ -19,9 +19,26 @@ void nop(uint16_t opcode) {
     // NOP
 }
 
-// move shifted register
-@EXCLUDE(00011---)
-void run_000OPABC(uint16_t opcode) {
+// logical shift right
+void run_00000ABC(uint16_t opcode) {
+    std::cout << "Logical Shift Right" << std::endl;
+    uint8_t source = get_nth_bits(opcode, 3,  6);
+    uint8_t dest   = get_nth_bits(opcode, 0,  3);
+    uint8_t shift  = get_nth_bits(opcode, 6,  11);
+
+    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+        memory.regs[source] = 0;
+    else
+        memory.regs[source] >>= shift;
+}
+
+// logical shift left
+void run_00001ABC(uint16_t opcode) {
+
+}
+
+// arithmetic shift left
+void run_00010ABC(uint16_t opcode) {
 
 }
 
@@ -47,9 +64,9 @@ void run_010001OP(uint16_t opcode) {
 
 // pc-relative load
 void run_01001REG(uint16_t opcode) {
-    std::cout << "PC-Relative Load: " << std::endl;
-    uint8_t  reg = get_nth_bits(opcode, 8,  11);
-    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc;
+    std::cout << "PC-Relative Load" << std::endl;
+    uint8_t reg = get_nth_bits(opcode, 8,  11);
+    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc + 2;
     memory.regs[reg] = *((uint32_t*)(memory.main + loc));
 }
 
