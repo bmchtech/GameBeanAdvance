@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "jumptable.h"
 
 void run_00000000(int opcode) {
@@ -289,35 +291,35 @@ void run_01000111(int opcode) {
 }
 
 void run_01001000(int opcode) {
-
+    std::cout << opcode << std::endl;
 }
 
 void run_01001001(int opcode) {
-
+    std::cout << opcode << std::endl;
 }
 
 void run_01001010(int opcode) {
-
+    std::cout << opcode << std::endl;
 }
 
 void run_01001011(int opcode) {
-
+    std::cout << opcode << std::endl;
 }
 
 void run_01001100(int opcode) {
-
+    std::cout << opcode << std::endl;
 }
 
 void run_01001101(int opcode) {
-
+    std::cout << opcode << std::endl;
 }
 
 void run_01001110(int opcode) {
-
+    std::cout << opcode << std::endl;
 }
 
 void run_01001111(int opcode) {
-
+    std::cout << opcode << std::endl;
 }
 
 void run_01010000(int opcode) {
@@ -1024,7 +1026,8 @@ void run_11111111(int opcode) {
 
 }
 
-void (* jumptable [])(int) = {
+
+instruction jumptable[] = {
     &run_00000000, &run_00000001, &run_00000010, &run_00000011, 
     &run_00000100, &run_00000101, &run_00000110, &run_00000111, 
     &run_00001000, &run_00001001, &run_00001010, &run_00001011, 
@@ -1089,5 +1092,5 @@ void (* jumptable [])(int) = {
     &run_11110100, &run_11110101, &run_11110110, &run_11110111, 
     &run_11111000, &run_11111001, &run_11111010, &run_11111011, 
     &run_11111100, &run_11111101, &run_11111110, &run_11111111
-}
+};
 

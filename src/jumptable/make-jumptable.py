@@ -21,10 +21,12 @@ HEADER_FILE_HEADER      = '''
 #define JUMPTABLE_H\n\n'''[1:] # the [1:] is used to remove the beginning \n
 
 HEADER_FILE_FOOTER      = '''
-#endif'''
+#endif'''[1:]
 
 CPP_FILE_HEADER         = '''
-#include "jumptable.h"\n\n'''[1:] # the [1:] is used to remove the beginning \n
+#include <iostream>
+
+#include "jumptable.h"\n\n'''[1:]
 
 CPP_FILE_FOOTER         = ''''''
 
@@ -197,21 +199,24 @@ for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):
         cpp_file.write('\n'.join(default_function))
         cpp_file.write("\n}\n\n")
 
-# and now we must loop again to put the actual jumptable in the cpp file
+# and now we must loop again to put the actual jumptable in the header file
+# first we add the typedef and the extern
+header_file.write("\ntypedef void (*instruction)(int);\n")
+header_file.write("extern instruction jumptable[];\n")
+
+# then we add the jumptable
 function_names = list("run_" + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)))
-cpp_file.write("void (* jumptable [])(int) = {")
+cpp_file.write("\ninstruction jumptable[] = {")
 for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):
     if i % JUMPTABLE_FORMAT_WIDTH == 0:
         cpp_file.write("\n    ")
     cpp_file.write("&" + function_names[i])
     if i != pow(2, JUMPTABLE_BIT_WIDTH) - 1:
         cpp_file.write(", ")
-cpp_file.write("\n}\n\n")    
+cpp_file.write("\n};\n\n")    
 
 # and now the footers
 header_file.write(HEADER_FILE_FOOTER)
 cpp_file.write(CPP_FILE_FOOTER)
 
 # and fin
-print("Success!")
-exit(0)

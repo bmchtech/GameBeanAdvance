@@ -258,4 +258,6 @@ void run_11111101(int opcode);
 void run_11111110(int opcode);
 void run_11111111(int opcode);
 
+typedef void (*instruction)(int);
+extern instruction jumptable[];
 #endif

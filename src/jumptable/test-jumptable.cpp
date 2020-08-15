@@ -50,7 +50,7 @@ void run_010001OP(int opcode) {
 
 // pc-relative load
 void run_01001REG(int opcode) {
-
+    std::cout << opcode << std::endl;
 }
 
 // load and store with relative offset

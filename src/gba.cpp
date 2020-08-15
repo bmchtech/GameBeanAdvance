@@ -15,6 +15,7 @@
 #include "gba.h"
 #include "memory.h"
 #include "util.h"
+#include "jumptable/jumptable.h"
 
 extern Memory memory;
 
@@ -77,8 +78,10 @@ void test_thumb() {
     *memory.pc = TEST_PC;
     
     // lets see if you can actually fetch anything
-    std::cout << to_hex_string(memory.main[*memory.pc]) << std::endl;
-    std::cout << to_hex_string(memory.main[*memory.pc + 1]) << std::endl;
+    uint16_t opcode = (memory.main[*memory.pc + 1] << 8) + memory.main[*memory.pc];
+    std::cout << to_hex_string(opcode >> 8) << std::endl;
+    jumptable[opcode >> 8](opcode);
 
+    std::cout << to_hex_string(opcode) << std::endl;
     std::cout << "everythings going well so far" << std::endl;
 }
