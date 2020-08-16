@@ -53,8 +53,28 @@ void run_000111OA(uint16_t opcode) {
 
 }
 
-// move, compare, add, and subtract immediate
-void run_001OPABC(uint16_t opcode) {
+// move immediate
+void run_00100ABC(uint16_t opcode) {
+    uint16_t immediate_value = get_nth_bits(opcode, 0, 8);
+    memory.regs[get_nth_bits(opcode, 8, 11)] = immediate_value;
+
+    // flags
+    flag_N = get_nth_bit(immediate_value, 31);
+    flag_Z = immediate_value == 0;
+}
+
+// compare immediate
+void run_00101ABC(uint16_t opcode) {
+
+}
+
+// add immediate
+void run_00110ABC(uint16_t opcode) {
+
+}
+
+// subtract immediate
+void run_00111ABC(uint16_t opcode) {
 
 }
 
@@ -93,12 +113,11 @@ void run_011BLOFS(uint16_t opcode) {
 
 // load halfword
 void run_10000OFS(uint16_t opcode) {
-    std::cout << "Please" << std::endl;
     uint8_t base  = get_nth_bits(opcode, 3,  6);
     uint8_t dest  = get_nth_bits(opcode, 0,  3);
     uint8_t shift = get_nth_bits(opcode, 6,  11);
 
-    memory.regs[dest] = memory.main[memory.regs[base] + shift * 2];
+    memory.regs[dest] = *((uint16_t*)(memory.main + memory.regs[base] + shift * 2));
     std::cout << memory.regs[dest] << std::endl;
 }
 
