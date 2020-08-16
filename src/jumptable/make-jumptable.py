@@ -14,6 +14,7 @@ CONDITIONAL_INCLUSION   = "@IF("
 JUMPTABLE_FORMAT_WIDTH  = 4
 EXCLUSION_HEADER        = "@EXCLUDE("
 DEFAULT_HEADER          = "@DEFAULT("
+LOCAL_HEADER            = "@LOCAL("
 
 # formatting for the output files
 HEADER_FILE_HEADER      = '''
@@ -48,7 +49,7 @@ num_vars = 0
 jumptable = [None] * pow(2, JUMPTABLE_BIT_WIDTH) 
 
 default_function = []
-
+local_functions = []
 
 
 
@@ -90,6 +91,17 @@ for i in range(0, len(lines)):
         # we should exclude the following tag from the next function
         tag = lines[i].split(EXCLUSION_HEADER)[1].split(")")[0]
         exclusions += get_exclusions(tag)
+    
+    # is this a local function
+    if lines[i].startswith(LOCAL_HEADER):
+        local_function = ""
+        j = i + 2 # go to the start of the local function
+        while not lines[j].startswith("}"):
+            local_function += lines[j] + "\n"
+            j += 1
+
+        local_functions.append(local_function)
+        continue
 
     # is this a default function
     if lines[i].startswith(DEFAULT_HEADER):
@@ -153,15 +165,23 @@ for i in range(0, len(lines)):
             new_function = []
             for line in function:
                 if line.strip().startswith(CONDITIONAL_INCLUSION):
-                    var = line.split(CONDITIONAL_INCLUSION)[1].split(")")[0]
-                    val = True
+                    conds = line.split(CONDITIONAL_INCLUSION)[1].split(")")[0].split()
 
-                    if var[0] == "!":
-                        val = False
-                        var = var[1:]
+                    # support for multiple vars. example format: @IF(A !B C D !E)
+                    result = True
+                    for cond in conds:
+                        cond.strip()
+                        val = True
+
+                        if cond[0] == "!":
+                            val = False
+                            cond = cond[1:]
+
+                        if get_nth_bit(current_iteration, keys.index(cond)) != val:
+                            result = False
 
                     # should we skip this line?
-                    if get_nth_bit(current_iteration, keys.index(var)) == val:
+                    if result:
                         tab = line.split(CONDITIONAL_INCLUSION)[0]
                         new_function.append(tab + ')'.join(line.split(CONDITIONAL_INCLUSION)[1].split(")")[1:]).strip())
                     continue
@@ -193,6 +213,10 @@ cpp_file    = open(OUTPUT_CPP_FILE,    'w')
 # first we write the headers to the files
 header_file.write(HEADER_FILE_HEADER)
 cpp_file.write(CPP_FILE_HEADER)
+
+# and now the local functions
+for local_function in local_functions:
+    cpp_file.write(local_function)
 
 # now we write the body
 for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):

@@ -23,7 +23,7 @@ inline uint16_t get_nth_bits(uint16_t val, uint8_t start, uint8_t end) {
 }
 
 // get nth bit from value
-inline bool get_nth_bit(uint16_t val, uint8_t n) {
+inline bool get_nth_bit(uint32_t val, uint8_t n) {
     return (val >> n) & 1;
 }
 

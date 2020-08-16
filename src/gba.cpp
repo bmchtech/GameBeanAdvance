@@ -93,6 +93,7 @@ void test_thumb() {
     execute(fetch());
     execute(fetch());
     execute(fetch());
+    std::cout << to_hex_string(fetch()) << std::endl;
 
     std::cout << "everythings going well so far" << std::endl;
 }

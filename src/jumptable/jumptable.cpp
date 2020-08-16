@@ -13,11 +13,12 @@ void run_00000000(uint16_t opcode) {
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+    if (shift == 0) { // if shift == 0, the cpu shifts by 32, which is the size of the register.
         memory.regs[dest] = 0;
-    else
+    } else {
+        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
         memory.regs[dest] = (memory.regs[source] << shift);
-        flag_C = get_nth_bit(memory.regs[source], shift - 1);
+    }
 
     flag_N = get_nth_bit(memory.regs[dest], 31);
     flag_Z = memory.regs[dest] == 0;
@@ -30,11 +31,12 @@ void run_00000001(uint16_t opcode) {
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+    if (shift == 0) { // if shift == 0, the cpu shifts by 32, which is the size of the register.
         memory.regs[dest] = 0;
-    else
+    } else {
+        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
         memory.regs[dest] = (memory.regs[source] << shift);
-        flag_C = get_nth_bit(memory.regs[source], shift - 1);
+    }
 
     flag_N = get_nth_bit(memory.regs[dest], 31);
     flag_Z = memory.regs[dest] == 0;
@@ -47,11 +49,12 @@ void run_00000010(uint16_t opcode) {
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+    if (shift == 0) { // if shift == 0, the cpu shifts by 32, which is the size of the register.
         memory.regs[dest] = 0;
-    else
+    } else {
+        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
         memory.regs[dest] = (memory.regs[source] << shift);
-        flag_C = get_nth_bit(memory.regs[source], shift - 1);
+    }
 
     flag_N = get_nth_bit(memory.regs[dest], 31);
     flag_Z = memory.regs[dest] == 0;
@@ -64,11 +67,12 @@ void run_00000011(uint16_t opcode) {
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+    if (shift == 0) { // if shift == 0, the cpu shifts by 32, which is the size of the register.
         memory.regs[dest] = 0;
-    else
+    } else {
+        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
         memory.regs[dest] = (memory.regs[source] << shift);
-        flag_C = get_nth_bit(memory.regs[source], shift - 1);
+    }
 
     flag_N = get_nth_bit(memory.regs[dest], 31);
     flag_Z = memory.regs[dest] == 0;
@@ -81,11 +85,12 @@ void run_00000100(uint16_t opcode) {
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+    if (shift == 0) { // if shift == 0, the cpu shifts by 32, which is the size of the register.
         memory.regs[dest] = 0;
-    else
+    } else {
+        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
         memory.regs[dest] = (memory.regs[source] << shift);
-        flag_C = get_nth_bit(memory.regs[source], shift - 1);
+    }
 
     flag_N = get_nth_bit(memory.regs[dest], 31);
     flag_Z = memory.regs[dest] == 0;
@@ -98,11 +103,12 @@ void run_00000101(uint16_t opcode) {
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+    if (shift == 0) { // if shift == 0, the cpu shifts by 32, which is the size of the register.
         memory.regs[dest] = 0;
-    else
+    } else {
+        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
         memory.regs[dest] = (memory.regs[source] << shift);
-        flag_C = get_nth_bit(memory.regs[source], shift - 1);
+    }
 
     flag_N = get_nth_bit(memory.regs[dest], 31);
     flag_Z = memory.regs[dest] == 0;
@@ -115,11 +121,12 @@ void run_00000110(uint16_t opcode) {
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+    if (shift == 0) { // if shift == 0, the cpu shifts by 32, which is the size of the register.
         memory.regs[dest] = 0;
-    else
+    } else {
+        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
         memory.regs[dest] = (memory.regs[source] << shift);
-        flag_C = get_nth_bit(memory.regs[source], shift - 1);
+    }
 
     flag_N = get_nth_bit(memory.regs[dest], 31);
     flag_Z = memory.regs[dest] == 0;
@@ -132,11 +139,12 @@ void run_00000111(uint16_t opcode) {
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+    if (shift == 0) { // if shift == 0, the cpu shifts by 32, which is the size of the register.
         memory.regs[dest] = 0;
-    else
+    } else {
+        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
         memory.regs[dest] = (memory.regs[source] << shift);
-        flag_C = get_nth_bit(memory.regs[source], shift - 1);
+    }
 
     flag_N = get_nth_bit(memory.regs[dest], 31);
     flag_Z = memory.regs[dest] == 0;
@@ -149,11 +157,12 @@ void run_00001000(uint16_t opcode) {
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+    if (shift == 0) { // if shift == 0, the cpu shifts by 32, which is the size of the register.
         memory.regs[dest] = 0;
-    else
+    } else {
+        flag_C = get_nth_bit(memory.regs[source], shift - 1);
         memory.regs[dest] = (memory.regs[source] >> shift);
-        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
+    }
 
     flag_N = get_nth_bit(memory.regs[dest], 31);
     flag_Z = memory.regs[dest] == 0;
@@ -166,11 +175,12 @@ void run_00001001(uint16_t opcode) {
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+    if (shift == 0) { // if shift == 0, the cpu shifts by 32, which is the size of the register.
         memory.regs[dest] = 0;
-    else
+    } else {
+        flag_C = get_nth_bit(memory.regs[source], shift - 1);
         memory.regs[dest] = (memory.regs[source] >> shift);
-        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
+    }
 
     flag_N = get_nth_bit(memory.regs[dest], 31);
     flag_Z = memory.regs[dest] == 0;
@@ -183,11 +193,12 @@ void run_00001010(uint16_t opcode) {
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+    if (shift == 0) { // if shift == 0, the cpu shifts by 32, which is the size of the register.
         memory.regs[dest] = 0;
-    else
+    } else {
+        flag_C = get_nth_bit(memory.regs[source], shift - 1);
         memory.regs[dest] = (memory.regs[source] >> shift);
-        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
+    }
 
     flag_N = get_nth_bit(memory.regs[dest], 31);
     flag_Z = memory.regs[dest] == 0;
@@ -200,11 +211,12 @@ void run_00001011(uint16_t opcode) {
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+    if (shift == 0) { // if shift == 0, the cpu shifts by 32, which is the size of the register.
         memory.regs[dest] = 0;
-    else
+    } else {
+        flag_C = get_nth_bit(memory.regs[source], shift - 1);
         memory.regs[dest] = (memory.regs[source] >> shift);
-        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
+    }
 
     flag_N = get_nth_bit(memory.regs[dest], 31);
     flag_Z = memory.regs[dest] == 0;
@@ -217,11 +229,12 @@ void run_00001100(uint16_t opcode) {
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+    if (shift == 0) { // if shift == 0, the cpu shifts by 32, which is the size of the register.
         memory.regs[dest] = 0;
-    else
+    } else {
+        flag_C = get_nth_bit(memory.regs[source], shift - 1);
         memory.regs[dest] = (memory.regs[source] >> shift);
-        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
+    }
 
     flag_N = get_nth_bit(memory.regs[dest], 31);
     flag_Z = memory.regs[dest] == 0;
@@ -234,11 +247,12 @@ void run_00001101(uint16_t opcode) {
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+    if (shift == 0) { // if shift == 0, the cpu shifts by 32, which is the size of the register.
         memory.regs[dest] = 0;
-    else
+    } else {
+        flag_C = get_nth_bit(memory.regs[source], shift - 1);
         memory.regs[dest] = (memory.regs[source] >> shift);
-        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
+    }
 
     flag_N = get_nth_bit(memory.regs[dest], 31);
     flag_Z = memory.regs[dest] == 0;
@@ -251,11 +265,12 @@ void run_00001110(uint16_t opcode) {
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+    if (shift == 0) { // if shift == 0, the cpu shifts by 32, which is the size of the register.
         memory.regs[dest] = 0;
-    else
+    } else {
+        flag_C = get_nth_bit(memory.regs[source], shift - 1);
         memory.regs[dest] = (memory.regs[source] >> shift);
-        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
+    }
 
     flag_N = get_nth_bit(memory.regs[dest], 31);
     flag_Z = memory.regs[dest] == 0;
@@ -268,11 +283,12 @@ void run_00001111(uint16_t opcode) {
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
-    if (shift == 0) // if shift == 0, the cpu shifts by 32, which is the size of the register.
+    if (shift == 0) { // if shift == 0, the cpu shifts by 32, which is the size of the register.
         memory.regs[dest] = 0;
-    else
+    } else {
+        flag_C = get_nth_bit(memory.regs[source], shift - 1);
         memory.regs[dest] = (memory.regs[source] >> shift);
-        flag_C = get_nth_bit(memory.regs[source], 32 - shift);
+    }
 
     flag_N = get_nth_bit(memory.regs[dest], 31);
     flag_Z = memory.regs[dest] == 0;
@@ -1071,63 +1087,168 @@ void run_11001111(uint16_t opcode) {
 }
 
 void run_11010000(uint16_t opcode) {
-    std::cout << "Penis" << std::endl;
+    // this may look daunting, but it's just the different possibilities for COND.
+    // each COND has a different if expression we need to consider.
+    if (flag_Z) {
+        std::cout << "Conditional Branch Taken" << std::endl;
+        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+    } else {
+        std::cout << "Conditional Branch Not Taken" << std::endl;
+    }
 }
 
 void run_11010001(uint16_t opcode) {
-    std::cout << "Penis" << std::endl;
+    // this may look daunting, but it's just the different possibilities for COND.
+    // each COND has a different if expression we need to consider.
+    if (!flag_Z) {
+        std::cout << "Conditional Branch Taken" << std::endl;
+        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+    } else {
+        std::cout << "Conditional Branch Not Taken" << std::endl;
+    }
 }
 
 void run_11010010(uint16_t opcode) {
-    std::cout << "Penis" << std::endl;
+    // this may look daunting, but it's just the different possibilities for COND.
+    // each COND has a different if expression we need to consider.
+    if (flag_C) {
+        std::cout << "Conditional Branch Taken" << std::endl;
+        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+    } else {
+        std::cout << "Conditional Branch Not Taken" << std::endl;
+    }
 }
 
 void run_11010011(uint16_t opcode) {
-    std::cout << "Penis" << std::endl;
+    // this may look daunting, but it's just the different possibilities for COND.
+    // each COND has a different if expression we need to consider.
+    if (!flag_C) {
+        std::cout << "Conditional Branch Taken" << std::endl;
+        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+    } else {
+        std::cout << "Conditional Branch Not Taken" << std::endl;
+    }
 }
 
 void run_11010100(uint16_t opcode) {
-    std::cout << "Penis" << std::endl;
+    // this may look daunting, but it's just the different possibilities for COND.
+    // each COND has a different if expression we need to consider.
+    if (flag_N) {
+        std::cout << "Conditional Branch Taken" << std::endl;
+        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+    } else {
+        std::cout << "Conditional Branch Not Taken" << std::endl;
+    }
 }
 
 void run_11010101(uint16_t opcode) {
-    std::cout << "Penis" << std::endl;
+    // this may look daunting, but it's just the different possibilities for COND.
+    // each COND has a different if expression we need to consider.
+    if (!flag_N) {
+        std::cout << "Conditional Branch Taken" << std::endl;
+        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+    } else {
+        std::cout << "Conditional Branch Not Taken" << std::endl;
+    }
 }
 
 void run_11010110(uint16_t opcode) {
-    std::cout << "Penis" << std::endl;
+    // this may look daunting, but it's just the different possibilities for COND.
+    // each COND has a different if expression we need to consider.
+    if (flag_V) {
+        std::cout << "Conditional Branch Taken" << std::endl;
+        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+    } else {
+        std::cout << "Conditional Branch Not Taken" << std::endl;
+    }
 }
 
 void run_11010111(uint16_t opcode) {
-    std::cout << "Penis" << std::endl;
+    // this may look daunting, but it's just the different possibilities for COND.
+    // each COND has a different if expression we need to consider.
+    if (!flag_V) {
+        std::cout << "Conditional Branch Taken" << std::endl;
+        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+    } else {
+        std::cout << "Conditional Branch Not Taken" << std::endl;
+    }
 }
 
 void run_11011000(uint16_t opcode) {
-    std::cout << "Penis" << std::endl;
+    // this may look daunting, but it's just the different possibilities for COND.
+    // each COND has a different if expression we need to consider.
+    if (flag_C && !flag_Z) {
+        std::cout << "Conditional Branch Taken" << std::endl;
+        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+    } else {
+        std::cout << "Conditional Branch Not Taken" << std::endl;
+    }
 }
 
 void run_11011001(uint16_t opcode) {
-    std::cout << "Penis" << std::endl;
+    // this may look daunting, but it's just the different possibilities for COND.
+    // each COND has a different if expression we need to consider.
+    if (!flag_C && flag_Z) {
+        std::cout << "Conditional Branch Taken" << std::endl;
+        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+    } else {
+        std::cout << "Conditional Branch Not Taken" << std::endl;
+    }
 }
 
 void run_11011010(uint16_t opcode) {
-    std::cout << "Penis" << std::endl;
+    // this may look daunting, but it's just the different possibilities for COND.
+    // each COND has a different if expression we need to consider.
+    if (flag_N == flag_V) {
+        std::cout << "Conditional Branch Taken" << std::endl;
+        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+    } else {
+        std::cout << "Conditional Branch Not Taken" << std::endl;
+    }
 }
 
 void run_11011011(uint16_t opcode) {
-    std::cout << "Penis" << std::endl;
+    // this may look daunting, but it's just the different possibilities for COND.
+    // each COND has a different if expression we need to consider.
+    if (flag_N ^ flag_V) {
+        std::cout << "Conditional Branch Taken" << std::endl;
+        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+    } else {
+        std::cout << "Conditional Branch Not Taken" << std::endl;
+    }
 }
 
 void run_11011100(uint16_t opcode) {
-    std::cout << "Penis" << std::endl;
+    // this may look daunting, but it's just the different possibilities for COND.
+    // each COND has a different if expression we need to consider.
+    if (!flag_Z && (flag_N == flag_V)) {
+        std::cout << "Conditional Branch Taken" << std::endl;
+        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+    } else {
+        std::cout << "Conditional Branch Not Taken" << std::endl;
+    }
 }
 
 void run_11011101(uint16_t opcode) {
-    std::cout << "Penis" << std::endl;
+    // this may look daunting, but it's just the different possibilities for COND.
+    // each COND has a different if expression we need to consider.
+    if (flag_Z || (flag_N ^ flag_V)) {
+        std::cout << "Conditional Branch Taken" << std::endl;
+        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+    } else {
+        std::cout << "Conditional Branch Not Taken" << std::endl;
+    }
 }
 
 void run_11011110(uint16_t opcode) {
-    std::cout << "Penis" << std::endl;
+    // this may look daunting, but it's just the different possibilities for COND.
+    // each COND has a different if expression we need to consider.
+    if (true) { // the compiler will optimize this so it's fine
+        std::cout << "Conditional Branch Taken" << std::endl;
+        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+    } else {
+        std::cout << "Conditional Branch Not Taken" << std::endl;
+    }
 }
 
 void run_11011111(uint16_t opcode) {
