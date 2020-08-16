@@ -767,35 +767,83 @@ void run_01111111(uint16_t opcode) {
 }
 
 void run_10000000(uint16_t opcode) {
+    std::cout << "Please" << std::endl;
+    uint8_t base  = get_nth_bits(opcode, 3,  6);
+    uint8_t dest  = get_nth_bits(opcode, 0,  3);
+    uint8_t shift = get_nth_bits(opcode, 6,  11);
 
+    memory.regs[dest] = memory.main[memory.regs[base] + shift * 2];
+    std::cout << memory.regs[dest] << std::endl;
 }
 
 void run_10000001(uint16_t opcode) {
+    std::cout << "Please" << std::endl;
+    uint8_t base  = get_nth_bits(opcode, 3,  6);
+    uint8_t dest  = get_nth_bits(opcode, 0,  3);
+    uint8_t shift = get_nth_bits(opcode, 6,  11);
 
+    memory.regs[dest] = memory.main[memory.regs[base] + shift * 2];
+    std::cout << memory.regs[dest] << std::endl;
 }
 
 void run_10000010(uint16_t opcode) {
+    std::cout << "Please" << std::endl;
+    uint8_t base  = get_nth_bits(opcode, 3,  6);
+    uint8_t dest  = get_nth_bits(opcode, 0,  3);
+    uint8_t shift = get_nth_bits(opcode, 6,  11);
 
+    memory.regs[dest] = memory.main[memory.regs[base] + shift * 2];
+    std::cout << memory.regs[dest] << std::endl;
 }
 
 void run_10000011(uint16_t opcode) {
+    std::cout << "Please" << std::endl;
+    uint8_t base  = get_nth_bits(opcode, 3,  6);
+    uint8_t dest  = get_nth_bits(opcode, 0,  3);
+    uint8_t shift = get_nth_bits(opcode, 6,  11);
 
+    memory.regs[dest] = memory.main[memory.regs[base] + shift * 2];
+    std::cout << memory.regs[dest] << std::endl;
 }
 
 void run_10000100(uint16_t opcode) {
+    std::cout << "Please" << std::endl;
+    uint8_t base  = get_nth_bits(opcode, 3,  6);
+    uint8_t dest  = get_nth_bits(opcode, 0,  3);
+    uint8_t shift = get_nth_bits(opcode, 6,  11);
 
+    memory.regs[dest] = memory.main[memory.regs[base] + shift * 2];
+    std::cout << memory.regs[dest] << std::endl;
 }
 
 void run_10000101(uint16_t opcode) {
+    std::cout << "Please" << std::endl;
+    uint8_t base  = get_nth_bits(opcode, 3,  6);
+    uint8_t dest  = get_nth_bits(opcode, 0,  3);
+    uint8_t shift = get_nth_bits(opcode, 6,  11);
 
+    memory.regs[dest] = memory.main[memory.regs[base] + shift * 2];
+    std::cout << memory.regs[dest] << std::endl;
 }
 
 void run_10000110(uint16_t opcode) {
+    std::cout << "Please" << std::endl;
+    uint8_t base  = get_nth_bits(opcode, 3,  6);
+    uint8_t dest  = get_nth_bits(opcode, 0,  3);
+    uint8_t shift = get_nth_bits(opcode, 6,  11);
 
+    memory.regs[dest] = memory.main[memory.regs[base] + shift * 2];
+    std::cout << memory.regs[dest] << std::endl;
 }
 
 void run_10000111(uint16_t opcode) {
+    std::cout << "Please" << std::endl;
+    uint8_t base  = get_nth_bits(opcode, 3,  6);
+    uint8_t dest  = get_nth_bits(opcode, 0,  3);
+    uint8_t shift = get_nth_bits(opcode, 6,  11);
 
+    memory.regs[dest] = memory.main[memory.regs[base] + shift * 2];
+    std::cout << memory.regs[dest] << std::endl;
 }
 
 void run_10001000(uint16_t opcode) {

@@ -83,6 +83,7 @@ int fetch() {
 }
 
 void execute(int opcode) {
+    std::cout << "Executing: " << to_hex_string(opcode) << std::endl;
     jumptable[opcode >> 8](opcode);
 }
 
@@ -93,7 +94,7 @@ void test_thumb() {
     execute(fetch());
     execute(fetch());
     execute(fetch());
-    std::cout << to_hex_string(fetch()) << std::endl;
+    execute(fetch());
 
     std::cout << "everythings going well so far" << std::endl;
 }
