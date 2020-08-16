@@ -48,6 +48,10 @@ typedef struct Memory {
     uint32_t* psr;
 } Memory;
 
+// words are 4 bytes, halfwords are 2 bytes
+typedef uint32_t word;
+typedef uint16_t halfword;
+
 // heres a bunch of constants that summarize the information above
 // unsure if much of the size constants will be used, but ill keep them here for now
 #define SIZE_MAIN_MEMORY    0x10000000

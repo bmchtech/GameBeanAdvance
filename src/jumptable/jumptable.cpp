@@ -359,10 +359,9 @@ void run_00011111(uint16_t opcode) {
 }
 
 void run_00100000(uint16_t opcode) {
+    std::cout << "Move Immediate" << std::endl;
     uint16_t immediate_value = get_nth_bits(opcode, 0, 8);
     memory.regs[get_nth_bits(opcode, 8, 11)] = immediate_value;
-    std::cout << to_hex_string(memory.regs[get_nth_bits(opcode, 8, 11)]) << std::endl;
-    std::cout << to_hex_string(get_nth_bits(opcode, 8, 11)) << std::endl;
 
     // flags
     flag_N = get_nth_bit(immediate_value, 31);
@@ -370,10 +369,9 @@ void run_00100000(uint16_t opcode) {
 }
 
 void run_00100001(uint16_t opcode) {
+    std::cout << "Move Immediate" << std::endl;
     uint16_t immediate_value = get_nth_bits(opcode, 0, 8);
     memory.regs[get_nth_bits(opcode, 8, 11)] = immediate_value;
-    std::cout << to_hex_string(memory.regs[get_nth_bits(opcode, 8, 11)]) << std::endl;
-    std::cout << to_hex_string(get_nth_bits(opcode, 8, 11)) << std::endl;
 
     // flags
     flag_N = get_nth_bit(immediate_value, 31);
@@ -381,10 +379,9 @@ void run_00100001(uint16_t opcode) {
 }
 
 void run_00100010(uint16_t opcode) {
+    std::cout << "Move Immediate" << std::endl;
     uint16_t immediate_value = get_nth_bits(opcode, 0, 8);
     memory.regs[get_nth_bits(opcode, 8, 11)] = immediate_value;
-    std::cout << to_hex_string(memory.regs[get_nth_bits(opcode, 8, 11)]) << std::endl;
-    std::cout << to_hex_string(get_nth_bits(opcode, 8, 11)) << std::endl;
 
     // flags
     flag_N = get_nth_bit(immediate_value, 31);
@@ -392,10 +389,9 @@ void run_00100010(uint16_t opcode) {
 }
 
 void run_00100011(uint16_t opcode) {
+    std::cout << "Move Immediate" << std::endl;
     uint16_t immediate_value = get_nth_bits(opcode, 0, 8);
     memory.regs[get_nth_bits(opcode, 8, 11)] = immediate_value;
-    std::cout << to_hex_string(memory.regs[get_nth_bits(opcode, 8, 11)]) << std::endl;
-    std::cout << to_hex_string(get_nth_bits(opcode, 8, 11)) << std::endl;
 
     // flags
     flag_N = get_nth_bit(immediate_value, 31);
@@ -403,10 +399,9 @@ void run_00100011(uint16_t opcode) {
 }
 
 void run_00100100(uint16_t opcode) {
+    std::cout << "Move Immediate" << std::endl;
     uint16_t immediate_value = get_nth_bits(opcode, 0, 8);
     memory.regs[get_nth_bits(opcode, 8, 11)] = immediate_value;
-    std::cout << to_hex_string(memory.regs[get_nth_bits(opcode, 8, 11)]) << std::endl;
-    std::cout << to_hex_string(get_nth_bits(opcode, 8, 11)) << std::endl;
 
     // flags
     flag_N = get_nth_bit(immediate_value, 31);
@@ -414,10 +409,9 @@ void run_00100100(uint16_t opcode) {
 }
 
 void run_00100101(uint16_t opcode) {
+    std::cout << "Move Immediate" << std::endl;
     uint16_t immediate_value = get_nth_bits(opcode, 0, 8);
     memory.regs[get_nth_bits(opcode, 8, 11)] = immediate_value;
-    std::cout << to_hex_string(memory.regs[get_nth_bits(opcode, 8, 11)]) << std::endl;
-    std::cout << to_hex_string(get_nth_bits(opcode, 8, 11)) << std::endl;
 
     // flags
     flag_N = get_nth_bit(immediate_value, 31);
@@ -425,10 +419,9 @@ void run_00100101(uint16_t opcode) {
 }
 
 void run_00100110(uint16_t opcode) {
+    std::cout << "Move Immediate" << std::endl;
     uint16_t immediate_value = get_nth_bits(opcode, 0, 8);
     memory.regs[get_nth_bits(opcode, 8, 11)] = immediate_value;
-    std::cout << to_hex_string(memory.regs[get_nth_bits(opcode, 8, 11)]) << std::endl;
-    std::cout << to_hex_string(get_nth_bits(opcode, 8, 11)) << std::endl;
 
     // flags
     flag_N = get_nth_bit(immediate_value, 31);
@@ -436,10 +429,9 @@ void run_00100110(uint16_t opcode) {
 }
 
 void run_00100111(uint16_t opcode) {
+    std::cout << "Move Immediate" << std::endl;
     uint16_t immediate_value = get_nth_bits(opcode, 0, 8);
     memory.regs[get_nth_bits(opcode, 8, 11)] = immediate_value;
-    std::cout << to_hex_string(memory.regs[get_nth_bits(opcode, 8, 11)]) << std::endl;
-    std::cout << to_hex_string(get_nth_bits(opcode, 8, 11)) << std::endl;
 
     // flags
     flag_N = get_nth_bit(immediate_value, 31);
@@ -827,7 +819,7 @@ void run_10000000(uint16_t opcode) {
     uint8_t dest  = get_nth_bits(opcode, 0,  3);
     uint8_t shift = get_nth_bits(opcode, 6,  11);
 
-    memory.regs[dest] = *((uint16_t*)(memory.main + memory.regs[base] + shift * 2));
+    memory.regs[dest] = *((halfword*)(memory.main + memory.regs[base] + shift * 2));
     std::cout << memory.regs[dest] << std::endl;
 }
 
@@ -836,7 +828,7 @@ void run_10000001(uint16_t opcode) {
     uint8_t dest  = get_nth_bits(opcode, 0,  3);
     uint8_t shift = get_nth_bits(opcode, 6,  11);
 
-    memory.regs[dest] = *((uint16_t*)(memory.main + memory.regs[base] + shift * 2));
+    memory.regs[dest] = *((halfword*)(memory.main + memory.regs[base] + shift * 2));
     std::cout << memory.regs[dest] << std::endl;
 }
 
@@ -845,7 +837,7 @@ void run_10000010(uint16_t opcode) {
     uint8_t dest  = get_nth_bits(opcode, 0,  3);
     uint8_t shift = get_nth_bits(opcode, 6,  11);
 
-    memory.regs[dest] = *((uint16_t*)(memory.main + memory.regs[base] + shift * 2));
+    memory.regs[dest] = *((halfword*)(memory.main + memory.regs[base] + shift * 2));
     std::cout << memory.regs[dest] << std::endl;
 }
 
@@ -854,7 +846,7 @@ void run_10000011(uint16_t opcode) {
     uint8_t dest  = get_nth_bits(opcode, 0,  3);
     uint8_t shift = get_nth_bits(opcode, 6,  11);
 
-    memory.regs[dest] = *((uint16_t*)(memory.main + memory.regs[base] + shift * 2));
+    memory.regs[dest] = *((halfword*)(memory.main + memory.regs[base] + shift * 2));
     std::cout << memory.regs[dest] << std::endl;
 }
 
@@ -863,7 +855,7 @@ void run_10000100(uint16_t opcode) {
     uint8_t dest  = get_nth_bits(opcode, 0,  3);
     uint8_t shift = get_nth_bits(opcode, 6,  11);
 
-    memory.regs[dest] = *((uint16_t*)(memory.main + memory.regs[base] + shift * 2));
+    memory.regs[dest] = *((halfword*)(memory.main + memory.regs[base] + shift * 2));
     std::cout << memory.regs[dest] << std::endl;
 }
 
@@ -872,7 +864,7 @@ void run_10000101(uint16_t opcode) {
     uint8_t dest  = get_nth_bits(opcode, 0,  3);
     uint8_t shift = get_nth_bits(opcode, 6,  11);
 
-    memory.regs[dest] = *((uint16_t*)(memory.main + memory.regs[base] + shift * 2));
+    memory.regs[dest] = *((halfword*)(memory.main + memory.regs[base] + shift * 2));
     std::cout << memory.regs[dest] << std::endl;
 }
 
@@ -881,7 +873,7 @@ void run_10000110(uint16_t opcode) {
     uint8_t dest  = get_nth_bits(opcode, 0,  3);
     uint8_t shift = get_nth_bits(opcode, 6,  11);
 
-    memory.regs[dest] = *((uint16_t*)(memory.main + memory.regs[base] + shift * 2));
+    memory.regs[dest] = *((halfword*)(memory.main + memory.regs[base] + shift * 2));
     std::cout << memory.regs[dest] << std::endl;
 }
 
@@ -890,7 +882,7 @@ void run_10000111(uint16_t opcode) {
     uint8_t dest  = get_nth_bits(opcode, 0,  3);
     uint8_t shift = get_nth_bits(opcode, 6,  11);
 
-    memory.regs[dest] = *((uint16_t*)(memory.main + memory.regs[base] + shift * 2));
+    memory.regs[dest] = *((halfword*)(memory.main + memory.regs[base] + shift * 2));
     std::cout << memory.regs[dest] << std::endl;
 }
 

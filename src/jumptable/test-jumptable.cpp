@@ -55,6 +55,7 @@ void run_000111OA(uint16_t opcode) {
 
 // move immediate
 void run_00100ABC(uint16_t opcode) {
+    std::cout << "Move Immediate" << std::endl;
     uint16_t immediate_value = get_nth_bits(opcode, 0, 8);
     memory.regs[get_nth_bits(opcode, 8, 11)] = immediate_value;
 
@@ -117,7 +118,7 @@ void run_10000OFS(uint16_t opcode) {
     uint8_t dest  = get_nth_bits(opcode, 0,  3);
     uint8_t shift = get_nth_bits(opcode, 6,  11);
 
-    memory.regs[dest] = *((uint16_t*)(memory.main + memory.regs[base] + shift * 2));
+    memory.regs[dest] = *((halfword*)(memory.main + memory.regs[base] + shift * 2));
     std::cout << memory.regs[dest] << std::endl;
 }
 

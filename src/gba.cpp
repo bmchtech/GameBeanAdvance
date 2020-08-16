@@ -95,6 +95,9 @@ void test_thumb() {
     execute(fetch());
     execute(fetch());
     execute(fetch());
+    execute(fetch());
+    execute(fetch());
+    std::cout << to_hex_string(memory.regs[0]) << std::endl;
 
     std::cout << "everythings going well so far" << std::endl;
 }
