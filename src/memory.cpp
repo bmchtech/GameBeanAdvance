@@ -11,7 +11,9 @@ void setup_memory() {
     memory.regs         = (uint32_t*) malloc(NUM_REGISTERS * sizeof(uint32_t));
 
     // map a bunch of shortcut pointers
-    memory.pc           = &memory.regs[0xA];
+    memory.sp           = &memory.regs[0xD]; // stack pointer
+    memory.lr           = &memory.regs[0xE]; // link register (branch with link instruction)
+    memory.pc           = &memory.regs[0xF]; // program counter
 
     memory.bios         = &memory.main[OFFSET_BIOS];
     memory.wram_board   = &memory.main[OFFSET_WRAM_BOARD];

@@ -72,7 +72,7 @@ void get_rom_as_bytes(char* rom_name, uint8_t* out, int out_length) {
 */
 
 // where we should start testing from
-#define TEST_PC 0x800010A - 2
+#define TEST_PC 0x8000188 - 2
 
 // note that prefetches might not even be needed, if i just subtract the proper amount
 // when running the opcode.
@@ -94,10 +94,6 @@ void test_thumb() {
     execute(fetch());
     execute(fetch());
     execute(fetch());
-    execute(fetch());
-    execute(fetch());
-    execute(fetch());
-    std::cout << to_hex_string(memory.regs[0]) << std::endl;
 
     std::cout << "everythings going well so far" << std::endl;
 }

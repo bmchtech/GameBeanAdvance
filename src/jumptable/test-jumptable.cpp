@@ -48,7 +48,30 @@ void run_00010ABC(uint16_t opcode) {
 
 }
 
-// add and subtract
+// add #1 010 001 001
+void run_00011000(uint16_t opcode) {
+    std::cout << "Add #1" << std::endl;
+
+    uint16_t rn = memory.regs[get_nth_bits(opcode, 3, 6)];
+    uint16_t rm = memory.regs[get_nth_bits(opcode, 6, 9)];
+    
+    memory.regs[get_nth_bits(opcode, 0, 3)] = rn + rm;
+    uint16_t rd = memory.regs[get_nth_bits(opcode, 0, 3)];
+
+    flag_N = get_nth_bit(rd, 31);
+    flag_Z = rd == 0;
+    flag_C = (uint32_t)rn + (uint32_t)rm > rd; // probably can be optimized
+
+    // this is garbage, but essentially what's going on is:
+    // if the two operands had matching signs but their sign differed from the result's sign,
+    // then there was an overflow and we set the flag.
+    bool matching_signs = get_nth_bit(rn, 31) == get_nth_bit(rm, 31);
+    flag_V = (matching_signs && get_nth_bit(rn, 31) ^ flag_N);
+    std::cout << to_hex_string(rn);
+    std::cout << to_hex_string(rm);
+}
+
+// add #2 and subtract #2
 void run_000111OA(uint16_t opcode) {
 
 }
@@ -58,7 +81,6 @@ void run_00100ABC(uint16_t opcode) {
     std::cout << "Move Immediate" << std::endl;
     uint16_t immediate_value = get_nth_bits(opcode, 0, 8);
     memory.regs[get_nth_bits(opcode, 8, 11)] = immediate_value;
-
     // flags
     flag_N = get_nth_bit(immediate_value, 31);
     flag_Z = immediate_value == 0;
@@ -179,7 +201,7 @@ void run_1101COND(uint16_t opcode) {
     }
 }
 
-// software uint16_terrupt
+// software interrupt
 void run_11011111(uint16_t opcode) {
 
 }
@@ -189,7 +211,12 @@ void run_11100OFS(uint16_t opcode) {
 
 }
 
-// long branch with link
-void run_1111HOFS(uint16_t opcode) {
+// long branch with link - high byte
+void run_11110OFS(uint16_t opcode) {
+
+}
+
+// long branch with link - low byte and call to subroutine
+void run_11111OFS(uint16_t opcode) {
 
 }

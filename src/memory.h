@@ -20,10 +20,11 @@ typedef struct Memory {
     //           register A is the program counter
     uint32_t* regs;
 
-    // because doing things like register[0xA] to access the program counter 
+    // because doing things like register[0xF] to access the program counter 
     // is unreadable, here's a lot of shortcuts.
-
-    uint32_t* pc;  // maps to the pc in registers
+    uint32_t* pc;  // program counter
+    uint32_t* lr;  // link register
+    uint32_t* sp;  // stack pointer
     uint8_t*  all; // maps to the beginning of memory
 
     // general internal memory
