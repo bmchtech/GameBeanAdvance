@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
     get_rom_as_bytes(rom_name, memory.rom_1, SIZE_ROM_1);
 
     // extract the game name
-    char game_name[GAME_TITLE_SIZE];
+    char game_name[GAME_TITLE_SIZE]; 
     for (int i = 0; i < GAME_TITLE_SIZE; i++) {
         game_name[i] = memory.rom_1[GAME_TITLE_OFFSET + i];
     }
