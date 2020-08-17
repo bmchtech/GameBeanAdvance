@@ -54,6 +54,8 @@ void get_rom_as_bytes(char* rom_name, uint8_t* out, int out_length) {
     char* buffer = new char[length];
     infile.read(buffer, length);
 
+    std::cout << length << std::endl;
+    
     length = infile.gcount();
     if (out_length < length) {
         warning("ROM file too large, truncating.");
@@ -91,6 +93,7 @@ void test_thumb() {
     *memory.pc = TEST_PC;
     
     // lets see if you can actually fetch anything
+    execute(fetch());
     execute(fetch());
     execute(fetch());
     execute(fetch());

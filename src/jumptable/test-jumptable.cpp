@@ -103,7 +103,8 @@ void run_00111ABC(uint16_t opcode) {
 
 // ALU operation
 void run_010000PC(uint16_t opcode) {
-
+    std::cout << "ALU Operation" << std::endl;
+    uint8_t operation = get_nth_bits(opcode, 6, 10);
 }
 
 // high register operations and branch exchange

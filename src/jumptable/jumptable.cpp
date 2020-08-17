@@ -380,7 +380,6 @@ void run_00100000(uint16_t opcode) {
     std::cout << "Move Immediate" << std::endl;
     uint16_t immediate_value = get_nth_bits(opcode, 0, 8);
     memory.regs[get_nth_bits(opcode, 8, 11)] = immediate_value;
-    std::cout << to_hex_string(memory.regs[get_nth_bits(opcode, 8, 11)]) << std::endl;
     // flags
     flag_N = get_nth_bit(immediate_value, 31);
     flag_Z = immediate_value == 0;
@@ -390,7 +389,6 @@ void run_00100001(uint16_t opcode) {
     std::cout << "Move Immediate" << std::endl;
     uint16_t immediate_value = get_nth_bits(opcode, 0, 8);
     memory.regs[get_nth_bits(opcode, 8, 11)] = immediate_value;
-    std::cout << to_hex_string(memory.regs[get_nth_bits(opcode, 8, 11)]) << std::endl;
     // flags
     flag_N = get_nth_bit(immediate_value, 31);
     flag_Z = immediate_value == 0;
@@ -400,7 +398,6 @@ void run_00100010(uint16_t opcode) {
     std::cout << "Move Immediate" << std::endl;
     uint16_t immediate_value = get_nth_bits(opcode, 0, 8);
     memory.regs[get_nth_bits(opcode, 8, 11)] = immediate_value;
-    std::cout << to_hex_string(memory.regs[get_nth_bits(opcode, 8, 11)]) << std::endl;
     // flags
     flag_N = get_nth_bit(immediate_value, 31);
     flag_Z = immediate_value == 0;
@@ -410,7 +407,6 @@ void run_00100011(uint16_t opcode) {
     std::cout << "Move Immediate" << std::endl;
     uint16_t immediate_value = get_nth_bits(opcode, 0, 8);
     memory.regs[get_nth_bits(opcode, 8, 11)] = immediate_value;
-    std::cout << to_hex_string(memory.regs[get_nth_bits(opcode, 8, 11)]) << std::endl;
     // flags
     flag_N = get_nth_bit(immediate_value, 31);
     flag_Z = immediate_value == 0;
@@ -420,7 +416,6 @@ void run_00100100(uint16_t opcode) {
     std::cout << "Move Immediate" << std::endl;
     uint16_t immediate_value = get_nth_bits(opcode, 0, 8);
     memory.regs[get_nth_bits(opcode, 8, 11)] = immediate_value;
-    std::cout << to_hex_string(memory.regs[get_nth_bits(opcode, 8, 11)]) << std::endl;
     // flags
     flag_N = get_nth_bit(immediate_value, 31);
     flag_Z = immediate_value == 0;
@@ -430,7 +425,6 @@ void run_00100101(uint16_t opcode) {
     std::cout << "Move Immediate" << std::endl;
     uint16_t immediate_value = get_nth_bits(opcode, 0, 8);
     memory.regs[get_nth_bits(opcode, 8, 11)] = immediate_value;
-    std::cout << to_hex_string(memory.regs[get_nth_bits(opcode, 8, 11)]) << std::endl;
     // flags
     flag_N = get_nth_bit(immediate_value, 31);
     flag_Z = immediate_value == 0;
@@ -440,7 +434,6 @@ void run_00100110(uint16_t opcode) {
     std::cout << "Move Immediate" << std::endl;
     uint16_t immediate_value = get_nth_bits(opcode, 0, 8);
     memory.regs[get_nth_bits(opcode, 8, 11)] = immediate_value;
-    std::cout << to_hex_string(memory.regs[get_nth_bits(opcode, 8, 11)]) << std::endl;
     // flags
     flag_N = get_nth_bit(immediate_value, 31);
     flag_Z = immediate_value == 0;
@@ -450,7 +443,6 @@ void run_00100111(uint16_t opcode) {
     std::cout << "Move Immediate" << std::endl;
     uint16_t immediate_value = get_nth_bits(opcode, 0, 8);
     memory.regs[get_nth_bits(opcode, 8, 11)] = immediate_value;
-    std::cout << to_hex_string(memory.regs[get_nth_bits(opcode, 8, 11)]) << std::endl;
     // flags
     flag_N = get_nth_bit(immediate_value, 31);
     flag_Z = immediate_value == 0;
@@ -553,19 +545,23 @@ void run_00111111(uint16_t opcode) {
 }
 
 void run_01000000(uint16_t opcode) {
-
+    std::cout << "ALU Operation" << std::endl;
+    uint8_t operation = get_nth_bits(opcode, 6, 10);
 }
 
 void run_01000001(uint16_t opcode) {
-
+    std::cout << "ALU Operation" << std::endl;
+    uint8_t operation = get_nth_bits(opcode, 6, 10);
 }
 
 void run_01000010(uint16_t opcode) {
-
+    std::cout << "ALU Operation" << std::endl;
+    uint8_t operation = get_nth_bits(opcode, 6, 10);
 }
 
 void run_01000011(uint16_t opcode) {
-
+    std::cout << "ALU Operation" << std::endl;
+    uint8_t operation = get_nth_bits(opcode, 6, 10);
 }
 
 void run_01000100(uint16_t opcode) {
