@@ -45,6 +45,11 @@ void get_rom_as_bytes(char* rom_name, uint8_t* out, int out_length) {
     std::ifstream infile;
     infile.open(rom_name, std::ios::binary);
 
+    // check if file exists
+    if (!infile.good()) {
+        error("ROM not found, are you sure you gave the right file name?");
+    }
+
     // get length of file
     infile.seekg(0, std::ios::end);
     size_t length = infile.tellg();
@@ -54,8 +59,6 @@ void get_rom_as_bytes(char* rom_name, uint8_t* out, int out_length) {
     char* buffer = new char[length];
     infile.read(buffer, length);
 
-    std::cout << length << std::endl;
-    
     length = infile.gcount();
     if (out_length < length) {
         warning("ROM file too large, truncating.");
