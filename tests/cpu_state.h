@@ -2,6 +2,7 @@
 #define CPU_STATE
 
 #include <stdint.h>
+#include "../src/memory.h"
 
 enum CpuType { ARM, THUMB };
 

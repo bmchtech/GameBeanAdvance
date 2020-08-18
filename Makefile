@@ -46,8 +46,14 @@ $(OBJ_DIR)/jumptable.o: $(SRC_DIR)/jumptable/jumptable.cpp $(SRC_DIR)/jumptable/
 # Tests
 test: CFLAGS += -D TEST
 
-test: $(OBJ_DIR)/expected_output.o $(OBJ_DIR)/gba.o
-	$(CC) $(TEST_SRC_DIR)/tests.cpp $(OBJS_TEST) -o test
+test: $(OBJ_DIR)/expected_output.o $(OBJ_DIR)/gba.o $(OBJ_DIR)/tests.o
+	$(CC) $(OBJS_TEST) -o test
+
+$(OBJ_DIR)/tests.o: $(TEST_SRC_DIR)/tests.cpp $(OBJ_DIR)/cpu_state.o
+	$(CC) $(CFLAGS) $(TEST_SRC_DIR)/tests.cpp -o $(OBJ_DIR)/tests.o
+
+$(OBJ_DIR)/cpu_state.o: $(TEST_SRC_DIR)/cpu_state.cpp $(TEST_SRC_DIR)/cpu_state.h
+	$(CC) $(CFLAGS) $(TEST_SRC_DIR)/cpu_state.cpp -o $(OBJ_DIR)/cpu_state.o
 
 $(OBJ_DIR)/expected_output.o: $(OBJ_DIR)/util.o
 	$(CC) $(CFLAGS) $(TEST_SRC_DIR)/expected_output.cpp -o $(OBJ_DIR)/expected_output.o 
