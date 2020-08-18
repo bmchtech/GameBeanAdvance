@@ -2,6 +2,7 @@
 #define UTIL_H
 
 #include <math.h>
+#include <string>
 
 // the color for message output
 #define YELLOW  "\033[33m"

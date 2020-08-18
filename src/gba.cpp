@@ -19,14 +19,9 @@
 
 extern Memory memory;
 
-int main(int argc, char *argv[]) {
-    if (argc == 1) {
-        error("Usage: ./gba <rom_name>");
-    }
-    
+int run(std::string rom_name) {
     setup_memory();
     
-    char* rom_name = argv[1];
     get_rom_as_bytes(rom_name, memory.rom_1, SIZE_ROM_1);
 
     // extract the game name
@@ -36,11 +31,10 @@ int main(int argc, char *argv[]) {
     }
     //std::cout << game_name << std::endl;
 
-    test_thumb();
     return 0;
 }
 
-void get_rom_as_bytes(char* rom_name, uint8_t* out, int out_length) {
+void get_rom_as_bytes(std::string rom_name, uint8_t* out, int out_length) {
     // open file
     std::ifstream infile;
     infile.open(rom_name, std::ios::binary);
@@ -70,15 +64,6 @@ void get_rom_as_bytes(char* rom_name, uint8_t* out, int out_length) {
     }
 }
 
-/*
-    anyway, as stated in the header of the file. all this is PLANNED TO CHANGE.
-    in fact, theres probably no way much of the following lines of code end up
-    in the final product. but, it'll help me figure out the THUMB, so
-*/
-
-// where we should start testing from
-#define TEST_PC 0x8000188 - 2
-
 // note that prefetches might not even be needed, if i just subtract the proper amount
 // when running the opcode.
 int fetch() {
@@ -88,18 +73,27 @@ int fetch() {
 }
 
 void execute(int opcode) {
-    std::cout << "Executing: " << to_hex_string(opcode) << std::endl;
     jumptable[opcode >> 8](opcode);
 }
 
-void test_thumb() {
-    *memory.pc = TEST_PC;
-    
-    // lets see if you can actually fetch anything
-    execute(fetch());
-    execute(fetch());
-    execute(fetch());
-    execute(fetch());
+#ifdef TEST
+    #include "../tests/cpu_state.h"
 
-    std::cout << "everythings going well so far" << std::endl;
-}
+    void set_state(CpuState cpu_state) {
+        for (int i = 0; i < 16; i++) {
+            memory.regs[i] = cpu_state.regs[i];
+        }
+    }
+
+    CpuState get_state() {
+        CpuState cpu_state;
+        cpu_state.type   = THUMB;
+        cpu_state.opcode = *((uint16_t*)(memory.main + *memory.pc));
+        
+        for (int i = 0; i < 16; i++) {
+            cpu_state.regs[i] = memory.regs[i];
+        }
+
+        return cpu_state;
+    }
+#endif
