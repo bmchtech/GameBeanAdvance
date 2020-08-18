@@ -1436,7 +1436,7 @@ void run_11010000(uint16_t opcode) {
     // each COND has a different if expression we need to consider.
     if (flag_Z) {
         std::cout << "Conditional Branch Taken" << std::endl;
-        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+        *memory.pc += ((int8_t)(opcode & 0xFF)) * 2 + 2;
     } else {
         std::cout << "Conditional Branch Not Taken" << std::endl;
     }
@@ -1447,7 +1447,7 @@ void run_11010001(uint16_t opcode) {
     // each COND has a different if expression we need to consider.
     if (!flag_Z) {
         std::cout << "Conditional Branch Taken" << std::endl;
-        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+        *memory.pc += ((int8_t)(opcode & 0xFF)) * 2 + 2;
     } else {
         std::cout << "Conditional Branch Not Taken" << std::endl;
     }
@@ -1458,7 +1458,7 @@ void run_11010010(uint16_t opcode) {
     // each COND has a different if expression we need to consider.
     if (flag_C) {
         std::cout << "Conditional Branch Taken" << std::endl;
-        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+        *memory.pc += ((int8_t)(opcode & 0xFF)) * 2 + 2;
     } else {
         std::cout << "Conditional Branch Not Taken" << std::endl;
     }
@@ -1469,7 +1469,7 @@ void run_11010011(uint16_t opcode) {
     // each COND has a different if expression we need to consider.
     if (!flag_C) {
         std::cout << "Conditional Branch Taken" << std::endl;
-        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+        *memory.pc += ((int8_t)(opcode & 0xFF)) * 2 + 2;
     } else {
         std::cout << "Conditional Branch Not Taken" << std::endl;
     }
@@ -1480,7 +1480,7 @@ void run_11010100(uint16_t opcode) {
     // each COND has a different if expression we need to consider.
     if (flag_N) {
         std::cout << "Conditional Branch Taken" << std::endl;
-        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+        *memory.pc += ((int8_t)(opcode & 0xFF)) * 2 + 2;
     } else {
         std::cout << "Conditional Branch Not Taken" << std::endl;
     }
@@ -1491,7 +1491,7 @@ void run_11010101(uint16_t opcode) {
     // each COND has a different if expression we need to consider.
     if (!flag_N) {
         std::cout << "Conditional Branch Taken" << std::endl;
-        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+        *memory.pc += ((int8_t)(opcode & 0xFF)) * 2 + 2;
     } else {
         std::cout << "Conditional Branch Not Taken" << std::endl;
     }
@@ -1502,7 +1502,7 @@ void run_11010110(uint16_t opcode) {
     // each COND has a different if expression we need to consider.
     if (flag_V) {
         std::cout << "Conditional Branch Taken" << std::endl;
-        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+        *memory.pc += ((int8_t)(opcode & 0xFF)) * 2 + 2;
     } else {
         std::cout << "Conditional Branch Not Taken" << std::endl;
     }
@@ -1513,7 +1513,7 @@ void run_11010111(uint16_t opcode) {
     // each COND has a different if expression we need to consider.
     if (!flag_V) {
         std::cout << "Conditional Branch Taken" << std::endl;
-        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+        *memory.pc += ((int8_t)(opcode & 0xFF)) * 2 + 2;
     } else {
         std::cout << "Conditional Branch Not Taken" << std::endl;
     }
@@ -1524,7 +1524,7 @@ void run_11011000(uint16_t opcode) {
     // each COND has a different if expression we need to consider.
     if (flag_C && !flag_Z) {
         std::cout << "Conditional Branch Taken" << std::endl;
-        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+        *memory.pc += ((int8_t)(opcode & 0xFF)) * 2 + 2;
     } else {
         std::cout << "Conditional Branch Not Taken" << std::endl;
     }
@@ -1535,7 +1535,7 @@ void run_11011001(uint16_t opcode) {
     // each COND has a different if expression we need to consider.
     if (!flag_C && flag_Z) {
         std::cout << "Conditional Branch Taken" << std::endl;
-        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+        *memory.pc += ((int8_t)(opcode & 0xFF)) * 2 + 2;
     } else {
         std::cout << "Conditional Branch Not Taken" << std::endl;
     }
@@ -1546,7 +1546,7 @@ void run_11011010(uint16_t opcode) {
     // each COND has a different if expression we need to consider.
     if (flag_N == flag_V) {
         std::cout << "Conditional Branch Taken" << std::endl;
-        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+        *memory.pc += ((int8_t)(opcode & 0xFF)) * 2 + 2;
     } else {
         std::cout << "Conditional Branch Not Taken" << std::endl;
     }
@@ -1557,7 +1557,7 @@ void run_11011011(uint16_t opcode) {
     // each COND has a different if expression we need to consider.
     if (flag_N ^ flag_V) {
         std::cout << "Conditional Branch Taken" << std::endl;
-        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+        *memory.pc += ((int8_t)(opcode & 0xFF)) * 2 + 2;
     } else {
         std::cout << "Conditional Branch Not Taken" << std::endl;
     }
@@ -1568,7 +1568,7 @@ void run_11011100(uint16_t opcode) {
     // each COND has a different if expression we need to consider.
     if (!flag_Z && (flag_N == flag_V)) {
         std::cout << "Conditional Branch Taken" << std::endl;
-        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+        *memory.pc += ((int8_t)(opcode & 0xFF)) * 2 + 2;
     } else {
         std::cout << "Conditional Branch Not Taken" << std::endl;
     }
@@ -1579,7 +1579,7 @@ void run_11011101(uint16_t opcode) {
     // each COND has a different if expression we need to consider.
     if (flag_Z || (flag_N ^ flag_V)) {
         std::cout << "Conditional Branch Taken" << std::endl;
-        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+        *memory.pc += ((int8_t)(opcode & 0xFF)) * 2 + 2;
     } else {
         std::cout << "Conditional Branch Not Taken" << std::endl;
     }
@@ -1590,7 +1590,7 @@ void run_11011110(uint16_t opcode) {
     // each COND has a different if expression we need to consider.
     if (true) { // the compiler will optimize this so it's fine
         std::cout << "Conditional Branch Taken" << std::endl;
-        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+        *memory.pc += ((int8_t)(opcode & 0xFF)) * 2 + 2;
     } else {
         std::cout << "Conditional Branch Not Taken" << std::endl;
     }

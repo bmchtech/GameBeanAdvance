@@ -14,6 +14,7 @@ void set_cpu_state(CpuState cpu_state) {
 CpuState get_cpu_state() {
     CpuState cpu_state;
     cpu_state.type   = THUMB;
+    std::cout << std::to_string(*memory.pc) << std::endl;
     cpu_state.opcode = *((uint16_t*)(memory.main + *memory.pc));
     cpu_state.regs = new uint32_t[16];
         

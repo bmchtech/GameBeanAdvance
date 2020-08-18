@@ -241,7 +241,7 @@ void run_1101COND(uint16_t opcode) {
     @IF( C  O !N  D) if (flag_Z || (flag_N ^ flag_V)) {
     @IF( C  O  N !D) if (true) { // the compiler will optimize this so it's fine
         std::cout << "Conditional Branch Taken" << std::endl;
-        *memory.pc += ((int16_t)(opcode & 0xFF)) * 2 + 2;
+        *memory.pc += ((int8_t)(opcode & 0xFF)) * 2 + 2;
     } else {
         std::cout << "Conditional Branch Not Taken" << std::endl;
     }
