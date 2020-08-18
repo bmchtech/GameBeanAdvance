@@ -1,27 +1,50 @@
-CC      = g++
-CFLAGS  = -std=c++17
+CC             = g++
+CFLAGS         = -c
 
-SRC_DIR = src
-OBJ_DIR = out
+SRC_DIR        = src
+OBJ_DIR        = out
 
-all: gba
+TEST_CATCH_DIR = tests/catch
+TEST_SRC_DIR   = tests
+
+OBJS           = $(OBJ_DIR)/*.o
+EXE_OBJ        = $(OBJ_DIR)/main.o
+OBJS_TEST      = $(filter-out $(EXE_OBJ), $(OBJS))
+
+all: gba test
 
 clean:
-	rm $(OBJ_DIR)/*.o
-	rm gba
+	rm -f $(OBJS)
+	rm -f gba
+	rm -f test
+
+
+
+# GBA
 
 gba: $(OBJ_DIR)/gba.o $(OBJ_DIR)/memory.o $(OBJ_DIR)/util.o $(OBJ_DIR)/jumptable.o
-	$(CC) -o gba $(OBJ_DIR)/*.o
+	$(CC) $(OBJS) -o gba 
 
 $(OBJ_DIR)/gba.o: $(SRC_DIR)/gba.cpp $(SRC_DIR)/gba.h $(OBJ_DIR)/memory.o $(OBJ_DIR)/jumptable.o
-	g++ -c $(SRC_DIR)/gba.cpp -o $(OBJ_DIR)/gba.o
+	$(CC) $(CFLAGS) $(SRC_DIR)/gba.cpp -o $(OBJ_DIR)/gba.o
 
 $(OBJ_DIR)/memory.o: $(SRC_DIR)/memory.cpp
-	g++ -c $(SRC_DIR)/memory.cpp -o $(OBJ_DIR)/memory.o
+	$(CC) $(CFLAGS) $(SRC_DIR)/memory.cpp -o $(OBJ_DIR)/memory.o
 
 $(OBJ_DIR)/util.o: $(SRC_DIR)/util.cpp
-	g++ -c $(SRC_DIR)/util.cpp -o $(OBJ_DIR)/util.o
+	$(CC) $(CFLAGS) $(SRC_DIR)/util.cpp -o $(OBJ_DIR)/util.o
 
 $(OBJ_DIR)/jumptable.o: $(SRC_DIR)/jumptable/jumptable.cpp $(SRC_DIR)/jumptable/test-jumptable.cpp $(OBJ_DIR)/util.o $(OBJ_DIR)/memory.o
 	cd $(SRC_DIR)/jumptable && python make-jumptable.py
-	g++ -c $(SRC_DIR)/jumptable/jumptable.cpp -o $(OBJ_DIR)/jumptable.o
+	$(CC) $(CFLAGS) $(SRC_DIR)/jumptable/jumptable.cpp -o $(OBJ_DIR)/jumptable.o
+
+
+
+# Tests
+test: CFLAGS += -D TEST
+
+test: $(OBJ_DIR)/expected_output.o $(OBJ_DIR)/gba.o
+	$(CC) $(TEST_CATCH_DIR)/catchmain.cpp $(OBJS_TEST) -o test
+
+$(OBJ_DIR)/expected_output.o: $(OBJ_DIR)/util.o
+	$(CC) $(CFLAGS) $(TEST_SRC_DIR)/expected_output.cpp -o $(OBJ_DIR)/expected_output.o 
