@@ -1128,35 +1128,123 @@ void run_10111111(uint16_t opcode) {
 }
 
 void run_11000000(uint16_t opcode) {
+    std::cout << "Multiple Store (STMIA)" << std::endl;
+    uint32_t start_address = memory.regs[get_nth_bits(opcode, 8, 10)];
+    uint8_t  register_list = get_nth_bits(opcode, 0, 8);
 
+    for (int i = 0; i < 8; i++) {
+        // should we store this register?
+        if (get_nth_bit(register_list, i)) {
+            *(uint32_t*)(memory.main + start_address) = memory.regs[i];
+            start_address += 4;
+            memory.regs[get_nth_bits(opcode, 8, 10)] += 4;
+        }
+    }
 }
 
 void run_11000001(uint16_t opcode) {
+    std::cout << "Multiple Store (STMIA)" << std::endl;
+    uint32_t start_address = memory.regs[get_nth_bits(opcode, 8, 10)];
+    uint8_t  register_list = get_nth_bits(opcode, 0, 8);
 
+    for (int i = 0; i < 8; i++) {
+        // should we store this register?
+        if (get_nth_bit(register_list, i)) {
+            *(uint32_t*)(memory.main + start_address) = memory.regs[i];
+            start_address += 4;
+            memory.regs[get_nth_bits(opcode, 8, 10)] += 4;
+        }
+    }
 }
 
 void run_11000010(uint16_t opcode) {
+    std::cout << "Multiple Store (STMIA)" << std::endl;
+    uint32_t start_address = memory.regs[get_nth_bits(opcode, 8, 10)];
+    uint8_t  register_list = get_nth_bits(opcode, 0, 8);
 
+    for (int i = 0; i < 8; i++) {
+        // should we store this register?
+        if (get_nth_bit(register_list, i)) {
+            *(uint32_t*)(memory.main + start_address) = memory.regs[i];
+            start_address += 4;
+            memory.regs[get_nth_bits(opcode, 8, 10)] += 4;
+        }
+    }
 }
 
 void run_11000011(uint16_t opcode) {
+    std::cout << "Multiple Store (STMIA)" << std::endl;
+    uint32_t start_address = memory.regs[get_nth_bits(opcode, 8, 10)];
+    uint8_t  register_list = get_nth_bits(opcode, 0, 8);
 
+    for (int i = 0; i < 8; i++) {
+        // should we store this register?
+        if (get_nth_bit(register_list, i)) {
+            *(uint32_t*)(memory.main + start_address) = memory.regs[i];
+            start_address += 4;
+            memory.regs[get_nth_bits(opcode, 8, 10)] += 4;
+        }
+    }
 }
 
 void run_11000100(uint16_t opcode) {
+    std::cout << "Multiple Store (STMIA)" << std::endl;
+    uint32_t start_address = memory.regs[get_nth_bits(opcode, 8, 10)];
+    uint8_t  register_list = get_nth_bits(opcode, 0, 8);
 
+    for (int i = 0; i < 8; i++) {
+        // should we store this register?
+        if (get_nth_bit(register_list, i)) {
+            *(uint32_t*)(memory.main + start_address) = memory.regs[i];
+            start_address += 4;
+            memory.regs[get_nth_bits(opcode, 8, 10)] += 4;
+        }
+    }
 }
 
 void run_11000101(uint16_t opcode) {
+    std::cout << "Multiple Store (STMIA)" << std::endl;
+    uint32_t start_address = memory.regs[get_nth_bits(opcode, 8, 10)];
+    uint8_t  register_list = get_nth_bits(opcode, 0, 8);
 
+    for (int i = 0; i < 8; i++) {
+        // should we store this register?
+        if (get_nth_bit(register_list, i)) {
+            *(uint32_t*)(memory.main + start_address) = memory.regs[i];
+            start_address += 4;
+            memory.regs[get_nth_bits(opcode, 8, 10)] += 4;
+        }
+    }
 }
 
 void run_11000110(uint16_t opcode) {
+    std::cout << "Multiple Store (STMIA)" << std::endl;
+    uint32_t start_address = memory.regs[get_nth_bits(opcode, 8, 10)];
+    uint8_t  register_list = get_nth_bits(opcode, 0, 8);
 
+    for (int i = 0; i < 8; i++) {
+        // should we store this register?
+        if (get_nth_bit(register_list, i)) {
+            *(uint32_t*)(memory.main + start_address) = memory.regs[i];
+            start_address += 4;
+            memory.regs[get_nth_bits(opcode, 8, 10)] += 4;
+        }
+    }
 }
 
 void run_11000111(uint16_t opcode) {
+    std::cout << "Multiple Store (STMIA)" << std::endl;
+    uint32_t start_address = memory.regs[get_nth_bits(opcode, 8, 10)];
+    uint8_t  register_list = get_nth_bits(opcode, 0, 8);
 
+    for (int i = 0; i < 8; i++) {
+        // should we store this register?
+        if (get_nth_bit(register_list, i)) {
+            *(uint32_t*)(memory.main + start_address) = memory.regs[i];
+            start_address += 4;
+            memory.regs[get_nth_bits(opcode, 8, 10)] += 4;
+        }
+    }
 }
 
 void run_11001000(uint16_t opcode) {

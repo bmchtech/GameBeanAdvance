@@ -71,5 +71,9 @@ int fetch() {
 }
 
 void execute(int opcode) {
+    #ifdef TEST
+        std::cout << "Executing: " << to_hex_string(opcode) << std::endl;
+    #endif
+
     jumptable[opcode >> 8](opcode);
 }
