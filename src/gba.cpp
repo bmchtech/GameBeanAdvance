@@ -19,7 +19,7 @@
 
 extern Memory memory;
 
-int run(std::string rom_name) {
+void run(std::string rom_name) {
     setup_memory();
     
     get_rom_as_bytes(rom_name, memory.rom_1, SIZE_ROM_1);
@@ -30,8 +30,6 @@ int run(std::string rom_name) {
         game_name[i] = memory.rom_1[GAME_TITLE_OFFSET + i];
     }
     //std::cout << game_name << std::endl;
-
-    return 0;
 }
 
 void get_rom_as_bytes(std::string rom_name, uint8_t* out, int out_length) {
@@ -75,25 +73,3 @@ int fetch() {
 void execute(int opcode) {
     jumptable[opcode >> 8](opcode);
 }
-
-#ifdef TEST
-    #include "../tests/cpu_state.h"
-
-    void set_state(CpuState cpu_state) {
-        for (int i = 0; i < 16; i++) {
-            memory.regs[i] = cpu_state.regs[i];
-        }
-    }
-
-    CpuState get_state() {
-        CpuState cpu_state;
-        cpu_state.type   = THUMB;
-        cpu_state.opcode = *((uint16_t*)(memory.main + *memory.pc));
-        
-        for (int i = 0; i < 16; i++) {
-            cpu_state.regs[i] = memory.regs[i];
-        }
-
-        return cpu_state;
-    }
-#endif

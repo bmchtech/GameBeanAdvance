@@ -11,4 +11,7 @@ typedef struct CpuState {
     uint32_t* regs;
 } CpuState;
 
+CpuState get_cpu_state();
+void set_cpu_state(CpuState cpu_state);
+
 #endif
