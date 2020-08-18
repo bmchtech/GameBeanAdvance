@@ -66,7 +66,7 @@ void run_00011000(uint16_t opcode) {
     // if the two operands had matching signs but their sign differed from the result's sign,
     // then there was an overflow and we set the flag.
     bool matching_signs = get_nth_bit(rn, 31) == get_nth_bit(rm, 31);
-    flag_V = (matching_signs && get_nth_bit(rn, 31) ^ flag_N);
+    flag_V = matching_signs && (get_nth_bit(rn, 31) ^ flag_N);
 }
 
 // add #2 and subtract #2
@@ -96,7 +96,26 @@ void run_00110ABC(uint16_t opcode) {
 
 // subtract immediate
 void run_00111ABC(uint16_t opcode) {
+    // maybe we can link add immediate with subtract immediate using twos complement...
+    // like, a - b is the same as a + (~b)
+    std::cout << "Subtract Immediate" << std::endl;
 
+    uint32_t immediate_value = get_nth_bits(opcode, 0, 8);
+    uint8_t  rd              = get_nth_bits(opcode, 8, 11);
+    uint32_t old_rd_value    = memory.regs[rd];
+    
+    memory.regs[rd]  -= immediate_value;
+    uint32_t new_rd_value    = memory.regs[rd];
+
+    flag_N = get_nth_bit(new_rd_value, 31);
+    flag_Z = new_rd_value == 0;
+    flag_C = immediate_value > old_rd_value;
+
+    // this is garbage, but essentially what's going on is:
+    // if the two operands had matching signs but their sign differed from the result's sign,
+    // then there was an overflow and we set the flag.
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 31);
+    flag_V = matching_signs && (get_nth_bit(new_rd_value, 31) ^ flag_N);
 }
 
 // ALU operation - miscellaneous
