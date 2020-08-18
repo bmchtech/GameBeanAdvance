@@ -18,7 +18,6 @@ CpuState get_cpu_state() {
     cpu_state.regs = new uint32_t[16];
         
     for (int i = 0; i < 16; i++) {
-        std::cout << std::to_string(i) << std::endl;
         cpu_state.regs[i] = memory.regs[i];
     }
 
