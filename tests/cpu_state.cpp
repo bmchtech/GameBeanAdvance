@@ -1,6 +1,10 @@
 #include "cpu_state.h"
 #include "../src/memory.h"
 
+#include <iostream>
+
+extern Memory memory;
+
 void set_cpu_state(CpuState cpu_state) {
     for (int i = 0; i < 16; i++) {
         memory.regs[i] = cpu_state.regs[i];

@@ -37,9 +37,9 @@ CpuState* produce_expected_cpu_states(std::string file_name, uint32_t num_lines)
         }
 
         if (instruction_type == "ARM") {
-            cpu_state.type = ARM;
+            cpu_states[i].type = ARM;
         } else {
-            cpu_state.type = THUMB;
+            cpu_states[i].type = THUMB;
         }
 
         // fill the rest of the struct in
@@ -47,19 +47,18 @@ CpuState* produce_expected_cpu_states(std::string file_name, uint32_t num_lines)
             error("Couldn't parse expected log file: no opcode found.");
         } else {
             ss << std::hex << temp;
-            ss >> cpu_state.opcode;
+            ss >> cpu_states[i].opcode;
         }
 
-        for (int i = 0; i < 16; i++) {
+        cpu_states[i].regs = new uint32_t[16];
+        for (int j = 0; j < 16; j++) {
             if (!(iss >> temp)) {
                 error("Couldn't parse expected log file: no register " + std::to_string(i) + " found.");
             } else {
                 ss << std::hex << temp;
-                ss >> cpu_state.regs[i];
+                ss >> cpu_states[i].regs[j];
             }
         }
-
-        cpu_states[i] = cpu_state;
     }
 
     return cpu_states;
