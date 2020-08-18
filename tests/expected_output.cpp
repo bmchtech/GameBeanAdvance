@@ -2,7 +2,6 @@
 #include "../src/util.h"
 #include "expected_output.h"
 
-#include <iostream>
 #include <sstream>
 #include <string>
 #include <stdint.h>
@@ -46,6 +45,8 @@ CpuState* produce_expected_cpu_states(std::string file_name, uint32_t num_lines)
         if (!(iss >> temp)) {
             error("Couldn't parse expected log file: no opcode found.");
         } else {
+            ss.str(std::string());
+            ss.clear();
             ss << std::hex << temp;
             ss >> cpu_states[i].opcode;
         }
@@ -55,8 +56,13 @@ CpuState* produce_expected_cpu_states(std::string file_name, uint32_t num_lines)
             if (!(iss >> temp)) {
                 error("Couldn't parse expected log file: no register " + std::to_string(i) + " found.");
             } else {
+                ss.str(std::string());
+                ss.clear();
                 ss << std::hex << temp;
                 ss >> cpu_states[i].regs[j];
+                if (j == 15) {
+                    cpu_states[i].regs[j] -= 2; // TODO: when arm mode testing, -2 should be -4 for pipelining.
+                }
             }
         }
     }

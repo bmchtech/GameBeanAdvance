@@ -18,11 +18,10 @@ TEST_CASE("CPU Check - THUMB Mode") {
 
     for (int i = 0; i < num_instructions - 1; i++) {
         if (expected_output[i].type == THUMB) {
-            std::cout << "Setting state." << std::endl;
             set_cpu_state(expected_output[i]);
-            std::cout << "Executing." << std::endl;
+            //std::cout << "Fuck." << std::endl;
             execute(fetch());
-            std::cout << "Checking states." << std::endl;
+            //std::cout << "Fucks." << std::endl;
             check_cpu_state(expected_output[i + 1], get_cpu_state());
         }
     }
