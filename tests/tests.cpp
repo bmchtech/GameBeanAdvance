@@ -16,7 +16,7 @@ TEST_CASE("CPU Check - THUMB Mode") {
     setup_memory();
     get_rom_as_bytes("tests/asm/bin/thumb.gba", memory.rom_1, SIZE_ROM_1);
 
-    for (int i = 21; i < 30; i++) {
+    for (int i = 18; i < 30; i++) {
         if (expected_output[i].type == THUMB) {
             set_cpu_state(expected_output[i]);
             execute(fetch());

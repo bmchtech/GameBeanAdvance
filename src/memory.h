@@ -80,7 +80,7 @@ typedef uint16_t halfword;
 #define OFFSET_ROM_3        0xC000000
 #define OFFSET_SRAM         0xE000000
 
-#define NUM_REGISTERS       10
+#define NUM_REGISTERS       16
 
 // shortcuts for psr
 #define flag_N memory.psr[31]

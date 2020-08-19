@@ -260,9 +260,15 @@ void run_11100OFS(uint16_t opcode) {
 // long branch with link - high byte
 void run_11110OFS(uint16_t opcode) {
 
+    // Sign extend to 32 bits and then left shift 12
+    int32_t extended = (int32_t)(get_nth_bits(opcode, 0, 11));
+    *memory.lr = (*memory.pc + 2) + (extended << 12);
+
 }
 
 // long branch with link - low byte and call to subroutine
 void run_11111OFS(uint16_t opcode) {
-
+    uint32_t next_pc = *(memory.pc);
+    *memory.pc = (*memory.lr + (get_nth_bits(opcode, 0, 11) << 1));
+    *memory.lr = (next_pc) | 1;
 }
