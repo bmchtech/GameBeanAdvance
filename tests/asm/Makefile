@@ -1,6 +1,6 @@
 # usage: make <test name> INSTRUCTIONS=<num of instructions>
 
-SRC_DIR := asm
+SRC_DIR := src
 OUT_DIR := out
 BIN_DIR := bin
 LOG_DIR := logs
