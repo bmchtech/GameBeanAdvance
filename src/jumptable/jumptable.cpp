@@ -1666,66 +1666,114 @@ void run_11101111(uint16_t opcode) {
 
 void run_11110000(uint16_t opcode) {
 
+    // Sign extend to 32 bits and then left shift 12
+    int32_t extended = (int32_t)(get_nth_bits(opcode, 0, 11));
+    *memory.lr = (*memory.pc + 2) + (extended << 12);
+
 }
 
 void run_11110001(uint16_t opcode) {
+
+    // Sign extend to 32 bits and then left shift 12
+    int32_t extended = (int32_t)(get_nth_bits(opcode, 0, 11));
+    *memory.lr = (*memory.pc + 2) + (extended << 12);
 
 }
 
 void run_11110010(uint16_t opcode) {
 
+    // Sign extend to 32 bits and then left shift 12
+    int32_t extended = (int32_t)(get_nth_bits(opcode, 0, 11));
+    *memory.lr = (*memory.pc + 2) + (extended << 12);
+
 }
 
 void run_11110011(uint16_t opcode) {
+
+    // Sign extend to 32 bits and then left shift 12
+    int32_t extended = (int32_t)(get_nth_bits(opcode, 0, 11));
+    *memory.lr = (*memory.pc + 2) + (extended << 12);
 
 }
 
 void run_11110100(uint16_t opcode) {
 
+    // Sign extend to 32 bits and then left shift 12
+    int32_t extended = (int32_t)(get_nth_bits(opcode, 0, 11));
+    *memory.lr = (*memory.pc + 2) + (extended << 12);
+
 }
 
 void run_11110101(uint16_t opcode) {
+
+    // Sign extend to 32 bits and then left shift 12
+    int32_t extended = (int32_t)(get_nth_bits(opcode, 0, 11));
+    *memory.lr = (*memory.pc + 2) + (extended << 12);
 
 }
 
 void run_11110110(uint16_t opcode) {
 
+    // Sign extend to 32 bits and then left shift 12
+    int32_t extended = (int32_t)(get_nth_bits(opcode, 0, 11));
+    *memory.lr = (*memory.pc + 2) + (extended << 12);
+
 }
 
 void run_11110111(uint16_t opcode) {
 
+    // Sign extend to 32 bits and then left shift 12
+    int32_t extended = (int32_t)(get_nth_bits(opcode, 0, 11));
+    *memory.lr = (*memory.pc + 2) + (extended << 12);
+
 }
 
 void run_11111000(uint16_t opcode) {
-
+    uint32_t next_pc = *(memory.pc);
+    *memory.pc = (*memory.lr + (get_nth_bits(opcode, 0, 11) << 1));
+    *memory.lr = (next_pc) | 1;
 }
 
 void run_11111001(uint16_t opcode) {
-
+    uint32_t next_pc = *(memory.pc);
+    *memory.pc = (*memory.lr + (get_nth_bits(opcode, 0, 11) << 1));
+    *memory.lr = (next_pc) | 1;
 }
 
 void run_11111010(uint16_t opcode) {
-
+    uint32_t next_pc = *(memory.pc);
+    *memory.pc = (*memory.lr + (get_nth_bits(opcode, 0, 11) << 1));
+    *memory.lr = (next_pc) | 1;
 }
 
 void run_11111011(uint16_t opcode) {
-
+    uint32_t next_pc = *(memory.pc);
+    *memory.pc = (*memory.lr + (get_nth_bits(opcode, 0, 11) << 1));
+    *memory.lr = (next_pc) | 1;
 }
 
 void run_11111100(uint16_t opcode) {
-
+    uint32_t next_pc = *(memory.pc);
+    *memory.pc = (*memory.lr + (get_nth_bits(opcode, 0, 11) << 1));
+    *memory.lr = (next_pc) | 1;
 }
 
 void run_11111101(uint16_t opcode) {
-
+    uint32_t next_pc = *(memory.pc);
+    *memory.pc = (*memory.lr + (get_nth_bits(opcode, 0, 11) << 1));
+    *memory.lr = (next_pc) | 1;
 }
 
 void run_11111110(uint16_t opcode) {
-
+    uint32_t next_pc = *(memory.pc);
+    *memory.pc = (*memory.lr + (get_nth_bits(opcode, 0, 11) << 1));
+    *memory.lr = (next_pc) | 1;
 }
 
 void run_11111111(uint16_t opcode) {
-
+    uint32_t next_pc = *(memory.pc);
+    *memory.pc = (*memory.lr + (get_nth_bits(opcode, 0, 11) << 1));
+    *memory.lr = (next_pc) | 1;
 }
 
 
