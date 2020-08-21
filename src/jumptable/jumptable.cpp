@@ -479,35 +479,171 @@ void run_00101111(uint16_t opcode) {
 }
 
 void run_00110000(uint16_t opcode) {
+    std::cout << "Add Immediate" << std::endl;
 
+    int32_t immediate_value = get_nth_bits(opcode, 0, 8);
+    uint32_t rd              = get_nth_bits(opcode, 8, 11);
+    int32_t old_rd_value    = memory.regs[rd];
+
+    memory.regs[rd] += immediate_value;
+    int32_t new_rd_value    = memory.regs[rd];
+
+    flag_N = get_nth_bit(new_rd_value, 31);
+    flag_Z = (new_rd_value == 0);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B))
+    flag_C = (get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31)) | 
+    ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31)));
+
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 31);
+    flag_V = matching_signs && (get_nth_bit(new_rd_value, 31) ^ flag_N);
 }
 
 void run_00110001(uint16_t opcode) {
+    std::cout << "Add Immediate" << std::endl;
 
+    int32_t immediate_value = get_nth_bits(opcode, 0, 8);
+    uint32_t rd              = get_nth_bits(opcode, 8, 11);
+    int32_t old_rd_value    = memory.regs[rd];
+
+    memory.regs[rd] += immediate_value;
+    int32_t new_rd_value    = memory.regs[rd];
+
+    flag_N = get_nth_bit(new_rd_value, 31);
+    flag_Z = (new_rd_value == 0);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B))
+    flag_C = (get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31)) | 
+    ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31)));
+
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 31);
+    flag_V = matching_signs && (get_nth_bit(new_rd_value, 31) ^ flag_N);
 }
 
 void run_00110010(uint16_t opcode) {
+    std::cout << "Add Immediate" << std::endl;
 
+    int32_t immediate_value = get_nth_bits(opcode, 0, 8);
+    uint32_t rd              = get_nth_bits(opcode, 8, 11);
+    int32_t old_rd_value    = memory.regs[rd];
+
+    memory.regs[rd] += immediate_value;
+    int32_t new_rd_value    = memory.regs[rd];
+
+    flag_N = get_nth_bit(new_rd_value, 31);
+    flag_Z = (new_rd_value == 0);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B))
+    flag_C = (get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31)) | 
+    ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31)));
+
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 31);
+    flag_V = matching_signs && (get_nth_bit(new_rd_value, 31) ^ flag_N);
 }
 
 void run_00110011(uint16_t opcode) {
+    std::cout << "Add Immediate" << std::endl;
 
+    int32_t immediate_value = get_nth_bits(opcode, 0, 8);
+    uint32_t rd              = get_nth_bits(opcode, 8, 11);
+    int32_t old_rd_value    = memory.regs[rd];
+
+    memory.regs[rd] += immediate_value;
+    int32_t new_rd_value    = memory.regs[rd];
+
+    flag_N = get_nth_bit(new_rd_value, 31);
+    flag_Z = (new_rd_value == 0);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B))
+    flag_C = (get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31)) | 
+    ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31)));
+
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 31);
+    flag_V = matching_signs && (get_nth_bit(new_rd_value, 31) ^ flag_N);
 }
 
 void run_00110100(uint16_t opcode) {
+    std::cout << "Add Immediate" << std::endl;
 
+    int32_t immediate_value = get_nth_bits(opcode, 0, 8);
+    uint32_t rd              = get_nth_bits(opcode, 8, 11);
+    int32_t old_rd_value    = memory.regs[rd];
+
+    memory.regs[rd] += immediate_value;
+    int32_t new_rd_value    = memory.regs[rd];
+
+    flag_N = get_nth_bit(new_rd_value, 31);
+    flag_Z = (new_rd_value == 0);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B))
+    flag_C = (get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31)) | 
+    ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31)));
+
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 31);
+    flag_V = matching_signs && (get_nth_bit(new_rd_value, 31) ^ flag_N);
 }
 
 void run_00110101(uint16_t opcode) {
+    std::cout << "Add Immediate" << std::endl;
 
+    int32_t immediate_value = get_nth_bits(opcode, 0, 8);
+    uint32_t rd              = get_nth_bits(opcode, 8, 11);
+    int32_t old_rd_value    = memory.regs[rd];
+
+    memory.regs[rd] += immediate_value;
+    int32_t new_rd_value    = memory.regs[rd];
+
+    flag_N = get_nth_bit(new_rd_value, 31);
+    flag_Z = (new_rd_value == 0);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B))
+    flag_C = (get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31)) | 
+    ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31)));
+
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 31);
+    flag_V = matching_signs && (get_nth_bit(new_rd_value, 31) ^ flag_N);
 }
 
 void run_00110110(uint16_t opcode) {
+    std::cout << "Add Immediate" << std::endl;
 
+    int32_t immediate_value = get_nth_bits(opcode, 0, 8);
+    uint32_t rd              = get_nth_bits(opcode, 8, 11);
+    int32_t old_rd_value    = memory.regs[rd];
+
+    memory.regs[rd] += immediate_value;
+    int32_t new_rd_value    = memory.regs[rd];
+
+    flag_N = get_nth_bit(new_rd_value, 31);
+    flag_Z = (new_rd_value == 0);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B))
+    flag_C = (get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31)) | 
+    ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31)));
+
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 31);
+    flag_V = matching_signs && (get_nth_bit(new_rd_value, 31) ^ flag_N);
 }
 
 void run_00110111(uint16_t opcode) {
+    std::cout << "Add Immediate" << std::endl;
 
+    int32_t immediate_value = get_nth_bits(opcode, 0, 8);
+    uint32_t rd              = get_nth_bits(opcode, 8, 11);
+    int32_t old_rd_value    = memory.regs[rd];
+
+    memory.regs[rd] += immediate_value;
+    int32_t new_rd_value    = memory.regs[rd];
+
+    flag_N = get_nth_bit(new_rd_value, 31);
+    flag_Z = (new_rd_value == 0);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B))
+    flag_C = (get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31)) | 
+    ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31)));
+
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 31);
+    flag_V = matching_signs && (get_nth_bit(new_rd_value, 31) ^ flag_N);
 }
 
 void run_00111000(uint16_t opcode) {
@@ -1601,35 +1737,59 @@ void run_11011111(uint16_t opcode) {
 }
 
 void run_11100000(uint16_t opcode) {
+    std::cout << "Unconditional Branch" << std::endl;
 
+    int32_t sign_extended = (int32_t) (get_nth_bits(opcode, 0, 11));
+    *memory.pc = (*memory.pc + 2) + (sign_extended << 1);
 }
 
 void run_11100001(uint16_t opcode) {
+    std::cout << "Unconditional Branch" << std::endl;
 
+    int32_t sign_extended = (int32_t) (get_nth_bits(opcode, 0, 11));
+    *memory.pc = (*memory.pc + 2) + (sign_extended << 1);
 }
 
 void run_11100010(uint16_t opcode) {
+    std::cout << "Unconditional Branch" << std::endl;
 
+    int32_t sign_extended = (int32_t) (get_nth_bits(opcode, 0, 11));
+    *memory.pc = (*memory.pc + 2) + (sign_extended << 1);
 }
 
 void run_11100011(uint16_t opcode) {
+    std::cout << "Unconditional Branch" << std::endl;
 
+    int32_t sign_extended = (int32_t) (get_nth_bits(opcode, 0, 11));
+    *memory.pc = (*memory.pc + 2) + (sign_extended << 1);
 }
 
 void run_11100100(uint16_t opcode) {
+    std::cout << "Unconditional Branch" << std::endl;
 
+    int32_t sign_extended = (int32_t) (get_nth_bits(opcode, 0, 11));
+    *memory.pc = (*memory.pc + 2) + (sign_extended << 1);
 }
 
 void run_11100101(uint16_t opcode) {
+    std::cout << "Unconditional Branch" << std::endl;
 
+    int32_t sign_extended = (int32_t) (get_nth_bits(opcode, 0, 11));
+    *memory.pc = (*memory.pc + 2) + (sign_extended << 1);
 }
 
 void run_11100110(uint16_t opcode) {
+    std::cout << "Unconditional Branch" << std::endl;
 
+    int32_t sign_extended = (int32_t) (get_nth_bits(opcode, 0, 11));
+    *memory.pc = (*memory.pc + 2) + (sign_extended << 1);
 }
 
 void run_11100111(uint16_t opcode) {
+    std::cout << "Unconditional Branch" << std::endl;
 
+    int32_t sign_extended = (int32_t) (get_nth_bits(opcode, 0, 11));
+    *memory.pc = (*memory.pc + 2) + (sign_extended << 1);
 }
 
 void run_11101000(uint16_t opcode) {

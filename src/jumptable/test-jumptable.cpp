@@ -91,7 +91,24 @@ void run_00101ABC(uint16_t opcode) {
 
 // add immediate
 void run_00110ABC(uint16_t opcode) {
+    std::cout << "Add Immediate" << std::endl;
 
+    int32_t immediate_value = get_nth_bits(opcode, 0, 8);
+    uint32_t rd              = get_nth_bits(opcode, 8, 11);
+    int32_t old_rd_value    = memory.regs[rd];
+
+    memory.regs[rd] += immediate_value;
+    int32_t new_rd_value    = memory.regs[rd];
+
+    flag_N = get_nth_bit(new_rd_value, 31);
+    flag_Z = (new_rd_value == 0);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
+    flag_C = (get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31)) | 
+    ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31)));
+
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 31);
+    flag_V = matching_signs && (get_nth_bit(new_rd_value, 31) ^ flag_N);
 }
 
 // subtract immediate
@@ -254,7 +271,10 @@ void run_11011111(uint16_t opcode) {
 
 // unconditional branch
 void run_11100OFS(uint16_t opcode) {
+    std::cout << "Unconditional Branch" << std::endl;
 
+    int32_t sign_extended = (int32_t) (get_nth_bits(opcode, 0, 11));
+    *memory.pc = (*memory.pc + 2) + (sign_extended << 1);
 }
 
 // long branch with link - high byte
