@@ -16,15 +16,21 @@
 //     anymore, but it's still supported by make-jumptable.py in case i ever need it. this all was intended
 //     as a way to make the code cleaner and more readable.
 
+#ifdef DEBUG_MESSAGE
+    #define DEBUG_MESSAGE(message) std::cout << message << std::endl;
+#else
+    #define DEBUG_MESSAGE(message) do {} while(0)
+#endif
+
 @DEFAULT()
 void nop(uint16_t opcode) {
-    std::cout << "NOP" << std::endl;
+    DEBUG_MESSAGE("NOP");
 }
 
 // logical shift left/right
 void run_0000SABC(uint16_t opcode) {
-    @IF(S)  std::cout << "Logical Shift Right" << std::endl;
-    @IF(!S) std::cout << "Logical Shift Left" << std::endl;
+    @IF(S)  DEBUG_MESSAGE("Logical Shift Right");
+    @IF(!S) DEBUG_MESSAGE("Logical Shift Left");
 
     uint8_t source = get_nth_bits(opcode, 3,  6);
     uint8_t dest   = get_nth_bits(opcode, 0,  3);
@@ -50,7 +56,7 @@ void run_00010ABC(uint16_t opcode) {
 
 // add #1 010 001 001
 void run_00011000(uint16_t opcode) {
-    std::cout << "Add #1" << std::endl;
+    DEBUG_MESSAGE("Add #1");
 
     uint32_t rn = memory.regs[get_nth_bits(opcode, 3, 6)];
     uint32_t rm = memory.regs[get_nth_bits(opcode, 6, 9)];
@@ -76,7 +82,8 @@ void run_000111OA(uint16_t opcode) {
 
 // move immediate
 void run_00100ABC(uint16_t opcode) {
-    std::cout << "Move Immediate" << std::endl;
+    DEBUG_MESSAGE("Move Immediate");
+
     uint16_t immediate_value = get_nth_bits(opcode, 0, 8);
     memory.regs[get_nth_bits(opcode, 8, 11)] = immediate_value;
     // flags
@@ -91,10 +98,10 @@ void run_00101ABC(uint16_t opcode) {
 
 // add immediate
 void run_00110ABC(uint16_t opcode) {
-    std::cout << "Add Immediate" << std::endl;
+    DEBUG_MESSAGE("Add Register Immediate");
 
     int32_t immediate_value = get_nth_bits(opcode, 0, 8);
-    uint32_t rd              = get_nth_bits(opcode, 8, 11);
+    uint32_t rd             = get_nth_bits(opcode, 8, 11);
     int32_t old_rd_value    = memory.regs[rd];
 
     memory.regs[rd] += immediate_value;
@@ -104,18 +111,18 @@ void run_00110ABC(uint16_t opcode) {
     flag_Z = (new_rd_value == 0);
 
     // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
-    flag_C = (get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31)) | 
+    flag_C = (get_nth_bit(immediate_value, 7) & get_nth_bit(old_rd_value, 31)) | 
     ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31)));
 
-    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 31);
-    flag_V = matching_signs && (get_nth_bit(new_rd_value, 31) ^ flag_N);
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 7);
+    flag_V = matching_signs && (get_nth_bit(old_rd_value, 31) ^ flag_N);
 }
 
 // subtract immediate
 void run_00111ABC(uint16_t opcode) {
     // maybe we can link add immediate with subtract immediate using twos complement...
     // like, a - b is the same as a + (~b)
-    std::cout << "Subtract Immediate" << std::endl;
+    DEBUG_MESSAGE("Subtract Immediate");
 
     uint32_t immediate_value = get_nth_bits(opcode, 0, 8);
     uint8_t  rd              = get_nth_bits(opcode, 8, 11);
@@ -138,13 +145,13 @@ void run_00111ABC(uint16_t opcode) {
 // ALU operation - miscellaneous
 @EXCLUDE(01000011)
 void run_010000PC(uint16_t opcode) {
-    std::cout << "ALU Operation" << std::endl;
+    DEBUG_MESSAGE("ALU Operation");
     uint8_t operation = get_nth_bits(opcode, 6, 10);
 }
 
 // ALU operation - BIC
 void run_01000011(uint16_t opcode) {
-    std::cout << "ALU Operation - Bit Clear (BIC)" << std::endl;
+    DEBUG_MESSAGE("ALU Operation - Bit Clear (BIC)");
     uint8_t rd = get_nth_bits(opcode, 0, 3);
     uint8_t rm = get_nth_bits(opcode, 3, 6);
     memory.regs[rd] = memory.regs[rd] & ~ memory.regs[rm];
@@ -160,7 +167,7 @@ void run_010001OP(uint16_t opcode) {
 
 // pc-relative load
 void run_01001REG(uint16_t opcode) {
-    std::cout << "PC-Relative Load" << std::endl;
+    DEBUG_MESSAGE("PC-Relative Load");
     uint8_t reg = get_nth_bits(opcode, 8,  11);
     uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc + 2;
     memory.regs[reg] = *((uint32_t*)(memory.main + loc));
@@ -223,7 +230,7 @@ void run_11001REG(uint16_t opcode) {
 
 // multiple store
 void run_11000REG(uint16_t opcode) {
-    std::cout << "Multiple Store (STMIA)" << std::endl;
+    DEBUG_MESSAGE("Multiple Store (STMIA)");
     uint32_t start_address = memory.regs[get_nth_bits(opcode, 8, 10)];
     uint8_t  register_list = get_nth_bits(opcode, 0, 8);
 
@@ -257,10 +264,10 @@ void run_1101COND(uint16_t opcode) {
     @IF( C  O !N !D) if (!flag_Z && (flag_N == flag_V)) {
     @IF( C  O !N  D) if (flag_Z || (flag_N ^ flag_V)) {
     @IF( C  O  N !D) if (true) { // the compiler will optimize this so it's fine
-        std::cout << "Conditional Branch Taken" << std::endl;
+        DEBUG_MESSAGE("Conditional Branch Taken");
         *memory.pc += ((int8_t)(opcode & 0xFF)) * 2 + 2;
     } else {
-        std::cout << "Conditional Branch Not Taken" << std::endl;
+        DEBUG_MESSAGE("Conditional Branch Not Taken");
     }
 }
 
@@ -271,7 +278,7 @@ void run_11011111(uint16_t opcode) {
 
 // unconditional branch
 void run_11100OFS(uint16_t opcode) {
-    std::cout << "Unconditional Branch" << std::endl;
+    DEBUG_MESSAGE("Unconditional Branch");
 
     int32_t sign_extended = (int32_t) (get_nth_bits(opcode, 0, 11));
     *memory.pc = (*memory.pc + 2) + (sign_extended << 1);

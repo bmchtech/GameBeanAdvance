@@ -31,6 +31,12 @@ CPP_FILE_HEADER         = '''
 #include "../util.h"
 #include "../memory.h"
 
+#ifdef DEBUG_MESSAGE
+    #define DEBUG_MESSAGE(message) std::cout << message << std::endl;
+#else
+    #define DEBUG_MESSAGE(message) do {} while(0)
+#endif
+
 extern Memory memory;\n\n'''[1:]
 
 CPP_FILE_FOOTER         = ''''''
