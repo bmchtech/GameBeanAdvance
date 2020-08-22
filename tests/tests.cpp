@@ -1,35 +1,13 @@
 #include "catch/catch.hpp"
-
-#include "expected_output.h"
-#include "cpu_state.h"
 #include "../src/gba.h"
 
 #include <iostream>
 
-// checks if the two states match
-void check_cpu_state(CpuState expected, CpuState actual);
+// note for test cases: do not assume registers or memory values are set to 0 before starting
+// a test. set them manually to 0 if you want them to be 0.
 
-TEST_CASE("CPU Check - THUMB Mode") {
-    uint32_t num_instructions = 100;
-    CpuState* expected_output = produce_expected_cpu_states("tests/asm/logs/thumb_100.log", num_instructions);
-    
-    setup_memory();
-    get_rom_as_bytes("tests/asm/bin/thumb.gba", memory.rom_1, SIZE_ROM_1);
-
-    for (int i = 18; i < 30; i++) {
-        if (expected_output[i].type == THUMB) {
-            set_cpu_state(expected_output[i]);
-            execute(fetch());
-            check_cpu_state(expected_output[i + 1], get_cpu_state());
-        }
-    }
-}
-
-void check_cpu_state(CpuState expected, CpuState actual) {
-    REQUIRE(expected.type   == actual.type);
-    REQUIRE(expected.opcode == actual.opcode);
-    
-    for (int i = 0; i < 16; i++) {
-        REQUIRE(expected.regs[i] == actual.regs[i]);
-    }
+TEST_CASE("CPU Thumb Mode - MOV Immediate") {
+    memory.regs[2] = 0x00000000;
+    execute(0b0010001011001101); // MOV R2, 0xCD
+    REQUIRE(memory.regs[2] == 0xCD);
 }

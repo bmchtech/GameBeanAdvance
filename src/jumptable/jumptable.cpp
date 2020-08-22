@@ -491,7 +491,7 @@ void run_00110000(uint16_t opcode) {
     flag_N = get_nth_bit(new_rd_value, 31);
     flag_Z = (new_rd_value == 0);
 
-    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B))
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
     flag_C = (get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31)) | 
     ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31)));
 
@@ -512,7 +512,7 @@ void run_00110001(uint16_t opcode) {
     flag_N = get_nth_bit(new_rd_value, 31);
     flag_Z = (new_rd_value == 0);
 
-    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B))
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
     flag_C = (get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31)) | 
     ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31)));
 
@@ -533,7 +533,7 @@ void run_00110010(uint16_t opcode) {
     flag_N = get_nth_bit(new_rd_value, 31);
     flag_Z = (new_rd_value == 0);
 
-    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B))
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
     flag_C = (get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31)) | 
     ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31)));
 
@@ -554,7 +554,7 @@ void run_00110011(uint16_t opcode) {
     flag_N = get_nth_bit(new_rd_value, 31);
     flag_Z = (new_rd_value == 0);
 
-    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B))
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
     flag_C = (get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31)) | 
     ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31)));
 
@@ -575,7 +575,7 @@ void run_00110100(uint16_t opcode) {
     flag_N = get_nth_bit(new_rd_value, 31);
     flag_Z = (new_rd_value == 0);
 
-    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B))
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
     flag_C = (get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31)) | 
     ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31)));
 
@@ -596,7 +596,7 @@ void run_00110101(uint16_t opcode) {
     flag_N = get_nth_bit(new_rd_value, 31);
     flag_Z = (new_rd_value == 0);
 
-    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B))
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
     flag_C = (get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31)) | 
     ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31)));
 
@@ -617,7 +617,7 @@ void run_00110110(uint16_t opcode) {
     flag_N = get_nth_bit(new_rd_value, 31);
     flag_Z = (new_rd_value == 0);
 
-    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B))
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
     flag_C = (get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31)) | 
     ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31)));
 
@@ -638,7 +638,7 @@ void run_00110111(uint16_t opcode) {
     flag_N = get_nth_bit(new_rd_value, 31);
     flag_Z = (new_rd_value == 0);
 
-    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B))
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
     flag_C = (get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31)) | 
     ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31)));
 
