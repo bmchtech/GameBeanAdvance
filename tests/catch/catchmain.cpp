@@ -9,12 +9,12 @@ struct SetupTeardownListener : Catch::TestEventListenerBase {
 
     using TestEventListenerBase::TestEventListenerBase; // inherit constructor
 
-    void testCaseStarting(Catch::TestCaseInfo const& testInfo) override {
+    void testRunStarting(Catch::TestRunInfo const& testRunInfo) override {
         setup_memory();
     }
     
-    void testCaseEnded(Catch::TestCaseStats const& testCaseStats) override {
-        // Tear-down after a test case is run
+    void testRunEnded(Catch::TestRunStats const& testRunStats) override {
+        cleanup_memory();
     }
 };
 CATCH_REGISTER_LISTENER(SetupTeardownListener)

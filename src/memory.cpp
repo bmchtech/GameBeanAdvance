@@ -7,8 +7,8 @@ Memory memory;
 
 // allocates the data for the memory struct
 void setup_memory() {
-    memory.main         = (uint8_t*)  malloc(SIZE_MAIN_MEMORY);
-    memory.regs         = (uint32_t*) malloc(NUM_REGISTERS * sizeof(uint32_t));
+    memory.main         = new uint8_t [SIZE_MAIN_MEMORY];
+    memory.regs         = new uint32_t[NUM_REGISTERS];
 
     // map a bunch of shortcut pointers
     memory.sp           = &memory.regs[0xD]; // stack pointer
@@ -28,5 +28,10 @@ void setup_memory() {
     memory.sram         = &memory.main[OFFSET_SRAM];
 
     // the program status register
-    memory.psr          = (uint32_t*) malloc(sizeof(uint32_t));
+    memory.psr          = 0x00000000;
+}
+
+void cleanup_memory() {
+    delete[] memory.main;
+    delete[] memory.regs;
 }

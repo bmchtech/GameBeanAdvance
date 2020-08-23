@@ -46,7 +46,7 @@ typedef struct Memory {
 
     // program status register
     // NZCV--------------------IFT43210
-    uint32_t* psr;
+    uint32_t psr;
 } Memory;
 
 // words are 4 bytes, halfwords are 2 bytes
@@ -82,13 +82,44 @@ typedef uint16_t halfword;
 
 #define NUM_REGISTERS       16
 
-// shortcuts for psr
-#define flag_N memory.psr[31]
-#define flag_Z memory.psr[30]
-#define flag_C memory.psr[29]
-#define flag_V memory.psr[28]
-
 // and for some functions
 void setup_memory();
+void cleanup_memory();
+
+inline void set_flag_N(bool condition) {
+    if (condition) memory.psr |= 0x80000000;
+    else           memory.psr &= 0x7FFFFFFF;
+}
+
+inline void set_flag_Z(bool condition) {
+    if (condition) memory.psr |= 0x40000000;
+    else           memory.psr &= 0xBFFFFFFF;
+}
+
+inline void set_flag_C(bool condition) {
+    if (condition) memory.psr |= 0x20000000;
+    else           memory.psr &= 0xDFFFFFFF;
+}
+
+inline void set_flag_V(bool condition) {
+    if (condition) memory.psr |= 0x10000000;
+    else           memory.psr &= 0xEFFFFFFF;
+}
+
+inline bool get_flag_N() {
+    return (memory.psr >> 31) & 1;
+}
+
+inline bool get_flag_Z() {
+    return (memory.psr >> 30) & 1;
+}
+
+inline bool get_flag_C() {
+    return (memory.psr >> 29) & 1;
+}
+
+inline bool get_flag_V() {
+    return (memory.psr >> 28) & 1;
+}
 
 #endif

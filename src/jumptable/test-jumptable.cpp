@@ -37,16 +37,17 @@ void run_0000SABC(uint16_t opcode) {
     uint8_t shift  = get_nth_bits(opcode, 6,  11);
 
     if (shift == 0) { // if shift == 0, the cpu shifts by 32, which is the size of the register.
+        @IF(S)  set_flag_C(get_nth_bit(memory.regs[source], 31));
         memory.regs[dest] = 0;
     } else {
-        @IF(S)  flag_C = get_nth_bit(memory.regs[source], shift - 1);
-        @IF(!S) flag_C = get_nth_bit(memory.regs[source], 32 - shift);
+        @IF(S)  set_flag_C(get_nth_bit(memory.regs[source], shift - 1));
+        @IF(!S) set_flag_C(get_nth_bit(memory.regs[source], 32 - shift));
         @IF(S)  memory.regs[dest] = (memory.regs[source] >> shift);
         @IF(!S) memory.regs[dest] = (memory.regs[source] << shift);
     }
 
-    flag_N = get_nth_bit(memory.regs[dest], 31);
-    flag_Z = memory.regs[dest] == 0;
+    set_flag_N(get_nth_bit(memory.regs[dest], 31));
+    set_flag_Z(memory.regs[dest] == 0);
 }
 
 // arithmetic shift left
@@ -64,20 +65,20 @@ void run_00011000(uint16_t opcode) {
     memory.regs[get_nth_bits(opcode, 0, 3)] = rn + rm;
     int32_t rd = memory.regs[get_nth_bits(opcode, 0, 3)];
 
-    flag_N = get_nth_bit(rd, 31);
-    flag_Z = rd == 0;
-    // flag_C = (uint64_t)rn + (uint64_t)rm > rd; // probably can be optimized
+    set_flag_N(get_nth_bit(rd, 31));
+    set_flag_Z(rd == 0);
+    // set_flag_C((uint64_t)rn + (uint64_t)rm > rd); // probably can be optimized
 
     // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
-    flag_C = (get_nth_bit(rm, 31) & get_nth_bit(rn, 31)) | 
-    ((get_nth_bit(rm, 31) ^ get_nth_bit(rn, 31)) & ~(get_nth_bit(rd, 31)));
+    set_flag_C((get_nth_bit(rm, 31) & get_nth_bit(rn, 31)) | 
+    ((get_nth_bit(rm, 31) ^ get_nth_bit(rn, 31)) & ~(get_nth_bit(rd, 31))));
 
 
     // this is garbage, but essentially what's going on is:
     // if the two operands had matching signs but their sign differed from the result's sign,
     // then there was an overflow and we set the flag.
     bool matching_signs = get_nth_bit(rn, 31) == get_nth_bit(rm, 31);
-    flag_V = matching_signs && (get_nth_bit(rn, 31) ^ flag_N);
+    set_flag_V(matching_signs && (get_nth_bit(rn, 31) ^ get_flag_N()));
 }
 
 // add #2 and subtract #2
@@ -92,8 +93,8 @@ void run_00100ABC(uint16_t opcode) {
     uint16_t immediate_value = get_nth_bits(opcode, 0, 8);
     memory.regs[get_nth_bits(opcode, 8, 11)] = immediate_value;
     // flags
-    flag_N = get_nth_bit(immediate_value, 31);
-    flag_Z = immediate_value == 0;
+    set_flag_N(get_nth_bit(immediate_value, 31));
+    set_flag_Z(immediate_value == 0);
 }
 
 // compare immediate
@@ -112,15 +113,15 @@ void run_00110ABC(uint16_t opcode) {
     memory.regs[rd] += immediate_value;
     int32_t new_rd_value    = memory.regs[rd];
 
-    flag_N = get_nth_bit(new_rd_value, 31);
-    flag_Z = (new_rd_value == 0);
+    set_flag_N(get_nth_bit(new_rd_value, 31));
+    set_flag_Z((new_rd_value == 0));
 
     // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
-    flag_C = (get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31)) | 
-    ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31)));
+    set_flag_C(get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31) | 
+    ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31))));
 
     bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 7);
-    flag_V = matching_signs && (get_nth_bit(old_rd_value, 31) ^ flag_N);
+    set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_flag_N()));
 }
 
 // subtract immediate
@@ -136,15 +137,15 @@ void run_00111ABC(uint16_t opcode) {
     memory.regs[rd]  -= immediate_value;
     uint32_t new_rd_value    = memory.regs[rd];
 
-    flag_N = get_nth_bit(new_rd_value, 31);
-    flag_Z = new_rd_value == 0;
-    flag_C = immediate_value > old_rd_value;
+    set_flag_N(get_nth_bit(new_rd_value, 31));
+    set_flag_Z(new_rd_value == 0);
+    set_flag_C(immediate_value > old_rd_value);
 
     // this is garbage, but essentially what's going on is:
     // if the two operands had matching signs but their sign differed from the result's sign,
     // then there was an overflow and we set the flag.
     bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 31);
-    flag_V = matching_signs && (get_nth_bit(new_rd_value, 31) ^ flag_N);
+    set_flag_V(matching_signs && (get_nth_bit(new_rd_value, 31) ^ get_flag_N()));
 }
 
 // ALU operation - miscellaneous
@@ -161,8 +162,8 @@ void run_01000011(uint16_t opcode) {
     uint8_t rm = get_nth_bits(opcode, 3, 6);
     memory.regs[rd] = memory.regs[rd] & ~ memory.regs[rm];
 
-    flag_N = get_nth_bit(memory.regs[rd], 31);
-    flag_Z = memory.regs[rd] == 0;
+    set_flag_N(get_nth_bit(memory.regs[rd], 31));
+    set_flag_Z(memory.regs[rd] == 0);
 }
 
 // high register operations and branch exchange
@@ -200,7 +201,6 @@ void run_10000OFS(uint16_t opcode) {
     uint8_t shift = get_nth_bits(opcode, 6,  11);
 
     memory.regs[dest] = *((halfword*)(memory.main + memory.regs[base] + shift * 2));
-    std::cout << memory.regs[dest] << std::endl;
 }
 
 // store halfword
@@ -254,20 +254,20 @@ void run_11000REG(uint16_t opcode) {
 void run_1101COND(uint16_t opcode) {
     // this may look daunting, but it's just the different possibilities for COND.
     // each COND has a different if expression we need to consider.
-    @IF(!C !O !N !D) if (flag_Z) {
-    @IF(!C !O !N  D) if (!flag_Z) {
-    @IF(!C !O  N !D) if (flag_C) {
-    @IF(!C !O  N  D) if (!flag_C) {
-    @IF(!C  O !N !D) if (flag_N) {
-    @IF(!C  O !N  D) if (!flag_N) {
-    @IF(!C  O  N !D) if (flag_V) {
-    @IF(!C  O  N  D) if (!flag_V) {
-    @IF( C !O !N !D) if (flag_C && !flag_Z) {
-    @IF( C !O !N  D) if (!flag_C && flag_Z) {
-    @IF( C !O  N !D) if (flag_N == flag_V) {
-    @IF( C !O  N  D) if (flag_N ^ flag_V) {
-    @IF( C  O !N !D) if (!flag_Z && (flag_N == flag_V)) {
-    @IF( C  O !N  D) if (flag_Z || (flag_N ^ flag_V)) {
+    @IF(!C !O !N !D) if (get_flag_Z()) {
+    @IF(!C !O !N  D) if (!get_flag_Z()) {
+    @IF(!C !O  N !D) if (get_flag_C()) {
+    @IF(!C !O  N  D) if (!get_flag_C()) {
+    @IF(!C  O !N !D) if (get_flag_N()) {
+    @IF(!C  O !N  D) if (!get_flag_N()) {
+    @IF(!C  O  N !D) if (get_flag_V()) {
+    @IF(!C  O  N  D) if (!get_flag_V()) {
+    @IF( C !O !N !D) if (get_flag_C() && !get_flag_Z()) {
+    @IF( C !O !N  D) if (!get_flag_C() && get_flag_Z()) {
+    @IF( C !O  N !D) if (get_flag_N() == get_flag_V()) {
+    @IF( C !O  N  D) if (get_flag_N() ^ get_flag_V()) {
+    @IF( C  O !N !D) if (!get_flag_Z() && (get_flag_N() == get_flag_V())) {
+    @IF( C  O !N  D) if (get_flag_Z() || (get_flag_N() ^ get_flag_V())) {
     @IF( C  O  N !D) if (true) { // the compiler will optimize this so it's fine
         DEBUG_MESSAGE("Conditional Branch Taken");
         *memory.pc += ((int8_t)(opcode & 0xFF)) * 2 + 2;
