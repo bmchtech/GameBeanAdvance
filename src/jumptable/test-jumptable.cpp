@@ -58,15 +58,20 @@ void run_00010ABC(uint16_t opcode) {
 void run_00011000(uint16_t opcode) {
     DEBUG_MESSAGE("Add #1");
 
-    uint32_t rn = memory.regs[get_nth_bits(opcode, 3, 6)];
-    uint32_t rm = memory.regs[get_nth_bits(opcode, 6, 9)];
+    int32_t rn = memory.regs[get_nth_bits(opcode, 3, 6)];
+    int32_t rm = memory.regs[get_nth_bits(opcode, 6, 9)];
     
     memory.regs[get_nth_bits(opcode, 0, 3)] = rn + rm;
-    uint32_t rd = memory.regs[get_nth_bits(opcode, 0, 3)];
+    int32_t rd = memory.regs[get_nth_bits(opcode, 0, 3)];
 
     flag_N = get_nth_bit(rd, 31);
     flag_Z = rd == 0;
-    flag_C = (uint64_t)rn + (uint64_t)rm > rd; // probably can be optimized
+    // flag_C = (uint64_t)rn + (uint64_t)rm > rd; // probably can be optimized
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
+    flag_C = (get_nth_bit(rm, 31) & get_nth_bit(rn, 31)) | 
+    ((get_nth_bit(rm, 31) ^ get_nth_bit(rn, 31)) & ~(get_nth_bit(rd, 31)));
+
 
     // this is garbage, but essentially what's going on is:
     // if the two operands had matching signs but their sign differed from the result's sign,
@@ -111,7 +116,7 @@ void run_00110ABC(uint16_t opcode) {
     flag_Z = (new_rd_value == 0);
 
     // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
-    flag_C = (get_nth_bit(immediate_value, 7) & get_nth_bit(old_rd_value, 31)) | 
+    flag_C = (get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31)) | 
     ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31)));
 
     bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 7);
