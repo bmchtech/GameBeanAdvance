@@ -2,3 +2,4 @@ roms/
 ./gba
 ./out
 vgcore.*
+test
