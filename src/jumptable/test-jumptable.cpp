@@ -151,6 +151,7 @@ void run_00111ABC(uint16_t opcode) {
 // ALU operation - miscellaneous
 @EXCLUDE(01000011)
 @EXCLUDE(01000000)
+@EXCLUDE(01000001)
 void run_010000PC(uint16_t opcode) {
     DEBUG_MESSAGE("ALU Operation");
     uint8_t operation = get_nth_bits(opcode, 6, 10);
@@ -204,6 +205,36 @@ void run_01000000(uint16_t opcode) {
                 memory.regs[rd] = 0;
             }
             break;
+    }
+
+    set_flag_N(memory.regs[rd] >> 31);
+    set_flag_Z(memory.regs[rd] == 0);
+}
+
+// ALU operation - ASR #2, ADC, SBC, ROR
+void run_01000001(uint16_t opcode) {
+    DEBUG_MESSAGE("ALU Operation - ASR #2 / ADC / SBC / ROR");
+    uint8_t rd = get_nth_bits(opcode, 0, 3);
+    uint8_t rm = get_nth_bits(opcode, 3, 6);
+
+    switch (get_nth_bits(opcode, 6, 8)) {
+        case 0b00:
+            // ASR #2
+            uint8_t low_byte = memory.regs[rm] & 0xFF;
+            if (low_byte < 32 && low_byte != 0) {
+                set_flag_C(get_nth_bit(memory.regs[rd], low_byte - 1));
+                // arithmetic shift requires us to cast to signed int first, then back to unsigned to store in registers.
+                memory.regs[rd] = (uint32_t) (((int32_t) memory.regs[rd]) >> memory.regs[rm]);
+            } else if (low_byte >= 32) {
+                set_flag_C(memory.regs[rd] >> 31);
+                if (get_flag_C()) {
+                    memory.regs[rd] = 0xFFFFFFFF; // taking into account two's complement
+                } else {
+                    memory.regs[rd] = 0x00000000;
+                }
+            }
+            break;
+            
     }
 
     set_flag_N(memory.regs[rd] >> 31);

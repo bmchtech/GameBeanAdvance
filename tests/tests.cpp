@@ -20,6 +20,10 @@ void wipe_registers() {
     }
 }
 
+
+
+
+
 TEST_CASE("CPU Thumb Mode - ADD Two Registers") {
     wipe_registers();
     SECTION("ADD R1, R2 into R3") {
@@ -32,6 +36,10 @@ TEST_CASE("CPU Thumb Mode - ADD Two Registers") {
     }
     wipe_registers();
 }
+
+
+
+
 
 TEST_CASE("CPU Thumb Mode - ADD Immediate Register") {
     SECTION("ADD R2, #0x00") {
@@ -68,6 +76,10 @@ TEST_CASE("CPU Thumb Mode - ADD Immediate Register") {
     wipe_registers();
 }
 
+
+
+
+
 TEST_CASE("CPU Thumb Mode - MOV Immediate") {
     SECTION("MOV R2, #0xCD") {
         memory.regs[2] = 0x00000000;
@@ -76,6 +88,10 @@ TEST_CASE("CPU Thumb Mode - MOV Immediate") {
     }
     wipe_registers();
 }
+
+
+
+
 
 TEST_CASE("CPU Thumb Mode - LSL Immediate") {
     set_flag_V(false);
@@ -109,6 +125,10 @@ TEST_CASE("CPU Thumb Mode - LSL Immediate") {
     }
     wipe_registers();
 }
+
+
+
+
 
 TEST_CASE("CPU Thumb Mode - LSR Immediate") {
     set_flag_V(false);
@@ -144,6 +164,10 @@ TEST_CASE("CPU Thumb Mode - LSR Immediate") {
     wipe_registers();
 }
 
+
+
+
+
 TEST_CASE("CPU Thumb Mode - Conditional Branches") {
     SECTION("BEQ #0x02 (Simple Test)") {
         *memory.pc = 0x10000000;
@@ -161,6 +185,10 @@ TEST_CASE("CPU Thumb Mode - Conditional Branches") {
         REQUIRE(*memory.pc == 0x0FFFFFFE);
     }
 }
+
+
+
+
 
 TEST_CASE("CPU Thumb Mode - Logical AND") {
     set_flag_C(true);
@@ -185,6 +213,10 @@ TEST_CASE("CPU Thumb Mode - Logical AND") {
     }
 }
 
+
+
+
+
 TEST_CASE("CPU Thumb Mode - Logical EOR") {
     set_flag_C(true);
     set_flag_V(true);
@@ -207,6 +239,11 @@ TEST_CASE("CPU Thumb Mode - Logical EOR") {
         check_flags_NZCV(false, true, true, true);
     }
 }
+
+
+
+
+
 
 TEST_CASE("CPU Thumb Mode - Logical LSL") {
     set_flag_V(true);
@@ -252,6 +289,10 @@ TEST_CASE("CPU Thumb Mode - Logical LSL") {
     }
 }
 
+
+
+
+
 TEST_CASE("CPU Thumb Mode - Logical LSR") {
     set_flag_V(true);
 
@@ -293,5 +334,53 @@ TEST_CASE("CPU Thumb Mode - Logical LSR") {
 
         REQUIRE(memory.regs[3] == 0x00000000);
         check_flags_NZCV(false, true, false, true);
+    }
+} 
+
+
+
+
+
+TEST_CASE("CPU Thumb Mode - Logical ASR") {
+    set_flag_V(true);
+
+    SECTION("ASR R2, R3 (Shift == 0)") {
+        set_flag_C(true);
+        memory.regs[2] = 0xFFFF0000;
+        memory.regs[3] = 0x12345678;
+        execute(0b010000'0100'010'011);
+
+        REQUIRE(memory.regs[3] == 0x12345678);
+        check_flags_NZCV(false, false, true, true);
+    }
+
+    SECTION("ASR R2, R3 (Shift < 32)") {
+        set_flag_C(true);
+        memory.regs[2] = 0xFFFF0004;
+        memory.regs[3] = 0x9F345678;
+        execute(0b010000'0100'010'011);
+
+        REQUIRE(memory.regs[3] == 0xF9F34567);
+        check_flags_NZCV(true, false, true, true);
+    }
+
+    SECTION("ASR R2, R3 (Shift >= 32, positive)") {
+        set_flag_C(true);
+        memory.regs[2] = 0xFFFF0020;
+        memory.regs[3] = 0x1F345679;
+        execute(0b010000'0100'010'011);
+
+        REQUIRE(memory.regs[3] == 0x00000000);
+        check_flags_NZCV(false, true, false, true);
+    }
+
+    SECTION("ASR R2, R3 (Shift >= 32, negative)") {
+        set_flag_C(true);
+        memory.regs[2] = 0xFFFF0020;
+        memory.regs[3] = 0x9F345678;
+        execute(0b010000'0100'010'011);
+
+        REQUIRE(memory.regs[3] == 0xFFFFFFFF);
+        check_flags_NZCV(true, false, true, true);
     }
 }
