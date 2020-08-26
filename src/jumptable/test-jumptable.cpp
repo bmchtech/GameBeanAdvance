@@ -150,6 +150,7 @@ void run_00111ABC(uint16_t opcode) {
 
 // ALU operation - miscellaneous
 @EXCLUDE(01000011)
+@EXCLUDE(01000000)
 void run_010000PC(uint16_t opcode) {
     DEBUG_MESSAGE("ALU Operation");
     uint8_t operation = get_nth_bits(opcode, 6, 10);
@@ -163,6 +164,49 @@ void run_01000011(uint16_t opcode) {
     memory.regs[rd] = memory.regs[rd] & ~ memory.regs[rm];
 
     set_flag_N(get_nth_bit(memory.regs[rd], 31));
+    set_flag_Z(memory.regs[rd] == 0);
+}
+
+// ALU operation - AND, EOR, LSL #2, LSR #2
+void run_01000000(uint16_t opcode) {
+    DEBUG_MESSAGE("ALU Operation - AND / EOR / LSL #2 / LSR #2");
+    uint8_t rd = get_nth_bits(opcode, 0, 3);
+    uint8_t rm = get_nth_bits(opcode, 3, 6);
+
+    switch (get_nth_bits(opcode, 6, 8)) {
+        case 0b00:
+            memory.regs[rd] &= memory.regs[rm];
+            break;
+        case 0b01:
+            memory.regs[rd] ^= memory.regs[rm];
+            break;
+        case 0b10:
+            if ((memory.regs[rm] & 0xFF) < 32 && (memory.regs[rm] & 0xFF) != 0) {
+                set_flag_C(get_nth_bit(memory.regs[rd], 32 - (memory.regs[rm] & 0xFF)));
+                memory.regs[rd] <<= (memory.regs[rm] & 0xFF);
+            } else if ((memory.regs[rm] & 0xFF) == 32) {
+                set_flag_C(memory.regs[rd] & 1);
+                memory.regs[rd] = 0;
+            } else if ((memory.regs[rm] & 0xFF) > 32) {
+                set_flag_C(false);
+                memory.regs[rd] = 0;
+            }
+            break;
+        case 0b11:
+            if ((memory.regs[rm] & 0xFF) < 32 && (memory.regs[rm] & 0xFF) != 0) {
+                set_flag_C(get_nth_bit(memory.regs[rd], (memory.regs[rm] & 0xFF) - 1));
+                memory.regs[rd] >>= (memory.regs[rm] & 0xFF);
+            } else if ((memory.regs[rm] & 0xFF) == 32) {
+                set_flag_C(memory.regs[rd] >> 31);
+                memory.regs[rd] = 0;
+            } else if ((memory.regs[rm] & 0xFF) > 32) {
+                set_flag_C(false);
+                memory.regs[rd] = 0;
+            }
+            break;
+    }
+
+    set_flag_N(memory.regs[rd] >> 31);
     set_flag_Z(memory.regs[rd] == 0);
 }
 

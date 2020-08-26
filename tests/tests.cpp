@@ -161,3 +161,137 @@ TEST_CASE("CPU Thumb Mode - Conditional Branches") {
         REQUIRE(*memory.pc == 0x0FFFFFFE);
     }
 }
+
+TEST_CASE("CPU Thumb Mode - Logical AND") {
+    set_flag_C(true);
+    set_flag_V(true);
+
+    SECTION("AND R2, R3 (Carry)") {
+        memory.regs[2] = 0xFF00FF88;
+        memory.regs[3] = 0xF1111111;
+        execute(0b010000'0000'010'011);
+
+        REQUIRE(memory.regs[3] == 0xF1001100);
+        check_flags_NZCV(true, false, true, true);
+    }
+
+    SECTION("AND R2, R3 (Zero)") {
+        memory.regs[2] = 0x00000000;
+        memory.regs[3] = 0x12345678;
+        execute(0b010000'0000'010'011);
+
+        REQUIRE(memory.regs[3] == 0x00000000);
+        check_flags_NZCV(false, true, true, true);
+    }
+}
+
+TEST_CASE("CPU Thumb Mode - Logical EOR") {
+    set_flag_C(true);
+    set_flag_V(true);
+
+    SECTION("EOR R2, R3 (Carry)") {
+        memory.regs[2] = 0xFF00FF88;
+        memory.regs[3] = 0x11111111;
+        execute(0b010000'0001'010'011);
+
+        REQUIRE(memory.regs[3] == 0xEE11EE99);
+        check_flags_NZCV(true, false, true, true);
+    }
+
+    SECTION("AND R2, R3 (Zero)") {
+        memory.regs[2] = 0x12345678;
+        memory.regs[3] = 0x12345678;
+        execute(0b010000'0001'010'011);
+
+        REQUIRE(memory.regs[3] == 0x00000000);
+        check_flags_NZCV(false, true, true, true);
+    }
+}
+
+TEST_CASE("CPU Thumb Mode - Logical LSL") {
+    set_flag_V(true);
+
+    SECTION("LSL R2, R3 (Shift == 0)") {
+        set_flag_C(true);
+        memory.regs[2] = 0xFFFF0000;
+        memory.regs[3] = 0x12345678;
+        execute(0b010000'0010'010'011);
+
+        REQUIRE(memory.regs[3] == 0x12345678);
+        check_flags_NZCV(false, false, true, true);
+    }
+
+    SECTION("LSL R2, R3 (Shift < 32)") {
+        set_flag_C(true);
+        memory.regs[2] = 0xFFFF0004;
+        memory.regs[3] = 0x1F345678;
+        execute(0b010000'0010'010'011);
+
+        REQUIRE(memory.regs[3] == 0xF3456780);
+        check_flags_NZCV(true, false, true, true);
+    }
+
+    SECTION("LSL R2, R3 (Shift == 32)") {
+        set_flag_C(true);
+        memory.regs[2] = 0xFFFF0020;
+        memory.regs[3] = 0x1F345679;
+        execute(0b010000'0010'010'011);
+
+        REQUIRE(memory.regs[3] == 0x00000000);
+        check_flags_NZCV(false, true, true, true);
+    }
+
+    SECTION("LSL R2, R3 (Shift > 32)") {
+        set_flag_C(true);
+        memory.regs[2] = 0xFFFF0021;
+        memory.regs[3] = 0x1F345678;
+        execute(0b010000'0010'010'011);
+
+        REQUIRE(memory.regs[3] == 0x00000000);
+        check_flags_NZCV(false, true, false, true);
+    }
+}
+
+TEST_CASE("CPU Thumb Mode - Logical LSR") {
+    set_flag_V(true);
+
+    SECTION("LSR R2, R3 (Shift == 0)") {
+        set_flag_C(true);
+        memory.regs[2] = 0xFFFF0000;
+        memory.regs[3] = 0x12345678;
+        execute(0b010000'0011'010'011);
+
+        REQUIRE(memory.regs[3] == 0x12345678);
+        check_flags_NZCV(false, false, true, true);
+    }
+
+    SECTION("LSR R2, R3 (Shift < 32)") {
+        set_flag_C(true);
+        memory.regs[2] = 0xFFFF0004;
+        memory.regs[3] = 0x1F345678;
+        execute(0b010000'0011'010'011);
+
+        REQUIRE(memory.regs[3] == 0x01F34567);
+        check_flags_NZCV(false, false, true, true);
+    }
+
+    SECTION("LSR R2, R3 (Shift == 32)") {
+        set_flag_C(true);
+        memory.regs[2] = 0xFFFF0020;
+        memory.regs[3] = 0x1F345679;
+        execute(0b010000'0011'010'011);
+
+        REQUIRE(memory.regs[3] == 0x00000000);
+        check_flags_NZCV(false, true, false, true);
+    }
+
+    SECTION("LSR R2, R3 (Shift > 32)") {
+        set_flag_C(true);
+        memory.regs[2] = 0xFFFF0021;
+        memory.regs[3] = 0x1F345678;
+        execute(0b010000'0011'010'011);
+
+        REQUIRE(memory.regs[3] == 0x00000000);
+        check_flags_NZCV(false, true, false, true);
+    }
+}
