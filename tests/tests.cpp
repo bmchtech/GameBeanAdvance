@@ -384,3 +384,50 @@ TEST_CASE("CPU Thumb Mode - Logical ASR") {
         check_flags_NZCV(true, false, true, true);
     }
 }
+
+
+
+
+
+TEST_CASE("CPU Thumb Mode - ADC") {
+    SECTION("ADC R2, R3 (Zero)") {
+        set_flag_C(false);
+        memory.regs[2] = 0x00000000;
+        memory.regs[3] = 0x00000000;
+        execute(0b010000'0101'010'011);
+
+        REQUIRE(memory.regs[3] == 0x00000000);
+        check_flags_NZCV(false, true, false, false);
+    }
+
+    SECTION("ADC R2, R3 (V flag)") {
+        set_flag_C(true);
+        memory.regs[2] = 0x7FFFFFFF;
+        memory.regs[3] = 0x00000001;
+        execute(0b010000'0101'010'011);
+        REQUIRE(memory.regs[3] == 0x80000001);
+
+        check_flags_NZCV(true, false, false, true);
+    }
+
+    SECTION("ADC R2, R3 (No Overflow)") {
+        set_flag_C(false);
+        memory.regs[2] = 0x00000001;
+        memory.regs[3] = 0xFFFFFFFE;
+        execute(0b010000'0101'010'011);
+
+        REQUIRE(memory.regs[3] == 0xFFFFFFFF);
+        check_flags_NZCV(true, false, false, false);
+    }
+
+    SECTION("ADC R2, R3 (Overflow)") {
+        set_flag_C(true);
+        memory.regs[2] = 0x00000001;
+        memory.regs[3] = 0xFFFFFFFE;
+        execute(0b010000'0101'010'011);
+        
+        REQUIRE(memory.regs[3] == 0x00000000);
+        check_flags_NZCV(false, true, true, false);
+    }
+    wipe_registers();
+}

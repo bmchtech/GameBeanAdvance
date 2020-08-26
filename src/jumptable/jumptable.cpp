@@ -905,7 +905,7 @@ void run_01000001(uint16_t opcode) {
     uint8_t rm = get_nth_bits(opcode, 3, 6);
 
     switch (get_nth_bits(opcode, 6, 8)) {
-        case 0b00:
+        case 0b00: {
             // ASR #2
             uint8_t low_byte = memory.regs[rm] & 0xFF;
             if (low_byte < 32 && low_byte != 0) {
@@ -921,6 +921,27 @@ void run_01000001(uint16_t opcode) {
                 }
             }
             break;
+        }
+        
+        case 0b01: {
+            // ADC - this code will look very similar to the Add Register instruction. it just also utilizes the carry bit.
+            int32_t rm_value     = memory.regs[rm];
+            int32_t old_rd_value = memory.regs[rd];
+
+            memory.regs[rd] += rm_value + get_flag_C();
+            int32_t new_rd_value = memory.regs[rd];
+
+            set_flag_N(get_nth_bit(new_rd_value, 31));
+            set_flag_Z((new_rd_value == 0));
+
+            // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
+            set_flag_C(get_nth_bit(rm_value, 31) & get_nth_bit(old_rd_value, 31) | 
+            ((get_nth_bit(rm_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31))));
+
+            bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rm_value, 31);
+            set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_flag_N()));
+            break;
+        }
     }
 
     set_flag_N(memory.regs[rd] >> 31);
