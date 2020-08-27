@@ -306,6 +306,40 @@ void run_01000010(uint16_t opcode) {
             result = memory.regs[rd];
             set_flag_C(result != 0);
             set_flag_V(get_nth_bit(result, 31) && get_nth_bit(memory.regs[rm], 31));
+            break;
+
+        case 0b10: {
+            // CMP, which is basically a subtraction but the result isn't stored.
+            // again, this uses the same two's complement trick that makes ADD the same as SUB.
+            int32_t rm_value     = ~memory.regs[rm] + 1; // the trick is implemented here
+            int32_t old_rd_value = memory.regs[rd];
+
+            result = memory.regs[rd] + rm_value;
+
+            // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
+            set_flag_C(get_nth_bit(rm_value, 31) & get_nth_bit(old_rd_value, 31) | 
+            ((get_nth_bit(rm_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(result, 31))));
+
+            bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rm_value, 31);
+            set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
+            break;
+        }
+        
+        case 0b11: {
+            // CMN - see the above note for CMP (case 0b10). CMP is to SUB what CMN is to ADD.
+            int32_t rm_value     = memory.regs[rm];
+            int32_t old_rd_value = memory.regs[rd];
+
+            result = memory.regs[rd] + rm_value;
+
+            // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
+            set_flag_C(get_nth_bit(rm_value, 31) & get_nth_bit(old_rd_value, 31) | 
+            ((get_nth_bit(rm_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(result, 31))));
+
+            bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rm_value, 31);
+            set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
+            break;
+        }
     }
 
     set_flag_N(get_nth_bit(result, 31));
