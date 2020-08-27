@@ -148,15 +148,6 @@ void run_00111ABC(uint16_t opcode) {
     set_flag_V(matching_signs && (get_nth_bit(new_rd_value, 31) ^ get_flag_N()));
 }
 
-// ALU operation - miscellaneous
-@EXCLUDE(01000011)
-@EXCLUDE(01000000)
-@EXCLUDE(01000001)
-void run_010000PC(uint16_t opcode) {
-    DEBUG_MESSAGE("ALU Operation");
-    uint8_t operation = get_nth_bits(opcode, 6, 10);
-}
-
 // ALU operation - BIC
 void run_01000011(uint16_t opcode) {
     DEBUG_MESSAGE("ALU Operation - Bit Clear (BIC)");
@@ -281,7 +272,6 @@ void run_01000001(uint16_t opcode) {
             if ((memory.regs[rm] & 0xFF) == 0) 
                 break;
 
-            std::cout << std::to_string(memory.regs[rm] & 0xF) << std::endl;
             if ((memory.regs[rm] & 0xF) == 0) {
                 set_flag_C(get_nth_bit(memory.regs[rd], 31));
             } else {
@@ -296,6 +286,24 @@ void run_01000001(uint16_t opcode) {
     set_flag_N(memory.regs[rd] >> 31);
     set_flag_Z(memory.regs[rd] == 0);
 }
+
+// ALU operation - TST, NEG, CMP #2, CMN
+void run_01000010(uint16_t opcode) {
+    DEBUG_MESSAGE("ALU Operation - TST / NEG / CMP #2 / CMN");
+    uint8_t rd = get_nth_bits(opcode, 0, 3);
+    uint8_t rm = get_nth_bits(opcode, 3, 6);
+    uint32_t alu_out;
+
+    switch (get_nth_bits(opcode, 6, 8)) {
+        case 0b00:
+            alu_out = memory.regs[rm] & memory.regs[rd];
+            break;
+    }
+
+    set_flag_N(get_nth_bit(alu_out, 31));
+    set_flag_Z(alu_out == 0);
+}
+
 
 // high register operations and branch exchange
 void run_010001OP(uint16_t opcode) {

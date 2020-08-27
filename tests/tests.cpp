@@ -515,3 +515,30 @@ TEST_CASE("CPU Thumb Mode - ROR") {
     }
     wipe_registers();
 }
+
+
+
+
+
+TEST_CASE("CPU Thumb Mode - TST") {
+    set_flag_C(true);
+    set_flag_V(true);
+
+    SECTION("TST R2, R3 (alu_out != 0)") {
+        memory.regs[2] = 0xFF00FF00;
+        memory.regs[3] = 0x91234567;
+        execute(0b010000'1000'010'011);
+
+        REQUIRE(memory.regs[3] == 0x91234567);
+        check_flags_NZCV(true, false, true, true);
+    }
+
+    SECTION("TST R2, R3 (alu_out == 0)") {
+        memory.regs[2] = 0xFEDCBA98;
+        memory.regs[3] = 0x01234567;
+        execute(0b010000'1000'010'011);
+
+        REQUIRE(memory.regs[3] == 0x01234567);
+        check_flags_NZCV(false, true, true, true);
+    }
+}
