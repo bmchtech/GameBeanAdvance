@@ -692,6 +692,23 @@ TEST_CASE("CPU Thumb Mode - MUL") {
 
 
 
+TEST_CASE("CPU Thumb Mode - BIC") {
+    SECTION("BIC R2, R3") {
+        set_flag_C(false);
+        set_flag_V(false);
+        memory.regs[2] = 0xFF00FF00;
+        memory.regs[3] = 0x00FF0F00;
+        execute(0b010000'1110'010'011);
+
+        REQUIRE(memory.regs[3] == 0x00FF0000);
+        check_flags_NZCV(false, false, false, false);
+    }
+}
+
+
+
+
+
 TEST_CASE("CPU Thumb Mode - MVN") {
     SECTION("MVN R2, R3") {
         set_flag_C(false);
