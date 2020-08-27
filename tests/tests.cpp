@@ -542,3 +542,36 @@ TEST_CASE("CPU Thumb Mode - TST") {
         check_flags_NZCV(false, true, true, true);
     }
 }
+
+
+
+
+
+TEST_CASE("CPU Thumb Mode - NEG") {
+    set_flag_C(true);
+    set_flag_V(true);
+
+    SECTION("TST R2, R3 (Zero)") {
+        memory.regs[2] = 0x00000000;
+        execute(0b010000'1001'010'011);
+
+        REQUIRE(memory.regs[3] == 0x00000000);
+        check_flags_NZCV(false, true, false, false);
+    }
+
+    SECTION("TST R2, R3 (Carry set)") {
+        memory.regs[2] = 0b00000000'00000000'00000000'00011001;
+        execute(0b010000'1001'010'011);
+
+        REQUIRE(memory.regs[3] == 0b11111111'11111111'11111111'11100111);
+        check_flags_NZCV(true, false, true, false);
+    }
+
+    SECTION("TST R2, R3 (Overflow set)") {
+        memory.regs[2] = 0b10000000'00000000'00000000'00000000;
+        execute(0b010000'1001'010'011);
+
+        REQUIRE(memory.regs[3] == 0b10000000'00000000'00000000'00000000);
+        check_flags_NZCV(true, false, true, true);
+    }
+}

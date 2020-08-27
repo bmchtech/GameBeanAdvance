@@ -968,7 +968,6 @@ void run_01000001(uint16_t opcode) {
             if ((memory.regs[rm] & 0xFF) == 0) 
                 break;
 
-            std::cout << std::to_string(memory.regs[rm] & 0xF) << std::endl;
             if ((memory.regs[rm] & 0xF) == 0) {
                 set_flag_C(get_nth_bit(memory.regs[rd], 31));
             } else {
@@ -988,16 +987,24 @@ void run_01000010(uint16_t opcode) {
     DEBUG_MESSAGE("ALU Operation - TST / NEG / CMP #2 / CMN");
     uint8_t rd = get_nth_bits(opcode, 0, 3);
     uint8_t rm = get_nth_bits(opcode, 3, 6);
-    uint32_t alu_out;
+    uint32_t result;
 
     switch (get_nth_bits(opcode, 6, 8)) {
         case 0b00:
-            alu_out = memory.regs[rm] & memory.regs[rd];
+            // TST - result is equal to the two values and'ed.
+            result = memory.regs[rm] & memory.regs[rd];
             break;
+
+        case 0b01:
+            // NEG - Rd = 0 - Rm
+            memory.regs[rd] = ~memory.regs[rm] + 1;
+            result = memory.regs[rd];
+            set_flag_C(result != 0);
+            set_flag_V(get_nth_bit(result, 31) && get_nth_bit(memory.regs[rm], 31));
     }
 
-    set_flag_N(get_nth_bit(alu_out, 31));
-    set_flag_Z(alu_out == 0);
+    set_flag_N(get_nth_bit(result, 31));
+    set_flag_Z(result == 0);
 }
 
 void run_01000011(uint16_t opcode) {
