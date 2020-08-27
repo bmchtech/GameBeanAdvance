@@ -431,3 +431,50 @@ TEST_CASE("CPU Thumb Mode - ADC") {
     }
     wipe_registers();
 }
+
+
+
+
+
+TEST_CASE("CPU Thumb Mode - SBC") {
+    SECTION("SBC R2, R3 (Zero)") {
+        set_flag_C(true);
+        memory.regs[2] = 0x00000000;
+        memory.regs[3] = 0x00000000;
+        execute(0b010000'0110'010'011);
+
+        REQUIRE(memory.regs[3] == 0x00000000);
+        check_flags_NZCV(false, true, false, false);
+    }
+
+    SECTION("SBC R2, R3 (V flag)") {
+        set_flag_C(false);
+        memory.regs[2] = 0x80000000;
+        memory.regs[3] = 0x80000001;
+        execute(0b010000'0110'010'011);
+        REQUIRE(memory.regs[3] == 0x00000000);
+
+        check_flags_NZCV(false, true, true, true);
+    }
+
+    SECTION("SBC R2, R3 (No Overflow)") {
+        set_flag_C(true);
+        memory.regs[2] = 0x00000001;
+        memory.regs[3] = 0xFFFFFFFE;
+        execute(0b010000'0110'010'011);
+
+        REQUIRE(memory.regs[3] == 0xFFFFFFFD);
+        check_flags_NZCV(true, false, true, false);
+    }
+
+    SECTION("SBC R2, R3 (Overflow)") {
+        set_flag_C(false);
+        memory.regs[2] = 0xFFFFFFFF;
+        memory.regs[3] = 0xFFFFFFFE;
+        execute(0b010000'0110'010'011);
+        
+        REQUIRE(memory.regs[3] == 0xFFFFFFFE);
+        check_flags_NZCV(true, false, false, false);
+    }
+    wipe_registers();
+}

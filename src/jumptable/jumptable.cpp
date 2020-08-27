@@ -942,6 +942,27 @@ void run_01000001(uint16_t opcode) {
             set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_flag_N()));
             break;
         }
+
+        case 0b10: {
+            // ADC - using a twos complement trick, SBC will just be the same thing as ADC, just with a negative rm_value.
+            int32_t rm_value     = ~memory.regs[rm] + 1; // the trick is implemented here
+            std::cout << std::to_string(rm_value) << std::endl;
+            int32_t old_rd_value = memory.regs[rd];
+
+            memory.regs[rd] += rm_value - (get_flag_C() ? 0 : 1); // as well as over here
+            int32_t new_rd_value = memory.regs[rd];
+
+            set_flag_N(get_nth_bit(new_rd_value, 31));
+            set_flag_Z((new_rd_value == 0));
+
+            // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
+            set_flag_C(get_nth_bit(rm_value, 31) & get_nth_bit(old_rd_value, 31) | 
+            ((get_nth_bit(rm_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31))));
+
+            bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rm_value, 31);
+            set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_flag_N()));
+            break;
+        }
     }
 
     set_flag_N(memory.regs[rd] >> 31);
