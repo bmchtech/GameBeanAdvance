@@ -1048,7 +1048,10 @@ void run_01000011(uint16_t opcode) {
 
     switch (get_nth_bits(opcode, 6, 8)) {
         case 0b00:
-            memory.regs[rd] = memory.regs[rd] | memory.regs[rm];
+            memory.regs[rd] |= memory.regs[rm];
+            break;
+        case 0b01:
+            memory.regs[rd] *= memory.regs[rm];
             break;
         case 0b10:
             memory.regs[rd] = memory.regs[rd] & ~ memory.regs[rm];
