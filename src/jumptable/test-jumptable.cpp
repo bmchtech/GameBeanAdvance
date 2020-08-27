@@ -257,9 +257,8 @@ void run_01000001(uint16_t opcode) {
         }
 
         case 0b10: {
-            // ADC - using a twos complement trick, SBC will just be the same thing as ADC, just with a negative rm_value.
+            // SBC - using a twos complement trick, SBC will just be the same thing as ADC, just with a negative rm_value.
             int32_t rm_value     = ~memory.regs[rm] + 1; // the trick is implemented here
-            std::cout << std::to_string(rm_value) << std::endl;
             int32_t old_rd_value = memory.regs[rd];
 
             memory.regs[rd] += rm_value - (get_flag_C() ? 0 : 1); // as well as over here
@@ -275,6 +274,22 @@ void run_01000001(uint16_t opcode) {
             bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rm_value, 31);
             set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_flag_N()));
             break;
+        }
+
+        case 0b11: {
+            // ROR - Rotates the register to the right by memory.regs[rm]
+            if ((memory.regs[rm] & 0xFF) == 0) 
+                break;
+
+            std::cout << std::to_string(memory.regs[rm] & 0xF) << std::endl;
+            if ((memory.regs[rm] & 0xF) == 0) {
+                set_flag_C(get_nth_bit(memory.regs[rd], 31));
+            } else {
+                set_flag_C(get_nth_bit(memory.regs[rd], (memory.regs[rm] & 0xF) - 1));
+                uint32_t rotated_off = get_nth_bits(memory.regs[rd], 0, memory.regs[rm] & 0xF);  // the value that is rotated off
+                uint32_t rotated_in  = get_nth_bits(memory.regs[rd], memory.regs[rm] & 0xF, 32); // the value that stays after the rotation
+                memory.regs[rd] = rotated_in | (rotated_off << (32 - (memory.regs[rm] & 0xF)));
+            }
         }
     }
 

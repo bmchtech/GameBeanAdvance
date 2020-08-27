@@ -478,3 +478,40 @@ TEST_CASE("CPU Thumb Mode - SBC") {
     }
     wipe_registers();
 }
+
+
+
+
+
+TEST_CASE("CPU Thumb Mode - ROR") {
+    set_flag_C(true);
+    set_flag_V(true);
+
+    SECTION("ROR R2, R3 (r3 == 0)") {
+        memory.regs[2] = 0xFFFFFF00;
+        memory.regs[3] = 0x01234567;
+        execute(0b010000'0111'010'011);
+
+        REQUIRE(memory.regs[3] == 0x01234567);
+        check_flags_NZCV(false, false, true, true);
+    }
+
+    SECTION("ROR R2, R3 (r3[4:0] == 0 && r3 r3[7:0] != 0)") {
+        memory.regs[2] = 0xFFFFFFF0;
+        memory.regs[3] = 0x01234567;
+        execute(0b010000'0111'010'011);
+        REQUIRE(memory.regs[3] == 0x01234567);
+
+        check_flags_NZCV(false, false, false, true);
+    }
+
+    SECTION("ROR R2, R3 (r3[4:0] > 0)") {
+        memory.regs[2] = 0xFFFFFFF8;
+        memory.regs[3] = 0x01234567;
+        execute(0b010000'0111'010'011);
+
+        REQUIRE(memory.regs[3] == 0x67012345);
+        check_flags_NZCV(false, false, false, true);
+    }
+    wipe_registers();
+}
