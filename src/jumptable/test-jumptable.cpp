@@ -148,17 +148,6 @@ void run_00111ABC(uint16_t opcode) {
     set_flag_V(matching_signs && (get_nth_bit(new_rd_value, 31) ^ get_flag_N()));
 }
 
-// ALU operation - BIC
-void run_01000011(uint16_t opcode) {
-    DEBUG_MESSAGE("ALU Operation - Bit Clear (BIC)");
-    uint8_t rd = get_nth_bits(opcode, 0, 3);
-    uint8_t rm = get_nth_bits(opcode, 3, 6);
-    memory.regs[rd] = memory.regs[rd] & ~ memory.regs[rm];
-
-    set_flag_N(get_nth_bit(memory.regs[rd], 31));
-    set_flag_Z(memory.regs[rd] == 0);
-}
-
 // ALU operation - AND, EOR, LSL #2, LSR #2
 void run_01000000(uint16_t opcode) {
     DEBUG_MESSAGE("ALU Operation - AND / EOR / LSL #2 / LSR #2");
@@ -346,6 +335,24 @@ void run_01000010(uint16_t opcode) {
     set_flag_Z(result == 0);
 }
 
+// ALU operation - ORR, MUL, BIC, MVN 
+void run_01000011(uint16_t opcode) {
+    DEBUG_MESSAGE("ALU Operation - ORR / MUL / BIC / MVN");
+    uint8_t rd = get_nth_bits(opcode, 0, 3);
+    uint8_t rm = get_nth_bits(opcode, 3, 6);
+
+    switch (get_nth_bits(opcode, 6, 8)) {
+        case 0b00:
+            memory.regs[rd] = memory.regs[rd] | memory.regs[rm];
+            break;
+        case 0b10:
+            memory.regs[rd] = memory.regs[rd] & ~ memory.regs[rm];
+            break;
+    }
+
+    set_flag_N(get_nth_bit(memory.regs[rd], 31));
+    set_flag_Z(memory.regs[rd] == 0);
+}
 
 // high register operations and branch exchange
 void run_010001OP(uint16_t opcode) {

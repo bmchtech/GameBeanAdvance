@@ -1042,10 +1042,18 @@ void run_01000010(uint16_t opcode) {
 }
 
 void run_01000011(uint16_t opcode) {
-    DEBUG_MESSAGE("ALU Operation - Bit Clear (BIC)");
+    DEBUG_MESSAGE("ALU Operation - ORR / MUL / BIC / MVN");
     uint8_t rd = get_nth_bits(opcode, 0, 3);
     uint8_t rm = get_nth_bits(opcode, 3, 6);
-    memory.regs[rd] = memory.regs[rd] & ~ memory.regs[rm];
+
+    switch (get_nth_bits(opcode, 6, 8)) {
+        case 0b00:
+            memory.regs[rd] = memory.regs[rd] | memory.regs[rm];
+            break;
+        case 0b10:
+            memory.regs[rd] = memory.regs[rd] & ~ memory.regs[rm];
+            break;
+    }
 
     set_flag_N(get_nth_bit(memory.regs[rd], 31));
     set_flag_Z(memory.regs[rd] == 0);
