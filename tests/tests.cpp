@@ -670,3 +670,36 @@ TEST_CASE("CPU Thumb Mode - ORR") {
         check_flags_NZCV(true, false, false, false);
     }
 }
+
+
+
+
+
+TEST_CASE("CPU Thumb Mode - MUL") {
+    SECTION("MUL R2, R3") {
+        set_flag_C(false);
+        set_flag_V(false);
+        memory.regs[2] = 0xFF00FF00;
+        memory.regs[3] = 0x00000008;
+        execute(0b010000'1101'010'011);
+
+        REQUIRE(memory.regs[3] == 0xF807F800);
+        check_flags_NZCV(true, false, false, false);
+    }
+}
+
+
+
+
+
+TEST_CASE("CPU Thumb Mode - MVN") {
+    SECTION("MVN R2, R3") {
+        set_flag_C(false);
+        set_flag_V(false);
+        memory.regs[2] = 0x01234567;
+        execute(0b010000'1111'010'011);
+
+        REQUIRE(memory.regs[3] == 0xFEDCBA98);
+        check_flags_NZCV(true, false, false, false);
+    }
+}

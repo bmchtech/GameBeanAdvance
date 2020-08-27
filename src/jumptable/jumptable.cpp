@@ -1056,6 +1056,8 @@ void run_01000011(uint16_t opcode) {
         case 0b10:
             memory.regs[rd] = memory.regs[rd] & ~ memory.regs[rm];
             break;
+        case 0b11:
+            memory.regs[rd] = ~memory.regs[rm];
     }
 
     set_flag_N(get_nth_bit(memory.regs[rd], 31));
