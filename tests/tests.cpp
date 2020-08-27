@@ -405,8 +405,8 @@ TEST_CASE("CPU Thumb Mode - ADC") {
         memory.regs[2] = 0x7FFFFFFF;
         memory.regs[3] = 0x00000001;
         execute(0b010000'0101'010'011);
-        REQUIRE(memory.regs[3] == 0x80000001);
 
+        REQUIRE(memory.regs[3] == 0x80000001);
         check_flags_NZCV(true, false, false, true);
     }
 
@@ -611,6 +611,45 @@ TEST_CASE("CPU Thumb Mode - CMP Registers (Low)") {
         execute(0b010000'1010'010'011);
         
         check_flags_NZCV(true, false, false, false);
+    }
+    wipe_registers();
+}
+
+
+
+
+
+TEST_CASE("CPU Thumb Mode - CMN") {
+    SECTION("CMN R2, R3 (Zero)") {
+        memory.regs[2] = 0x00000000;
+        memory.regs[3] = 0x00000000;
+        execute(0b010000'0101'010'011);
+
+        check_flags_NZCV(false, true, false, false);
+    }
+
+    SECTION("CMN R2, R3 (V flag)") {
+        memory.regs[2] = 0x7FFFFFFF;
+        memory.regs[3] = 0x00000002;
+        execute(0b010000'0101'010'011);
+
+        check_flags_NZCV(true, false, false, true);
+    }
+
+    SECTION("CMN R2, R3 (No Overflow)") {
+        memory.regs[2] = 0x00000001;
+        memory.regs[3] = 0xFFFFFFFE;
+        execute(0b010000'0101'010'011);
+
+        check_flags_NZCV(true, false, false, false);
+    }
+
+    SECTION("CMN R2, R3 (Overflow)") {
+        memory.regs[2] = 0x00000001;
+        memory.regs[3] = 0xFFFFFFFF;
+        execute(0b010000'0101'010'011);
+        
+        check_flags_NZCV(false, true, true, false);
     }
     wipe_registers();
 }
