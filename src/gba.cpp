@@ -65,11 +65,14 @@ void get_rom_as_bytes(std::string rom_name, uint8_t* out, int out_length) {
 // note that prefetches might not even be needed, if i just subtract the proper amount
 // when running the opcode.
 int fetch() {
-    uint16_t opcode = *((uint16_t*)(memory.main + *memory.pc));
+    // TODO: this fetch should operate differnetly based on bit T, which dictates ARM or Thumb mode.
+    // memory.pc must be rounded to the nearest even number before being used for fetching here, hence the & 0xFFFFFFFE.
+    uint16_t opcode = *((uint16_t*)(memory.main + (*memory.pc & 0xFFFFFFFE)));
     *memory.pc += 2;
     return opcode;
 }
 
 void execute(int opcode) {
+    // TODO: this execute should operate differnetly based on bit T, which dictates ARM or Thumb mode.
     jumptable[opcode >> 8](opcode);
 }

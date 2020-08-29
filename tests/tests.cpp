@@ -720,3 +720,36 @@ TEST_CASE("CPU Thumb Mode - MVN") {
         check_flags_NZCV(true, false, false, false);
     }
 }
+
+
+
+
+
+TEST_CASE("CPU Thumb Mode - BX") {
+    SECTION("BX R14 (high register, no exchange)") {
+        *memory.pc      = 0x00000000;
+        memory.regs[14] = 0x01234567;
+        execute(0b010001110'1'110'000);
+
+        REQUIRE(*memory.pc == 0x01234566);
+        REQUIRE(get_bit_T() == true);
+    }
+
+    SECTION("BX R2 (low register, no exchange)") {
+        *memory.pc     = 0x00000000;
+        memory.regs[2] = 0x01234567;
+        execute(0b010001110'0'010'000);
+
+        REQUIRE(*memory.pc  == 0x01234566);
+        REQUIRE(get_bit_T() == true);
+    }
+
+    SECTION("BX R14 (exchange)") {
+        *memory.pc     = 0x00000000;
+        memory.regs[2] = 0x01234566;
+        execute(0b010001110'0'010'000);
+
+        REQUIRE(*memory.pc  == 0x01234566);
+        REQUIRE(get_bit_T() == false);
+    }
+}

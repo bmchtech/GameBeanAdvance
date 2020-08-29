@@ -1077,7 +1077,9 @@ void run_01000110(uint16_t opcode) {
 }
 
 void run_01000111(uint16_t opcode) {
-
+   uint32_t pointer = memory.regs[get_nth_bits(opcode, 3, 7)];
+   *memory.pc = pointer & 0xFFFFFFFE; // the PC must be even, so we & with 0xFFFFFFFE.
+   set_bit_T(pointer & 1);
 }
 
 void run_01001000(uint16_t opcode) {

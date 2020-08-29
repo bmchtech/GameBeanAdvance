@@ -106,6 +106,11 @@ inline void set_flag_V(bool condition) {
     else           memory.psr &= 0xEFFFFFFF;
 }
 
+inline void set_bit_T(bool condition) {
+    if (condition) memory.psr |= 0x00000020;
+    else           memory.psr &= 0xFFFFFFDF;
+}
+
 inline bool get_flag_N() {
     return (memory.psr >> 31) & 1;
 }
@@ -120,6 +125,10 @@ inline bool get_flag_C() {
 
 inline bool get_flag_V() {
     return (memory.psr >> 28) & 1;
+}
+
+inline bool get_bit_T() {
+    return (memory.psr >> 5) & 1;
 }
 
 #endif

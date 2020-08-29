@@ -359,9 +359,17 @@ void run_01000011(uint16_t opcode) {
     set_flag_Z(memory.regs[rd] == 0);
 }
 
-// high register operations and branch exchange
+// high register operations
+@EXCLUDE(01000111)
 void run_010001OP(uint16_t opcode) {
 
+}
+
+// branch exchange
+void run_01000111(uint16_t opcode) {
+   uint32_t pointer = memory.regs[get_nth_bits(opcode, 3, 7)];
+   *memory.pc = pointer & 0xFFFFFFFE; // the PC must be even, so we & with 0xFFFFFFFE.
+   set_bit_T(pointer & 1);
 }
 
 // pc-relative load
