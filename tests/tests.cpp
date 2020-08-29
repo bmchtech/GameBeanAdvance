@@ -753,3 +753,41 @@ TEST_CASE("CPU Thumb Mode - BX") {
         REQUIRE(get_bit_T() == false);
     }
 }
+
+
+
+
+
+TEST_CASE("CPU Thumb Mode - MOV (no flag changes, high registers)") {
+    SECTION("MOV R2, R3 (low source, low destination)") {
+        memory.regs[2] = 0x01234567;
+        memory.regs[3] = 0x00000000;
+        execute(0b01000110'0'0'010'011);
+
+        REQUIRE(memory.regs[3] == 0x01234567);
+    }
+
+    SECTION("MOV R10, R3 (low source, high destination)") {
+        memory.regs[10] = 0x01234567;
+        memory.regs[3]  = 0x00000000;
+        execute(0b01000110'0'1'010'011);
+
+        REQUIRE(memory.regs[3] == 0x01234567);
+    }
+
+    SECTION("MOV R2, R11 (high source, low destination)") {
+        memory.regs[2]  = 0x01234567;
+        memory.regs[11] = 0x00000000;
+        execute(0b01000110'1'0'010'011);
+
+        REQUIRE(memory.regs[3] == 0x01234567);
+    }
+
+    SECTION("MOV R10, R11 (high source, high destination)") {
+        memory.regs[10] = 0x01234567;
+        memory.regs[11] = 0x00000000;
+        execute(0b01000110'1'1'010'011);
+
+        REQUIRE(memory.regs[3] == 0x01234567);
+    }
+}

@@ -1073,7 +1073,10 @@ void run_01000101(uint16_t opcode) {
 }
 
 void run_01000110(uint16_t opcode) {
-
+    std::cout << "UwU" << std::endl;
+    uint8_t rm = get_nth_bits(opcode, 3, 7);
+    uint8_t rd = get_nth_bits(opcode, 0, 3) | (get_nth_bit(opcode, 7) << 3);
+    memory.regs[rd] = memory.regs[rm];
 }
 
 void run_01000111(uint16_t opcode) {

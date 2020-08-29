@@ -361,8 +361,16 @@ void run_01000011(uint16_t opcode) {
 
 // high register operations
 @EXCLUDE(01000111)
+@EXCLUDE(01000110)
 void run_010001OP(uint16_t opcode) {
 
+}
+
+// MOV #4 - does not change flags.
+void run_01000110(uint16_t opcode) {
+    uint8_t rm = get_nth_bits(opcode, 3, 7);
+    uint8_t rd = get_nth_bits(opcode, 0, 3) | (get_nth_bit(opcode, 7) << 3);
+    memory.regs[rd] = memory.regs[rm];
 }
 
 // branch exchange
