@@ -1072,7 +1072,24 @@ void run_01000100(uint16_t opcode) {
 }
 
 void run_01000101(uint16_t opcode) {
+    // CMP is basically a subtraction but the result isn't stored.
+    // this uses a two's complement trick that makes ADD the same as SUB.
+    uint8_t rm = get_nth_bits(opcode, 3, 7);
+    uint8_t rd = get_nth_bits(opcode, 0, 3) | (get_nth_bit(opcode, 7) << 3);
+    int32_t rm_value     = ~memory.regs[rm] + 1; // the trick is implemented here
+    int32_t old_rd_value = memory.regs[rd];
 
+    uint32_t result = memory.regs[rd] + rm_value;
+
+    set_flag_N(get_nth_bit(result, 31));
+    set_flag_Z(result == 0);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
+    set_flag_C(get_nth_bit(rm_value, 31) & get_nth_bit(old_rd_value, 31) | 
+    ((get_nth_bit(rm_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(result, 31))));
+
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rm_value, 31);
+    set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
 }
 
 void run_01000110(uint16_t opcode) {

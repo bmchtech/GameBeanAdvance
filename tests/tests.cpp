@@ -829,3 +829,42 @@ TEST_CASE("CPU Thumb Mode - ADD (no flag changes, high registers)") {
         REQUIRE(memory.regs[3] == 0x01234568);
     }
 }
+
+
+
+
+
+TEST_CASE("CPU Thumb Mode - CMP Registers (High)") {
+    SECTION("CMP R10, R11 (Zero)") {
+        memory.regs[10] = 0x00000000;
+        memory.regs[11] = 0x00000000;
+        execute(0b01000101'1'1'010'011);
+
+        check_flags_NZCV(false, true, false, false);
+    }
+
+    SECTION("CMP R10, R11 (V flag)") {
+        memory.regs[10] = 0x80000000;
+        memory.regs[11] = 0x80000000;
+        execute(0b01000101'1'1'010'011);
+
+        check_flags_NZCV(false, true, true, true);
+    }
+
+    SECTION("CMP R10, R11 (No Overflow)") {
+        memory.regs[10] = 0x00000001;
+        memory.regs[11] = 0xFFFFFFFE;
+        execute(0b01000101'1'1'010'011);
+
+        check_flags_NZCV(true, false, true, false);
+    }
+
+    SECTION("CMP R10, R11 (Overflow)") {
+        memory.regs[10] = 0xFFFFFFFF;
+        memory.regs[11] = 0xFFFFFFFD;
+        execute(0b01000101'1'1'010'011);
+        
+        check_flags_NZCV(true, false, false, false);
+    }
+    wipe_registers();
+}
