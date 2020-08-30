@@ -895,3 +895,29 @@ TEST_CASE("CPU Thumb Mode - LDRSH") {
         REQUIRE(memory.regs[4] == 0xFFFF9953);
     }
 }
+
+
+
+
+
+TEST_CASE("CPU Thumb Mode - LDRB (Relative Offset)") {
+    memory.regs[2] = 0x05000000;
+    memory.main[0x05000000] = 0x42;
+    memory.main[0x05000001] = 0x53;
+
+    SECTION("LDRB R4, [R2, R3] (Zero offset)") {
+        memory.regs[3] = 0x00000000;
+        memory.regs[4] = 0x00000000;
+        execute(0b0101110'010'011'100);
+
+        REQUIRE(memory.regs[4] == 0x00000042);
+    }
+
+    SECTION("LDRB R4, [R2, R3] (Non-Zero offset)") {
+        memory.regs[3] = 0x00000001;
+        memory.regs[4] = 0x00000000;
+        execute(0b0101110'010'011'100);
+
+        REQUIRE(memory.regs[4] == 0x00000053);
+    }
+}
