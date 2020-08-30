@@ -791,3 +791,41 @@ TEST_CASE("CPU Thumb Mode - MOV (no flag changes, high registers)") {
         REQUIRE(memory.regs[3] == 0x01234567);
     }
 }
+
+
+
+
+
+TEST_CASE("CPU Thumb Mode - ADD (no flag changes, high registers)") {
+    SECTION("ADD R2, R3 (low source, low destination)") {
+        memory.regs[2] = 0x01234567;
+        memory.regs[3] = 0x00000001;
+        execute(0b01000100'0'0'010'011);
+
+        REQUIRE(memory.regs[3] == 0x01234568);
+    }
+
+    SECTION("ADD R10, R3 (low source, high destination)") {
+        memory.regs[10] = 0x01234567;
+        memory.regs[3]  = 0x00000001;
+        execute(0b01000100'0'1'010'011);
+
+        REQUIRE(memory.regs[3] == 0x01234568);
+    }
+
+    SECTION("ADD R2, R11 (high source, low destination)") {
+        memory.regs[2]  = 0x01234567;
+        memory.regs[11] = 0x00000001;
+        execute(0b01000100'1'0'010'011);
+
+        REQUIRE(memory.regs[3] == 0x01234568);
+    }
+
+    SECTION("ADD R10, R11 (high source, high destination)") {
+        memory.regs[10] = 0x01234567;
+        memory.regs[11] = 0x00000001;
+        execute(0b01000100'1'1'010'011);
+
+        REQUIRE(memory.regs[3] == 0x01234568);
+    }
+}
