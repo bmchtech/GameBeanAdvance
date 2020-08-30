@@ -1185,43 +1185,173 @@ void run_01010101(uint16_t opcode) {
 }
 
 void run_01010110(uint16_t opcode) {
+    // 111-: LDRSH  rn + rm (load 2 bytes), sign extend
+    // 110-: LDRB#2 rn + rm (load 1 byte)
+    // 101-: LDRH#2 rn + rm (load 2 bytes) 
+    // 100-: LDR #2 rn + rm (load 4 bytes)
+    // 011-: LDRH#2 rn + rm (load 1 byte),  sign extend
+    // 010-: STRB
+    // 001-: STRH
+    // 000-: STR
+    uint8_t rm = get_nth_bits(opcode, 6, 9);
+    uint8_t rn = get_nth_bits(opcode, 3, 6);
+    uint8_t rd = get_nth_bits(opcode, 0, 3);
+    int32_t  value = (int32_t)  *((int8_t*)   (memory.main + memory.regs[rm] + memory.regs[rn]));
 
+    memory.regs[rd] = value;
 }
 
 void run_01010111(uint16_t opcode) {
+    // 111-: LDRSH  rn + rm (load 2 bytes), sign extend
+    // 110-: LDRB#2 rn + rm (load 1 byte)
+    // 101-: LDRH#2 rn + rm (load 2 bytes) 
+    // 100-: LDR #2 rn + rm (load 4 bytes)
+    // 011-: LDRH#2 rn + rm (load 1 byte),  sign extend
+    // 010-: STRB
+    // 001-: STRH
+    // 000-: STR
+    uint8_t rm = get_nth_bits(opcode, 6, 9);
+    uint8_t rn = get_nth_bits(opcode, 3, 6);
+    uint8_t rd = get_nth_bits(opcode, 0, 3);
+    int32_t  value = (int32_t)  *((int8_t*)   (memory.main + memory.regs[rm] + memory.regs[rn]));
 
+    memory.regs[rd] = value;
 }
 
 void run_01011000(uint16_t opcode) {
+    // 111-: LDRSH  rn + rm (load 2 bytes), sign extend
+    // 110-: LDRB#2 rn + rm (load 1 byte)
+    // 101-: LDRH#2 rn + rm (load 2 bytes) 
+    // 100-: LDR #2 rn + rm (load 4 bytes)
+    // 011-: LDRH#2 rn + rm (load 1 byte),  sign extend
+    // 010-: STRB
+    // 001-: STRH
+    // 000-: STR
+    uint8_t rm = get_nth_bits(opcode, 6, 9);
+    uint8_t rn = get_nth_bits(opcode, 3, 6);
+    uint8_t rd = get_nth_bits(opcode, 0, 3);
+    uint32_t value = (uint32_t) *((uint32_t*) (memory.main + memory.regs[rm] + memory.regs[rn]));
 
+    memory.regs[rd] = value;
 }
 
 void run_01011001(uint16_t opcode) {
+    // 111-: LDRSH  rn + rm (load 2 bytes), sign extend
+    // 110-: LDRB#2 rn + rm (load 1 byte)
+    // 101-: LDRH#2 rn + rm (load 2 bytes) 
+    // 100-: LDR #2 rn + rm (load 4 bytes)
+    // 011-: LDRH#2 rn + rm (load 1 byte),  sign extend
+    // 010-: STRB
+    // 001-: STRH
+    // 000-: STR
+    uint8_t rm = get_nth_bits(opcode, 6, 9);
+    uint8_t rn = get_nth_bits(opcode, 3, 6);
+    uint8_t rd = get_nth_bits(opcode, 0, 3);
+    uint32_t value = (uint32_t) *((uint32_t*) (memory.main + memory.regs[rm] + memory.regs[rn]));
 
+    memory.regs[rd] = value;
 }
 
 void run_01011010(uint16_t opcode) {
+    // 111-: LDRSH  rn + rm (load 2 bytes), sign extend
+    // 110-: LDRB#2 rn + rm (load 1 byte)
+    // 101-: LDRH#2 rn + rm (load 2 bytes) 
+    // 100-: LDR #2 rn + rm (load 4 bytes)
+    // 011-: LDRH#2 rn + rm (load 1 byte),  sign extend
+    // 010-: STRB
+    // 001-: STRH
+    // 000-: STR
+    uint8_t rm = get_nth_bits(opcode, 6, 9);
+    uint8_t rn = get_nth_bits(opcode, 3, 6);
+    uint8_t rd = get_nth_bits(opcode, 0, 3);
+    uint32_t value = (uint32_t) *((uint16_t*) (memory.main + memory.regs[rm] + memory.regs[rn]));
 
+    memory.regs[rd] = value;
 }
 
 void run_01011011(uint16_t opcode) {
+    // 111-: LDRSH  rn + rm (load 2 bytes), sign extend
+    // 110-: LDRB#2 rn + rm (load 1 byte)
+    // 101-: LDRH#2 rn + rm (load 2 bytes) 
+    // 100-: LDR #2 rn + rm (load 4 bytes)
+    // 011-: LDRH#2 rn + rm (load 1 byte),  sign extend
+    // 010-: STRB
+    // 001-: STRH
+    // 000-: STR
+    uint8_t rm = get_nth_bits(opcode, 6, 9);
+    uint8_t rn = get_nth_bits(opcode, 3, 6);
+    uint8_t rd = get_nth_bits(opcode, 0, 3);
+    uint32_t value = (uint32_t) *((uint16_t*) (memory.main + memory.regs[rm] + memory.regs[rn]));
 
+    memory.regs[rd] = value;
 }
 
 void run_01011100(uint16_t opcode) {
+    // 111-: LDRSH  rn + rm (load 2 bytes), sign extend
+    // 110-: LDRB#2 rn + rm (load 1 byte)
+    // 101-: LDRH#2 rn + rm (load 2 bytes) 
+    // 100-: LDR #2 rn + rm (load 4 bytes)
+    // 011-: LDRH#2 rn + rm (load 1 byte),  sign extend
+    // 010-: STRB
+    // 001-: STRH
+    // 000-: STR
+    uint8_t rm = get_nth_bits(opcode, 6, 9);
+    uint8_t rn = get_nth_bits(opcode, 3, 6);
+    uint8_t rd = get_nth_bits(opcode, 0, 3);
+    uint32_t value = (uint32_t) *((uint8_t*)  (memory.main + memory.regs[rm] + memory.regs[rn]));
 
+    memory.regs[rd] = value;
 }
 
 void run_01011101(uint16_t opcode) {
+    // 111-: LDRSH  rn + rm (load 2 bytes), sign extend
+    // 110-: LDRB#2 rn + rm (load 1 byte)
+    // 101-: LDRH#2 rn + rm (load 2 bytes) 
+    // 100-: LDR #2 rn + rm (load 4 bytes)
+    // 011-: LDRH#2 rn + rm (load 1 byte),  sign extend
+    // 010-: STRB
+    // 001-: STRH
+    // 000-: STR
+    uint8_t rm = get_nth_bits(opcode, 6, 9);
+    uint8_t rn = get_nth_bits(opcode, 3, 6);
+    uint8_t rd = get_nth_bits(opcode, 0, 3);
+    uint32_t value = (uint32_t) *((uint8_t*)  (memory.main + memory.regs[rm] + memory.regs[rn]));
 
+    memory.regs[rd] = value;
 }
 
 void run_01011110(uint16_t opcode) {
+    // 111-: LDRSH  rn + rm (load 2 bytes), sign extend
+    // 110-: LDRB#2 rn + rm (load 1 byte)
+    // 101-: LDRH#2 rn + rm (load 2 bytes) 
+    // 100-: LDR #2 rn + rm (load 4 bytes)
+    // 011-: LDRH#2 rn + rm (load 1 byte),  sign extend
+    // 010-: STRB
+    // 001-: STRH
+    // 000-: STR
+    uint8_t rm = get_nth_bits(opcode, 6, 9);
+    uint8_t rn = get_nth_bits(opcode, 3, 6);
+    uint8_t rd = get_nth_bits(opcode, 0, 3);
+    int32_t  value = (int32_t)  *((int16_t*)  (memory.main + memory.regs[rm] + memory.regs[rn]));
 
+    memory.regs[rd] = value;
 }
 
 void run_01011111(uint16_t opcode) {
+    // 111-: LDRSH  rn + rm (load 2 bytes), sign extend
+    // 110-: LDRB#2 rn + rm (load 1 byte)
+    // 101-: LDRH#2 rn + rm (load 2 bytes) 
+    // 100-: LDR #2 rn + rm (load 4 bytes)
+    // 011-: LDRH#2 rn + rm (load 1 byte),  sign extend
+    // 010-: STRB
+    // 001-: STRH
+    // 000-: STR
+    uint8_t rm = get_nth_bits(opcode, 6, 9);
+    uint8_t rn = get_nth_bits(opcode, 3, 6);
+    uint8_t rd = get_nth_bits(opcode, 0, 3);
+    int32_t  value = (int32_t)  *((int16_t*)  (memory.main + memory.regs[rm] + memory.regs[rn]));
 
+    memory.regs[rd] = value;
 }
 
 void run_01100000(uint16_t opcode) {

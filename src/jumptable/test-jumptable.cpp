@@ -411,14 +411,38 @@ void run_01001REG(uint16_t opcode) {
     memory.regs[reg] = *((uint32_t*)(memory.main + loc));
 }
 
-// load and store with relative offset
-void run_0101LB0R(uint16_t opcode) {
+// load with relative offset
+@EXCLUDE(01010000)
+@EXCLUDE(01010001)
+@EXCLUDE(01010010)
+@EXCLUDE(01010011)
+@EXCLUDE(01010100)
+@EXCLUDE(01010101)
+void run_0101LSBR(uint16_t opcode) {
+    // 111-: LDRSH  rn + rm (load 2 bytes), sign extend
+    // 110-: LDRB#2 rn + rm (load 1 byte)
+    // 101-: LDRH#2 rn + rm (load 2 bytes) 
+    // 100-: LDR #2 rn + rm (load 4 bytes)
+    // 011-: LDRH#2 rn + rm (load 1 byte),  sign extend
+    // 010-: STRB
+    // 001-: STRH
+    // 000-: STR
+    uint8_t rm = get_nth_bits(opcode, 6, 9);
+    uint8_t rn = get_nth_bits(opcode, 3, 6);
+    uint8_t rd = get_nth_bits(opcode, 0, 3);
+    @IF( L  S  B) int32_t  value = (int32_t)  *((int16_t*)  (memory.main + memory.regs[rm] + memory.regs[rn]));
+    @IF( L  S !B) uint32_t value = (uint32_t) *((uint8_t*)  (memory.main + memory.regs[rm] + memory.regs[rn]));
+    @IF( L !S  B) uint32_t value = (uint32_t) *((uint16_t*) (memory.main + memory.regs[rm] + memory.regs[rn]));
+    @IF( L !S !B) uint32_t value = (uint32_t) *((uint32_t*) (memory.main + memory.regs[rm] + memory.regs[rn]));
+    @IF(!L  S  B) int32_t  value = (int32_t)  *((int8_t*)   (memory.main + memory.regs[rm] + memory.regs[rn]));
 
+    memory.regs[rd] = value;
 }
 
-// load and store sign-extended byte and halfword
-void run_0101HS1R(uint16_t opcode) {
-
+// store sign-extended byte and halfword
+@EXCLUDE(01010110)
+@EXCLUDE(01010111)
+void run_01010SBR(uint16_t opcode) {
 }
 
 // load and store with immediate offset
