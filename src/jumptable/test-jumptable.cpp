@@ -423,7 +423,7 @@ void run_0101LSBR(uint16_t opcode) {
     // 110-: LDRB#2 rn + rm (load 1 byte)
     // 101-: LDRH#2 rn + rm (load 2 bytes) 
     // 100-: LDR #2 rn + rm (load 4 bytes)
-    // 011-: LDRH#2 rn + rm (load 1 byte),  sign extend
+    // 011-: LDRSB  rn + rm (load 1 byte),  sign extend
     // 010-: STRB
     // 001-: STRH
     // 000-: STR

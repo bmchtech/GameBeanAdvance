@@ -1189,7 +1189,7 @@ void run_01010110(uint16_t opcode) {
     // 110-: LDRB#2 rn + rm (load 1 byte)
     // 101-: LDRH#2 rn + rm (load 2 bytes) 
     // 100-: LDR #2 rn + rm (load 4 bytes)
-    // 011-: LDRH#2 rn + rm (load 1 byte),  sign extend
+    // 011-: LDRSB  rn + rm (load 1 byte),  sign extend
     // 010-: STRB
     // 001-: STRH
     // 000-: STR
@@ -1206,7 +1206,7 @@ void run_01010111(uint16_t opcode) {
     // 110-: LDRB#2 rn + rm (load 1 byte)
     // 101-: LDRH#2 rn + rm (load 2 bytes) 
     // 100-: LDR #2 rn + rm (load 4 bytes)
-    // 011-: LDRH#2 rn + rm (load 1 byte),  sign extend
+    // 011-: LDRSB  rn + rm (load 1 byte),  sign extend
     // 010-: STRB
     // 001-: STRH
     // 000-: STR
@@ -1223,7 +1223,7 @@ void run_01011000(uint16_t opcode) {
     // 110-: LDRB#2 rn + rm (load 1 byte)
     // 101-: LDRH#2 rn + rm (load 2 bytes) 
     // 100-: LDR #2 rn + rm (load 4 bytes)
-    // 011-: LDRH#2 rn + rm (load 1 byte),  sign extend
+    // 011-: LDRSB  rn + rm (load 1 byte),  sign extend
     // 010-: STRB
     // 001-: STRH
     // 000-: STR
@@ -1240,7 +1240,7 @@ void run_01011001(uint16_t opcode) {
     // 110-: LDRB#2 rn + rm (load 1 byte)
     // 101-: LDRH#2 rn + rm (load 2 bytes) 
     // 100-: LDR #2 rn + rm (load 4 bytes)
-    // 011-: LDRH#2 rn + rm (load 1 byte),  sign extend
+    // 011-: LDRSB  rn + rm (load 1 byte),  sign extend
     // 010-: STRB
     // 001-: STRH
     // 000-: STR
@@ -1257,7 +1257,7 @@ void run_01011010(uint16_t opcode) {
     // 110-: LDRB#2 rn + rm (load 1 byte)
     // 101-: LDRH#2 rn + rm (load 2 bytes) 
     // 100-: LDR #2 rn + rm (load 4 bytes)
-    // 011-: LDRH#2 rn + rm (load 1 byte),  sign extend
+    // 011-: LDRSB  rn + rm (load 1 byte),  sign extend
     // 010-: STRB
     // 001-: STRH
     // 000-: STR
@@ -1274,7 +1274,7 @@ void run_01011011(uint16_t opcode) {
     // 110-: LDRB#2 rn + rm (load 1 byte)
     // 101-: LDRH#2 rn + rm (load 2 bytes) 
     // 100-: LDR #2 rn + rm (load 4 bytes)
-    // 011-: LDRH#2 rn + rm (load 1 byte),  sign extend
+    // 011-: LDRSB  rn + rm (load 1 byte),  sign extend
     // 010-: STRB
     // 001-: STRH
     // 000-: STR
@@ -1291,7 +1291,7 @@ void run_01011100(uint16_t opcode) {
     // 110-: LDRB#2 rn + rm (load 1 byte)
     // 101-: LDRH#2 rn + rm (load 2 bytes) 
     // 100-: LDR #2 rn + rm (load 4 bytes)
-    // 011-: LDRH#2 rn + rm (load 1 byte),  sign extend
+    // 011-: LDRSB  rn + rm (load 1 byte),  sign extend
     // 010-: STRB
     // 001-: STRH
     // 000-: STR
@@ -1308,7 +1308,7 @@ void run_01011101(uint16_t opcode) {
     // 110-: LDRB#2 rn + rm (load 1 byte)
     // 101-: LDRH#2 rn + rm (load 2 bytes) 
     // 100-: LDR #2 rn + rm (load 4 bytes)
-    // 011-: LDRH#2 rn + rm (load 1 byte),  sign extend
+    // 011-: LDRSB  rn + rm (load 1 byte),  sign extend
     // 010-: STRB
     // 001-: STRH
     // 000-: STR
@@ -1325,7 +1325,7 @@ void run_01011110(uint16_t opcode) {
     // 110-: LDRB#2 rn + rm (load 1 byte)
     // 101-: LDRH#2 rn + rm (load 2 bytes) 
     // 100-: LDR #2 rn + rm (load 4 bytes)
-    // 011-: LDRH#2 rn + rm (load 1 byte),  sign extend
+    // 011-: LDRSB  rn + rm (load 1 byte),  sign extend
     // 010-: STRB
     // 001-: STRH
     // 000-: STR
@@ -1342,7 +1342,7 @@ void run_01011111(uint16_t opcode) {
     // 110-: LDRB#2 rn + rm (load 1 byte)
     // 101-: LDRH#2 rn + rm (load 2 bytes) 
     // 100-: LDR #2 rn + rm (load 4 bytes)
-    // 011-: LDRH#2 rn + rm (load 1 byte),  sign extend
+    // 011-: LDRSB  rn + rm (load 1 byte),  sign extend
     // 010-: STRB
     // 001-: STRH
     // 000-: STR

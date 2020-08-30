@@ -964,7 +964,7 @@ TEST_CASE("CPU Thumb Mode - LDR (Relative Offset)") {
     memory.main[0x05000005] = 0xF5;
 
 
-    SECTION("LDRH R4, [R2, R3] (Zero offset)") {
+    SECTION("LDR R4, [R2, R3] (Zero offset)") {
         memory.regs[3] = 0x00000000;
         memory.regs[4] = 0x00000000;
         execute(0b0101100'010'011'100);
@@ -972,11 +972,37 @@ TEST_CASE("CPU Thumb Mode - LDR (Relative Offset)") {
         REQUIRE(memory.regs[4] == 0x4E995342);
     }
 
-    SECTION("LDRH R4, [R2, R3] (Non-Zero offset)") {
+    SECTION("LDR R4, [R2, R3] (Non-Zero offset)") {
         memory.regs[3] = 0x00000002;
         memory.regs[4] = 0x00000000;
         execute(0b0101100'010'011'100);
 
         REQUIRE(memory.regs[4] == 0xF5C54E99);
+    }
+}
+
+
+
+
+
+TEST_CASE("CPU Thumb Mode - LDRSB (Relative Offset)") {
+    memory.regs[2] = 0x05000000;
+    memory.main[0x05000000] = 0x42;
+    memory.main[0x05000001] = 0x93;
+
+    SECTION("LDRSB R4, [R2, R3] (Zero offset)") {
+        memory.regs[3] = 0x00000000;
+        memory.regs[4] = 0x00000000;
+        execute(0b0101011'010'011'100);
+
+        REQUIRE(memory.regs[4] == 0x00000042);
+    }
+
+    SECTION("LDRSB R4, [R2, R3] (Non-Zero offset)") {
+        memory.regs[3] = 0x00000001;
+        memory.regs[4] = 0x00000000;
+        execute(0b0101011'010'011'100);
+
+        REQUIRE(memory.regs[4] == 0xFFFFFF93);
     }
 }
