@@ -467,7 +467,7 @@ void run_011BLOFS(uint16_t opcode) {
 
     // looking at the table above, the B bit determines the size of the store/load, and the L bit determines whether we store or load.
     @IF(!B !L) *((uint32_t*) (memory.main + memory.regs[rn] + (immediate_value << 2))) = memory.regs[rd];
-    @IF( B !L) memory.main[memory.regs[rn] + (immediate_value << 2)] = memory.regs[rd] & 0xF;
+    @IF( B !L) memory.main[memory.regs[rn] + (immediate_value << 2)] = memory.regs[rd] & 0xFF;
     @IF(!B  L) memory.regs[rd] = *((uint32_t*) (memory.main + memory.regs[rn] + (immediate_value << 2)));
     @IF( B  L) memory.regs[rd] = memory.main[memory.regs[rn] + (immediate_value << 2)];
 }

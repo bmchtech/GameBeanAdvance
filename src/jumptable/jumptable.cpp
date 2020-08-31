@@ -1613,7 +1613,7 @@ void run_01110000(uint16_t opcode) {
     uint8_t immediate_value = get_nth_bits(opcode, 6, 11);
 
     // looking at the table above, the B bit determines the size of the store/load, and the L bit determines whether we store or load.
-    memory.main[memory.regs[rn] + (immediate_value << 2)] = memory.regs[rd] & 0xF;
+    memory.main[memory.regs[rn] + (immediate_value << 2)] = memory.regs[rd] & 0xFF;
 }
 
 void run_01110001(uint16_t opcode) {
@@ -1627,7 +1627,7 @@ void run_01110001(uint16_t opcode) {
     uint8_t immediate_value = get_nth_bits(opcode, 6, 11);
 
     // looking at the table above, the B bit determines the size of the store/load, and the L bit determines whether we store or load.
-    memory.main[memory.regs[rn] + (immediate_value << 2)] = memory.regs[rd] & 0xF;
+    memory.main[memory.regs[rn] + (immediate_value << 2)] = memory.regs[rd] & 0xFF;
 }
 
 void run_01110010(uint16_t opcode) {
@@ -1641,7 +1641,7 @@ void run_01110010(uint16_t opcode) {
     uint8_t immediate_value = get_nth_bits(opcode, 6, 11);
 
     // looking at the table above, the B bit determines the size of the store/load, and the L bit determines whether we store or load.
-    memory.main[memory.regs[rn] + (immediate_value << 2)] = memory.regs[rd] & 0xF;
+    memory.main[memory.regs[rn] + (immediate_value << 2)] = memory.regs[rd] & 0xFF;
 }
 
 void run_01110011(uint16_t opcode) {
@@ -1655,7 +1655,7 @@ void run_01110011(uint16_t opcode) {
     uint8_t immediate_value = get_nth_bits(opcode, 6, 11);
 
     // looking at the table above, the B bit determines the size of the store/load, and the L bit determines whether we store or load.
-    memory.main[memory.regs[rn] + (immediate_value << 2)] = memory.regs[rd] & 0xF;
+    memory.main[memory.regs[rn] + (immediate_value << 2)] = memory.regs[rd] & 0xFF;
 }
 
 void run_01110100(uint16_t opcode) {
@@ -1669,7 +1669,7 @@ void run_01110100(uint16_t opcode) {
     uint8_t immediate_value = get_nth_bits(opcode, 6, 11);
 
     // looking at the table above, the B bit determines the size of the store/load, and the L bit determines whether we store or load.
-    memory.main[memory.regs[rn] + (immediate_value << 2)] = memory.regs[rd] & 0xF;
+    memory.main[memory.regs[rn] + (immediate_value << 2)] = memory.regs[rd] & 0xFF;
 }
 
 void run_01110101(uint16_t opcode) {
@@ -1683,7 +1683,7 @@ void run_01110101(uint16_t opcode) {
     uint8_t immediate_value = get_nth_bits(opcode, 6, 11);
 
     // looking at the table above, the B bit determines the size of the store/load, and the L bit determines whether we store or load.
-    memory.main[memory.regs[rn] + (immediate_value << 2)] = memory.regs[rd] & 0xF;
+    memory.main[memory.regs[rn] + (immediate_value << 2)] = memory.regs[rd] & 0xFF;
 }
 
 void run_01110110(uint16_t opcode) {
@@ -1697,7 +1697,7 @@ void run_01110110(uint16_t opcode) {
     uint8_t immediate_value = get_nth_bits(opcode, 6, 11);
 
     // looking at the table above, the B bit determines the size of the store/load, and the L bit determines whether we store or load.
-    memory.main[memory.regs[rn] + (immediate_value << 2)] = memory.regs[rd] & 0xF;
+    memory.main[memory.regs[rn] + (immediate_value << 2)] = memory.regs[rd] & 0xFF;
 }
 
 void run_01110111(uint16_t opcode) {
@@ -1711,7 +1711,7 @@ void run_01110111(uint16_t opcode) {
     uint8_t immediate_value = get_nth_bits(opcode, 6, 11);
 
     // looking at the table above, the B bit determines the size of the store/load, and the L bit determines whether we store or load.
-    memory.main[memory.regs[rn] + (immediate_value << 2)] = memory.regs[rd] & 0xF;
+    memory.main[memory.regs[rn] + (immediate_value << 2)] = memory.regs[rd] & 0xFF;
 }
 
 void run_01111000(uint16_t opcode) {

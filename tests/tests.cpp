@@ -1061,3 +1061,29 @@ TEST_CASE("CPU Thumb Mode - LDR (Immediate Offset)") {
         REQUIRE(memory.regs[2] == 0x31ABF5C5);
     }
 }
+
+
+
+
+
+TEST_CASE("CPU Thumb Mode - STRB (Immediate Offset)") {
+    memory.regs[3] = 0x05000000;
+    memory.main[0x05000000] = 0x00;
+    memory.main[0x05000004] = 0x00;
+
+
+    SECTION("STRB R2, [R3, #0x00000] (Zero offset)") {
+        memory.regs[2] = 0xABCDEF42;
+        execute(0b01110'00000'011'010);
+
+        REQUIRE(memory.main[0x05000000] == 0x42);
+    }
+
+    SECTION("STRB R2, [R3, #0x00001] (Non-Zero offset)") {
+        memory.regs[2] = 0xABCDEFC5;
+        execute(0b01110'00001'011'010);
+
+        REQUIRE(memory.main[0x05000004] == 0xC5);
+    }
+}
+
