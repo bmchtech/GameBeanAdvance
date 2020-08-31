@@ -424,9 +424,6 @@ void run_0101LSBR(uint16_t opcode) {
     // 101-: LDRH#2 rn + rm (load 2 bytes) 
     // 100-: LDR #2 rn + rm (load 4 bytes)
     // 011-: LDRSB  rn + rm (load 1 byte),  sign extend
-    // 010-: STRB
-    // 001-: STRH
-    // 000-: STR
     uint8_t rm = get_nth_bits(opcode, 6, 9);
     uint8_t rn = get_nth_bits(opcode, 3, 6);
     uint8_t rd = get_nth_bits(opcode, 0, 3);
@@ -443,11 +440,36 @@ void run_0101LSBR(uint16_t opcode) {
 @EXCLUDE(01010110)
 @EXCLUDE(01010111)
 void run_01010SBR(uint16_t opcode) {
+    // 10-: STRB #2 rn + rm (store 1 byte)
+    // 01-: STRH #2 rn + rm (store 2 bytes)
+    // 00-: STR  #2 rn + rm (store 4 bytes)
+    uint8_t rm = get_nth_bits(opcode, 6, 9);
+    uint8_t rn = get_nth_bits(opcode, 3, 6);
+    uint8_t rd = get_nth_bits(opcode, 0, 3);
+
+    @IF( S !B) uint32_t value = memory.regs[rd] & 0xF;
+    @IF(!S  B) uint32_t value = memory.regs[rd] & 0xFF;
+    @IF(!S !B) uint32_t value = memory.regs[rd];
+
+    memory.main[memory.regs[rm] + memory.regs[rn]] = value;
 }
 
 // load and store with immediate offset
 void run_011BLOFS(uint16_t opcode) {
+    // BL:
+    // 00 - STR  #1 4 bytes (store)
+    // 01 - LDR  #1 4 bytes (load)
+    // 10 - STRB #1 1 byte  (store)
+    // 11 - LDRB #1 1 byte  (load, zero-extend)
+    uint8_t rn = get_nth_bits(opcode, 3, 6);
+    uint8_t rd = get_nth_bits(opcode, 0, 3);
+    uint8_t immediate_value = get_nth_bits(opcode, 6, 11);
 
+    // looking at the table above, the B bit determines the size of the store/load, and the L bit determines whether we store or load.
+    @IF(!B !L) *((uint32_t*) (memory.main + memory.regs[rn] + (immediate_value << 2))) = memory.regs[rd];
+    @IF( B !L) memory.main[memory.regs[rn] + (immediate_value << 2)] = memory.regs[rd] & 0xF;
+    @IF(!B  L) memory.regs[rd] = *((uint32_t*) (memory.main + memory.regs[rn] + (immediate_value << 2)));
+    @IF( B  L) memory.regs[rd] = memory.main[memory.regs[rn] + (immediate_value << 2)];
 }
 
 // load halfword
@@ -474,7 +496,7 @@ void run_1010SREG(uint16_t opcode) {
 
 }
 
-// add offset to stack pouint16_ter
+// add offset to stack pointer
 void run_10110000(uint16_t opcode) {
 
 }
