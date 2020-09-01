@@ -520,7 +520,7 @@ void run_1011010R(uint16_t opcode) {
     // now loop backwards through the registers
     for (int i = 7; i >= 0; i--) {
         if (get_nth_bit(register_list, i)) {
-            *memory.sp -= 4;            
+            *memory.sp -= 4;
             *((uint32_t*)(memory.main + *memory.sp)) = memory.regs[i];
         }
     }
@@ -528,7 +528,23 @@ void run_1011010R(uint16_t opcode) {
 
 // pop registers
 void run_1011110R(uint16_t opcode) {
+    uint8_t register_list  = opcode & 0xFF;
+    bool    is_lr_included = get_nth_bit(opcode, 8);
 
+    // loop forwards through the registers
+    for (int i = 0; i < 8; i++) {
+        if (get_nth_bit(register_list, i)) {
+            std::cout << std::to_string(i) << " " << to_hex_string(*memory.sp) << std::endl;
+            memory.regs[i] = *((uint32_t*)(memory.main + *memory.sp));
+            *memory.sp += 4;
+        }
+    }
+
+    // now deal with the linkage register (LR) and set it to the PC if it exists.
+    if (is_lr_included) {
+        *memory.pc = *((uint32_t*)(memory.main + *memory.sp));
+        *memory.sp += 4;
+    }
 }
 
 // multiple load

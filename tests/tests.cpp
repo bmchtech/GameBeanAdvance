@@ -1242,3 +1242,66 @@ TEST_CASE("CPU Thumb Mode - PUSH") {
         REQUIRE(memory.main[0x05000007] == 0x82);
     }
 }
+
+
+
+
+
+TEST_CASE("CPU Thumb Mode - POP") {
+    wipe_registers();
+
+    SECTION("POP {R0, R1, R2, R4, R5, R7} (Without linkage register)") { 
+        memory.main[0x05000000] = 0x23;  // register 0
+        memory.main[0x05000001] = 0x45; 
+        memory.main[0x05000002] = 0x3B; 
+        memory.main[0x05000003] = 0xA0; 
+        memory.main[0x05000004] = 0xFF;  // register 1
+        memory.main[0x05000005] = 0x47; 
+        memory.main[0x05000006] = 0x88; 
+        memory.main[0x05000007] = 0x92; 
+        memory.main[0x05000008] = 0xDE;  // register 2
+        memory.main[0x05000009] = 0x97; 
+        memory.main[0x0500000A] = 0x82; 
+        memory.main[0x0500000B] = 0xC3;
+        memory.main[0x0500000C] = 0xB4;  // register 4
+        memory.main[0x0500000D] = 0x29; 
+        memory.main[0x0500000E] = 0x37; 
+        memory.main[0x0500000F] = 0x88; 
+        memory.main[0x05000010] = 0x23;  // register 5
+        memory.main[0x05000011] = 0xC8; 
+        memory.main[0x05000012] = 0x8D; 
+        memory.main[0x05000013] = 0xA9; 
+        memory.main[0x05000014] = 0x3D;  // register 7
+        memory.main[0x05000015] = 0x38; 
+        memory.main[0x05000016] = 0x0F; 
+        memory.main[0x05000017] = 0x00;
+
+        *memory.sp = 0x05000000;
+        execute(0b1011110'0'10110111);
+
+        REQUIRE(memory.regs[0] == 0xA03B4523);
+        REQUIRE(memory.regs[1] == 0x928847FF);
+        REQUIRE(memory.regs[2] == 0xC38297DE);
+        REQUIRE(memory.regs[4] == 0x883729B4);
+        REQUIRE(memory.regs[5] == 0xA98DC823);
+        REQUIRE(memory.regs[7] == 0x000F383D);
+        REQUIRE(*memory.sp     == 0x05000018);
+    }
+
+    SECTION("PUSH {R3, LR} (With linkage register)") {
+        memory.main[0x05000000] = 0x82;
+        memory.main[0x05000001] = 0xF5;
+        memory.main[0x05000002] = 0xC5;
+        memory.main[0x05000003] = 0x4E;
+        memory.main[0x05000004] = 0xC3;
+        memory.main[0x05000005] = 0xCC;
+        memory.main[0x05000006] = 0x89;
+        memory.main[0x05000007] = 0x82;
+
+        *memory.sp = 0x05000000;
+        execute(0b1011110'1'00001000);
+        REQUIRE(memory.regs[3] == 0x4EC5F582);
+        REQUIRE(*memory.pc     == 0x8289CCC3);
+        REQUIRE(*memory.sp     == 0x05000008);
+    }
+}
