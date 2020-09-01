@@ -472,18 +472,22 @@ void run_011BLOFS(uint16_t opcode) {
     @IF( B  L) memory.regs[rd] = memory.main[memory.regs[rn] + (immediate_value << 2)];
 }
 
-// load halfword
+// store halfword
 void run_10000OFS(uint16_t opcode) {
-    uint8_t base  = get_nth_bits(opcode, 3,  6);
-    uint8_t dest  = get_nth_bits(opcode, 0,  3);
-    uint8_t shift = get_nth_bits(opcode, 6,  11);
-
-    memory.regs[dest] = *((halfword*)(memory.main + memory.regs[base] + shift * 2));
+    uint8_t rn     = get_nth_bits(opcode, 3, 6);
+    uint8_t rd     = get_nth_bits(opcode, 0, 3);
+    uint8_t offset = get_nth_bits(opcode, 6, 11);
+    
+    *((uint16_t*)(memory.main + memory.regs[rn] + offset * 2)) = memory.regs[rd];
 }
 
-// store halfword
+// load halfword
 void run_10001OFS(uint16_t opcode) {
-
+    uint8_t rn     = get_nth_bits(opcode, 3, 6);
+    uint8_t rd     = get_nth_bits(opcode, 0, 3);
+    uint8_t offset = get_nth_bits(opcode, 6, 11);
+    
+    memory.regs[rd] = *((uint16_t*)(memory.main + memory.regs[rn] + offset * 2));
 }
 
 // sp-relative load and store

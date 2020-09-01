@@ -1827,99 +1827,131 @@ void run_01111111(uint16_t opcode) {
 }
 
 void run_10000000(uint16_t opcode) {
-    uint8_t base  = get_nth_bits(opcode, 3,  6);
-    uint8_t dest  = get_nth_bits(opcode, 0,  3);
-    uint8_t shift = get_nth_bits(opcode, 6,  11);
-
-    memory.regs[dest] = *((halfword*)(memory.main + memory.regs[base] + shift * 2));
+    uint8_t rn     = get_nth_bits(opcode, 3, 6);
+    uint8_t rd     = get_nth_bits(opcode, 0, 3);
+    uint8_t offset = get_nth_bits(opcode, 6, 11);
+    
+    *((uint16_t*)(memory.main + memory.regs[rn] + offset * 2)) = memory.regs[rd];
 }
 
 void run_10000001(uint16_t opcode) {
-    uint8_t base  = get_nth_bits(opcode, 3,  6);
-    uint8_t dest  = get_nth_bits(opcode, 0,  3);
-    uint8_t shift = get_nth_bits(opcode, 6,  11);
-
-    memory.regs[dest] = *((halfword*)(memory.main + memory.regs[base] + shift * 2));
+    uint8_t rn     = get_nth_bits(opcode, 3, 6);
+    uint8_t rd     = get_nth_bits(opcode, 0, 3);
+    uint8_t offset = get_nth_bits(opcode, 6, 11);
+    
+    *((uint16_t*)(memory.main + memory.regs[rn] + offset * 2)) = memory.regs[rd];
 }
 
 void run_10000010(uint16_t opcode) {
-    uint8_t base  = get_nth_bits(opcode, 3,  6);
-    uint8_t dest  = get_nth_bits(opcode, 0,  3);
-    uint8_t shift = get_nth_bits(opcode, 6,  11);
-
-    memory.regs[dest] = *((halfword*)(memory.main + memory.regs[base] + shift * 2));
+    uint8_t rn     = get_nth_bits(opcode, 3, 6);
+    uint8_t rd     = get_nth_bits(opcode, 0, 3);
+    uint8_t offset = get_nth_bits(opcode, 6, 11);
+    
+    *((uint16_t*)(memory.main + memory.regs[rn] + offset * 2)) = memory.regs[rd];
 }
 
 void run_10000011(uint16_t opcode) {
-    uint8_t base  = get_nth_bits(opcode, 3,  6);
-    uint8_t dest  = get_nth_bits(opcode, 0,  3);
-    uint8_t shift = get_nth_bits(opcode, 6,  11);
-
-    memory.regs[dest] = *((halfword*)(memory.main + memory.regs[base] + shift * 2));
+    uint8_t rn     = get_nth_bits(opcode, 3, 6);
+    uint8_t rd     = get_nth_bits(opcode, 0, 3);
+    uint8_t offset = get_nth_bits(opcode, 6, 11);
+    
+    *((uint16_t*)(memory.main + memory.regs[rn] + offset * 2)) = memory.regs[rd];
 }
 
 void run_10000100(uint16_t opcode) {
-    uint8_t base  = get_nth_bits(opcode, 3,  6);
-    uint8_t dest  = get_nth_bits(opcode, 0,  3);
-    uint8_t shift = get_nth_bits(opcode, 6,  11);
-
-    memory.regs[dest] = *((halfword*)(memory.main + memory.regs[base] + shift * 2));
+    uint8_t rn     = get_nth_bits(opcode, 3, 6);
+    uint8_t rd     = get_nth_bits(opcode, 0, 3);
+    uint8_t offset = get_nth_bits(opcode, 6, 11);
+    
+    *((uint16_t*)(memory.main + memory.regs[rn] + offset * 2)) = memory.regs[rd];
 }
 
 void run_10000101(uint16_t opcode) {
-    uint8_t base  = get_nth_bits(opcode, 3,  6);
-    uint8_t dest  = get_nth_bits(opcode, 0,  3);
-    uint8_t shift = get_nth_bits(opcode, 6,  11);
-
-    memory.regs[dest] = *((halfword*)(memory.main + memory.regs[base] + shift * 2));
+    uint8_t rn     = get_nth_bits(opcode, 3, 6);
+    uint8_t rd     = get_nth_bits(opcode, 0, 3);
+    uint8_t offset = get_nth_bits(opcode, 6, 11);
+    
+    *((uint16_t*)(memory.main + memory.regs[rn] + offset * 2)) = memory.regs[rd];
 }
 
 void run_10000110(uint16_t opcode) {
-    uint8_t base  = get_nth_bits(opcode, 3,  6);
-    uint8_t dest  = get_nth_bits(opcode, 0,  3);
-    uint8_t shift = get_nth_bits(opcode, 6,  11);
-
-    memory.regs[dest] = *((halfword*)(memory.main + memory.regs[base] + shift * 2));
+    uint8_t rn     = get_nth_bits(opcode, 3, 6);
+    uint8_t rd     = get_nth_bits(opcode, 0, 3);
+    uint8_t offset = get_nth_bits(opcode, 6, 11);
+    
+    *((uint16_t*)(memory.main + memory.regs[rn] + offset * 2)) = memory.regs[rd];
 }
 
 void run_10000111(uint16_t opcode) {
-    uint8_t base  = get_nth_bits(opcode, 3,  6);
-    uint8_t dest  = get_nth_bits(opcode, 0,  3);
-    uint8_t shift = get_nth_bits(opcode, 6,  11);
-
-    memory.regs[dest] = *((halfword*)(memory.main + memory.regs[base] + shift * 2));
+    uint8_t rn     = get_nth_bits(opcode, 3, 6);
+    uint8_t rd     = get_nth_bits(opcode, 0, 3);
+    uint8_t offset = get_nth_bits(opcode, 6, 11);
+    
+    *((uint16_t*)(memory.main + memory.regs[rn] + offset * 2)) = memory.regs[rd];
 }
 
 void run_10001000(uint16_t opcode) {
-
+    uint8_t rn     = get_nth_bits(opcode, 3, 6);
+    uint8_t rd     = get_nth_bits(opcode, 0, 3);
+    uint8_t offset = get_nth_bits(opcode, 6, 11);
+    
+    memory.regs[rd] = *((uint16_t*)(memory.main + memory.regs[rn] + offset * 2));
 }
 
 void run_10001001(uint16_t opcode) {
-
+    uint8_t rn     = get_nth_bits(opcode, 3, 6);
+    uint8_t rd     = get_nth_bits(opcode, 0, 3);
+    uint8_t offset = get_nth_bits(opcode, 6, 11);
+    
+    memory.regs[rd] = *((uint16_t*)(memory.main + memory.regs[rn] + offset * 2));
 }
 
 void run_10001010(uint16_t opcode) {
-
+    uint8_t rn     = get_nth_bits(opcode, 3, 6);
+    uint8_t rd     = get_nth_bits(opcode, 0, 3);
+    uint8_t offset = get_nth_bits(opcode, 6, 11);
+    
+    memory.regs[rd] = *((uint16_t*)(memory.main + memory.regs[rn] + offset * 2));
 }
 
 void run_10001011(uint16_t opcode) {
-
+    uint8_t rn     = get_nth_bits(opcode, 3, 6);
+    uint8_t rd     = get_nth_bits(opcode, 0, 3);
+    uint8_t offset = get_nth_bits(opcode, 6, 11);
+    
+    memory.regs[rd] = *((uint16_t*)(memory.main + memory.regs[rn] + offset * 2));
 }
 
 void run_10001100(uint16_t opcode) {
-
+    uint8_t rn     = get_nth_bits(opcode, 3, 6);
+    uint8_t rd     = get_nth_bits(opcode, 0, 3);
+    uint8_t offset = get_nth_bits(opcode, 6, 11);
+    
+    memory.regs[rd] = *((uint16_t*)(memory.main + memory.regs[rn] + offset * 2));
 }
 
 void run_10001101(uint16_t opcode) {
-
+    uint8_t rn     = get_nth_bits(opcode, 3, 6);
+    uint8_t rd     = get_nth_bits(opcode, 0, 3);
+    uint8_t offset = get_nth_bits(opcode, 6, 11);
+    
+    memory.regs[rd] = *((uint16_t*)(memory.main + memory.regs[rn] + offset * 2));
 }
 
 void run_10001110(uint16_t opcode) {
-
+    uint8_t rn     = get_nth_bits(opcode, 3, 6);
+    uint8_t rd     = get_nth_bits(opcode, 0, 3);
+    uint8_t offset = get_nth_bits(opcode, 6, 11);
+    
+    memory.regs[rd] = *((uint16_t*)(memory.main + memory.regs[rn] + offset * 2));
 }
 
 void run_10001111(uint16_t opcode) {
-
+    uint8_t rn     = get_nth_bits(opcode, 3, 6);
+    uint8_t rd     = get_nth_bits(opcode, 0, 3);
+    uint8_t offset = get_nth_bits(opcode, 6, 11);
+    
+    memory.regs[rd] = *((uint16_t*)(memory.main + memory.regs[rn] + offset * 2));
 }
 
 void run_10010000(uint16_t opcode) {
@@ -2206,7 +2238,6 @@ void run_10111100(uint16_t opcode) {
     // loop forwards through the registers
     for (int i = 0; i < 8; i++) {
         if (get_nth_bit(register_list, i)) {
-            std::cout << std::to_string(i) << " " << to_hex_string(*memory.sp) << std::endl;
             memory.regs[i] = *((uint32_t*)(memory.main + *memory.sp));
             *memory.sp += 4;
         }
@@ -2226,7 +2257,6 @@ void run_10111101(uint16_t opcode) {
     // loop forwards through the registers
     for (int i = 0; i < 8; i++) {
         if (get_nth_bit(register_list, i)) {
-            std::cout << std::to_string(i) << " " << to_hex_string(*memory.sp) << std::endl;
             memory.regs[i] = *((uint32_t*)(memory.main + *memory.sp));
             *memory.sp += 4;
         }

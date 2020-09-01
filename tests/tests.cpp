@@ -1335,3 +1335,55 @@ TEST_CASE("CPU Thumb Mode - Stack Pointer Arithmetic") {
         REQUIRE(*memory.sp == 0x05000000);
     }
 }
+
+TEST_CASE("CPU Thumb Mode - Load halfword") {
+    memory.main[0x08000000] = 0x4E;
+    memory.main[0x08000001] = 0xC5;
+    memory.main[0x08000002] = 0xF5;
+    memory.main[0x08000003] = 0x00;
+
+    SECTION("LDRH R2, [R3, R4] (Zero offset)") {
+        memory.regs[2]          = 0x00000000;
+        memory.regs[3]          = 0x08000000;
+        execute(0b10001'00000'011'010);
+
+        REQUIRE(memory.regs[2] == 0x0000C54E);
+    }
+
+    SECTION("LDRH R2, [R3, R4] (Non-Zero offset)") {
+        memory.regs[2]          = 0x00000000;
+        memory.regs[3]          = 0x08000000;
+        execute(0b10001'00001'011'010);
+
+        REQUIRE(memory.regs[2] == 0x000000F5);
+    }
+}
+
+TEST_CASE("CPU Thumb Mode - Store halfword") {
+
+    SECTION("STRH R2, [R3, R4] (Zero offset)") {
+        memory.main[0x08000000] = 0x00;
+        memory.main[0x08000001] = 0x00;
+        memory.main[0x08000002] = 0x00;
+        memory.main[0x08000003] = 0x00;
+        memory.regs[2]          = 0x0000C54E;
+        memory.regs[3]          = 0x08000000;
+        execute(0b10000'00000'011'010);
+
+        REQUIRE(memory.main[0x08000000] == 0x4E);
+        REQUIRE(memory.main[0x08000001] == 0xC5);
+    }
+
+    SECTION("STRH R2, [R3, R4] (Non-Zero offset)") {
+        memory.main[0x08000000] = 0x00;
+        memory.main[0x08000001] = 0x00;
+        memory.main[0x08000002] = 0x00;
+        memory.main[0x08000003] = 0x00;
+        memory.regs[2]          = 0x000000F5;
+        memory.regs[3]          = 0x08000000;
+        execute(0b10000'00001'011'010);
+
+        REQUIRE(memory.main[0x08000002] == 0xF5);
+        REQUIRE(memory.main[0x08000003] == 0x00);
+    }
+}
