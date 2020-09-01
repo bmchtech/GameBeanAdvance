@@ -488,7 +488,12 @@ void run_10001OFS(uint16_t opcode) {
 
 // sp-relative load and store
 void run_1001LREG(uint16_t opcode) {
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
 
+    // if L is set, we load. if L is not set, we store.
+    @IF(L)  memory.regs[rd] = *((uint32_t*) (memory.main + *memory.sp + (immediate_value << 2)));
+    @IF(!L) *((uint32_t*) (memory.main + *memory.sp + (immediate_value << 2))) = memory.regs[rd];
 }
 
 // load address

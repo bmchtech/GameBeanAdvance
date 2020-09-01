@@ -1923,67 +1923,131 @@ void run_10001111(uint16_t opcode) {
 }
 
 void run_10010000(uint16_t opcode) {
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
 
+    // if L is set, we load. if L is not set, we store.
+    *((uint32_t*) (memory.main + *memory.sp + (immediate_value << 2))) = memory.regs[rd];
 }
 
 void run_10010001(uint16_t opcode) {
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
 
+    // if L is set, we load. if L is not set, we store.
+    *((uint32_t*) (memory.main + *memory.sp + (immediate_value << 2))) = memory.regs[rd];
 }
 
 void run_10010010(uint16_t opcode) {
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
 
+    // if L is set, we load. if L is not set, we store.
+    *((uint32_t*) (memory.main + *memory.sp + (immediate_value << 2))) = memory.regs[rd];
 }
 
 void run_10010011(uint16_t opcode) {
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
 
+    // if L is set, we load. if L is not set, we store.
+    *((uint32_t*) (memory.main + *memory.sp + (immediate_value << 2))) = memory.regs[rd];
 }
 
 void run_10010100(uint16_t opcode) {
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
 
+    // if L is set, we load. if L is not set, we store.
+    *((uint32_t*) (memory.main + *memory.sp + (immediate_value << 2))) = memory.regs[rd];
 }
 
 void run_10010101(uint16_t opcode) {
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
 
+    // if L is set, we load. if L is not set, we store.
+    *((uint32_t*) (memory.main + *memory.sp + (immediate_value << 2))) = memory.regs[rd];
 }
 
 void run_10010110(uint16_t opcode) {
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
 
+    // if L is set, we load. if L is not set, we store.
+    *((uint32_t*) (memory.main + *memory.sp + (immediate_value << 2))) = memory.regs[rd];
 }
 
 void run_10010111(uint16_t opcode) {
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
 
+    // if L is set, we load. if L is not set, we store.
+    *((uint32_t*) (memory.main + *memory.sp + (immediate_value << 2))) = memory.regs[rd];
 }
 
 void run_10011000(uint16_t opcode) {
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
 
+    // if L is set, we load. if L is not set, we store.
+    memory.regs[rd] = *((uint32_t*) (memory.main + *memory.sp + (immediate_value << 2)));
 }
 
 void run_10011001(uint16_t opcode) {
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
 
+    // if L is set, we load. if L is not set, we store.
+    memory.regs[rd] = *((uint32_t*) (memory.main + *memory.sp + (immediate_value << 2)));
 }
 
 void run_10011010(uint16_t opcode) {
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
 
+    // if L is set, we load. if L is not set, we store.
+    memory.regs[rd] = *((uint32_t*) (memory.main + *memory.sp + (immediate_value << 2)));
 }
 
 void run_10011011(uint16_t opcode) {
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
 
+    // if L is set, we load. if L is not set, we store.
+    memory.regs[rd] = *((uint32_t*) (memory.main + *memory.sp + (immediate_value << 2)));
 }
 
 void run_10011100(uint16_t opcode) {
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
 
+    // if L is set, we load. if L is not set, we store.
+    memory.regs[rd] = *((uint32_t*) (memory.main + *memory.sp + (immediate_value << 2)));
 }
 
 void run_10011101(uint16_t opcode) {
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
 
+    // if L is set, we load. if L is not set, we store.
+    memory.regs[rd] = *((uint32_t*) (memory.main + *memory.sp + (immediate_value << 2)));
 }
 
 void run_10011110(uint16_t opcode) {
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
 
+    // if L is set, we load. if L is not set, we store.
+    memory.regs[rd] = *((uint32_t*) (memory.main + *memory.sp + (immediate_value << 2)));
 }
 
 void run_10011111(uint16_t opcode) {
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
 
+    // if L is set, we load. if L is not set, we store.
+    memory.regs[rd] = *((uint32_t*) (memory.main + *memory.sp + (immediate_value << 2)));
 }
 
 void run_10100000(uint16_t opcode) {

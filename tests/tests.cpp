@@ -1103,7 +1103,7 @@ TEST_CASE("CPU Thumb Mode - STR (Immediate Offset)") {
     memory.main[0x05000007] = 0x00;
 
 
-    SECTION("STRB R2, [R3, #0x00000] (Zero offset)") {
+    SECTION("STR R2, [R3, #0x00000] (Zero offset)") {
         memory.regs[2] = 0x83AD4342;
         execute(0b01100'00000'011'010);
 
@@ -1113,7 +1113,7 @@ TEST_CASE("CPU Thumb Mode - STR (Immediate Offset)") {
         REQUIRE(memory.main[0x05000003] == 0x83);
     }
 
-    SECTION("STRB R2, [R3, #0x00001] (Non-Zero offset)") {
+    SECTION("STR R2, [R3, #0x00001] (Non-Zero offset)") {
         memory.regs[2] = 0x09F5C54E;
         execute(0b01100'00001'011'010);
 
@@ -1121,5 +1121,36 @@ TEST_CASE("CPU Thumb Mode - STR (Immediate Offset)") {
         REQUIRE(memory.main[0x05000005] == 0xC5);
         REQUIRE(memory.main[0x05000006] == 0xF5);
         REQUIRE(memory.main[0x05000007] == 0x09);
+    }
+}
+
+
+
+
+
+TEST_CASE("CPU Thumb Mode - LDR (Stack Pointer + Immediate Offset)") {
+    *memory.sp = 0x05000000;
+    memory.main[0x05000000] = 0x42;
+    memory.main[0x05000001] = 0x53;
+    memory.main[0x05000002] = 0x99;
+    memory.main[0x05000003] = 0x4E;
+    memory.main[0x05000004] = 0xC5;
+    memory.main[0x05000005] = 0xF5;
+    memory.main[0x05000006] = 0xAB;
+    memory.main[0x05000007] = 0x31;
+
+
+    SECTION("LDR R2, [SP, #0x00000] (Zero offset)") {
+        memory.regs[2] = 0x00000000;
+        execute(0b10011'010'00000000);
+
+        REQUIRE(memory.regs[2] == 0x4E995342);
+    }
+
+    SECTION("LDR R2, [SP, #0x00001] (Non-Zero offset)") {
+        memory.regs[2] = 0x00000000;
+        execute(0b10011'010'00000001);
+
+        REQUIRE(memory.regs[2] == 0x31ABF5C5);
     }
 }
