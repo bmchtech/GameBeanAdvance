@@ -501,9 +501,16 @@ void run_1010SREG(uint16_t opcode) {
 
 }
 
-// add offset to stack pointer
+// add / subtract offset to stack pointer
 void run_10110000(uint16_t opcode) {
-
+    uint8_t offset      = get_nth_bits(opcode, 0, 7) << 2;
+    bool is_subtraction = get_nth_bit(opcode, 7);
+    
+    if (is_subtraction) {
+        *memory.sp -= offset;
+    } else {
+        *memory.sp += offset;
+    }
 }
 
 // push registers
@@ -534,7 +541,6 @@ void run_1011110R(uint16_t opcode) {
     // loop forwards through the registers
     for (int i = 0; i < 8; i++) {
         if (get_nth_bit(register_list, i)) {
-            std::cout << std::to_string(i) << " " << to_hex_string(*memory.sp) << std::endl;
             memory.regs[i] = *((uint32_t*)(memory.main + *memory.sp));
             *memory.sp += 4;
         }

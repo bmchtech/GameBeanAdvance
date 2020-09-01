@@ -1305,3 +1305,33 @@ TEST_CASE("CPU Thumb Mode - POP") {
         REQUIRE(*memory.sp     == 0x05000008);
     }
 }
+
+TEST_CASE("CPU Thumb Mode - Stack Pointer Arithmetic") {
+    SECTION("ADD SP, #0 * 4") {
+        *memory.sp = 0x05000000;
+        execute(0b10110000'0'0000000);
+
+        REQUIRE(*memory.sp == 0x05000000);
+    }
+
+    SECTION("ADD SP, #5 * 4") {
+        *memory.sp = 0x05000000;
+        execute(0b10110000'0'0000101);
+        
+        REQUIRE(*memory.sp == 0x05000014);
+    }
+
+    SECTION("SUB SP, #0 * 4") {
+        *memory.sp = 0x05000000;
+        execute(0b10110000'1'0000000);
+        
+        REQUIRE(*memory.sp == 0x05000000);
+    }
+
+    SECTION("SUB SP, #5 * 4") {
+        *memory.sp = 0x05000014;
+        execute(0b10110000'1'0000101);
+        
+        REQUIRE(*memory.sp == 0x05000000);
+    }
+}

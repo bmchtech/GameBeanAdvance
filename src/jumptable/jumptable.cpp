@@ -2115,7 +2115,14 @@ void run_10101111(uint16_t opcode) {
 }
 
 void run_10110000(uint16_t opcode) {
-
+    uint8_t offset      = get_nth_bits(opcode, 0, 7) << 2;
+    bool is_subtraction = get_nth_bit(opcode, 7);
+    
+    if (is_subtraction) {
+        *memory.sp -= offset;
+    } else {
+        *memory.sp += offset;
+    }
 }
 
 void run_10110001(uint16_t opcode) {
