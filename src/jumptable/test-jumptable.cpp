@@ -506,8 +506,28 @@ void run_10110000(uint16_t opcode) {
 
 }
 
-// push and pop registers(uint16_t opcode)
-void run_1011L10R(uint16_t opcode) {
+// push registers
+void run_1011010R(uint16_t opcode) {
+    uint8_t register_list  = opcode & 0xFF;
+    bool    is_lr_included = get_nth_bit(opcode, 8);
+
+    // deal with the linkage register (LR)
+    if (is_lr_included) {
+        *memory.sp -= 4;
+        *((uint32_t*)(memory.main + *memory.sp)) = *memory.lr;
+    }
+
+    // now loop backwards through the registers
+    for (int i = 7; i >= 0; i--) {
+        if (get_nth_bit(register_list, i)) {
+            *memory.sp -= 4;            
+            *((uint32_t*)(memory.main + *memory.sp)) = memory.regs[i];
+        }
+    }
+}
+
+// pop registers
+void run_1011110R(uint16_t opcode) {
 
 }
 

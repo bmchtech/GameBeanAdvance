@@ -1181,3 +1181,64 @@ TEST_CASE("CPU Thumb Mode - STR (Stack Pointer + Immediate Offset)") {
         REQUIRE(memory.main[0x05000007] == 0x31);
     }
 }
+
+
+
+
+
+TEST_CASE("CPU Thumb Mode - PUSH") {
+    memory.regs[0] = 0xA03B4523;
+    memory.regs[1] = 0x928847FF;
+    memory.regs[2] = 0xC38297DE;
+    memory.regs[3] = 0x4EC5F582;
+    memory.regs[4] = 0x883729B4;
+    memory.regs[5] = 0xA98DC823;
+    memory.regs[6] = 0x038D87FF;
+    memory.regs[7] = 0x000F383D;
+    *memory.lr     = 0x8289CCC3;
+
+    SECTION("PUSH {R0, R1, R2, R4, R5, R7} (Without linkage register)") {
+        *memory.sp = 0x05000018;
+        execute(0b1011010'0'10110111);
+
+        REQUIRE(memory.main[0x05000000] == 0x23); // register 0
+        REQUIRE(memory.main[0x05000001] == 0x45);
+        REQUIRE(memory.main[0x05000002] == 0x3B);
+        REQUIRE(memory.main[0x05000003] == 0xA0); 
+        REQUIRE(memory.main[0x05000004] == 0xFF); // register 1
+        REQUIRE(memory.main[0x05000005] == 0x47);
+        REQUIRE(memory.main[0x05000006] == 0x88);
+        REQUIRE(memory.main[0x05000007] == 0x92);
+        REQUIRE(memory.main[0x05000008] == 0xDE); // register 2
+        REQUIRE(memory.main[0x05000009] == 0x97);
+        REQUIRE(memory.main[0x0500000A] == 0x82);
+        REQUIRE(memory.main[0x0500000B] == 0xC3);
+        REQUIRE(memory.main[0x0500000C] == 0xB4); // register 4
+        REQUIRE(memory.main[0x0500000D] == 0x29);
+        REQUIRE(memory.main[0x0500000E] == 0x37);
+        REQUIRE(memory.main[0x0500000F] == 0x88);
+        REQUIRE(memory.main[0x05000010] == 0x23); // register 5
+        REQUIRE(memory.main[0x05000011] == 0xC8);
+        REQUIRE(memory.main[0x05000012] == 0x8D);
+        REQUIRE(memory.main[0x05000013] == 0xA9);
+        REQUIRE(memory.main[0x05000014] == 0x3D); // register 7
+        REQUIRE(memory.main[0x05000015] == 0x38);
+        REQUIRE(memory.main[0x05000016] == 0x0F);
+        REQUIRE(memory.main[0x05000017] == 0x00);
+        REQUIRE(*memory.sp              == 0x05000000);
+    }
+
+    SECTION("PUSH {R3, LR} (With linkage register)") {
+        *memory.sp = 0x05000008;
+        execute(0b1011010'1'00001000);
+
+        REQUIRE(memory.main[0x05000000] == 0x82);
+        REQUIRE(memory.main[0x05000001] == 0xF5);
+        REQUIRE(memory.main[0x05000002] == 0xC5);
+        REQUIRE(memory.main[0x05000003] == 0x4E);
+        REQUIRE(memory.main[0x05000004] == 0xC3);
+        REQUIRE(memory.main[0x05000005] == 0xCC);
+        REQUIRE(memory.main[0x05000006] == 0x89);
+        REQUIRE(memory.main[0x05000007] == 0x82);
+    }
+}
