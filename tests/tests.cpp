@@ -1507,7 +1507,6 @@ TEST_CASE("CPU Thumb Mode - Arithmetic Shift Right (Immediate)") {
 
 
 TEST_CASE("CPU Thumb Mode - LDMIA") {
-    set_flag_V(false);
     memory.main[0x08000000] = 0x00;
     memory.main[0x08000001] = 0x4E;
     memory.main[0x08000002] = 0xC5;
@@ -1543,5 +1542,76 @@ TEST_CASE("CPU Thumb Mode - LDMIA") {
         REQUIRE(memory.regs[0] == 0xF5C54E00);
         REQUIRE(memory.regs[2] == 0x01EFCDAB);
         REQUIRE(memory.regs[6] == 0xD1C89283);
+    }
+}
+
+
+
+
+
+TEST_CASE("CPU Thumb Mode - STMIA") {
+    memory.regs[0] = 0xF5C54E00;
+    memory.regs[2] = 0x01EFCDAB;
+    memory.regs[7] = 0xD1C89283;
+
+    SECTION("STMIA R6!, {R0, R2, R7} (Rn not included in register_list)") {
+        memory.main[0x08000000] = 0x00;
+        memory.main[0x08000001] = 0x00;
+        memory.main[0x08000002] = 0x00;
+        memory.main[0x08000003] = 0x00;
+        memory.main[0x08000004] = 0x00;
+        memory.main[0x08000005] = 0x00;
+        memory.main[0x08000006] = 0x00;
+        memory.main[0x08000007] = 0x00;
+        memory.main[0x08000008] = 0x00;
+        memory.main[0x08000009] = 0x00;
+        memory.main[0x0800000A] = 0x00;
+        memory.main[0x0800000B] = 0x00;
+        memory.regs[6] = 0x08000000;
+        execute(0b11000'110'10000101);
+
+        REQUIRE(memory.main[0x08000000] == 0x00);
+        REQUIRE(memory.main[0x08000001] == 0x4E);
+        REQUIRE(memory.main[0x08000002] == 0xC5);
+        REQUIRE(memory.main[0x08000003] == 0xF5);
+        REQUIRE(memory.main[0x08000004] == 0xAB);
+        REQUIRE(memory.main[0x08000005] == 0xCD);
+        REQUIRE(memory.main[0x08000006] == 0xEF);
+        REQUIRE(memory.main[0x08000007] == 0x01);
+        REQUIRE(memory.main[0x08000008] == 0x83);
+        REQUIRE(memory.main[0x08000009] == 0x92);
+        REQUIRE(memory.main[0x0800000A] == 0xC8);
+        REQUIRE(memory.main[0x0800000B] == 0xD1);
+    }
+
+    SECTION("STMIA R6!, {R0, R2, R6} (Rn included in register_list)") {
+        memory.main[0x08000000] = 0x00;
+        memory.main[0x08000001] = 0x00;
+        memory.main[0x08000002] = 0x00;
+        memory.main[0x08000003] = 0x00;
+        memory.main[0x08000004] = 0x00;
+        memory.main[0x08000005] = 0x00;
+        memory.main[0x08000006] = 0x00;
+        memory.main[0x08000007] = 0x00;
+        memory.main[0x08000008] = 0x00;
+        memory.main[0x08000009] = 0x00;
+        memory.main[0x0800000A] = 0x00;
+        memory.main[0x0800000B] = 0x00;
+        memory.regs[6] = 0x08000000;
+        execute(0b11000'110'01000101);
+        std::cout << std::to_string(memory.main[0x08000009]) << std::endl;
+
+        REQUIRE(memory.main[0x08000000] == 0x00);
+        REQUIRE(memory.main[0x08000001] == 0x4E);
+        REQUIRE(memory.main[0x08000002] == 0xC5);
+        REQUIRE(memory.main[0x08000003] == 0xF5);
+        REQUIRE(memory.main[0x08000004] == 0xAB);
+        REQUIRE(memory.main[0x08000005] == 0xCD);
+        REQUIRE(memory.main[0x08000006] == 0xEF);
+        REQUIRE(memory.main[0x08000007] == 0x01);
+        //REQUIRE(memory.main[0x08000008] == 0x00);
+        REQUIRE(memory.main[0x08000009] == 0x00);
+        REQUIRE(memory.main[0x0800000A] == 0x00);
+        REQUIRE(memory.main[0x0800000B] == 0x08);
     }
 }

@@ -635,7 +635,7 @@ void run_11001REG(uint16_t opcode) {
 // multiple store
 void run_11000REG(uint16_t opcode) {
     DEBUG_MESSAGE("Multiple Store (STMIA)");
-    uint32_t start_address = memory.regs[get_nth_bits(opcode, 8, 10)];
+    uint32_t start_address = memory.regs[get_nth_bits(opcode, 8, 11)];
     uint8_t  register_list = get_nth_bits(opcode, 0, 8);
 
     for (int i = 0; i < 8; i++) {
@@ -643,9 +643,10 @@ void run_11000REG(uint16_t opcode) {
         if (get_nth_bit(register_list, i)) {
             *(uint32_t*)(memory.main + start_address) = memory.regs[i];
             start_address += 4;
-            memory.regs[get_nth_bits(opcode, 8, 10)] += 4;
         }
     }
+    
+    memory.regs[get_nth_bits(opcode, 8, 10)] = start_address;
 }
 
 // conditional branch
