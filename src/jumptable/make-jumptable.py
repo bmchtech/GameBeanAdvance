@@ -3,7 +3,7 @@ import re
 # the jumptable will only index a certain number of bits in the instruction
 # INSTRUCTION_SIZE defines the number of bits in the whole instruction, while
 # JUMPTABLE_BIT_WIDTH is the number of bits we use to index.
-INPUT_FILE_NAME         = "test-jumptable.cpp"
+INPUT_FILE_NAME         = "jumptable-thumb.cpp"
 OUTPUT_HEADER_FILE      = "jumptable.h"
 OUTPUT_CPP_FILE         = "jumptable.cpp"
 FUNCTION_HEADER         = "void run_" 

@@ -37,7 +37,7 @@ $(OBJ_DIR)/memory.o: $(SRC_DIR)/memory.cpp
 $(OBJ_DIR)/util.o: $(SRC_DIR)/util.cpp
 	$(CC) $(CFLAGS) $(SRC_DIR)/util.cpp -o $(OBJ_DIR)/util.o
 
-$(OBJ_DIR)/jumptable.o: $(SRC_DIR)/jumptable/jumptable.cpp $(SRC_DIR)/jumptable/test-jumptable.cpp $(OBJ_DIR)/util.o $(OBJ_DIR)/memory.o
+$(OBJ_DIR)/jumptable.o: $(SRC_DIR)/jumptable/jumptable.cpp $(SRC_DIR)/jumptable/jumptable-thumb.cpp $(OBJ_DIR)/util.o $(OBJ_DIR)/memory.o
 	cd $(SRC_DIR)/jumptable && python make-jumptable.py
 	$(CC) $(CFLAGS) $(SRC_DIR)/jumptable/jumptable.cpp -o $(OBJ_DIR)/jumptable.o
 
