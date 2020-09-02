@@ -77,7 +77,44 @@ TEST_CASE("CPU Thumb Mode - ADD Immediate Register") {
 }
 
 
+TEST_CASE("CPU Thumb Mode - ADD #1 Small Immediate Two Register") {
+    SECTION("ADD R3, R2, #0x0 (Add zero)") {
+        memory.regs[2] = 0x00000000;
+        execute(0x1C13);
 
+        REQUIRE(memory.regs[3] == 0x00000000);
+
+        check_flags_NZCV(false, true, false, false);
+    }
+    wipe_registers();
+
+    SECTION("ADD R3, R2, #0x3 (Add small amount)") {
+        memory.regs[2] = 0x00000000;
+        execute(0x1CD3);
+        REQUIRE(memory.regs[3] == 0x00000003);
+
+        check_flags_NZCV(false, false, false, false);
+    }
+    wipe_registers();
+
+    SECTION("ADD R3, R2, #0x1 (Add overflow)") {
+        memory.regs[2] = 0x7FFFFFFF;
+        execute(0x1C53);
+        REQUIRE(memory.regs[3] == 0x80000000);
+
+        check_flags_NZCV(true, false, false, true);
+    }
+    wipe_registers();
+
+    SECTION("ADD R3, R2, #0x1 (Carry + Overflow)") {
+        memory.regs[2] = 0xFFFFFFFF;
+        execute(0x1C53);
+        REQUIRE(memory.regs[3] == 0x00000000);
+
+        check_flags_NZCV(false, true, true, false);
+    }   
+    wipe_registers();
+}
 
 
 TEST_CASE("CPU Thumb Mode - MOV Immediate") {

@@ -498,19 +498,75 @@ void run_00011011(uint16_t opcode) {
 }
 
 void run_00011100(uint16_t opcode) {
+    int32_t immediate_value = get_nth_bits(opcode, 6, 9);
+    int32_t rn_value        = memory.regs[get_nth_bits(opcode, 3, 6)];
 
+    memory.regs[get_nth_bits(opcode, 0, 3)] = immediate_value + rn_value;
+    int32_t rd_value = memory.regs[get_nth_bits(opcode, 0, 3)];
+
+    set_flag_N(get_nth_bit(rd_value, 31));
+    set_flag_Z(rd_value == 0);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
+    set_flag_C((get_nth_bit(immediate_value, 31) & get_nth_bit(rn_value, 31)) | 
+    ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(rn_value, 31)) & ~(get_nth_bit(rd_value, 31))));
+
+    bool matching_signs = get_nth_bit(immediate_value, 31) == get_nth_bit(rn_value, 31);
+    set_flag_V(matching_signs && (get_nth_bit(immediate_value, 31) ^ get_flag_N()));
 }
 
 void run_00011101(uint16_t opcode) {
+    int32_t immediate_value = get_nth_bits(opcode, 6, 9);
+    int32_t rn_value        = memory.regs[get_nth_bits(opcode, 3, 6)];
 
+    memory.regs[get_nth_bits(opcode, 0, 3)] = immediate_value + rn_value;
+    int32_t rd_value = memory.regs[get_nth_bits(opcode, 0, 3)];
+
+    set_flag_N(get_nth_bit(rd_value, 31));
+    set_flag_Z(rd_value == 0);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
+    set_flag_C((get_nth_bit(immediate_value, 31) & get_nth_bit(rn_value, 31)) | 
+    ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(rn_value, 31)) & ~(get_nth_bit(rd_value, 31))));
+
+    bool matching_signs = get_nth_bit(immediate_value, 31) == get_nth_bit(rn_value, 31);
+    set_flag_V(matching_signs && (get_nth_bit(immediate_value, 31) ^ get_flag_N()));
 }
 
 void run_00011110(uint16_t opcode) {
+    int32_t immediate_value = (~get_nth_bits(opcode, 6, 9)) + 1;
+    int32_t rn_value        = memory.regs[get_nth_bits(opcode, 3, 6)];
 
+    memory.regs[get_nth_bits(opcode, 0, 3)] = rn_value + immediate_value;
+    int32_t rd_value = memory.regs[get_nth_bits(opcode, 0, 3)];
+
+    set_flag_N(get_nth_bit(rd_value, 31));
+    set_flag_Z(rd_value == 0);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
+    set_flag_C((get_nth_bit(immediate_value, 31) & get_nth_bit(rn_value, 31)) | 
+    ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(rn_value, 31)) & ~(get_nth_bit(rd_value, 31))));
+
+    bool matching_signs = get_nth_bit(immediate_value, 31) == get_nth_bit(rn_value, 31);
+    set_flag_V(matching_signs && (get_nth_bit(immediate_value, 31) ^ get_flag_N()));
 }
 
 void run_00011111(uint16_t opcode) {
+    int32_t immediate_value = (~get_nth_bits(opcode, 6, 9)) + 1;
+    int32_t rn_value        = memory.regs[get_nth_bits(opcode, 3, 6)];
 
+    memory.regs[get_nth_bits(opcode, 0, 3)] = rn_value + immediate_value;
+    int32_t rd_value = memory.regs[get_nth_bits(opcode, 0, 3)];
+
+    set_flag_N(get_nth_bit(rd_value, 31));
+    set_flag_Z(rd_value == 0);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
+    set_flag_C((get_nth_bit(immediate_value, 31) & get_nth_bit(rn_value, 31)) | 
+    ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(rn_value, 31)) & ~(get_nth_bit(rd_value, 31))));
+
+    bool matching_signs = get_nth_bit(immediate_value, 31) == get_nth_bit(rn_value, 31);
+    set_flag_V(matching_signs && (get_nth_bit(immediate_value, 31) ^ get_flag_N()));
 }
 
 void run_00100000(uint16_t opcode) {
