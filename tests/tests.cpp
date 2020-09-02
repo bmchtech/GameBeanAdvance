@@ -1599,7 +1599,6 @@ TEST_CASE("CPU Thumb Mode - STMIA") {
         memory.main[0x0800000B] = 0x00;
         memory.regs[6] = 0x08000000;
         execute(0b11000'110'01000101);
-        std::cout << std::to_string(memory.main[0x08000009]) << std::endl;
 
         REQUIRE(memory.main[0x08000000] == 0x00);
         REQUIRE(memory.main[0x08000001] == 0x4E);
@@ -1609,9 +1608,44 @@ TEST_CASE("CPU Thumb Mode - STMIA") {
         REQUIRE(memory.main[0x08000005] == 0xCD);
         REQUIRE(memory.main[0x08000006] == 0xEF);
         REQUIRE(memory.main[0x08000007] == 0x01);
-        //REQUIRE(memory.main[0x08000008] == 0x00);
+        REQUIRE(memory.main[0x08000008] == 0x00);
         REQUIRE(memory.main[0x08000009] == 0x00);
         REQUIRE(memory.main[0x0800000A] == 0x00);
         REQUIRE(memory.main[0x0800000B] == 0x08);
     }
+}
+
+
+
+
+
+TEST_CASE("CPU Thumb Mode - CMP (Immediate)") {
+    SECTION("CMP R2, #0x00 (Zero)") {
+        memory.regs[2] = 0x00000000;
+        execute(0b00101'010'00000000);
+
+        check_flags_NZCV(false, true, false, false);
+    }
+
+    SECTION("CMP R2, #0x80 (V flag)") {
+        memory.regs[2] = 0xFFFFFFFF;
+        execute(0b00101'010'10000000);
+
+        check_flags_NZCV(true, false, true, false);
+    }
+
+    SECTION("CMP R2, #0x01 (No Overflow)") {
+        memory.regs[2] = 0xFFFFFFFE;
+        execute(0b00101'010'00000001);
+
+        check_flags_NZCV(true, false, true, false);
+    }
+
+    SECTION("CMP R2, #0x01 (Overflow)") {
+        memory.regs[2] = 0xFFFFFFFF;
+        execute(0b00101'010'00000001);
+        
+        check_flags_NZCV(true, false, true, false);
+    }
+    wipe_registers();
 }

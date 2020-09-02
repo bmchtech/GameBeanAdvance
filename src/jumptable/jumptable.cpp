@@ -650,35 +650,171 @@ void run_00100111(uint16_t opcode) {
 }
 
 void run_00101000(uint16_t opcode) {
+    uint8_t immediate_value = get_nth_bits(opcode, 0, 8);
 
+    // CMP, which is basically a subtraction but the result isn't stored.
+    // this uses the same two's complement trick that makes ADD the same as SUB.
+    int32_t rn_value     = ~immediate_value + 1; // the trick is implemented here
+    int32_t old_rd_value = memory.regs[get_nth_bits(opcode, 8, 11)];
+
+    uint32_t result = old_rd_value + rn_value;
+
+    set_flag_Z(result == 0);
+    set_flag_N(result >> 31);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
+    set_flag_C(get_nth_bit(rn_value, 31) & get_nth_bit(old_rd_value, 31) | 
+    ((get_nth_bit(rn_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(result, 31))));
+
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rn_value, 31);
+    set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
 }
 
 void run_00101001(uint16_t opcode) {
+    uint8_t immediate_value = get_nth_bits(opcode, 0, 8);
 
+    // CMP, which is basically a subtraction but the result isn't stored.
+    // this uses the same two's complement trick that makes ADD the same as SUB.
+    int32_t rn_value     = ~immediate_value + 1; // the trick is implemented here
+    int32_t old_rd_value = memory.regs[get_nth_bits(opcode, 8, 11)];
+
+    uint32_t result = old_rd_value + rn_value;
+
+    set_flag_Z(result == 0);
+    set_flag_N(result >> 31);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
+    set_flag_C(get_nth_bit(rn_value, 31) & get_nth_bit(old_rd_value, 31) | 
+    ((get_nth_bit(rn_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(result, 31))));
+
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rn_value, 31);
+    set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
 }
 
 void run_00101010(uint16_t opcode) {
+    uint8_t immediate_value = get_nth_bits(opcode, 0, 8);
 
+    // CMP, which is basically a subtraction but the result isn't stored.
+    // this uses the same two's complement trick that makes ADD the same as SUB.
+    int32_t rn_value     = ~immediate_value + 1; // the trick is implemented here
+    int32_t old_rd_value = memory.regs[get_nth_bits(opcode, 8, 11)];
+
+    uint32_t result = old_rd_value + rn_value;
+
+    set_flag_Z(result == 0);
+    set_flag_N(result >> 31);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
+    set_flag_C(get_nth_bit(rn_value, 31) & get_nth_bit(old_rd_value, 31) | 
+    ((get_nth_bit(rn_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(result, 31))));
+
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rn_value, 31);
+    set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
 }
 
 void run_00101011(uint16_t opcode) {
+    uint8_t immediate_value = get_nth_bits(opcode, 0, 8);
 
+    // CMP, which is basically a subtraction but the result isn't stored.
+    // this uses the same two's complement trick that makes ADD the same as SUB.
+    int32_t rn_value     = ~immediate_value + 1; // the trick is implemented here
+    int32_t old_rd_value = memory.regs[get_nth_bits(opcode, 8, 11)];
+
+    uint32_t result = old_rd_value + rn_value;
+
+    set_flag_Z(result == 0);
+    set_flag_N(result >> 31);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
+    set_flag_C(get_nth_bit(rn_value, 31) & get_nth_bit(old_rd_value, 31) | 
+    ((get_nth_bit(rn_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(result, 31))));
+
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rn_value, 31);
+    set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
 }
 
 void run_00101100(uint16_t opcode) {
+    uint8_t immediate_value = get_nth_bits(opcode, 0, 8);
 
+    // CMP, which is basically a subtraction but the result isn't stored.
+    // this uses the same two's complement trick that makes ADD the same as SUB.
+    int32_t rn_value     = ~immediate_value + 1; // the trick is implemented here
+    int32_t old_rd_value = memory.regs[get_nth_bits(opcode, 8, 11)];
+
+    uint32_t result = old_rd_value + rn_value;
+
+    set_flag_Z(result == 0);
+    set_flag_N(result >> 31);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
+    set_flag_C(get_nth_bit(rn_value, 31) & get_nth_bit(old_rd_value, 31) | 
+    ((get_nth_bit(rn_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(result, 31))));
+
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rn_value, 31);
+    set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
 }
 
 void run_00101101(uint16_t opcode) {
+    uint8_t immediate_value = get_nth_bits(opcode, 0, 8);
 
+    // CMP, which is basically a subtraction but the result isn't stored.
+    // this uses the same two's complement trick that makes ADD the same as SUB.
+    int32_t rn_value     = ~immediate_value + 1; // the trick is implemented here
+    int32_t old_rd_value = memory.regs[get_nth_bits(opcode, 8, 11)];
+
+    uint32_t result = old_rd_value + rn_value;
+
+    set_flag_Z(result == 0);
+    set_flag_N(result >> 31);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
+    set_flag_C(get_nth_bit(rn_value, 31) & get_nth_bit(old_rd_value, 31) | 
+    ((get_nth_bit(rn_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(result, 31))));
+
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rn_value, 31);
+    set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
 }
 
 void run_00101110(uint16_t opcode) {
+    uint8_t immediate_value = get_nth_bits(opcode, 0, 8);
 
+    // CMP, which is basically a subtraction but the result isn't stored.
+    // this uses the same two's complement trick that makes ADD the same as SUB.
+    int32_t rn_value     = ~immediate_value + 1; // the trick is implemented here
+    int32_t old_rd_value = memory.regs[get_nth_bits(opcode, 8, 11)];
+
+    uint32_t result = old_rd_value + rn_value;
+
+    set_flag_Z(result == 0);
+    set_flag_N(result >> 31);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
+    set_flag_C(get_nth_bit(rn_value, 31) & get_nth_bit(old_rd_value, 31) | 
+    ((get_nth_bit(rn_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(result, 31))));
+
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rn_value, 31);
+    set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
 }
 
 void run_00101111(uint16_t opcode) {
+    uint8_t immediate_value = get_nth_bits(opcode, 0, 8);
 
+    // CMP, which is basically a subtraction but the result isn't stored.
+    // this uses the same two's complement trick that makes ADD the same as SUB.
+    int32_t rn_value     = ~immediate_value + 1; // the trick is implemented here
+    int32_t old_rd_value = memory.regs[get_nth_bits(opcode, 8, 11)];
+
+    uint32_t result = old_rd_value + rn_value;
+
+    set_flag_Z(result == 0);
+    set_flag_N(result >> 31);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
+    set_flag_C(get_nth_bit(rn_value, 31) & get_nth_bit(old_rd_value, 31) | 
+    ((get_nth_bit(rn_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(result, 31))));
+
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rn_value, 31);
+    set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
 }
 
 void run_00110000(uint16_t opcode) {
@@ -2493,7 +2629,6 @@ void run_11000000(uint16_t opcode) {
     for (int i = 0; i < 8; i++) {
         // should we store this register?
         if (get_nth_bit(register_list, i)) {
-            std::cout << to_hex_string(start_address) << std::endl;
             *(uint32_t*)(memory.main + start_address) = memory.regs[i];
             start_address += 4;
         }
@@ -2510,7 +2645,6 @@ void run_11000001(uint16_t opcode) {
     for (int i = 0; i < 8; i++) {
         // should we store this register?
         if (get_nth_bit(register_list, i)) {
-            std::cout << to_hex_string(start_address) << std::endl;
             *(uint32_t*)(memory.main + start_address) = memory.regs[i];
             start_address += 4;
         }
@@ -2527,7 +2661,6 @@ void run_11000010(uint16_t opcode) {
     for (int i = 0; i < 8; i++) {
         // should we store this register?
         if (get_nth_bit(register_list, i)) {
-            std::cout << to_hex_string(start_address) << std::endl;
             *(uint32_t*)(memory.main + start_address) = memory.regs[i];
             start_address += 4;
         }
@@ -2544,7 +2677,6 @@ void run_11000011(uint16_t opcode) {
     for (int i = 0; i < 8; i++) {
         // should we store this register?
         if (get_nth_bit(register_list, i)) {
-            std::cout << to_hex_string(start_address) << std::endl;
             *(uint32_t*)(memory.main + start_address) = memory.regs[i];
             start_address += 4;
         }
@@ -2561,7 +2693,6 @@ void run_11000100(uint16_t opcode) {
     for (int i = 0; i < 8; i++) {
         // should we store this register?
         if (get_nth_bit(register_list, i)) {
-            std::cout << to_hex_string(start_address) << std::endl;
             *(uint32_t*)(memory.main + start_address) = memory.regs[i];
             start_address += 4;
         }
@@ -2578,7 +2709,6 @@ void run_11000101(uint16_t opcode) {
     for (int i = 0; i < 8; i++) {
         // should we store this register?
         if (get_nth_bit(register_list, i)) {
-            std::cout << to_hex_string(start_address) << std::endl;
             *(uint32_t*)(memory.main + start_address) = memory.regs[i];
             start_address += 4;
         }
@@ -2595,7 +2725,6 @@ void run_11000110(uint16_t opcode) {
     for (int i = 0; i < 8; i++) {
         // should we store this register?
         if (get_nth_bit(register_list, i)) {
-            std::cout << to_hex_string(start_address) << std::endl;
             *(uint32_t*)(memory.main + start_address) = memory.regs[i];
             start_address += 4;
         }
@@ -2612,7 +2741,6 @@ void run_11000111(uint16_t opcode) {
     for (int i = 0; i < 8; i++) {
         // should we store this register?
         if (get_nth_bit(register_list, i)) {
-            std::cout << to_hex_string(start_address) << std::endl;
             *(uint32_t*)(memory.main + start_address) = memory.regs[i];
             start_address += 4;
         }

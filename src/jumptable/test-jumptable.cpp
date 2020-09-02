@@ -147,7 +147,24 @@ void run_00100ABC(uint16_t opcode) {
 
 // compare immediate
 void run_00101ABC(uint16_t opcode) {
+    uint8_t immediate_value = get_nth_bits(opcode, 0, 8);
 
+    // CMP, which is basically a subtraction but the result isn't stored.
+    // this uses the same two's complement trick that makes ADD the same as SUB.
+    int32_t rn_value     = ~immediate_value + 1; // the trick is implemented here
+    int32_t old_rd_value = memory.regs[get_nth_bits(opcode, 8, 11)];
+
+    uint32_t result = old_rd_value + rn_value;
+
+    set_flag_Z(result == 0);
+    set_flag_N(result >> 31);
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
+    set_flag_C(get_nth_bit(rn_value, 31) & get_nth_bit(old_rd_value, 31) | 
+    ((get_nth_bit(rn_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(result, 31))));
+
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rn_value, 31);
+    set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
 }
 
 // add immediate
