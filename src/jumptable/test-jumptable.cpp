@@ -609,7 +609,27 @@ void run_1011110R(uint16_t opcode) {
 
 // multiple load
 void run_11001REG(uint16_t opcode) {
+    uint8_t rn               = get_nth_bits(opcode, 8, 11);
+    uint8_t register_list    = opcode & 0xFF;
+    uint32_t current_address = memory.regs[rn];
 
+    // should we update rn after the LDMIA?
+    // only happens if rn wasn't in register_list.
+    bool update_rn         = true;
+    for (int i = 0; i < 8; i++) {
+        if (get_nth_bit(register_list, i)) {
+            if (rn == i) {
+                update_rn = false;
+            }
+
+            memory.regs[i] = *(uint32_t*)(memory.main + current_address);
+            current_address += 4;
+        }
+    }
+
+    if (update_rn) {
+        memory.regs[rn] = current_address;
+    }
 }
 
 // multiple store

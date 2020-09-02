@@ -1343,6 +1343,10 @@ TEST_CASE("CPU Thumb Mode - POP") {
     }
 }
 
+
+
+
+
 TEST_CASE("CPU Thumb Mode - Stack Pointer Arithmetic") {
     SECTION("ADD SP, #0 * 4") {
         *memory.sp = 0x05000000;
@@ -1373,6 +1377,10 @@ TEST_CASE("CPU Thumb Mode - Stack Pointer Arithmetic") {
     }
 }
 
+
+
+
+
 TEST_CASE("CPU Thumb Mode - Load halfword") {
     memory.main[0x08000000] = 0x4E;
     memory.main[0x08000001] = 0xC5;
@@ -1395,6 +1403,10 @@ TEST_CASE("CPU Thumb Mode - Load halfword") {
         REQUIRE(memory.regs[2] == 0x000000F5);
     }
 }
+
+
+
+
 
 TEST_CASE("CPU Thumb Mode - Store halfword") {
     SECTION("STRH R2, [R3, R4] (Zero offset)") {
@@ -1424,6 +1436,10 @@ TEST_CASE("CPU Thumb Mode - Store halfword") {
     }
 }
 
+
+
+
+
 TEST_CASE("CPU Thumb Mode - Load Address (Add #6)") {
     SECTION("ADD R2, SP, #0x0 * 4 (Zero offset)") {
         *memory.sp     = 0x05000000;
@@ -1441,6 +1457,10 @@ TEST_CASE("CPU Thumb Mode - Load Address (Add #6)") {
         REQUIRE(memory.regs[2] == 0x05000014);
     }
 }
+
+
+
+
 
 TEST_CASE("CPU Thumb Mode - Arithmetic Shift Right (Immediate)") {
     set_flag_V(false);
@@ -1479,5 +1499,49 @@ TEST_CASE("CPU Thumb Mode - Arithmetic Shift Right (Immediate)") {
 
         REQUIRE(memory.regs[2] == 0xF8123456);
         check_flags_NZCV(true, false, true, false);
+    }
+}
+
+
+
+
+
+TEST_CASE("CPU Thumb Mode - LDMIA") {
+    set_flag_V(false);
+    memory.main[0x08000000] = 0x00;
+    memory.main[0x08000001] = 0x4E;
+    memory.main[0x08000002] = 0xC5;
+    memory.main[0x08000003] = 0xF5;
+    memory.main[0x08000004] = 0xAB;
+    memory.main[0x08000005] = 0xCD;
+    memory.main[0x08000006] = 0xEF;
+    memory.main[0x08000007] = 0x01;
+    memory.main[0x08000008] = 0x83;
+    memory.main[0x08000009] = 0x92;
+    memory.main[0x0800000A] = 0xC8;
+    memory.main[0x0800000B] = 0xD1;
+
+    SECTION("LDMIA R6!, {R0, R2, R7} (Rn not included in register_list)") {
+        memory.regs[0] = 0x00000000;
+        memory.regs[2] = 0x00000000;
+        memory.regs[7] = 0x00000000;
+        memory.regs[6] = 0x08000000; // start register
+        execute(0b11001'110'10000101);
+
+        REQUIRE(memory.regs[0] == 0xF5C54E00);
+        REQUIRE(memory.regs[2] == 0x01EFCDAB);
+        REQUIRE(memory.regs[7] == 0xD1C89283);
+        REQUIRE(memory.regs[6] == 0x0800000C); // start register must have updated
+    }
+
+    SECTION("LDMIA R6!, {R0, R2, R6} (Rn included in register_list)") {
+        memory.regs[0] = 0x00000000;
+        memory.regs[2] = 0x00000000;
+        memory.regs[6] = 0x08000000; // start register
+        execute(0b11001'110'01000101);
+
+        REQUIRE(memory.regs[0] == 0xF5C54E00);
+        REQUIRE(memory.regs[2] == 0x01EFCDAB);
+        REQUIRE(memory.regs[6] == 0xD1C89283);
     }
 }
