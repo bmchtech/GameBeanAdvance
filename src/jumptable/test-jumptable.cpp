@@ -502,7 +502,9 @@ void run_1001LREG(uint16_t opcode) {
 
 // load address
 void run_1010SREG(uint16_t opcode) {
-
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
+    memory.regs[rd] = *memory.sp + (immediate_value << 2);
 }
 
 // add / subtract offset to stack pointer

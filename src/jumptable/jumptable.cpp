@@ -2083,67 +2083,99 @@ void run_10011111(uint16_t opcode) {
 }
 
 void run_10100000(uint16_t opcode) {
-
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
+    memory.regs[rd] = *memory.sp + (immediate_value << 2);
 }
 
 void run_10100001(uint16_t opcode) {
-
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
+    memory.regs[rd] = *memory.sp + (immediate_value << 2);
 }
 
 void run_10100010(uint16_t opcode) {
-
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
+    memory.regs[rd] = *memory.sp + (immediate_value << 2);
 }
 
 void run_10100011(uint16_t opcode) {
-
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
+    memory.regs[rd] = *memory.sp + (immediate_value << 2);
 }
 
 void run_10100100(uint16_t opcode) {
-
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
+    memory.regs[rd] = *memory.sp + (immediate_value << 2);
 }
 
 void run_10100101(uint16_t opcode) {
-
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
+    memory.regs[rd] = *memory.sp + (immediate_value << 2);
 }
 
 void run_10100110(uint16_t opcode) {
-
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
+    memory.regs[rd] = *memory.sp + (immediate_value << 2);
 }
 
 void run_10100111(uint16_t opcode) {
-
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
+    memory.regs[rd] = *memory.sp + (immediate_value << 2);
 }
 
 void run_10101000(uint16_t opcode) {
-
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
+    memory.regs[rd] = *memory.sp + (immediate_value << 2);
 }
 
 void run_10101001(uint16_t opcode) {
-
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
+    memory.regs[rd] = *memory.sp + (immediate_value << 2);
 }
 
 void run_10101010(uint16_t opcode) {
-
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
+    memory.regs[rd] = *memory.sp + (immediate_value << 2);
 }
 
 void run_10101011(uint16_t opcode) {
-
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
+    memory.regs[rd] = *memory.sp + (immediate_value << 2);
 }
 
 void run_10101100(uint16_t opcode) {
-
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
+    memory.regs[rd] = *memory.sp + (immediate_value << 2);
 }
 
 void run_10101101(uint16_t opcode) {
-
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
+    memory.regs[rd] = *memory.sp + (immediate_value << 2);
 }
 
 void run_10101110(uint16_t opcode) {
-
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
+    memory.regs[rd] = *memory.sp + (immediate_value << 2);
 }
 
 void run_10101111(uint16_t opcode) {
-
+    uint8_t rd = get_nth_bits(opcode, 8, 11);
+    uint8_t immediate_value = opcode & 0xFF;
+    memory.regs[rd] = *memory.sp + (immediate_value << 2);
 }
 
 void run_10110000(uint16_t opcode) {

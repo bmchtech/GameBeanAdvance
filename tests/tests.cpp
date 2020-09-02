@@ -1387,3 +1387,22 @@ TEST_CASE("CPU Thumb Mode - Store halfword") {
         REQUIRE(memory.main[0x08000003] == 0x00);
     }
 }
+
+TEST_CASE("CPU Thumb Mode - Load Address (Add #6)") {
+
+    SECTION("ADD R2, SP, #0x0 * 4 (Zero offset)") {
+        *memory.sp     = 0x05000000;
+        memory.regs[2] = 0x0;
+        execute(0b10101'010'00000000);
+
+        REQUIRE(memory.regs[2] == 0x05000000);
+    }
+
+    SECTION("ADD R2, SP, #0x5 * 4 (Non-Zero offset)") {
+        *memory.sp     = 0x05000000;
+        memory.regs[2] = 0x0;
+        execute(0b10101'010'00000101);
+
+        REQUIRE(memory.regs[2] == 0x05000014);
+    }
+}
