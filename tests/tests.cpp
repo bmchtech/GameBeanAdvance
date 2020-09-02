@@ -1360,7 +1360,6 @@ TEST_CASE("CPU Thumb Mode - Load halfword") {
 }
 
 TEST_CASE("CPU Thumb Mode - Store halfword") {
-
     SECTION("STRH R2, [R3, R4] (Zero offset)") {
         memory.main[0x08000000] = 0x00;
         memory.main[0x08000001] = 0x00;
@@ -1389,10 +1388,9 @@ TEST_CASE("CPU Thumb Mode - Store halfword") {
 }
 
 TEST_CASE("CPU Thumb Mode - Load Address (Add #6)") {
-
     SECTION("ADD R2, SP, #0x0 * 4 (Zero offset)") {
         *memory.sp     = 0x05000000;
-        memory.regs[2] = 0x0;
+        memory.regs[2] = 0x00000000;
         execute(0b10101'010'00000000);
 
         REQUIRE(memory.regs[2] == 0x05000000);
@@ -1404,5 +1402,45 @@ TEST_CASE("CPU Thumb Mode - Load Address (Add #6)") {
         execute(0b10101'010'00000101);
 
         REQUIRE(memory.regs[2] == 0x05000014);
+    }
+}
+
+TEST_CASE("CPU Thumb Mode - Arithmetic Shift Right (Immediate)") {
+    set_flag_V(false);
+
+    SECTION("ASR R2, R3, #0x00000000 (Shift == 0 && Rm[31] == 0)") {
+        memory.regs[2] = 0xFFFFFFFF;
+        memory.regs[3] = 0x00000000;
+        execute(0b00010'00000'011'010);
+
+        REQUIRE(memory.regs[2] == 0x00000000);
+        check_flags_NZCV(false, true, false, false);
+    }
+
+    SECTION("ASR R2, R3, #0x00000000 (Shift == 0 && Rm[31] != 0)") {
+        memory.regs[2] = 0x00000000;
+        memory.regs[3] = 0x80000000;
+        execute(0b00010'00000'011'010);
+
+        REQUIRE(memory.regs[2] == 0xFFFFFFFF);
+        check_flags_NZCV(true, false, true, false);
+    }
+
+    SECTION("ASR R2, R3, #0x00000000 (Shift > 0 && rm > 0)") {
+        memory.regs[2] = 0x00000000;
+        memory.regs[3] = 0x01234567;
+        execute(0b00010'00100'011'010);
+
+        REQUIRE(memory.regs[2] == 0x00123456);
+        check_flags_NZCV(false, false, false, false);
+    }
+
+    SECTION("ASR R2, R3, #0x00000000 (Shift > 0 && rm < 0)") {
+        memory.regs[2] = 0x00000000;
+        memory.regs[3] = 0x81234568;
+        execute(0b00010'00100'011'010);
+
+        REQUIRE(memory.regs[2] == 0xF8123456);
+        check_flags_NZCV(true, false, true, false);
     }
 }

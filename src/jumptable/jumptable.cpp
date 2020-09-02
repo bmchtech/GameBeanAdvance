@@ -309,35 +309,155 @@ void run_00001111(uint16_t opcode) {
 }
 
 void run_00010000(uint16_t opcode) {
+    uint8_t rm    = get_nth_bits(opcode, 3,  6);
+    uint8_t rd    = get_nth_bits(opcode, 0,  3);
+    uint8_t shift = get_nth_bits(opcode, 6,  11);
 
+    if (shift == 0) {
+        set_flag_C(memory.regs[rm] >> 31);
+        if ((memory.regs[rm] >> 31) == 0) memory.regs[rd] = 0x00000000;
+        else                              memory.regs[rd] = 0xFFFFFFFF;
+    } else {
+        set_flag_C(get_nth_bit(memory.regs[rm], shift - 1));
+        // arithmetic shift requires us to cast to signed int first, then back to unsigned to store in registers.
+        memory.regs[rd] = (uint32_t) (((int32_t) memory.regs[rm]) >> shift);
+    }
+
+    set_flag_N(memory.regs[rd] >> 31);
+    set_flag_Z(memory.regs[rd] == 0);
 }
 
 void run_00010001(uint16_t opcode) {
+    uint8_t rm    = get_nth_bits(opcode, 3,  6);
+    uint8_t rd    = get_nth_bits(opcode, 0,  3);
+    uint8_t shift = get_nth_bits(opcode, 6,  11);
 
+    if (shift == 0) {
+        set_flag_C(memory.regs[rm] >> 31);
+        if ((memory.regs[rm] >> 31) == 0) memory.regs[rd] = 0x00000000;
+        else                              memory.regs[rd] = 0xFFFFFFFF;
+    } else {
+        set_flag_C(get_nth_bit(memory.regs[rm], shift - 1));
+        // arithmetic shift requires us to cast to signed int first, then back to unsigned to store in registers.
+        memory.regs[rd] = (uint32_t) (((int32_t) memory.regs[rm]) >> shift);
+    }
+
+    set_flag_N(memory.regs[rd] >> 31);
+    set_flag_Z(memory.regs[rd] == 0);
 }
 
 void run_00010010(uint16_t opcode) {
+    uint8_t rm    = get_nth_bits(opcode, 3,  6);
+    uint8_t rd    = get_nth_bits(opcode, 0,  3);
+    uint8_t shift = get_nth_bits(opcode, 6,  11);
 
+    if (shift == 0) {
+        set_flag_C(memory.regs[rm] >> 31);
+        if ((memory.regs[rm] >> 31) == 0) memory.regs[rd] = 0x00000000;
+        else                              memory.regs[rd] = 0xFFFFFFFF;
+    } else {
+        set_flag_C(get_nth_bit(memory.regs[rm], shift - 1));
+        // arithmetic shift requires us to cast to signed int first, then back to unsigned to store in registers.
+        memory.regs[rd] = (uint32_t) (((int32_t) memory.regs[rm]) >> shift);
+    }
+
+    set_flag_N(memory.regs[rd] >> 31);
+    set_flag_Z(memory.regs[rd] == 0);
 }
 
 void run_00010011(uint16_t opcode) {
+    uint8_t rm    = get_nth_bits(opcode, 3,  6);
+    uint8_t rd    = get_nth_bits(opcode, 0,  3);
+    uint8_t shift = get_nth_bits(opcode, 6,  11);
 
+    if (shift == 0) {
+        set_flag_C(memory.regs[rm] >> 31);
+        if ((memory.regs[rm] >> 31) == 0) memory.regs[rd] = 0x00000000;
+        else                              memory.regs[rd] = 0xFFFFFFFF;
+    } else {
+        set_flag_C(get_nth_bit(memory.regs[rm], shift - 1));
+        // arithmetic shift requires us to cast to signed int first, then back to unsigned to store in registers.
+        memory.regs[rd] = (uint32_t) (((int32_t) memory.regs[rm]) >> shift);
+    }
+
+    set_flag_N(memory.regs[rd] >> 31);
+    set_flag_Z(memory.regs[rd] == 0);
 }
 
 void run_00010100(uint16_t opcode) {
+    uint8_t rm    = get_nth_bits(opcode, 3,  6);
+    uint8_t rd    = get_nth_bits(opcode, 0,  3);
+    uint8_t shift = get_nth_bits(opcode, 6,  11);
 
+    if (shift == 0) {
+        set_flag_C(memory.regs[rm] >> 31);
+        if ((memory.regs[rm] >> 31) == 0) memory.regs[rd] = 0x00000000;
+        else                              memory.regs[rd] = 0xFFFFFFFF;
+    } else {
+        set_flag_C(get_nth_bit(memory.regs[rm], shift - 1));
+        // arithmetic shift requires us to cast to signed int first, then back to unsigned to store in registers.
+        memory.regs[rd] = (uint32_t) (((int32_t) memory.regs[rm]) >> shift);
+    }
+
+    set_flag_N(memory.regs[rd] >> 31);
+    set_flag_Z(memory.regs[rd] == 0);
 }
 
 void run_00010101(uint16_t opcode) {
+    uint8_t rm    = get_nth_bits(opcode, 3,  6);
+    uint8_t rd    = get_nth_bits(opcode, 0,  3);
+    uint8_t shift = get_nth_bits(opcode, 6,  11);
 
+    if (shift == 0) {
+        set_flag_C(memory.regs[rm] >> 31);
+        if ((memory.regs[rm] >> 31) == 0) memory.regs[rd] = 0x00000000;
+        else                              memory.regs[rd] = 0xFFFFFFFF;
+    } else {
+        set_flag_C(get_nth_bit(memory.regs[rm], shift - 1));
+        // arithmetic shift requires us to cast to signed int first, then back to unsigned to store in registers.
+        memory.regs[rd] = (uint32_t) (((int32_t) memory.regs[rm]) >> shift);
+    }
+
+    set_flag_N(memory.regs[rd] >> 31);
+    set_flag_Z(memory.regs[rd] == 0);
 }
 
 void run_00010110(uint16_t opcode) {
+    uint8_t rm    = get_nth_bits(opcode, 3,  6);
+    uint8_t rd    = get_nth_bits(opcode, 0,  3);
+    uint8_t shift = get_nth_bits(opcode, 6,  11);
 
+    if (shift == 0) {
+        set_flag_C(memory.regs[rm] >> 31);
+        if ((memory.regs[rm] >> 31) == 0) memory.regs[rd] = 0x00000000;
+        else                              memory.regs[rd] = 0xFFFFFFFF;
+    } else {
+        set_flag_C(get_nth_bit(memory.regs[rm], shift - 1));
+        // arithmetic shift requires us to cast to signed int first, then back to unsigned to store in registers.
+        memory.regs[rd] = (uint32_t) (((int32_t) memory.regs[rm]) >> shift);
+    }
+
+    set_flag_N(memory.regs[rd] >> 31);
+    set_flag_Z(memory.regs[rd] == 0);
 }
 
 void run_00010111(uint16_t opcode) {
+    uint8_t rm    = get_nth_bits(opcode, 3,  6);
+    uint8_t rd    = get_nth_bits(opcode, 0,  3);
+    uint8_t shift = get_nth_bits(opcode, 6,  11);
 
+    if (shift == 0) {
+        set_flag_C(memory.regs[rm] >> 31);
+        if ((memory.regs[rm] >> 31) == 0) memory.regs[rd] = 0x00000000;
+        else                              memory.regs[rd] = 0xFFFFFFFF;
+    } else {
+        set_flag_C(get_nth_bit(memory.regs[rm], shift - 1));
+        // arithmetic shift requires us to cast to signed int first, then back to unsigned to store in registers.
+        memory.regs[rd] = (uint32_t) (((int32_t) memory.regs[rm]) >> shift);
+    }
+
+    set_flag_N(memory.regs[rd] >> 31);
+    set_flag_Z(memory.regs[rd] == 0);
 }
 
 void run_00011000(uint16_t opcode) {

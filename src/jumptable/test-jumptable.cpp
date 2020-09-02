@@ -50,9 +50,24 @@ void run_0000SABC(uint16_t opcode) {
     set_flag_Z(memory.regs[dest] == 0);
 }
 
-// arithmetic shift left
+// arithmetic shift right
 void run_00010ABC(uint16_t opcode) {
+    uint8_t rm    = get_nth_bits(opcode, 3,  6);
+    uint8_t rd    = get_nth_bits(opcode, 0,  3);
+    uint8_t shift = get_nth_bits(opcode, 6,  11);
 
+    if (shift == 0) {
+        set_flag_C(memory.regs[rm] >> 31);
+        if ((memory.regs[rm] >> 31) == 0) memory.regs[rd] = 0x00000000;
+        else                              memory.regs[rd] = 0xFFFFFFFF;
+    } else {
+        set_flag_C(get_nth_bit(memory.regs[rm], shift - 1));
+        // arithmetic shift requires us to cast to signed int first, then back to unsigned to store in registers.
+        memory.regs[rd] = (uint32_t) (((int32_t) memory.regs[rm]) >> shift);
+    }
+
+    set_flag_N(memory.regs[rd] >> 31);
+    set_flag_Z(memory.regs[rd] == 0);
 }
 
 // add #1 010 001 001
