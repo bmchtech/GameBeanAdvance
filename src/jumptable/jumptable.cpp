@@ -461,7 +461,7 @@ void run_00010111(uint16_t opcode) {
 }
 
 void run_00011000(uint16_t opcode) {
-    DEBUG_MESSAGE("Add #1");
+    DEBUG_MESSAGE("Add #3");
 
     int32_t rn = memory.regs[get_nth_bits(opcode, 3, 6)];
     int32_t rm = memory.regs[get_nth_bits(opcode, 6, 9)];
@@ -490,7 +490,28 @@ void run_00011001(uint16_t opcode) {
 }
 
 void run_00011010(uint16_t opcode) {
-    DEBUG_MESSAGE("NOP");
+    DEBUG_MESSAGE("Sub #3");
+
+    int32_t rn = memory.regs[get_nth_bits(opcode, 3, 6)];
+    int32_t rm = ~memory.regs[get_nth_bits(opcode, 6, 9)] + 1;
+    
+    memory.regs[get_nth_bits(opcode, 0, 3)] = rn + rm;
+    int32_t rd = memory.regs[get_nth_bits(opcode, 0, 3)];
+
+    set_flag_N(get_nth_bit(rd, 31));
+    set_flag_Z(rd == 0);
+    // set_flag_C((uint64_t)rn + (uint64_t)rm > rd); // probably can be optimized
+
+    // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
+    set_flag_C((get_nth_bit(rm, 31) & get_nth_bit(rn, 31)) | 
+    ((get_nth_bit(rm, 31) ^ get_nth_bit(rn, 31)) & ~(get_nth_bit(rd, 31))));
+
+
+    // this is garbage, but essentially what's going on is:
+    // if the two operands had matching signs but their sign differed from the result's sign,
+    // then there was an overflow and we set the flag.
+    bool matching_signs = get_nth_bit(rn, 31) == get_nth_bit(rm, 31);
+    set_flag_V(matching_signs && (get_nth_bit(rn, 31) ^ get_flag_N()));
 }
 
 void run_00011011(uint16_t opcode) {
@@ -1419,56 +1440,56 @@ void run_01000111(uint16_t opcode) {
 void run_01001000(uint16_t opcode) {
     DEBUG_MESSAGE("PC-Relative Load");
     uint8_t reg = get_nth_bits(opcode, 8,  11);
-    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc + 2;
+    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + ((*memory.pc + 2) & 0xFFFFFFFC);
     memory.regs[reg] = *((uint32_t*)(memory.main + loc));
 }
 
 void run_01001001(uint16_t opcode) {
     DEBUG_MESSAGE("PC-Relative Load");
     uint8_t reg = get_nth_bits(opcode, 8,  11);
-    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc + 2;
+    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + ((*memory.pc + 2) & 0xFFFFFFFC);
     memory.regs[reg] = *((uint32_t*)(memory.main + loc));
 }
 
 void run_01001010(uint16_t opcode) {
     DEBUG_MESSAGE("PC-Relative Load");
     uint8_t reg = get_nth_bits(opcode, 8,  11);
-    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc + 2;
+    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + ((*memory.pc + 2) & 0xFFFFFFFC);
     memory.regs[reg] = *((uint32_t*)(memory.main + loc));
 }
 
 void run_01001011(uint16_t opcode) {
     DEBUG_MESSAGE("PC-Relative Load");
     uint8_t reg = get_nth_bits(opcode, 8,  11);
-    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc + 2;
+    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + ((*memory.pc + 2) & 0xFFFFFFFC);
     memory.regs[reg] = *((uint32_t*)(memory.main + loc));
 }
 
 void run_01001100(uint16_t opcode) {
     DEBUG_MESSAGE("PC-Relative Load");
     uint8_t reg = get_nth_bits(opcode, 8,  11);
-    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc + 2;
+    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + ((*memory.pc + 2) & 0xFFFFFFFC);
     memory.regs[reg] = *((uint32_t*)(memory.main + loc));
 }
 
 void run_01001101(uint16_t opcode) {
     DEBUG_MESSAGE("PC-Relative Load");
     uint8_t reg = get_nth_bits(opcode, 8,  11);
-    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc + 2;
+    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + ((*memory.pc + 2) & 0xFFFFFFFC);
     memory.regs[reg] = *((uint32_t*)(memory.main + loc));
 }
 
 void run_01001110(uint16_t opcode) {
     DEBUG_MESSAGE("PC-Relative Load");
     uint8_t reg = get_nth_bits(opcode, 8,  11);
-    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc + 2;
+    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + ((*memory.pc + 2) & 0xFFFFFFFC);
     memory.regs[reg] = *((uint32_t*)(memory.main + loc));
 }
 
 void run_01001111(uint16_t opcode) {
     DEBUG_MESSAGE("PC-Relative Load");
     uint8_t reg = get_nth_bits(opcode, 8,  11);
-    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + *memory.pc + 2;
+    uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + ((*memory.pc + 2) & 0xFFFFFFFC);
     memory.regs[reg] = *((uint32_t*)(memory.main + loc));
 }
 

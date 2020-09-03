@@ -13,7 +13,7 @@ void set_cpu_state(CpuState cpu_state) {
 
 CpuState get_cpu_state() {
     CpuState cpu_state;
-    cpu_state.type   = THUMB;
+    cpu_state.type   = get_bit_T() ? THUMB : ARM;
     cpu_state.opcode = *((uint16_t*)(memory.main + *memory.pc));
     cpu_state.regs = new uint32_t[16];
         

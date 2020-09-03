@@ -1,5 +1,7 @@
 #include "catch/catch.hpp"
 #include "../src/gba.h"
+#include "cpu_state.h"
+#include "expected_output.h"
 
 #include <iostream>
 
@@ -1648,4 +1650,42 @@ TEST_CASE("CPU Thumb Mode - CMP (Immediate)") {
         check_flags_NZCV(true, false, true, false);
     }
     wipe_registers();
+}
+
+
+
+
+
+
+
+
+
+
+// TODO: Move the below functions to a different file.
+
+#define REQUIRE_MESSAGE(cond, msg) do { INFO(msg); REQUIRE(cond); } while((void)0, 0)
+
+void check_cpu_state(CpuState expected, CpuState actual, std::string error_message) {
+    REQUIRE_MESSAGE(expected.type   == actual.type,   error_message);
+    REQUIRE_MESSAGE(expected.opcode == actual.opcode, error_message);
+    
+    for (int i = 0; i < 16; i++) {
+        REQUIRE_MESSAGE(expected.regs[i] == actual.regs[i], error_message + ", " + std::to_string(i));
+    }
+}
+
+TEST_CASE("CPU THUMB Mode - VBA Logs (thumb-alu_200000.log)") {
+    uint32_t num_instructions = 200000;
+    CpuState* expected_output = produce_expected_cpu_states("tests/asm/logs/thumb-alu_200000.log", num_instructions);
+    
+    get_rom_as_bytes("tests/asm/bin/thumb-alu.gba", memory.rom_1, SIZE_ROM_1);
+
+    for (int i = 0; i < 200000 - 1; i++) {
+        if (expected_output[i].type == THUMB && expected_output[i + 1].type == THUMB) {
+            set_bit_T(true);
+            set_cpu_state(expected_output[i]);
+            execute(fetch());
+            check_cpu_state(expected_output[i + 1], get_cpu_state(), "Failed at " + std::to_string(i));
+        }
+    }
 }
