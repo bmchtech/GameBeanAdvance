@@ -1681,7 +1681,7 @@ TEST_CASE("CPU THUMB Mode - VBA Logs (thumb-alu_200000.log)") {
     get_rom_as_bytes("tests/asm/bin/thumb-alu.gba", memory.rom_1, SIZE_ROM_1);
 
     for (int i = 0; i < 200000 - 1; i++) {
-        if (expected_output[i].type == THUMB && expected_output[i + 1].type == THUMB) {
+        if (expected_output[i].type == THUMB) {
             set_bit_T(true);
             set_cpu_state(expected_output[i]);
             execute(fetch());

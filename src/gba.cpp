@@ -29,7 +29,7 @@ void run(std::string rom_name) {
     for (int i = 0; i < GAME_TITLE_SIZE; i++) {
         game_name[i] = memory.rom_1[GAME_TITLE_OFFSET + i];
     }
-    //std::cout << game_name << std::endl;
+    std::cout << game_name << std::endl;
 }
 
 void get_rom_as_bytes(std::string rom_name, uint8_t* out, int out_length) {

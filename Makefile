@@ -7,9 +7,11 @@ OBJ_DIR        = out
 TEST_CATCH_DIR = tests/catch
 TEST_SRC_DIR   = tests
 
-OBJS           = $(OBJ_DIR)/*.o
-EXE_OBJ        = $(OBJ_DIR)/main.o
-OBJS_TEST      = $(filter-out $(EXE_OBJ), $(OBJS))
+OBJS           = $(OBJ_DIR)/catchmain.o $(OBJ_DIR)/cpu_state.o $(OBJ_DIR)/expected_output.o $(OBJ_DIR)/gba.o $(OBJ_DIR)/jumptable.o $(OBJ_DIR)/main.o $(OBJ_DIR)/memory.o $(OBJ_DIR)/util.o
+EXE_GBA_OBJ    = $(OBJ_DIR)/main.o
+EXE_TEST_OBJ   = $(OBJ_DIR)/catchmain.o $(OBJ_DIR)/cpu_state.o $(OBJ_DIR)/expected_output.o
+OBJS_TEST      = $(filter-out $(EXE_GBA_OBJ),  $(OBJS))
+OBJS_GBA       = $(filter-out $(EXE_TEST_OBJ), $(OBJS))
 
 all: gba test
 
@@ -23,7 +25,7 @@ clean:
 # GBA
 
 gba: $(OBJ_DIR)/main.o $(OBJ_DIR)/memory.o $(OBJ_DIR)/util.o $(OBJ_DIR)/jumptable.o
-	$(CC) $(OBJS) -o gba 
+	$(CC) $(OBJS_GBA) -o gba 
 
 $(OBJ_DIR)/main.o: $(OBJ_DIR)/gba.o
 	$(CC) $(CFLAGS) $(SRC_DIR)/main.cpp -o $(OBJ_DIR)/main.o
