@@ -61,7 +61,7 @@ CpuState* produce_expected_cpu_states(std::string file_name, uint32_t num_lines)
                 ss << std::hex << temp;
                 ss >> cpu_states[i].regs[j];
                 if (j == 15) {
-                    cpu_states[i].regs[j] -= 2; // TODO: when arm mode testing, -2 should be -4 for pipelining.
+                    cpu_states[i].regs[j] -= cpu_states[i].type == ARM ? 4 : 2;
                 }
             }
         }
