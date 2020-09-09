@@ -14,7 +14,7 @@ The jumptable is perhaps the most tedious part of the emulator. The high 8 bits 
 # Relevant Resources
 ARM Technical Reference Manual: https://static.docs.arm.com/ddi0029/g/DDI0029.pdf
 
-ARM Architectural Reference Manual: https://www.scss.tcd.ie/~waldroj/3d1/arm_arm.pdf
+ARM Architectural Reference Manual: https://cs.nyu.edu/courses/spring18/CSCI-GA.2130-001/ARM/arm_arm.pdf
 
 GBATEK: https://problemkaputt.de/gbatek.htm
 
