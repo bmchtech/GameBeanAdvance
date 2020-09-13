@@ -30,7 +30,7 @@ gba: $(OBJ_DIR)/main.o $(OBJ_DIR)/memory.o $(OBJ_DIR)/util.o $(OBJ_DIR)/jumptabl
 $(OBJ_DIR)/main.o: $(OBJ_DIR)/gba.o
 	$(CC) $(CFLAGS) $(SRC_DIR)/main.cpp -o $(OBJ_DIR)/main.o
 
-$(OBJ_DIR)/gba.o: $(SRC_DIR)/gba.cpp $(SRC_DIR)/gba.h $(OBJ_DIR)/memory.o $(OBJ_DIR)/jumptable-thumb.o
+$(OBJ_DIR)/gba.o: $(SRC_DIR)/gba.cpp $(SRC_DIR)/gba.h $(OBJ_DIR)/memory.o $(OBJ_DIR)/jumptable-thumb.o $(OBJ_DIR)/jumptable-arm.o
 	$(CC) $(CFLAGS) $(SRC_DIR)/gba.cpp -o $(OBJ_DIR)/gba.o
 
 $(OBJ_DIR)/memory.o: $(SRC_DIR)/memory.cpp
@@ -40,11 +40,11 @@ $(OBJ_DIR)/util.o: $(SRC_DIR)/util.cpp
 	$(CC) $(CFLAGS) $(SRC_DIR)/util.cpp -o $(OBJ_DIR)/util.o
 
 $(OBJ_DIR)/jumptable-thumb.o: $(SRC_DIR)/jumptable/jumptable-thumb-config.cpp $(OBJ_DIR)/util.o $(OBJ_DIR)/memory.o
-	cd $(SRC_DIR)/jumptable && python make-jumptable.py jumptable-thumb-config.cpp jumptable-thumb.cpp jumptable-thumb.h 16 8 jumptable_thumb
+	cd $(SRC_DIR)/jumptable && python make-jumptable.py jumptable-thumb-config.cpp jumptable-thumb.cpp jumptable-thumb.h 16 8 jumptable_thumb JUMPTABLE_THUMB_H
 	$(CC) $(CFLAGS) $(SRC_DIR)/jumptable/jumptable-thumb.cpp -o $(OBJ_DIR)/jumptable-thumb.o
 
 $(OBJ_DIR)/jumptable-arm.o: $(SRC_DIR)/jumptable/jumptable-arm-config.cpp $(OBJ_DIR)/util.o $(OBJ_DIR)/memory.o
-	cd $(SRC_DIR)/jumptable && python make-jumptable.py jumptable-arm-config.cpp jumptable-arm.cpp jumptable-arm.h 32 12 jumptable_arm
+	cd $(SRC_DIR)/jumptable && python make-jumptable.py jumptable-arm-config.cpp jumptable-arm.cpp jumptable-arm.h 32 12 jumptable_arm JUMPTABLE_ARM_H
 	$(CC) $(CFLAGS) $(SRC_DIR)/jumptable/jumptable-arm.cpp -o $(OBJ_DIR)/jumptable-arm.o
 
 

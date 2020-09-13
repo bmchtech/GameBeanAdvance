@@ -1,6 +1,6 @@
-#ifndef JUMPTABLE_H
-#define JUMPTABLE_H
 
+#ifndef JUMPTABLE_ARM_H
+#define JUMPTABLE_ARM_H
 void run_000000000000(uint16_t opcode);
 void run_000000000001(uint16_t opcode);
 void run_000000000010(uint16_t opcode);

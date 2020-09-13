@@ -4,13 +4,17 @@ import sys
 # the jumptable will only index a certain number of bits in the instruction
 # INSTRUCTION_SIZE defines the number of bits in the whole instruction, while
 # JUMPTABLE_BIT_WIDTH is the number of bits we use to index.
-INPUT_FILE_NAME         = sys.argv[1]
-OUTPUT_CPP_FILE         = sys.argv[2]
-OUTPUT_HEADER_FILE      = sys.argv[3]
+
+# there's a lot of arguments, so here's a description:
+INPUT_FILE_NAME         = sys.argv[1]       # the name of the config file to read from
+OUTPUT_CPP_FILE         = sys.argv[2]       # the name of the cpp file to output
+OUTPUT_HEADER_FILE      = sys.argv[3]       # the name of the header file to output
+INSTRUCTION_SIZE        = int(sys.argv[4])  # the size of an instruction in bits (16 for thumb, 32 for arm)
+JUMPTABLE_BIT_WIDTH     = int(sys.argv[5])  # the number of bits used for indexing into the jumptable
+JUMPTABLE_NAME          = sys.argv[6]       # the name of the jumptable that should be put into the cpp and header files
+JUMPTABLE_INCLUDE_GUARD = sys.argv[7]       # the name of the include guard to use in the header file.
+
 FUNCTION_HEADER         = "void run_" 
-INSTRUCTION_SIZE        = int(sys.argv[4])
-JUMPTABLE_BIT_WIDTH     = int(sys.argv[5])
-JUMPTABLE_NAME          = sys.argv[6]
 JUMPTABLE_EXCLUDED_BITS = INSTRUCTION_SIZE - JUMPTABLE_BIT_WIDTH
 CONDITIONAL_INCLUSION   = "@IF("
 JUMPTABLE_FORMAT_WIDTH  = 4
@@ -20,8 +24,8 @@ LOCAL_HEADER            = "@LOCAL("
 
 # formatting for the output files
 HEADER_FILE_HEADER      = '''
-#ifndef JUMPTABLE_H
-#define JUMPTABLE_H\n\n'''[1:] # the [1:] is used to remove the beginning \n
+#ifndef ''' + JUMPTABLE_INCLUDE_GUARD + '''
+#define ''' + JUMPTABLE_INCLUDE_GUARD + '''\n\n'''[1:] # the [1:] is used to remove the beginning \n
 
 HEADER_FILE_FOOTER      = '''
 #endif'''[1:]

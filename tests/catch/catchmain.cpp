@@ -11,6 +11,7 @@ struct SetupTeardownListener : Catch::TestEventListenerBase {
 
     void testRunStarting(Catch::TestRunInfo const& testRunInfo) override {
         setup_memory();
+        set_bit_T(true);
     }
     
     void testRunEnded(Catch::TestRunStats const& testRunStats) override {

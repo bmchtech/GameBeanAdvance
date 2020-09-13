@@ -27,7 +27,9 @@ void wipe_registers() {
 
 
 TEST_CASE("CPU Thumb Mode - ADD Two Registers") {
+    set_bit_T(true);
     wipe_registers();
+
     SECTION("ADD R1, R2 into R3") {
         memory.regs[1] = 0x00000001;
         memory.regs[2] = 0x00000001;
@@ -44,6 +46,8 @@ TEST_CASE("CPU Thumb Mode - ADD Two Registers") {
 
 
 TEST_CASE("CPU Thumb Mode - ADD Immediate Register") {
+    set_bit_T(true);
+
     SECTION("ADD R2, #0x00") {
         memory.regs[2] = 0x00000000;
         execute(0x3200);
@@ -80,6 +84,8 @@ TEST_CASE("CPU Thumb Mode - ADD Immediate Register") {
 
 
 TEST_CASE("CPU Thumb Mode - ADD #1 Small Immediate Two Register") {
+    set_bit_T(true);
+
     SECTION("ADD R3, R2, #0x0 (Add zero)") {
         memory.regs[2] = 0x00000000;
         execute(0x1C13);
@@ -120,6 +126,8 @@ TEST_CASE("CPU Thumb Mode - ADD #1 Small Immediate Two Register") {
 
 
 TEST_CASE("CPU Thumb Mode - MOV Immediate") {
+    set_bit_T(true);
+
     SECTION("MOV R2, #0xCD") {
         memory.regs[2] = 0x00000000;
         execute(0x22CD);
@@ -133,6 +141,8 @@ TEST_CASE("CPU Thumb Mode - MOV Immediate") {
 
 
 TEST_CASE("CPU Thumb Mode - LSL Immediate") {
+    set_bit_T(true);
+
     set_flag_V(false);
     
     SECTION("LSL R2, R3, #0b00000") {
@@ -170,6 +180,8 @@ TEST_CASE("CPU Thumb Mode - LSL Immediate") {
 
 
 TEST_CASE("CPU Thumb Mode - LSR Immediate") {
+    set_bit_T(true);
+
     set_flag_V(false);
 
     SECTION("LSR R2, R3, #0b00000") {
@@ -208,6 +220,8 @@ TEST_CASE("CPU Thumb Mode - LSR Immediate") {
 
 
 TEST_CASE("CPU Thumb Mode - Conditional Branches") {
+    set_bit_T(true);
+
     SECTION("BEQ #0x02 (Simple Test)") {
         *memory.pc = 0x10000000;
         set_flag_Z(true);
@@ -230,6 +244,8 @@ TEST_CASE("CPU Thumb Mode - Conditional Branches") {
 
 
 TEST_CASE("CPU Thumb Mode - Logical AND") {
+    set_bit_T(true);
+
     set_flag_C(true);
     set_flag_V(true);
 
@@ -257,6 +273,8 @@ TEST_CASE("CPU Thumb Mode - Logical AND") {
 
 
 TEST_CASE("CPU Thumb Mode - Logical EOR") {
+    set_bit_T(true);
+
     set_flag_C(true);
     set_flag_V(true);
 
@@ -285,6 +303,8 @@ TEST_CASE("CPU Thumb Mode - Logical EOR") {
 
 
 TEST_CASE("CPU Thumb Mode - Logical LSL") {
+    set_bit_T(true);
+
     set_flag_V(true);
 
     SECTION("LSL R2, R3 (Shift == 0)") {
@@ -333,6 +353,8 @@ TEST_CASE("CPU Thumb Mode - Logical LSL") {
 
 
 TEST_CASE("CPU Thumb Mode - Logical LSR") {
+    set_bit_T(true);
+
     set_flag_V(true);
 
     SECTION("LSR R2, R3 (Shift == 0)") {
@@ -381,6 +403,8 @@ TEST_CASE("CPU Thumb Mode - Logical LSR") {
 
 
 TEST_CASE("CPU Thumb Mode - Logical ASR") {
+    set_bit_T(true);
+
     set_flag_V(true);
 
     SECTION("ASR R2, R3 (Shift == 0)") {
@@ -429,6 +453,8 @@ TEST_CASE("CPU Thumb Mode - Logical ASR") {
 
 
 TEST_CASE("CPU Thumb Mode - ADC") {
+    set_bit_T(true);
+
     SECTION("ADC R2, R3 (Zero)") {
         set_flag_C(false);
         memory.regs[2] = 0x00000000;
@@ -476,6 +502,8 @@ TEST_CASE("CPU Thumb Mode - ADC") {
 
 
 TEST_CASE("CPU Thumb Mode - SBC") {
+    set_bit_T(true);
+
     SECTION("SBC R2, R3 (Zero)") {
         set_flag_C(true);
         memory.regs[2] = 0x00000000;
@@ -523,6 +551,8 @@ TEST_CASE("CPU Thumb Mode - SBC") {
 
 
 TEST_CASE("CPU Thumb Mode - ROR") {
+    set_bit_T(true);
+
     set_flag_C(true);
     set_flag_V(true);
 
@@ -560,6 +590,8 @@ TEST_CASE("CPU Thumb Mode - ROR") {
 
 
 TEST_CASE("CPU Thumb Mode - TST") {
+    set_bit_T(true);
+
     set_flag_C(true);
     set_flag_V(true);
 
@@ -587,6 +619,8 @@ TEST_CASE("CPU Thumb Mode - TST") {
 
 
 TEST_CASE("CPU Thumb Mode - NEG") {
+    set_bit_T(true);
+
     set_flag_C(true);
     set_flag_V(true);
 
@@ -620,6 +654,8 @@ TEST_CASE("CPU Thumb Mode - NEG") {
 
 
 TEST_CASE("CPU Thumb Mode - CMP Registers (Low)") {
+    set_bit_T(true);
+
     SECTION("CMP R2, R3 (Zero)") {
         memory.regs[2] = 0x00000000;
         memory.regs[3] = 0x00000000;
@@ -659,6 +695,8 @@ TEST_CASE("CPU Thumb Mode - CMP Registers (Low)") {
 
 
 TEST_CASE("CPU Thumb Mode - CMN") {
+    set_bit_T(true);
+
     SECTION("CMN R2, R3 (Zero)") {
         memory.regs[2] = 0x00000000;
         memory.regs[3] = 0x00000000;
@@ -698,6 +736,8 @@ TEST_CASE("CPU Thumb Mode - CMN") {
 
 
 TEST_CASE("CPU Thumb Mode - ORR") {
+    set_bit_T(true);
+
     SECTION("ORR R2, R3") {
         set_flag_C(false);
         set_flag_V(false);
@@ -715,6 +755,8 @@ TEST_CASE("CPU Thumb Mode - ORR") {
 
 
 TEST_CASE("CPU Thumb Mode - MUL") {
+    set_bit_T(true);
+
     SECTION("MUL R2, R3") {
         set_flag_C(false);
         set_flag_V(false);
@@ -732,6 +774,8 @@ TEST_CASE("CPU Thumb Mode - MUL") {
 
 
 TEST_CASE("CPU Thumb Mode - BIC") {
+    set_bit_T(true);
+
     SECTION("BIC R2, R3") {
         set_flag_C(false);
         set_flag_V(false);
@@ -749,6 +793,8 @@ TEST_CASE("CPU Thumb Mode - BIC") {
 
 
 TEST_CASE("CPU Thumb Mode - MVN") {
+    set_bit_T(true);
+
     SECTION("MVN R2, R3") {
         set_flag_C(false);
         set_flag_V(false);
@@ -765,6 +811,8 @@ TEST_CASE("CPU Thumb Mode - MVN") {
 
 
 TEST_CASE("CPU Thumb Mode - BX") {
+    set_bit_T(true);
+
     SECTION("BX R14 (high register, no exchange)") {
         *memory.pc      = 0x00000000;
         memory.regs[14] = 0x01234567;
@@ -798,6 +846,8 @@ TEST_CASE("CPU Thumb Mode - BX") {
 
 
 TEST_CASE("CPU Thumb Mode - MOV (no flag changes, high registers)") {
+    set_bit_T(true);
+
     SECTION("MOV R2, R3 (low source, low destination)") {
         memory.regs[2] = 0x01234567;
         memory.regs[3] = 0x00000000;
@@ -836,6 +886,8 @@ TEST_CASE("CPU Thumb Mode - MOV (no flag changes, high registers)") {
 
 
 TEST_CASE("CPU Thumb Mode - ADD (no flag changes, high registers)") {
+    set_bit_T(true);
+
     SECTION("ADD R2, R3 (low source, low destination)") {
         memory.regs[2] = 0x01234567;
         memory.regs[3] = 0x00000001;
@@ -874,6 +926,8 @@ TEST_CASE("CPU Thumb Mode - ADD (no flag changes, high registers)") {
 
 
 TEST_CASE("CPU Thumb Mode - CMP Registers (High)") {
+    set_bit_T(true);
+
     SECTION("CMP R10, R11 (Zero)") {
         memory.regs[10] = 0x00000000;
         memory.regs[11] = 0x00000000;
@@ -913,6 +967,8 @@ TEST_CASE("CPU Thumb Mode - CMP Registers (High)") {
 
 
 TEST_CASE("CPU Thumb Mode - LDRSH") {
+    set_bit_T(true);
+
     memory.regs[2] = 0x05000000;
     memory.main[0x05000000] = 0x42;
     memory.main[0x05000001] = 0x53;
@@ -940,6 +996,8 @@ TEST_CASE("CPU Thumb Mode - LDRSH") {
 
 
 TEST_CASE("CPU Thumb Mode - LDRB (Relative Offset)") {
+    set_bit_T(true);
+
     memory.regs[2] = 0x05000000;
     memory.main[0x05000000] = 0x42;
     memory.main[0x05000001] = 0x53;
@@ -966,6 +1024,8 @@ TEST_CASE("CPU Thumb Mode - LDRB (Relative Offset)") {
 
 
 TEST_CASE("CPU Thumb Mode - LDRH (Relative Offset)") {
+    set_bit_T(true);
+
     memory.regs[2] = 0x05000000;
     memory.main[0x05000000] = 0x42;
     memory.main[0x05000001] = 0x53;
@@ -994,6 +1054,8 @@ TEST_CASE("CPU Thumb Mode - LDRH (Relative Offset)") {
 
 
 TEST_CASE("CPU Thumb Mode - LDR (Relative Offset)") {
+    set_bit_T(true);
+
     memory.regs[2] = 0x05000000;
     memory.main[0x05000000] = 0x42;
     memory.main[0x05000001] = 0x53;
@@ -1025,6 +1087,8 @@ TEST_CASE("CPU Thumb Mode - LDR (Relative Offset)") {
 
 
 TEST_CASE("CPU Thumb Mode - LDRSB (Relative Offset)") {
+    set_bit_T(true);
+
     memory.regs[2] = 0x05000000;
     memory.main[0x05000000] = 0x42;
     memory.main[0x05000001] = 0x93;
@@ -1051,6 +1115,8 @@ TEST_CASE("CPU Thumb Mode - LDRSB (Relative Offset)") {
 
 
 TEST_CASE("CPU Thumb Mode - LDRB (Immediate Offset)") {
+    set_bit_T(true);
+
     memory.regs[3] = 0x05000000;
     memory.main[0x05000000] = 0x42;
     memory.main[0x05000004] = 0x93;
@@ -1075,6 +1141,8 @@ TEST_CASE("CPU Thumb Mode - LDRB (Immediate Offset)") {
 
 
 TEST_CASE("CPU Thumb Mode - LDR (Immediate Offset)") {
+    set_bit_T(true);
+
     memory.regs[3] = 0x05000000;
     memory.main[0x05000000] = 0x42;
     memory.main[0x05000001] = 0x53;
@@ -1106,6 +1174,8 @@ TEST_CASE("CPU Thumb Mode - LDR (Immediate Offset)") {
 
 
 TEST_CASE("CPU Thumb Mode - STRB (Immediate Offset)") {
+    set_bit_T(true);
+
     memory.regs[3] = 0x05000000;
     memory.main[0x05000000] = 0x00;
     memory.main[0x05000004] = 0x00;
@@ -1131,6 +1201,8 @@ TEST_CASE("CPU Thumb Mode - STRB (Immediate Offset)") {
 
 
 TEST_CASE("CPU Thumb Mode - STR (Immediate Offset)") {
+    set_bit_T(true);
+
     memory.regs[3] = 0x05000000;
     memory.main[0x05000000] = 0x00;
     memory.main[0x05000001] = 0x00;
@@ -1168,6 +1240,8 @@ TEST_CASE("CPU Thumb Mode - STR (Immediate Offset)") {
 
 
 TEST_CASE("CPU Thumb Mode - LDR (Stack Pointer + Immediate Offset)") {
+    set_bit_T(true);
+
     *memory.sp = 0x05000000;
     memory.main[0x05000000] = 0x42;
     memory.main[0x05000001] = 0x53;
@@ -1198,6 +1272,8 @@ TEST_CASE("CPU Thumb Mode - LDR (Stack Pointer + Immediate Offset)") {
 
 
 TEST_CASE("CPU Thumb Mode - STR (Stack Pointer + Immediate Offset)") {
+    set_bit_T(true);
+
     *memory.sp = 0x05000000;
 
     SECTION("LDR R2, [SP, #0x00000] (Zero offset)") {
@@ -1226,6 +1302,8 @@ TEST_CASE("CPU Thumb Mode - STR (Stack Pointer + Immediate Offset)") {
 
 
 TEST_CASE("CPU Thumb Mode - PUSH") {
+    set_bit_T(true);
+
     memory.regs[0] = 0xA03B4523;
     memory.regs[1] = 0x928847FF;
     memory.regs[2] = 0xC38297DE;
@@ -1287,6 +1365,8 @@ TEST_CASE("CPU Thumb Mode - PUSH") {
 
 
 TEST_CASE("CPU Thumb Mode - POP") {
+    set_bit_T(true);
+
     wipe_registers();
 
     SECTION("POP {R0, R1, R2, R4, R5, R7} (Without linkage register)") { 
@@ -1350,6 +1430,8 @@ TEST_CASE("CPU Thumb Mode - POP") {
 
 
 TEST_CASE("CPU Thumb Mode - Stack Pointer Arithmetic") {
+    set_bit_T(true);
+
     SECTION("ADD SP, #0 * 4") {
         *memory.sp = 0x05000000;
         execute(0b10110000'0'0000000);
@@ -1384,6 +1466,8 @@ TEST_CASE("CPU Thumb Mode - Stack Pointer Arithmetic") {
 
 
 TEST_CASE("CPU Thumb Mode - Load halfword") {
+    set_bit_T(true);
+
     memory.main[0x08000000] = 0x4E;
     memory.main[0x08000001] = 0xC5;
     memory.main[0x08000002] = 0xF5;
@@ -1411,6 +1495,8 @@ TEST_CASE("CPU Thumb Mode - Load halfword") {
 
 
 TEST_CASE("CPU Thumb Mode - Store halfword") {
+    set_bit_T(true);
+
     SECTION("STRH R2, [R3, R4] (Zero offset)") {
         memory.main[0x08000000] = 0x00;
         memory.main[0x08000001] = 0x00;
@@ -1443,6 +1529,8 @@ TEST_CASE("CPU Thumb Mode - Store halfword") {
 
 
 TEST_CASE("CPU Thumb Mode - Load Address (Add #6)") {
+    set_bit_T(true);
+
     SECTION("ADD R2, SP, #0x0 * 4 (Zero offset)") {
         *memory.sp     = 0x05000000;
         memory.regs[2] = 0x00000000;
@@ -1465,6 +1553,8 @@ TEST_CASE("CPU Thumb Mode - Load Address (Add #6)") {
 
 
 TEST_CASE("CPU Thumb Mode - Arithmetic Shift Right (Immediate)") {
+    set_bit_T(true);
+
     set_flag_V(false);
 
     SECTION("ASR R2, R3, #0x00000000 (Shift == 0 && Rm[31] == 0)") {
@@ -1509,6 +1599,8 @@ TEST_CASE("CPU Thumb Mode - Arithmetic Shift Right (Immediate)") {
 
 
 TEST_CASE("CPU Thumb Mode - LDMIA") {
+    set_bit_T(true);
+
     memory.main[0x08000000] = 0x00;
     memory.main[0x08000001] = 0x4E;
     memory.main[0x08000002] = 0xC5;
@@ -1552,6 +1644,8 @@ TEST_CASE("CPU Thumb Mode - LDMIA") {
 
 
 TEST_CASE("CPU Thumb Mode - STMIA") {
+    set_bit_T(true);
+
     memory.regs[0] = 0xF5C54E00;
     memory.regs[2] = 0x01EFCDAB;
     memory.regs[7] = 0xD1C89283;
@@ -1622,6 +1716,8 @@ TEST_CASE("CPU Thumb Mode - STMIA") {
 
 
 TEST_CASE("CPU Thumb Mode - CMP (Immediate)") {
+    set_bit_T(true);
+
     SECTION("CMP R2, #0x00 (Zero)") {
         memory.regs[2] = 0x00000000;
         execute(0b00101'010'00000000);
@@ -1675,6 +1771,8 @@ void check_cpu_state(CpuState expected, CpuState actual, std::string error_messa
 }
 
 TEST_CASE("CPU THUMB Mode - VBA Logs (thumb-alu_200000.log)") {
+    set_bit_T(true);
+
     uint32_t num_instructions = 200000;
     CpuState* expected_output = produce_expected_cpu_states("tests/asm/logs/thumb-alu_200000.log", num_instructions);
     

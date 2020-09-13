@@ -12,8 +12,11 @@
 
 void run(std::string rom_name);
 void get_rom_as_bytes(std::string rom_name, uint8_t* out, int out_length);
-void test_thumb();
 int  fetch();
 void execute(int opcode);
+
+// determines whether or not this function should execute based on COND (the high 4 bits of the opcode)
+// note that this only applies to ARM instructions.
+bool should_execute(int opcode);
 
 #endif
