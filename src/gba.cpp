@@ -15,7 +15,8 @@
 #include "gba.h"
 #include "memory.h"
 #include "util.h"
-#include "jumptable/jumptable.h"
+#include "jumptable/jumptable-thumb.h"
+#include "jumptable/jumptable-arm.h"
 
 extern Memory memory;
 
@@ -74,5 +75,5 @@ int fetch() {
 
 void execute(int opcode) {
     // TODO: this execute should operate differnetly based on bit T, which dictates ARM or Thumb mode.
-    jumptable[opcode >> 8](opcode);
+    jumptable_thumb[opcode >> 8](opcode);
 }

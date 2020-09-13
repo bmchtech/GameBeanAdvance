@@ -1,14 +1,16 @@
 import re
+import sys
 
 # the jumptable will only index a certain number of bits in the instruction
 # INSTRUCTION_SIZE defines the number of bits in the whole instruction, while
 # JUMPTABLE_BIT_WIDTH is the number of bits we use to index.
-INPUT_FILE_NAME         = "jumptable-thumb.cpp"
-OUTPUT_HEADER_FILE      = "jumptable.h"
-OUTPUT_CPP_FILE         = "jumptable.cpp"
+INPUT_FILE_NAME         = sys.argv[1]
+OUTPUT_CPP_FILE         = sys.argv[2]
+OUTPUT_HEADER_FILE      = sys.argv[3]
 FUNCTION_HEADER         = "void run_" 
-INSTRUCTION_SIZE        = 16
-JUMPTABLE_BIT_WIDTH     = 8
+INSTRUCTION_SIZE        = int(sys.argv[4])
+JUMPTABLE_BIT_WIDTH     = int(sys.argv[5])
+JUMPTABLE_NAME          = sys.argv[6]
 JUMPTABLE_EXCLUDED_BITS = INSTRUCTION_SIZE - JUMPTABLE_BIT_WIDTH
 CONDITIONAL_INCLUSION   = "@IF("
 JUMPTABLE_FORMAT_WIDTH  = 4
@@ -27,7 +29,7 @@ HEADER_FILE_FOOTER      = '''
 CPP_FILE_HEADER         = '''
 #include <iostream>
 
-#include "jumptable.h"
+#include "''' + OUTPUT_HEADER_FILE + '"' + '''\n
 #include "../util.h"
 #include "../memory.h"
 
@@ -244,11 +246,11 @@ for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):
 # and now we must loop again to put the actual jumptable in the header file
 # first we add the typedef and the extern
 header_file.write("\ntypedef void (*instruction)(uint16_t);\n")
-header_file.write("extern instruction jumptable[];\n")
+header_file.write("extern instruction " + JUMPTABLE_NAME + "[];\n")
 
 # then we add the jumptable
 function_names = list("run_" + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)))
-cpp_file.write("\ninstruction jumptable[] = {")
+cpp_file.write("\ninstruction " + JUMPTABLE_NAME + "[] = {")
 for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):
     if i % JUMPTABLE_FORMAT_WIDTH == 0:
         cpp_file.write("\n    ")
