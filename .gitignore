@@ -3,3 +3,7 @@ roms/
 out/
 vgcore.*
 test
+src/jumptable/jumptable-arm.cpp
+src/jumptable/jumptable-arm.h
+src/jumptable/jumptable-thumb.cpp
+src/jumptable/jumptable-thumb.h
