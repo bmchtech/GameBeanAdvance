@@ -1,22 +1,30 @@
 # usage: make <test name> INSTRUCTIONS=<num of instructions>
 
-SRC_DIR := src
-OUT_DIR := out
-BIN_DIR := bin
-LOG_DIR := logs
+SRC_DIR        := src
+OUT_DIR        := out
+BIN_DIR        := bin
+LOG_DIR        := logs
 
-all:
+COMPILER       := arm-none-eabi-gcc
+COMPILER_FLAGS := -mthumb-interwork -specs=gba.specs
+LINKER         := arm-none-eabi-objcopy
+LINKER_FLAGS   := 
 
 clean:
 	rm -f $(OUT_DIR)/*
 	rm -f $(BIN_DIR)/*
 
-%: %.gba
-	-visualboyadvance-m $(BIN_DIR)/$@.gba $(INSTRUCTIONS) &>/dev/null
-	mv out.log $(LOG_DIR)/$@_$(INSTRUCTIONS).log
+thumb-alu: $(LOG_DIR)/thumb-alu.log
+# compile and link the files
+	$(COMPILER) $(COMPILER_FLAGS) $(SRC_DIR)/thumb-alu.S   -o        $(OUT_DIR)/thumb-alu.out
+	$(LINKER)   $(LINKER_FLAGS)   $(OUT_DIR)/thumb-alu.out -O binary $(BIN_DIR)/thumb-alu.gba
+	
+# fix the gba to give it a valid checksum
+	gbafix $(BIN_DIR)/thumb-alu.gba
 
-%.gba: %.out
-	arm-none-eabi-objcopy $(OUT_DIR)/$(basename $(@)).out -O binary $(BIN_DIR)/$@
-
-%.out:
-	arm-none-eabi-gcc -mthumb-interwork -specs=gba.specs $(SRC_DIR)/$(basename $(@)).S -o $(OUT_DIR)/$@
+# generate the instruction logs
+	-visualboyadvance-m $(BIN_DIR)/thumb-alu.gba 196816 > file 2>/dev/null |:
+	@rm file
+	@sed -n -i.bak -e '196799,196816p' out.log
+	@rm out.log.bak
+	mv out.log $(LOG_DIR)/thumb-alu.log

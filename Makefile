@@ -1,3 +1,5 @@
+.PHONY: all test clean
+
 CC             = g++
 CFLAGS         = -c -g
 
@@ -25,7 +27,7 @@ clean:
 # GBA
 
 gba: $(OBJ_DIR)/main.o $(OBJ_DIR)/memory.o $(OBJ_DIR)/util.o $(OBJ_DIR)/jumptable-thumb.o $(OBJ_DIR)/jumptable-arm.o
-	$(CC) $(OBJS_GBA) -o gba 
+	$(CC) -g $(OBJS_GBA) -o gba 
 
 $(OBJ_DIR)/main.o: $(OBJ_DIR)/gba.o
 	$(CC) $(CFLAGS) $(SRC_DIR)/main.cpp -o $(OBJ_DIR)/main.o
@@ -53,9 +55,10 @@ $(OBJ_DIR)/jumptable-arm.o: $(SRC_DIR)/jumptable/jumptable-arm-config.cpp $(OBJ_
 test: CFLAGS += -D TEST
 
 test: $(OBJ_DIR)/gba.o $(OBJ_DIR)/catchmain.o $(OBJ_DIR)/expected_output.o $(OBJ_DIR)/cpu_state.o $(OBJ_DIR)/jumptable-arm.o $(OBJ_DIR)/jumptable-thumb.o
-	$(CC) $(TEST_SRC_DIR)/tests.cpp $(OBJS_TEST) -o test
+	$(CC) -g $(TEST_SRC_DIR)/tests.cpp $(OBJS_TEST) -o test
+	# cd ./tests/asm; make thumb-alu
 
-$(OBJ_DIR)/catchmain.o: $(OBJ_DIR)/gba.o
+$(OBJ_DIR)/catchmain.o:
 	$(CC) $(CFLAGS) $(TEST_CATCH_DIR)/catchmain.cpp -o $(OBJ_DIR)/catchmain.o
 
 $(OBJ_DIR)/expected_output.o: $(OBJ_DIR)/util.o

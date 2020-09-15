@@ -1430,6 +1430,11 @@ void run_01000110(uint16_t opcode) {
     uint8_t rm = get_nth_bits(opcode, 3, 7);
     uint8_t rd = get_nth_bits(opcode, 0, 3) | (get_nth_bit(opcode, 7) << 3);
     memory.regs[rd] = memory.regs[rm];
+
+    if (rd == 15) {
+        // the least significant bit of pc (memory.regs[15]) must be clear.
+        memory.regs[rd] &= 0xFFFFFFFE;
+    }
 }
 
 void run_01000111(uint16_t opcode) {
@@ -3135,57 +3140,57 @@ void run_11011111(uint16_t opcode) {
 void run_11100000(uint16_t opcode) {
     DEBUG_MESSAGE("Unconditional Branch");
 
-    int32_t sign_extended = (int32_t) (get_nth_bits(opcode, 0, 11));
-    *memory.pc = (*memory.pc + 2) + (sign_extended << 1);
+    int32_t sign_extended = (int32_t) (((int8_t) get_nth_bits(opcode, 0, 11)) << 1);
+    *memory.pc = (*memory.pc + 2) + sign_extended;
 }
 
 void run_11100001(uint16_t opcode) {
     DEBUG_MESSAGE("Unconditional Branch");
 
-    int32_t sign_extended = (int32_t) (get_nth_bits(opcode, 0, 11));
-    *memory.pc = (*memory.pc + 2) + (sign_extended << 1);
+    int32_t sign_extended = (int32_t) (((int8_t) get_nth_bits(opcode, 0, 11)) << 1);
+    *memory.pc = (*memory.pc + 2) + sign_extended;
 }
 
 void run_11100010(uint16_t opcode) {
     DEBUG_MESSAGE("Unconditional Branch");
 
-    int32_t sign_extended = (int32_t) (get_nth_bits(opcode, 0, 11));
-    *memory.pc = (*memory.pc + 2) + (sign_extended << 1);
+    int32_t sign_extended = (int32_t) (((int8_t) get_nth_bits(opcode, 0, 11)) << 1);
+    *memory.pc = (*memory.pc + 2) + sign_extended;
 }
 
 void run_11100011(uint16_t opcode) {
     DEBUG_MESSAGE("Unconditional Branch");
 
-    int32_t sign_extended = (int32_t) (get_nth_bits(opcode, 0, 11));
-    *memory.pc = (*memory.pc + 2) + (sign_extended << 1);
+    int32_t sign_extended = (int32_t) (((int8_t) get_nth_bits(opcode, 0, 11)) << 1);
+    *memory.pc = (*memory.pc + 2) + sign_extended;
 }
 
 void run_11100100(uint16_t opcode) {
     DEBUG_MESSAGE("Unconditional Branch");
 
-    int32_t sign_extended = (int32_t) (get_nth_bits(opcode, 0, 11));
-    *memory.pc = (*memory.pc + 2) + (sign_extended << 1);
+    int32_t sign_extended = (int32_t) (((int8_t) get_nth_bits(opcode, 0, 11)) << 1);
+    *memory.pc = (*memory.pc + 2) + sign_extended;
 }
 
 void run_11100101(uint16_t opcode) {
     DEBUG_MESSAGE("Unconditional Branch");
 
-    int32_t sign_extended = (int32_t) (get_nth_bits(opcode, 0, 11));
-    *memory.pc = (*memory.pc + 2) + (sign_extended << 1);
+    int32_t sign_extended = (int32_t) (((int8_t) get_nth_bits(opcode, 0, 11)) << 1);
+    *memory.pc = (*memory.pc + 2) + sign_extended;
 }
 
 void run_11100110(uint16_t opcode) {
     DEBUG_MESSAGE("Unconditional Branch");
 
-    int32_t sign_extended = (int32_t) (get_nth_bits(opcode, 0, 11));
-    *memory.pc = (*memory.pc + 2) + (sign_extended << 1);
+    int32_t sign_extended = (int32_t) (((int8_t) get_nth_bits(opcode, 0, 11)) << 1);
+    *memory.pc = (*memory.pc + 2) + sign_extended;
 }
 
 void run_11100111(uint16_t opcode) {
     DEBUG_MESSAGE("Unconditional Branch");
 
-    int32_t sign_extended = (int32_t) (get_nth_bits(opcode, 0, 11));
-    *memory.pc = (*memory.pc + 2) + (sign_extended << 1);
+    int32_t sign_extended = (int32_t) (((int8_t) get_nth_bits(opcode, 0, 11)) << 1);
+    *memory.pc = (*memory.pc + 2) + sign_extended;
 }
 
 void run_11101000(uint16_t opcode) {

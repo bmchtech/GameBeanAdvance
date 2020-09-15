@@ -480,11 +480,16 @@ void run_01000101(uint16_t opcode) {
     set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
 }
 
-// MOV #4 - high registers, does not change flags
+// MOV #3 - high registers, does not change flags
 void run_01000110(uint16_t opcode) {
     uint8_t rm = get_nth_bits(opcode, 3, 7);
     uint8_t rd = get_nth_bits(opcode, 0, 3) | (get_nth_bit(opcode, 7) << 3);
     memory.regs[rd] = memory.regs[rm];
+
+    if (rd == 15) {
+        // the least significant bit of pc (memory.regs[15]) must be clear.
+        memory.regs[rd] &= 0xFFFFFFFE;
+    }
 }
 
 // branch exchange
@@ -728,8 +733,8 @@ void run_11011111(uint16_t opcode) {
 void run_11100OFS(uint16_t opcode) {
     DEBUG_MESSAGE("Unconditional Branch");
 
-    int32_t sign_extended = (int32_t) (get_nth_bits(opcode, 0, 11));
-    *memory.pc = (*memory.pc + 2) + (sign_extended << 1);
+    int32_t sign_extended = (int32_t) (((int8_t) get_nth_bits(opcode, 0, 11)) << 1);
+    *memory.pc = (*memory.pc + 2) + sign_extended;
 }
 
 // long branch with link - high byte
