@@ -212,7 +212,7 @@ void run_00110ABC(uint16_t opcode) {
     set_flag_C(get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31) | 
     ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31))));
 
-    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 7);
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 31);
     set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_flag_N()));
 }
 

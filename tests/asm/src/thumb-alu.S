@@ -93,8 +93,30 @@ tests:
 			ADD   r0, r1, #0x5
 			BL    flagcheck @ NZCV = 0010
 
+			LDR   r0, [r7, #0x8]
+			ADD   r0, r1, #0x7
+			BL    flagcheck @ NZCV = 1010
+
 			LDR   r0, [r7, #0x10]
 			ADD   r0, r1, #0x1
+			BL    flagcheck @ NZCV = 1001
+
+@ ADD #2 tests (immediate offset)
+
+			LDR   r0, [r7, #0x0]
+			ADD   r0, #0x0
+			BL    flagcheck @ NZCV = 0100
+
+			LDR   r0, [r7, #0x4]
+			ADD   r0, #0x5
+			BL    flagcheck @ NZCV = 0010
+
+			LDR   r0, [r7, #0x8]
+			ADD   r0, #0xFF
+			BL    flagcheck @ NZCV = 1010
+
+			LDR   r0, [r7, #0x10]
+			ADD   r0, #0x1
 			BL    flagcheck @ NZCV = 1001
 			
 infin:
