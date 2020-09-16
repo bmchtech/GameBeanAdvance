@@ -5,14 +5,15 @@
 @ *****************************************************************************************************
 
 test_values:
-			.word 0x00000000
-			.word 0x00000001
-			.word 0xFFFFFFFF
-			.word 0x80000000
-			.word 0x7FFFFFFF
-			.word 0x8ABD8297
-			.word 0x289BDF39
-			.word 0xEFFFFFFF
+			.word 0x00000000 @ 0
+			.word 0x00000001 @ 4
+			.word 0xFFFFFFFF @ 8
+			.word 0x80000000 @ C
+			.word 0x7FFFFFFF @ 10
+			.word 0x8ABD8297 @ 14
+			.word 0x289BDF39 @ 18
+			.word 0xEFFFFFFF @ 1C
+			.word 0x00000004 @ 20
 
 
 @ ******************************************** Test Cases *********************************************
@@ -30,7 +31,7 @@ main:
 
 tests:
 
-@ ADC tests - without carry
+@ ADD tests - without carry
 
 			MOV r1, r1 @ clear carry flag
 
@@ -218,42 +219,92 @@ tests:
 
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x0]
-			ADC   r0, r0, r1
+			ADD   r2, r0, r1
 			BL    flagcheck @ NZCV = 0100
 
 			LDR   r0, [r7, #0x10]
 			LDR   r1, [r7, #0x10]
-			ADC   r1, r0, r1
+			ADD   r2, r0, r1
 			BL    flagcheck @ NZCV = 1001
 
 			LDR   r0, [r7, #0x4]
 			LDR   r1, [r7, #0x8]
-			ADC   r0, r0, r1
+			ADD   r2, r0, r1
 			BL    flagcheck @ NZCV = 0110
 
 			LDR   r0, [r7, #0x4]
 			LDR   r1, [r7, #0xC]
-			ADC   r1, r0, r1
+			ADD   r2, r0, r1
 			BL    flagcheck @ NZCV = 1000
 
 			LDR   r0, [r7, #0x8]
 			LDR   r1, [r7, #0x4]
-			ADC   r0, r0, r1
+			ADD   r2, r0, r1
 			BL    flagcheck @ NZCV = 0110
 
 			LDR   r0, [r7, #0xC]
 			LDR   r1, [r7, #0x4]
-			ADC   r0, r0, r1
+			ADD   r2, r0, r1
 			BL    flagcheck @ NZCV = 1000
 
 			LDR   r0, [r7, #0xC]
 			LDR   r1, [r7, #0xC]
-			ADC   r1, r0, r1
+			ADD   r2, r0, r1
 			BL    flagcheck @ NZCV = 0011
 
 			LDR   r0, [r7, #0x8]
 			LDR   r1, [r7, #0x8]
-			ADC   r1, r0, r1
+			ADD   r2, r0, r1
+			BL    flagcheck @ NZCV = 1010
+
+@ ADD #4 tests (high registers)
+
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x0]
+			MOV   r8, r0 @ can't load directly into high register, so i use this method instead
+			ADD   r8, r1
+			BL    flagcheck @ NZCV = 0100
+
+			LDR   r0, [r7, #0x10]
+			LDR   r1, [r7, #0x10]
+			MOV   r8, r0 @ can't load directly into high register, so i use this method instead
+			ADD   r1, r8
+			BL    flagcheck @ NZCV = 1001
+
+			LDR   r0, [r7, #0x4]
+			LDR   r1, [r7, #0x8]
+			MOV   r8, r0 @ can't load directly into high register, so i use this method instead
+			ADD   r1, r8
+			BL    flagcheck @ NZCV = 0110
+
+			LDR   r0, [r7, #0x4]
+			LDR   r1, [r7, #0xC]
+			MOV   r8, r0 @ can't load directly into high register, so i use this method instead
+			ADD   r8, r1
+			BL    flagcheck @ NZCV = 1000
+
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0x4]
+			MOV   r8, r0 @ can't load directly into high register, so i use this method instead
+			ADD   r1, r8
+			BL    flagcheck @ NZCV = 0110
+
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0x4]
+			MOV   r8, r0 @ can't load directly into high register, so i use this method instead
+			ADD   r8, r1
+			BL    flagcheck @ NZCV = 1000
+
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0xC]
+			MOV   r8, r0 @ can't load directly into high register, so i use this method instead
+			ADD   r1, r8
+			BL    flagcheck @ NZCV = 0011
+
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0x8]
+			MOV   r8, r0 @ can't load directly into high register, so i use this method instead
+			ADD   r8, r1
 			BL    flagcheck @ NZCV = 1010
 			
 infin:
