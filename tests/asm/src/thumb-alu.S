@@ -325,7 +325,21 @@ tests:
 			ADD   r2, PC, #0x3FC
 			BL    flagcheck
 
+@ ADD #6 tests (SP-relative)
+			
+			@ flags should be unaffected
 
+			ADD   r2, SP, #0x00
+			BL    flagcheck
+
+			ADD   r2, SP, #0x04
+			BL    flagcheck
+
+			ADD   r2, SP, #0x3F8
+			BL    flagcheck
+
+			ADD   r2, SP, #0x3FC
+			BL    flagcheck
 infin:
 			B     infin
 
