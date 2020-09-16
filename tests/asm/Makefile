@@ -14,7 +14,7 @@ clean:
 	rm -f $(OUT_DIR)/*
 	rm -f $(BIN_DIR)/*
 
-thumb-alu: $(LOG_DIR)/thumb-alu.log
+thumb-alu:
 # compile and link the files
 	$(COMPILER) $(COMPILER_FLAGS) $(SRC_DIR)/thumb-alu.S   -o        $(OUT_DIR)/thumb-alu.out
 	$(LINKER)   $(LINKER_FLAGS)   $(OUT_DIR)/thumb-alu.out -O binary $(BIN_DIR)/thumb-alu.gba
@@ -23,8 +23,8 @@ thumb-alu: $(LOG_DIR)/thumb-alu.log
 	gbafix $(BIN_DIR)/thumb-alu.gba
 
 # generate the instruction logs
-	-visualboyadvance-m $(BIN_DIR)/thumb-alu.gba 196816 > file 2>/dev/null |:
+	-visualboyadvance-m $(BIN_DIR)/thumb-alu.gba 197000 > file 2>/dev/null |:
 	@rm file
-	@sed -n -i.bak -e '196799,196816p' out.log
+	@sed -n -i.bak -e '196634,197000p' out.log
 	@rm out.log.bak
 	mv out.log $(LOG_DIR)/thumb-alu.log
