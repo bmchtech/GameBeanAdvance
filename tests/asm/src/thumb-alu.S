@@ -340,6 +340,23 @@ tests:
 
 			ADD   r2, SP, #0x3FC
 			BL    flagcheck
+
+@ ADD #7 tests (Adding to Stack Pointer)
+			
+			@ flags should be unaffected
+
+			ADD   SP, #0x00
+			BL    flagcheck
+
+			ADD   SP, #0x04
+			BL    flagcheck
+
+			ADD   SP, #0x1F8
+			BL    flagcheck
+
+			ADD   SP, #0x1FC
+			BL    flagcheck
+
 infin:
 			B     infin
 
