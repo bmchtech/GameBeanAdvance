@@ -77,7 +77,7 @@ TEST_CASE("CPU Thumb Mode - ADD Immediate Register") {
         execute(0x3280);
         
         REQUIRE(memory.regs[2] == 0x0000007F);
-        check_flags_NZCV(false, false, true, true);
+        check_flags_NZCV(false, false, true, false);
     }
     wipe_registers();
 }
