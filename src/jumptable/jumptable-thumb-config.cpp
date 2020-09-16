@@ -38,7 +38,8 @@ void run_0000SABC(uint16_t opcode) {
 
     if (shift == 0) { // if shift == 0, the cpu shifts by 32, which is the size of the register.
         @IF(S)  set_flag_C(get_nth_bit(memory.regs[source], 31));
-        memory.regs[dest] = 0;
+        @IF(S)  memory.regs[dest] = 0;
+        @IF(!S) memory.regs[dest] = memory.regs[dest];
     } else {
         @IF(S)  set_flag_C(get_nth_bit(memory.regs[source], shift - 1));
         @IF(!S) set_flag_C(get_nth_bit(memory.regs[source], 32 - shift));

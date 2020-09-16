@@ -1771,18 +1771,24 @@ void check_cpu_state(CpuState expected, CpuState actual, std::string error_messa
 }
 
 TEST_CASE("CPU THUMB Mode - VBA Logs (thumb-alu)") {
-    set_bit_T(true);
-
-    uint32_t num_instructions = 18;
+    uint32_t num_instructions = 366;
     CpuState* expected_output = produce_expected_cpu_states("tests/asm/logs/thumb-alu.log", num_instructions);
     
     get_rom_as_bytes("tests/asm/bin/thumb-alu.gba", memory.rom_1, SIZE_ROM_1);
     set_cpu_state(expected_output[0]);
 
-    for (int i = 0; i < 18 - 1; i++) {
+    bool wasPreviousInstructionARM = true; // if so, we reset the CPU's state
+    for (int i = 0; i < num_instructions - 1; i++) {
         if (expected_output[i].type == THUMB) {
+            if (wasPreviousInstructionARM) {
+                set_bit_T(true);
+                set_cpu_state(expected_output[i]);
+            }
+            
             execute(fetch());
             check_cpu_state(expected_output[i + 1], get_cpu_state(), "Failed at instruction #" + std::to_string(i));
+        } else {
+            wasPreviousInstructionARM = true;
         }
     }
 }
