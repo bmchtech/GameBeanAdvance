@@ -12,6 +12,7 @@ test_values:
 			.word 0x7FFFFFFF
 			.word 0x8ABD8297
 			.word 0x289BDF39
+			.word 0xEFFFFFFF
 
 
 @ ******************************************** Test Cases *********************************************
@@ -28,33 +29,71 @@ main:
 
 
 tests:
-			MOV r1, r1 @ clear carry flag
 
 @ ADC tests - without carry
+
+			MOV r1, r1 @ clear carry flag
 
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x0]
 			ADC   r0, r1
 			BL    flagcheck @ NZCV = 0100
 
-			LDR   r0, [r7, #0x0]
-			LDR   r1, [r7, #0x4]
-			ADC   r0, r1
-			BL    flagcheck @ NZCV = 0000
+			MOV r1, r1 @ clear carry flag
 
-			LDR   r0, [r7, #0x8]
-			LDR   r1, [r7, #0x4]
+			LDR   r0, [r7, #0x10]
+			LDR   r1, [r7, #0x10]
 			ADC   r0, r1
 			BL    flagcheck @ NZCV = 1001
 
+			MOV r1, r1 @ clear carry flag
+
+			LDR   r0, [r7, #0x4]
+			LDR   r1, [r7, #0x8]
+			ADC   r0, r1
+			BL    flagcheck @ NZCV = 0110
+
+			MOV r1, r1 @ clear carry flag
+
+			LDR   r0, [r7, #0x4]
+			LDR   r1, [r7, #0xC]
+			ADC   r0, r1
+			BL    flagcheck @ NZCV = 1000
+
+			MOV r1, r1 @ clear carry flag
+
 			LDR   r0, [r7, #0x8]
-			LDR   r1, [r7, #0x14]
+			LDR   r1, [r7, #0x4]
+			ADC   r0, r1
+			BL    flagcheck @ NZCV = 0110
+
+			MOV r1, r1 @ clear carry flag
+
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0x4]
+			ADC   r0, r1
+			BL    flagcheck @ NZCV = 1000
+
+			MOV r1, r1 @ clear carry flag
+
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0xC]
 			ADC   r0, r1
 			BL    flagcheck @ NZCV = 0011
 
-@ ADC tests - with carry
+			MOV r1, r1 @ clear carry flag
 
 			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0x8]
+			ADC   r0, r1
+			BL    flagcheck @ NZCV = 1010
+
+@ ADC tests - with carry
+
+			LDR   r0, [r7, #0x8] @ these two instructions set the carry flag
+			ASR   r0, r0, #0x0
+
+			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x0]
 			ADC   r0, r1
 			BL    flagcheck @ NZCV = 0100
@@ -62,62 +101,160 @@ tests:
 			LDR   r0, [r7, #0x8] @ these two instructions set the carry flag
 			ASR   r0, r0, #0x0
 
-			LDR   r0, [r7, #0x0]
-			LDR   r1, [r7, #0x4]
-			ADC   r0, r1
-			BL    flagcheck @ NZCV = 0000
-
-			LDR   r0, [r7, #0x4] @ these two instructions set the carry flag
-			ASR   r0, r0, #0x0
-
 			LDR   r0, [r7, #0x10]
-			LDR   r1, [r7, #0x0]
+			LDR   r1, [r7, #0x10]
 			ADC   r0, r1
 			BL    flagcheck @ NZCV = 1001
 
-			LDR   r0, [r7, #0x4] @ these two instructions set the carry flag
+			LDR   r0, [r7, #0x8] @ these two instructions set the carry flag
 			ASR   r0, r0, #0x0
 
-			LDR   r0, [r7, #0x10]
-			LDR   r1, [r7, #0x14]
+			LDR   r0, [r7, #0x4]
+			LDR   r1, [r7, #0x8]
+			ADC   r0, r1
+			BL    flagcheck @ NZCV = 0110
+
+			LDR   r0, [r7, #0x8] @ these two instructions set the carry flag
+			ASR   r0, r0, #0x0
+
+			LDR   r0, [r7, #0x4]
+			LDR   r1, [r7, #0xC]
+			ADC   r0, r1
+			BL    flagcheck @ NZCV = 1000
+
+			LDR   r0, [r7, #0x8] @ these two instructions set the carry flag
+			ASR   r0, r0, #0x0
+
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0x4]
+			ADC   r0, r1
+			BL    flagcheck @ NZCV = 0110
+
+			LDR   r0, [r7, #0x8] @ these two instructions set the carry flag
+			ASR   r0, r0, #0x0
+
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0x4]
+			ADC   r0, r1
+			BL    flagcheck @ NZCV = 1000
+
+			LDR   r0, [r7, #0x8] @ these two instructions set the carry flag
+			ASR   r0, r0, #0x0
+
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0xC]
 			ADC   r0, r1
 			BL    flagcheck @ NZCV = 0011
 
-@ ADD #1 tests (immediate offset)
+			LDR   r0, [r7, #0x8] @ these two instructions set the carry flag
+			ASR   r0, r0, #0x0
+
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0x8]
+			ADC   r0, r1
+			BL    flagcheck @ NZCV = 1010
+
+@ ADD #1 tests (3-bit immediate value)
 
 			LDR   r0, [r7, #0x0]
 			ADD   r0, r1, #0x0
 			BL    flagcheck @ NZCV = 0100
 
+			LDR   r0, [r7, #0x10]
+			ADD   r0, r1, #0x1
+			BL    flagcheck @ NZCV = 1001
+
 			LDR   r0, [r7, #0x4]
 			ADD   r0, r1, #0x5
 			BL    flagcheck @ NZCV = 0010
+
+			LDR   r0, [r7, #0xC]
+			ADD   r0, r1, #0x5
+			BL    flagcheck @ NZCV = 0011
+
+			LDR   r0, [r7, #0x8]
+			ADD   r0, r1, #0x1
+			BL    flagcheck @ NZCV = 1000
+
+			LDR   r0, [r7, #0x8]
+			ADD   r0, r1, #0x0
+			BL    flagcheck @ NZCV = 1000
 
 			LDR   r0, [r7, #0x8]
 			ADD   r0, r1, #0x7
 			BL    flagcheck @ NZCV = 1010
 
-			LDR   r0, [r7, #0x10]
-			ADD   r0, r1, #0x1
-			BL    flagcheck @ NZCV = 1001
-
-@ ADD #2 tests (immediate offset)
+@ ADD #2 tests (8-bit immediate value)
 
 			LDR   r0, [r7, #0x0]
-			ADD   r0, #0x0
+			ADD   r0,  #0x00
 			BL    flagcheck @ NZCV = 0100
 
+			LDR   r0, [r7, #0x10]
+			ADD   r0,  #0x01
+			BL    flagcheck @ NZCV = 1001
+
 			LDR   r0, [r7, #0x4]
-			ADD   r0, #0x5
+			ADD   r0, #0xFF
 			BL    flagcheck @ NZCV = 0010
 
-			LDR   r0, [r7, #0x8]
+			LDR   r0, [r7, #0xC]
 			ADD   r0, #0xFF
+			BL    flagcheck @ NZCV = 0011
+
+			LDR   r0, [r7, #0x8]
+			ADD   r0, #0x01
+			BL    flagcheck @ NZCV = 1000
+
+			LDR   r0, [r7, #0x8]
+			ADD   r0, #0x00
+			BL    flagcheck @ NZCV = 1000
+
+			LDR   r0, [r7, #0x8]
+			ADD   r0, #0xAB
 			BL    flagcheck @ NZCV = 1010
 
+@ ADD #3 tests (three separate registers)
+
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x0]
+			ADC   r0, r0, r1
+			BL    flagcheck @ NZCV = 0100
+
 			LDR   r0, [r7, #0x10]
-			ADD   r0, #0x1
+			LDR   r1, [r7, #0x10]
+			ADC   r1, r0, r1
 			BL    flagcheck @ NZCV = 1001
+
+			LDR   r0, [r7, #0x4]
+			LDR   r1, [r7, #0x8]
+			ADC   r0, r0, r1
+			BL    flagcheck @ NZCV = 0110
+
+			LDR   r0, [r7, #0x4]
+			LDR   r1, [r7, #0xC]
+			ADC   r1, r0, r1
+			BL    flagcheck @ NZCV = 1000
+
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0x4]
+			ADC   r0, r0, r1
+			BL    flagcheck @ NZCV = 0110
+
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0x4]
+			ADC   r0, r0, r1
+			BL    flagcheck @ NZCV = 1000
+
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0xC]
+			ADC   r1, r0, r1
+			BL    flagcheck @ NZCV = 0011
+
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0x8]
+			ADC   r1, r0, r1
+			BL    flagcheck @ NZCV = 1010
 			
 infin:
 			B     infin

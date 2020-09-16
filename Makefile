@@ -56,7 +56,7 @@ test: CFLAGS += -D TEST
 
 test: $(OBJ_DIR)/gba.o $(OBJ_DIR)/catchmain.o $(OBJ_DIR)/expected_output.o $(OBJ_DIR)/cpu_state.o $(OBJ_DIR)/jumptable-arm.o $(OBJ_DIR)/jumptable-thumb.o
 	$(CC) -g $(TEST_SRC_DIR)/tests.cpp $(OBJS_TEST) -o test
-	# cd ./tests/asm; make thumb-alu
+	cd ./tests/asm; make thumb-alu
 
 $(OBJ_DIR)/catchmain.o:
 	$(CC) $(CFLAGS) $(TEST_CATCH_DIR)/catchmain.cpp -o $(OBJ_DIR)/catchmain.o
