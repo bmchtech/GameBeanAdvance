@@ -258,55 +258,74 @@ tests:
 			BL    flagcheck @ NZCV = 1010
 
 @ ADD #4 tests (high registers)
+			
+			@ flags should be unaffected
 
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x0]
 			MOV   r8, r0 @ can't load directly into high register, so i use this method instead
 			ADD   r8, r1
-			BL    flagcheck @ NZCV = 0100
+			BL    flagcheck
 
 			LDR   r0, [r7, #0x10]
 			LDR   r1, [r7, #0x10]
 			MOV   r8, r0 @ can't load directly into high register, so i use this method instead
 			ADD   r1, r8
-			BL    flagcheck @ NZCV = 1001
+			BL    flagcheck
 
 			LDR   r0, [r7, #0x4]
 			LDR   r1, [r7, #0x8]
 			MOV   r8, r0 @ can't load directly into high register, so i use this method instead
 			ADD   r1, r8
-			BL    flagcheck @ NZCV = 0110
+			BL    flagcheck
 
 			LDR   r0, [r7, #0x4]
 			LDR   r1, [r7, #0xC]
 			MOV   r8, r0 @ can't load directly into high register, so i use this method instead
 			ADD   r8, r1
-			BL    flagcheck @ NZCV = 1000
+			BL    flagcheck
 
 			LDR   r0, [r7, #0x8]
 			LDR   r1, [r7, #0x4]
 			MOV   r8, r0 @ can't load directly into high register, so i use this method instead
 			ADD   r1, r8
-			BL    flagcheck @ NZCV = 0110
+			BL    flagcheck
 
 			LDR   r0, [r7, #0xC]
 			LDR   r1, [r7, #0x4]
 			MOV   r8, r0 @ can't load directly into high register, so i use this method instead
 			ADD   r8, r1
-			BL    flagcheck @ NZCV = 1000
+			BL    flagcheck
 
 			LDR   r0, [r7, #0xC]
 			LDR   r1, [r7, #0xC]
 			MOV   r8, r0 @ can't load directly into high register, so i use this method instead
 			ADD   r1, r8
-			BL    flagcheck @ NZCV = 0011
+			BL    flagcheck
 
 			LDR   r0, [r7, #0x8]
 			LDR   r1, [r7, #0x8]
 			MOV   r8, r0 @ can't load directly into high register, so i use this method instead
 			ADD   r8, r1
-			BL    flagcheck @ NZCV = 1010
+			BL    flagcheck
+
+@ ADD #5 tests (PC-relative)
 			
+			@ flags should be unaffected
+
+			ADD   r2, PC, #0x00
+			BL    flagcheck
+
+			ADD   r2, PC, #0x04
+			BL    flagcheck
+
+			ADD   r2, PC, #0x3F8
+			BL    flagcheck
+
+			ADD   r2, PC, #0x3FC
+			BL    flagcheck
+
+
 infin:
 			B     infin
 

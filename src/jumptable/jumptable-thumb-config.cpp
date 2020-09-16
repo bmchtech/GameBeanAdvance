@@ -597,11 +597,12 @@ void run_1001LREG(uint16_t opcode) {
     @IF(!L) *((uint32_t*) (memory.main + *memory.sp + (immediate_value << 2))) = memory.regs[rd];
 }
 
-// load address
+// add #5 / #6 - PC and SP relative respectively
 void run_1010SREG(uint16_t opcode) {
     uint8_t rd = get_nth_bits(opcode, 8, 11);
     uint8_t immediate_value = opcode & 0xFF;
-    memory.regs[rd] = *memory.sp + (immediate_value << 2);
+    @IF(S)  memory.regs[rd] =   *memory.sp                    + (immediate_value << 2);
+    @IF(!S) memory.regs[rd] = ((*memory.pc + 2) & 0xFFFFFFFC) + (immediate_value << 2);
 }
 
 // add / subtract offset to stack pointer
