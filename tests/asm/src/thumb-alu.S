@@ -581,7 +581,7 @@ bpl_pass:
 			BVS   bvs_pass
 			B     infin
 
-bvs_pass:	
+bvs_pass:
 
 	@ BVC tests
 	
@@ -596,8 +596,64 @@ bvs_pass:
 			BVC   bvc_pass
 			B     infin
 			
-bvc_pass:	
+bvc_pass:
+
+	@ BHI tests
 	
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x0]
+			ADD   r0, r1
+			BHI   infin
+	
+			LDR   r0, [r7, #0x4]
+			LDR   r1, [r7, #0x8]
+			ADD   r0, r1
+			BHI   infin
+	
+			LDR   r0, [r7, #0x4]
+			LDR   r1, [r7, #0x4]
+			ADD   r0, r1
+			BHI   infin
+	
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0xC]
+			ADD   r0, r1
+			BHI   bhi_pass
+			B     infin
+	
+bhi_pass:
+
+	@ BLS tests
+	
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x0]
+			ADD   r0, r1
+			BLS   bls_pass0
+			B     infin
+	
+bls_pass0:
+	
+			LDR   r0, [r7, #0x4]
+			LDR   r1, [r7, #0x8]
+			ADD   r0, r1
+			BLS   bls_pass1
+			B     infin
+	
+bls_pass1:
+	
+			LDR   r0, [r7, #0x4]
+			LDR   r1, [r7, #0x4]
+			ADD   r0, r1
+			BLS   bls_pass2
+			B     infin
+	
+bls_pass2:
+	
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0xC]
+			ADD   r0, r1
+			BLS   infin
+
 			LDR   r0, [r7, #0x8]
 
 infin:

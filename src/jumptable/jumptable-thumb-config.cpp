@@ -713,7 +713,7 @@ void run_1101COND(uint16_t opcode) {
     @IF(!C  O  N !D) if (get_flag_V()) {
     @IF(!C  O  N  D) if (!get_flag_V()) {
     @IF( C !O !N !D) if (get_flag_C() && !get_flag_Z()) {
-    @IF( C !O !N  D) if (!get_flag_C() && get_flag_Z()) {
+    @IF( C !O !N  D) if (!get_flag_C() || get_flag_Z()) {
     @IF( C !O  N !D) if (get_flag_N() == get_flag_V()) {
     @IF( C !O  N  D) if (get_flag_N() ^ get_flag_V()) {
     @IF( C  O !N !D) if (!get_flag_Z() && (get_flag_N() == get_flag_V())) {
