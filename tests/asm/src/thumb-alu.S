@@ -388,6 +388,32 @@ tests:
 			AND   r0, r1
 			BL    flagcheck
 
+@ ASR tests
+			
+			LDR   r1, [r7, #0x1C]
+			ASR   r0, r1, #0b00000
+			BL    flagcheck
+			
+			LDR   r1, [r7, #0xC]
+			ASR   r0, r1, #0b00000
+			BL    flagcheck
+			
+			LDR   r1, [r7, #0x14]
+			ASR   r0, r1, #0b00001
+			BL    flagcheck
+			
+			LDR   r1, [r7, #0x18]
+			ASR   r0, r1, #0b00010
+			BL    flagcheck
+			
+			LDR   r1, [r7, #0x14]
+			ASR   r0, r1, #0b00101
+			BL    flagcheck
+			
+			LDR   r1, [r7, #0x18]
+			ASR   r0, r1, #0b11111
+			BL    flagcheck
+
 infin:
 			B     infin
 
