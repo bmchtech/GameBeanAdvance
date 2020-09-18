@@ -14,6 +14,9 @@ test_values:
 			.word 0x289BDF39 @ 18
 			.word 0xEFFFFFFF @ 1C
 			.word 0x00000004 @ 20
+			.word 0xFFFFFF00 @ 24
+			.word 0xFFFFFF04 @ 28
+			.word 0xFFFFFF20 @ 2C
 
 
 @ ******************************************** Test Cases *********************************************
@@ -388,7 +391,7 @@ tests:
 			AND   r0, r1
 			BL    flagcheck
 
-@ ASR tests
+@ ASR #1 tests
 			
 			LDR   r1, [r7, #0x1C]
 			ASR   r0, r1, #0b00000
@@ -412,6 +415,62 @@ tests:
 			
 			LDR   r1, [r7, #0x18]
 			ASR   r0, r1, #0b11111
+			BL    flagcheck
+
+@ ASR #2 tests (shift == 0)
+			
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x0]
+			ASR   r0, r1
+			BL    flagcheck
+			
+			LDR   r0, [r7, #0x24]
+			LDR   r1, [r7, #0x0]
+			ASR   r0, r1
+			BL    flagcheck
+			
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0x0]
+			ASR   r0, r1
+			BL    flagcheck
+
+@ ASR #2 tests (shift < 32)
+			
+			LDR   r0, [r7, #0x14]
+			LDR   r1, [r7, #0x4]
+			ASR   r0, r1
+			BL    flagcheck
+			
+			LDR   r0, [r7, #0x18]
+			LDR   r1, [r7, #0x28]
+			ASR   r0, r1
+			BL    flagcheck
+			
+			LDR   r0, [r7, #0x14]
+			LDR   r1, [r7, #0x20]
+			ASR   r0, r1
+			BL    flagcheck
+
+@ ASR #2 tests (shift >= 32)
+			
+			LDR   r0, [r7, #0x00]
+			LDR   r1, [r7, #0x2C]
+			ASR   r0, r1
+			BL    flagcheck
+			
+			LDR   r0, [r7, #0x00]
+			LDR   r1, [r7, #0x8]
+			ASR   r0, r1
+			BL    flagcheck
+			
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0x2C]
+			ASR   r0, r1
+			BL    flagcheck
+			
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0x8]
+			ASR   r0, r1
 			BL    flagcheck
 
 infin:

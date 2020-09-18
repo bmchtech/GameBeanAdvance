@@ -1771,7 +1771,7 @@ void check_cpu_state(CpuState expected, CpuState actual, std::string error_messa
 }
 
 TEST_CASE("CPU THUMB Mode - VBA Logs (thumb-alu)") {
-    uint32_t num_instructions = 1066;
+    uint32_t num_instructions = 1366;
     CpuState* expected_output = produce_expected_cpu_states("tests/asm/logs/thumb-alu.log", num_instructions);
     
     get_rom_as_bytes("tests/asm/bin/thumb-alu.gba", memory.rom_1, SIZE_ROM_1);
