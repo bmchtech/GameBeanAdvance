@@ -25,12 +25,11 @@ test_values:
 
 main:
 			.arm
+			LDR r7, =test_values
 			ADD r3, pc, #1
 			BX r3
 	
 			.thumb
-			LDR r7, =test_values
-
 
 tests:
 
@@ -474,154 +473,158 @@ tests:
 			BL    flagcheck
 
 @ Conditional Branch tests
+	@ these tests will set the CPSR using ADD instructions, and then run some jumps
+	@ to make sure the branches work.
+			B     beq_start
 
-			@ these tests will set the CPSR using ADD instructions, and then run some jumps
-			@ to make sure the branches work.
+	error0:
+			SWI   #0x3 @ soft reset
 
 	@ BEQ tests
-	
+	beq_start:
+
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x4]
 			ADD   r0, r1
-			BEQ   infin
+			BEQ   error0
 	
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x0]
 			ADD   r0, r1
 			BEQ   beq_pass
-			B     infin
+			B     error0
 
-beq_pass:	
+	beq_pass:	
 
 	@ BNE tests
 	
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x0]
 			ADD   r0, r1
-			BNE   infin
+			BNE   error0
 	
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x4]
 			ADD   r0, r1
 			BNE   bne_pass
-			B     infin
+			B     error0
 			
-bne_pass:	
+	bne_pass:	
 
 	@ BCS tests
 	
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x4]
 			ADD   r0, r1
-			BCS   infin
+			BCS   error0
 	
 			LDR   r0, [r7, #0x4]
 			LDR   r1, [r7, #0x8]
 			ADD   r0, r1
 			BCS   bcs_pass
-			B     infin
+			B     error0
 
-bcs_pass:	
+	bcs_pass:	
 
 	@ BCC tests
 	
 			LDR   r0, [r7, #0x4]
 			LDR   r1, [r7, #0x8]
 			ADD   r0, r1
-			BCC   infin
+			BCC   error0
 	
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x4]
 			ADD   r0, r1
 			BCC   bcc_pass
-			B     infin
+			B     error0
 			
-bcc_pass:	
+	bcc_pass:	
 
 	@ BMI tests
 	
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x0]
 			ADD   r0, r1
-			BMI   infin
+			BMI   error0
 	
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x8]
 			ADD   r0, r1
 			BMI   bmi_pass
-			B     infin
+			B     error0
 
-bmi_pass:	
+	bmi_pass:	
 
 	@ BPL tests
 	
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x8]
 			ADD   r0, r1
-			BPL   infin
+			BPL   error0
 	
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x0]
 			ADD   r0, r1
 			BPL   bpl_pass
-			B     infin
+			B     error0
 			
-bpl_pass:	
+	bpl_pass:	
 
 	@ BVS tests
 	
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x0]
 			ADD   r0, r1
-			BVS   infin
+			BVS   error0
 	
 			LDR   r0, [r7, #0x8]
 			LDR   r1, [r7, #0xC]
 			ADD   r0, r1
 			BVS   bvs_pass
-			B     infin
+			B     error0
 
-bvs_pass:
+	bvs_pass:
 
 	@ BVC tests
 	
 			LDR   r0, [r7, #0x8]
 			LDR   r1, [r7, #0xC]
 			ADD   r0, r1
-			BVC   infin
+			BVC   error0
 	
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x0]
 			ADD   r0, r1
 			BVC   bvc_pass
-			B     infin
+			B     error0
 			
-bvc_pass:
+	bvc_pass:
 
 	@ BHI tests
 	
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x0]
 			ADD   r0, r1
-			BHI   infin
+			BHI   error1
 	
 			LDR   r0, [r7, #0x4]
 			LDR   r1, [r7, #0x8]
 			ADD   r0, r1
-			BHI   infin
+			BHI   error1
 	
 			LDR   r0, [r7, #0x4]
 			LDR   r1, [r7, #0x4]
 			ADD   r0, r1
-			BHI   infin
+			BHI   error1
 	
 			LDR   r0, [r7, #0x8]
 			LDR   r1, [r7, #0xC]
 			ADD   r0, r1
 			BHI   bhi_pass
-			B     infin
+			B     error1
 	
-bhi_pass:
+	bhi_pass:
 
 	@ BLS tests
 	
@@ -629,35 +632,92 @@ bhi_pass:
 			LDR   r1, [r7, #0x0]
 			ADD   r0, r1
 			BLS   bls_pass0
-			B     infin
+			B     error1
 	
-bls_pass0:
+	bls_pass0:
 	
 			LDR   r0, [r7, #0x4]
 			LDR   r1, [r7, #0x8]
 			ADD   r0, r1
 			BLS   bls_pass1
-			B     infin
+			B     error1
 	
-bls_pass1:
+	bls_pass1:
 	
 			LDR   r0, [r7, #0x4]
 			LDR   r1, [r7, #0x4]
 			ADD   r0, r1
 			BLS   bls_pass2
-			B     infin
+			B     error1
 	
-bls_pass2:
+	bls_pass2:
 	
 			LDR   r0, [r7, #0x8]
 			LDR   r1, [r7, #0xC]
 			ADD   r0, r1
-			BLS   infin
+			BLS   error1
 
-			LDR   r0, [r7, #0x8]
+	@ BGE tests
+	
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x0]
+			ADD   r0, r1
+			BGE   bge_pass0
+			B     error1
+	
+	bge_pass0:
+	
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0xC]
+			ADD   r0, r1
+			BGE   error1
+	
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0x8]
+			ADD   r0, r1
+			BGE   error1
+	
+			LDR   r0, [r7, #0x10]
+			LDR   r1, [r7, #0x10]
+			ADD   r0, r1
+			BGE   bge_pass1
+			B     error1
+	
+	bge_pass1:
+
+	@ BLT tests
+	
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x0]
+			ADD   r0, r1
+			BLT   error1
+	
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0xC]
+			ADD   r0, r1
+			BLT   blt_pass0
+			B     error1
+	
+	blt_pass0:
+	
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0x8]
+			ADD   r0, r1
+			BLT   blt_pass1
+			B     error1
+	
+	blt_pass1:
+	
+			LDR   r0, [r7, #0x10]
+			LDR   r1, [r7, #0x10]
+			ADD   r0, r1
+			BLT   error1
 
 infin:
 			B     infin
+
+error1:
+			SWI   #0x3 @ soft reset
 
 @ these are flagchecks. flagchecks will be run after every log by
 @ calling BL flagcheck_N. this checks the flags of the ALU instructions
