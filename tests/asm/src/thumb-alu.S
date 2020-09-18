@@ -488,7 +488,7 @@ tests:
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x0]
 			ADD   r0, r1 @ NZCV = 0000
-			BEQ   beq_skip
+			BEQ   beq_pass
 			B     infin
 
 beq_pass:	
@@ -503,10 +503,40 @@ beq_pass:
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x4]
 			ADD   r0, r1 @ NZCV = 0000
-			BEQ   bne_skip
+			BEQ   bne_pass
 			B     infin
 			
 bne_pass:	
+
+	@ BCS tests
+	
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x4]
+			ADD   r0, r1 @ NZCV = 0000
+			BCS   infin
+	
+			LDR   r0, [r7, #0x4]
+			LDR   r1, [r7, #0x8]
+			ADD   r0, r1 @ NZCV = 0000
+			BCS   bcs_pass
+			B     infin
+
+bcs_pass:	
+
+	@ BCC tests
+	
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x4]
+			ADD   r0, r1 @ NZCV = 0000
+			BCC   infin
+	
+			LDR   r0, [r7, #0x4]
+			LDR   r1, [r7, #0x8]
+			ADD   r0, r1 @ NZCV = 0000
+			BCC   bcc_pass
+			B     infin
+			
+bcc_pass:	
 
 infin:
 			B     infin
