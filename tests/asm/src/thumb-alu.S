@@ -794,12 +794,37 @@ tests:
 			LDR   r1, [r7, #0x10]
 			ADD   r0, r1
 			BLE   error1
-
-infin:
-			B     infin
+			B     bic_start
 
 error1:
 			SWI   #0x3 @ soft reset
+
+@ BIC tests
+	
+bic_start:
+
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x0]
+			BIC   r0, r1
+			BL    flagcheck
+	
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0x0]
+			BIC   r0, r1
+			BL    flagcheck
+	
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0x8]
+			BIC   r0, r1
+			BL    flagcheck
+	
+			LDR   r0, [r7, #0x14]
+			LDR   r1, [r7, #0x18]
+			BIC   r0, r1
+			BL    flagcheck
+			
+infin:
+			B     infin
 
 @ these are flagchecks. flagchecks will be run after every log by
 @ calling BL flagcheck_N. this checks the flags of the ALU instructions
