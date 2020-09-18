@@ -713,6 +713,88 @@ tests:
 			ADD   r0, r1
 			BLT   error1
 
+	@ BGT tests
+	
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x4]
+			ADD   r0, r1
+			BGT   bgt_pass0
+			B     error1
+	
+	bgt_pass0:
+	
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0x14]
+			ADD   r0, r1
+			BGT   error1
+	
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x0]
+			ADD   r0, r1
+			BGT   error1
+	
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0xC]
+			ADD   r0, r1
+			BGT   error1
+	
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0x4]
+			ADD   r0, r1
+			BGT   error1
+	
+			LDR   r0, [r7, #0x10]
+			LDR   r1, [r7, #0x10]
+			ADD   r0, r1
+			BGT   bgt_pass1
+			B     error1
+	
+	bgt_pass1:
+
+	@ BLE tests
+	
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x4]
+			ADD   r0, r1
+			BLE   error1
+	
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0x14]
+			ADD   r0, r1
+			BLE   ble_pass0
+			B     error1
+	
+	ble_pass0:
+	
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x0]
+			ADD   r0, r1
+			BLE   ble_pass1
+			B     error1
+	
+	ble_pass1:
+	
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0xC]
+			ADD   r0, r1
+			BLE   ble_pass2
+			B     error1
+	
+	ble_pass2:
+	
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0x4]
+			ADD   r0, r1
+			BLE   ble_pass3
+			B     error1
+	
+	ble_pass3:
+	
+			LDR   r0, [r7, #0x10]
+			LDR   r1, [r7, #0x10]
+			ADD   r0, r1
+			BLE   error1
+
 infin:
 			B     infin
 
