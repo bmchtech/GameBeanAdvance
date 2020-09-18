@@ -822,7 +822,49 @@ bic_start:
 			LDR   r1, [r7, #0x18]
 			BIC   r0, r1
 			BL    flagcheck
-			
+
+@ CMN tests:
+
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x0]
+			CMN   r0, r1
+			BL    flagcheck @ NZCV = 0100
+
+			LDR   r0, [r7, #0x10]
+			LDR   r1, [r7, #0x10]
+			CMN   r0, r1
+			BL    flagcheck @ NZCV = 1001
+
+			LDR   r0, [r7, #0x4]
+			LDR   r1, [r7, #0x8]
+			CMN   r0, r1
+			BL    flagcheck @ NZCV = 0110
+
+			LDR   r0, [r7, #0x4]
+			LDR   r1, [r7, #0xC]
+			CMN   r0, r1
+			BL    flagcheck @ NZCV = 1000
+
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0x4]
+			CMN   r0, r1
+			BL    flagcheck @ NZCV = 0110
+
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0x4]
+			CMN   r0, r1
+			BL    flagcheck @ NZCV = 1000
+
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0xC]
+			CMN   r0, r1
+			BL    flagcheck @ NZCV = 0011
+
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0x8]
+			CMN   r0, r1
+			BL    flagcheck @ NZCV = 1010
+
 infin:
 			B     infin
 
