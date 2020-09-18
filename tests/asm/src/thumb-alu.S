@@ -498,12 +498,12 @@ beq_pass:
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x0]
 			ADD   r0, r1
-			BEQ   infin
+			BNE   infin
 	
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x4]
 			ADD   r0, r1
-			BEQ   bne_pass
+			BNE   bne_pass
 			B     infin
 			
 bne_pass:	
@@ -525,13 +525,13 @@ bcs_pass:
 
 	@ BCC tests
 	
-			LDR   r0, [r7, #0x0]
-			LDR   r1, [r7, #0x4]
+			LDR   r0, [r7, #0x4]
+			LDR   r1, [r7, #0x8]
 			ADD   r0, r1
 			BCC   infin
 	
-			LDR   r0, [r7, #0x4]
-			LDR   r1, [r7, #0x8]
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x4]
 			ADD   r0, r1
 			BCC   bcc_pass
 			B     infin
@@ -597,6 +597,8 @@ bvs_pass:
 			B     infin
 			
 bvc_pass:	
+	
+			LDR   r0, [r7, #0x8]
 
 infin:
 			B     infin
