@@ -357,6 +357,37 @@ tests:
 			ADD   SP, #0x1FC
 			BL    flagcheck
 
+@ AND tests (Same register)
+
+			LDR   r0, [r7, #0x0]
+			AND   r0, r0
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x8]
+			AND   r0, r0
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x14]
+			AND   r0, r0
+			BL    flagcheck
+
+@ AND tests (Different registers)
+
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x8]
+			AND   r0, r1
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x14]
+			LDR   r1, [r7, #0x8]
+			AND   r0, r1
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x14]
+			LDR   r1, [r7, #0x18]
+			AND   r0, r1
+			BL    flagcheck
+
 infin:
 			B     infin
 
