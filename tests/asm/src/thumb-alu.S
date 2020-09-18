@@ -482,12 +482,12 @@ tests:
 	
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x4]
-			ADD   r0, r1 @ NZCV = 0000
+			ADD   r0, r1
 			BEQ   infin
 	
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x0]
-			ADD   r0, r1 @ NZCV = 0000
+			ADD   r0, r1
 			BEQ   beq_pass
 			B     infin
 
@@ -497,12 +497,12 @@ beq_pass:
 	
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x0]
-			ADD   r0, r1 @ NZCV = 0000
+			ADD   r0, r1
 			BEQ   infin
 	
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x4]
-			ADD   r0, r1 @ NZCV = 0000
+			ADD   r0, r1
 			BEQ   bne_pass
 			B     infin
 			
@@ -512,12 +512,12 @@ bne_pass:
 	
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x4]
-			ADD   r0, r1 @ NZCV = 0000
+			ADD   r0, r1
 			BCS   infin
 	
 			LDR   r0, [r7, #0x4]
 			LDR   r1, [r7, #0x8]
-			ADD   r0, r1 @ NZCV = 0000
+			ADD   r0, r1
 			BCS   bcs_pass
 			B     infin
 
@@ -527,16 +527,76 @@ bcs_pass:
 	
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x4]
-			ADD   r0, r1 @ NZCV = 0000
+			ADD   r0, r1
 			BCC   infin
 	
 			LDR   r0, [r7, #0x4]
 			LDR   r1, [r7, #0x8]
-			ADD   r0, r1 @ NZCV = 0000
+			ADD   r0, r1
 			BCC   bcc_pass
 			B     infin
 			
 bcc_pass:	
+
+	@ BMI tests
+	
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x0]
+			ADD   r0, r1
+			BMI   infin
+	
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x8]
+			ADD   r0, r1
+			BMI   bmi_pass
+			B     infin
+
+bmi_pass:	
+
+	@ BPL tests
+	
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x8]
+			ADD   r0, r1
+			BPL   infin
+	
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x0]
+			ADD   r0, r1
+			BPL   bpl_pass
+			B     infin
+			
+bpl_pass:	
+
+	@ BVS tests
+	
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x0]
+			ADD   r0, r1
+			BVS   infin
+	
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0xC]
+			ADD   r0, r1
+			BVS   bvs_pass
+			B     infin
+
+bvs_pass:	
+
+	@ BVC tests
+	
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0xC]
+			ADD   r0, r1
+			BVC   infin
+	
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x0]
+			ADD   r0, r1
+			BVC   bvc_pass
+			B     infin
+			
+bvc_pass:	
 
 infin:
 			B     infin
