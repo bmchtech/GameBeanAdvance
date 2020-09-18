@@ -473,6 +473,41 @@ tests:
 			ASR   r0, r1
 			BL    flagcheck
 
+@ Conditional Branch tests
+
+			@ these tests will set the CPSR using ADD instructions, and then run some jumps
+			@ to make sure the branches work.
+
+	@ BEQ tests
+	
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x4]
+			ADD   r0, r1 @ NZCV = 0000
+			BEQ   infin
+	
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x0]
+			ADD   r0, r1 @ NZCV = 0000
+			BEQ   beq_skip
+			B     infin
+
+beq_pass:	
+
+	@ BNE tests
+	
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x0]
+			ADD   r0, r1 @ NZCV = 0000
+			BEQ   infin
+	
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x4]
+			ADD   r0, r1 @ NZCV = 0000
+			BEQ   bne_skip
+			B     infin
+			
+bne_pass:	
+
 infin:
 			B     infin
 
