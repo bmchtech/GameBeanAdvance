@@ -1,5 +1,6 @@
 #include "catch/catch.hpp"
 #include "../src/gba.h"
+#include "../src/util.h"
 #include "cpu_state.h"
 #include "expected_output.h"
 
@@ -1722,7 +1723,7 @@ TEST_CASE("CPU Thumb Mode - CMP (Immediate)") {
         memory.regs[2] = 0x00000000;
         execute(0b00101'010'00000000);
 
-        check_flags_NZCV(false, true, false, false);
+        check_flags_NZCV(false, true, true, false);
     }
 
     SECTION("CMP R2, #0x80 (V flag)") {
@@ -1785,8 +1786,9 @@ TEST_CASE("CPU THUMB Mode - VBA Logs (thumb-alu)") {
                 set_cpu_state(expected_output[i]);
             }
             
-            execute(fetch());
-            check_cpu_state(expected_output[i + 1], get_cpu_state(), "Failed at instruction #" + std::to_string(i));
+            uint16_t opcode = fetch();
+            execute(opcode);
+            check_cpu_state(expected_output[i + 1], get_cpu_state(), "Failed at instruction #" + std::to_string(i) + " with opcode 0x" + to_hex_string(opcode));
         } else {
             wasPreviousInstructionARM = true;
         }

@@ -187,8 +187,7 @@ void run_00101ABC(uint16_t opcode) {
     set_flag_N(result >> 31);
 
     // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
-    set_flag_C(get_nth_bit(rn_value, 31) & get_nth_bit(old_rd_value, 31) | 
-    ((get_nth_bit(rn_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(result, 31))));
+    set_flag_C(!(immediate_value > (uint32_t)old_rd_value));
 
     bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rn_value, 31);
     set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));

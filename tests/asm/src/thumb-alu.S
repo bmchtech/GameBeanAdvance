@@ -33,7 +33,7 @@ main:
 
 tests:
 
-@ ADD tests - without carry
+@ ADC tests - without carry
 
 			MOV r1, r1 @ clear carry flag
 
@@ -865,26 +865,56 @@ bic_start:
 			CMN   r0, r1
 			BL    flagcheck @ NZCV = 1010
 
+@ CMP #1 tests (8-bit immediate value)
+
+			LDR   r0, [r7, #0x0]
+			CMP   r0,  #0x00
+			BL    flagcheck @ NZCV = 0100
+
+			LDR   r0, [r7, #0x10]
+			CMP   r0,  #0x01
+			BL    flagcheck @ NZCV = 1001
+
+			LDR   r0, [r7, #0x4]
+			CMP   r0, #0xFF
+			BL    flagcheck @ NZCV = 0010
+
+			LDR   r0, [r7, #0xC]
+			CMP   r0, #0xFF
+			BL    flagcheck @ NZCV = 0011
+
+			LDR   r0, [r7, #0x8]
+			CMP   r0, #0x01
+			BL    flagcheck @ NZCV = 1000
+
+			LDR   r0, [r7, #0x8]
+			CMP   r0, #0x00
+			BL    flagcheck @ NZCV = 1000
+
+			LDR   r0, [r7, #0x8]
+			CMP   r0, #0xAB
+			BL    flagcheck @ NZCV = 1010
+
 infin:
 			B     infin
 
 @ these are flagchecks. flagchecks will be run after every log by
-@ calling BL flagcheck_N. this checks the flags of the ALU instructions
+@ calling BL flagcheck. this checks the flags of the ALU instructions
 @ note that this may not look functional, but keep in mind that the vba-m
 @ produces log files that specify which instructions were run in which order.
 @ therefore, by setting up a system that would conditionally run some
 @ instructions based on the CPSR, we can check the flags of the emulator.
 
 flagcheck: @ otherwise known as flagcheck_N
-			BEQ   flagcheck_Z
+			BMI   flagcheck_Z
 			B     flagcheck_Z
 
 flagcheck_Z:
-			BCS   flagcheck_C
+			BEQ   flagcheck_C
 			B     flagcheck_C
 
 flagcheck_C:
-			BMI   flagcheck_V
+			BCS   flagcheck_V
 			B     flagcheck_V
 
 flagcheck_V:
