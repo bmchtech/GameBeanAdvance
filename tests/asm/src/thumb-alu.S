@@ -976,6 +976,37 @@ bic_start:
 			CMP   r0,  r8
 			BL    flagcheck @ NZCV = 1010
 
+@ EOR tests (Same register)
+
+			LDR   r0, [r7, #0x0]
+			EOR   r0, r0
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x8]
+			EOR   r0, r0
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x14]
+			EOR   r0, r0
+			BL    flagcheck
+
+@ EOR tests (Different registers)
+
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x8]
+			EOR   r0, r1
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x14]
+			LDR   r1, [r7, #0x8]
+			EOR   r0, r1
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x14]
+			LDR   r1, [r7, #0x18]
+			EOR   r0, r1
+			BL    flagcheck
+
 infin:
 			B     infin
 
