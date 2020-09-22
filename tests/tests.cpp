@@ -662,7 +662,7 @@ TEST_CASE("CPU Thumb Mode - CMP Registers (Low)") {
         memory.regs[3] = 0x00000000;
         execute(0b010000'1010'010'011);
 
-        check_flags_NZCV(false, true, false, false);
+        check_flags_NZCV(false, true, true, false);
     }
 
     SECTION("CMP R2, R3 (V flag)") {
