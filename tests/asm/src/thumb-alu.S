@@ -932,6 +932,50 @@ bic_start:
 			CMP   r0,  r1
 			BL    flagcheck @ NZCV = 1010
 
+@ CMP #3 tests (at least one high register)
+
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x0]
+			MOV   r8, r1 @ can't load directly into high register, so i use this method instead
+			CMP   r0,  r8
+			BL    flagcheck @ NZCV = 0100
+
+			LDR   r0, [r7, #0x10]
+			LDR   r1, [r7, #0x4]
+			MOV   r8, r0 @ can't load directly into high register, so i use this method instead
+			CMP   r8,  r1
+			BL    flagcheck @ NZCV = 1001
+
+			LDR   r0, [r7, #0x4]
+			LDR   r1, [r7, #0x8]
+			MOV   r8, r1 @ can't load directly into high register, so i use this method instead
+			CMP   r0,  r8
+			BL    flagcheck @ NZCV = 0010
+
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0x8]
+			MOV   r8, r0 @ can't load directly into high register, so i use this method instead
+			CMP   r8,  r1
+			BL    flagcheck @ NZCV = 0011
+
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0x4]
+			MOV   r8, r1 @ can't load directly into high register, so i use this method instead
+			CMP   r0,  r8
+			BL    flagcheck @ NZCV = 1000
+
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0x0]
+			MOV   r8, r0 @ can't load directly into high register, so i use this method instead
+			CMP   r8,  r1
+			BL    flagcheck @ NZCV = 1000
+
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0x14]
+			MOV   r8, r1 @ can't load directly into high register, so i use this method instead
+			CMP   r0,  r8
+			BL    flagcheck @ NZCV = 1010
+
 infin:
 			B     infin
 

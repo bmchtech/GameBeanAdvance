@@ -472,8 +472,7 @@ void run_01000101(uint16_t opcode) {
     set_flag_Z(result == 0);
 
     // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
-    set_flag_C(get_nth_bit(rm_value, 31) & get_nth_bit(old_rd_value, 31) | 
-    ((get_nth_bit(rm_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(result, 31))));
+    set_flag_C(!(memory.regs[rm] > memory.regs[rd]));
 
     bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rm_value, 31);
     set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));

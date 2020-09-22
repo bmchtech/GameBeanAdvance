@@ -934,7 +934,7 @@ TEST_CASE("CPU Thumb Mode - CMP Registers (High)") {
         memory.regs[11] = 0x00000000;
         execute(0b01000101'1'1'010'011);
 
-        check_flags_NZCV(false, true, false, false);
+        check_flags_NZCV(false, true, true, false);
     }
 
     SECTION("CMP R10, R11 (V flag)") {
