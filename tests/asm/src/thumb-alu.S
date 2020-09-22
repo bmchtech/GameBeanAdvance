@@ -25,9 +25,9 @@ test_values:
 
 main:
 			.arm
-			LDR r7, =test_values
-			ADD r3, pc, #1
-			BX r3
+			LDR   r7, =test_values
+			ADD   r3, pc, #1
+			BX    r3
 	
 			.thumb
 
@@ -35,7 +35,7 @@ tests:
 
 @ ADC tests - without carry
 
-			MOV r1, r1 @ clear carry flag
+			MOV   r1, r1 @ clear carry flag
 
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x0]
@@ -1006,6 +1006,13 @@ bic_start:
 			LDR   r1, [r7, #0x18]
 			EOR   r0, r1
 			BL    flagcheck
+
+@ LDMIA tests
+
+			LDMIA r7!, {r0, r2, r5, r6}
+			LDMIA r7!, {r0, r2, r5, r6, r7}
+			LDR   r7, =test_values
+			
 
 infin:
 			B     infin
