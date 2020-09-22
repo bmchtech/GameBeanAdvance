@@ -17,6 +17,8 @@ test_values:
 			.word 0xFFFFFF00 @ 24
 			.word 0xFFFFFF04 @ 28
 			.word 0xFFFFFF20 @ 2C
+			.word 0x00000008 @ 30
+			.word 0x0000000C @ 34
 
 
 @ ******************************************** Test Cases *********************************************
@@ -1022,6 +1024,19 @@ bic_start:
 			LDR r2, [r7, #0x8]
 			LDR r2, [r7, #0xC]
 
+@ LDR #2 tests (register offset)
+
+			LDR   r0, [r7, #0x0]
+			LDR   r2, [r7, r0]
+
+			LDR   r0, [r7, #0x20]
+			LDR   r2, [r7, r0]
+			
+			LDR   r0, [r7, #0x30]
+			LDR   r2, [r7, r0]
+
+			LDR   r0, [r7, #0x34]
+			LDR   r2, [r7, r0]
 			
 
 infin:
