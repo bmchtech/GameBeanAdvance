@@ -1012,6 +1012,16 @@ bic_start:
 			LDMIA r7!, {r0, r2, r5, r6}
 			LDMIA r7!, {r0, r2, r5, r6, r7}
 			LDR   r7, =test_values
+
+@ Note: LDR #1 is minimally tested, because it is required for the tests to even 
+@ run in the first place.
+@ LDR #1 tests (immediate offset)
+
+			LDR r2, [r7, #0x0]
+			LDR r2, [r7, #0x4]
+			LDR r2, [r7, #0x8]
+			LDR r2, [r7, #0xC]
+
 			
 
 infin:
