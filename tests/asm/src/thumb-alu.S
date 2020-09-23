@@ -1073,19 +1073,26 @@ bic_start:
 			LDR   r0, [r7, #0x34]
 			LDRB  r2, [r7, r0]
 
-@ LDRB #3 tests (PC offset)
+@ LDRH #1 tests (immediate offset)
 
-			LDRB  r2, [PC, #0x0]
-			LDRB  r2, [PC, #0x4]
-			LDRB  r2, [PC, #0x8]
-			LDRB  r2, [PC, #0xC]
+			LDRH  r2, [r7, #0x14]
+			LDRH  r2, [r7, #0x16]
+			LDRH  r2, [r7, #0x18]
+			LDRH  r2, [r7, #0x1A]
 
-@ LDRB #4 tests (SP offset)
+@ LDRH #2 tests (register offset)
 
-			LDRB  r2, [SP, #0x0]
-			LDRB  r2, [SP, #0x4]
-			LDRB  r2, [SP, #0x8]
-			LDRB  r2, [SP, #0xC]
+			LDR   r0, [r7, #0x0]
+			LDRH  r2, [r7, r0]
+
+			LDR   r0, [r7, #0x20]
+			LDRH  r2, [r7, r0]
+			
+			LDR   r0, [r7, #0x30]
+			LDRH  r2, [r7, r0]
+
+			LDR   r0, [r7, #0x34]
+			LDRH  r2, [r7, r0]
 
 infin:
 			B     infin
