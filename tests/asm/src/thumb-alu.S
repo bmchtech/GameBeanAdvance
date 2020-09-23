@@ -1037,7 +1037,13 @@ bic_start:
 
 			LDR   r0, [r7, #0x34]
 			LDR   r2, [r7, r0]
-			
+
+@ LDR #3 tests (PC offset)
+
+			LDR   r2, [PC, #0x0]
+			LDR   r2, [PC, #0x4]
+			LDR   r2, [PC, #0x8]
+			LDR   r2, [PC, #0xC]
 
 infin:
 			B     infin
