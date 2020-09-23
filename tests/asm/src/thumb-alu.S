@@ -1094,6 +1094,34 @@ bic_start:
 			LDR   r0, [r7, #0x34]
 			LDRH  r2, [r7, r0]
 
+@ LDRSB tests
+
+			LDR   r0, [r7, #0x0]
+			LDRSB r2, [r7, r0]
+
+			LDR   r0, [r7, #0x20]
+			LDRSB r2, [r7, r0]
+			
+			LDR   r0, [r7, #0x30]
+			LDRSB r2, [r7, r0]
+
+			LDR   r0, [r7, #0x34]
+			LDRSB r2, [r7, r0]
+
+@ LDRSH tests
+
+			LDR   r0, [r7, #0x0]
+			LDRSH r2, [r7, r0]
+
+			LDR   r0, [r7, #0x20]
+			LDRSH r2, [r7, r0]
+			
+			LDR   r0, [r7, #0x30]
+			LDRSH r2, [r7, r0]
+
+			LDR   r0, [r7, #0x34]
+			LDRSH r2, [r7, r0]
+
 infin:
 			B     infin
 
