@@ -563,7 +563,7 @@ void run_011BLOFS(uint16_t opcode) {
     @IF(!B !L) *((uint32_t*) (memory.main + memory.regs[rn] + (immediate_value << 2))) = memory.regs[rd];
     @IF( B !L) memory.main[memory.regs[rn] + (immediate_value << 2)] = memory.regs[rd] & 0xFF;
     @IF(!B  L) memory.regs[rd] = *((uint32_t*) (memory.main + memory.regs[rn] + (immediate_value << 2)));
-    @IF( B  L) memory.regs[rd] = memory.main[memory.regs[rn] + (immediate_value << 2)];
+    @IF( B  L) memory.regs[rd] = memory.main[memory.regs[rn] + immediate_value];
 }
 
 // store halfword
