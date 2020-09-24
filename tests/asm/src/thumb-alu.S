@@ -1406,6 +1406,38 @@ mul_start:
             LDR   r1, [r7, #0x20]
             NEG   r1, r0
             BL    flagcheck	
+
+@ ORR tests (Same register)
+
+			LDR   r0, [r7, #0x0]
+			ORR   r0, r0
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x8]
+			ORR   r0, r0
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x14]
+			ORR   r0, r0
+			BL    flagcheck
+
+@ ORR tests (Different registers)
+
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x8]
+			ORR   r0, r1
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x14]
+			LDR   r1, [r7, #0x8]
+			ORR   r0, r1
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x14]
+			LDR   r1, [r7, #0x18]
+			ORR   r0, r1
+			BL    flagcheck
+
 infin:
 			B     infin
 
