@@ -1347,6 +1347,25 @@ bic_start:
 			B     infin     @ should be run
 			B     error2    @ should be skipped
 
+@ MUL tests
+
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x8]
+			MUL   r0, r1
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x14]
+			LDR   r1, [r7, #0x8]
+			MUL   r0, r1
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x14]
+			LDR   r1, [r7, #0x18]
+			MUL   r0, r1
+			BL    flagcheck
+
+			
+
 error2:
 			SWI   #0x3
 
