@@ -1242,6 +1242,58 @@ bic_start:
 			LSR   r0, r1, #0b11111
 			BL    flagcheck
 
+@ LDR #2 tests (register shift)
+
+			LDR   r1, [r7, #0x14]
+			LDR   r2, [r7, #0x0]
+			LSR   r1, r2
+			BL    flagcheck
+
+			LDR   r1, [r7, #0x18]
+			LDR   r2, [r7, #0x24]
+			LSR   r1, r2
+			BL    flagcheck
+
+			LDR   r1, [r7, #0x14]
+			LDR   r2, [r7, #0x4]
+			LSR   r1, r2
+			BL    flagcheck
+
+			LDR   r1, [r7, #0x18]
+			LDR   r2, [r7, #0x4]
+			LSR   r1, r2
+			BL    flagcheck
+
+			LDR   r1, [r7, #0x14]
+			LDR   r2, [r7, #0x30]
+			LSR   r1, r2
+			BL    flagcheck
+
+			LDR   r1, [r7, #0x18]
+			LDR   r2, [r7, #0x30]
+			LSR   r1, r2
+			BL    flagcheck
+
+			LDR   r1, [r7, #0x14]
+			LDR   r2, [r7, #0x2C]
+			LSR   r1, r2
+			BL    flagcheck
+
+			LDR   r1, [r7, #0x18]
+			LDR   r2, [r7, #0x2C]
+			LSR   r1, r2
+			BL    flagcheck
+
+			LDR   r1, [r7, #0x14]
+			LDR   r2, [r7, #0x08]
+			LSR   r1, r2
+			BL    flagcheck
+
+			LDR   r1, [r7, #0x18]
+			LDR   r2, [r7, #0x08]
+			LSR   r1, r2
+			BL    flagcheck
+			
 infin:
 			B     infin
 
