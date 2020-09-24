@@ -1208,6 +1208,40 @@ bic_start:
 			LSL   r1, r2
 			BL    flagcheck
 
+@ LSR #1 tests (immediate value)
+
+			LDR   r1, [r7, #0x1C]
+			LSR   r0, r1, #0b00000
+			BL    flagcheck
+			
+			LDR   r1, [r7, #0xC]
+			LSR   r0, r1, #0b00000
+			BL    flagcheck
+			
+			LDR   r1, [r7, #0x14]
+			LSR   r0, r1, #0b00001
+			BL    flagcheck
+			
+			LDR   r1, [r7, #0x18]
+			LSR   r0, r1, #0b00010
+			BL    flagcheck
+			
+			LDR   r1, [r7, #0x14]
+			LSR   r0, r1, #0b00101
+			BL    flagcheck
+			
+			LDR   r1, [r7, #0x14]
+			LSR   r0, r1, #0b01001
+			BL    flagcheck
+			
+			LDR   r1, [r7, #0x14]
+			LSR   r0, r1, #0b01010
+			BL    flagcheck
+			
+			LDR   r1, [r7, #0x18]
+			LSR   r0, r1, #0b11111
+			BL    flagcheck
+
 infin:
 			B     infin
 
