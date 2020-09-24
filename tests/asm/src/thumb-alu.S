@@ -1344,10 +1344,14 @@ bic_start:
 			ADD   r0,  #0x5 @ skip ahead two instructions, set thumb mode
 			MOV   r15, r0   @ set the program counter, which should skip the next instruction
 			B     error2    @ should be skipped
-			B     infin     @ should be run
+			B     mul_start @ should be run
 			B     error2    @ should be skipped
 
+error2:
+			SWI   #0x3
+
 @ MUL tests
+mul_start:
 
 			LDR   r0, [r7, #0x0]
 			LDR   r1, [r7, #0x8]
@@ -1363,11 +1367,6 @@ bic_start:
 			LDR   r1, [r7, #0x18]
 			MUL   r0, r1
 			BL    flagcheck
-
-			
-
-error2:
-			SWI   #0x3
 
 infin:
 			B     infin
