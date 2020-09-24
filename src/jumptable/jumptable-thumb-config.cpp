@@ -488,6 +488,10 @@ void run_01000110(uint16_t opcode) {
         // the least significant bit of pc (memory.regs[15]) must be clear.
         memory.regs[rd] &= 0xFFFFFFFE;
     }
+
+    if (rm == 15) {
+        memory.regs[rd] += 2;
+    }
 }
 
 // branch exchange

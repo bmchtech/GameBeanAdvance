@@ -1242,7 +1242,7 @@ bic_start:
 			LSR   r0, r1, #0b11111
 			BL    flagcheck
 
-@ LDR #2 tests (register shift)
+@ LSR #2 tests (register shift)
 
 			LDR   r1, [r7, #0x14]
 			LDR   r2, [r7, #0x0]
@@ -1293,7 +1293,63 @@ bic_start:
 			LDR   r2, [r7, #0x08]
 			LSR   r1, r2
 			BL    flagcheck
-			
+
+@ MOV #1 tests (8-bit immediate value)
+
+			MOV   r2, #0x00
+			BL    flagcheck
+
+			MOV   r3, #0x20
+			BL    flagcheck
+
+			MOV   r4, #0xA5
+			BL    flagcheck
+
+@ MOV #2 tests (low register to low register move)
+
+			LDR   r1, [r7, #0x00]
+			MOV   r1, r2
+			BL    flagcheck
+
+			LDR   r3, [r7, #0x08]
+			MOV   r3, r0
+			BL    flagcheck
+
+			LDR   r5, [r7, #0x14]
+			MOV   r5, r7
+			BL    flagcheck
+
+@ MOV #3 tests (at least one high register)
+
+			LDR   r1, [r7, #0x00]
+			MOV   r1, r8
+			BL    flagcheck
+
+			LDR   r3, [r7, #0x08]
+			MOV   r3, r9
+			BL    flagcheck
+
+			LDR   r3, [r7, #0x14]
+			MOV   r14, r3
+			BL    flagcheck
+
+			@ a bunch of checks on the program counter to make sure MOV #3 accurately takes pipelining into account
+			MOV   r0,  r15  @ get the program counter
+			MOV   r0,  r15  @ get the program counter
+			MOV   r0,  r15  @ get the program counter
+			MOV   r0,  r15  @ get the program counter
+
+			@ and now for a *really* fancy test
+			MOV   r0,  r15  @ get the program counter
+			ADD   r0,  #0x5 @ skip ahead two instructions, set thumb mode
+			MOV   r15, r0   @ set the program counter, which should skip the next instruction
+			B     error2    @ should be skipped
+			B     infin     @ should be run
+			B     error2    @ should be skipped
+
+error2:
+			SWI   #0x3
+
 infin:
 			B     infin
 

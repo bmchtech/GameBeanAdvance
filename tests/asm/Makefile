@@ -23,8 +23,8 @@ thumb-alu:
 	gbafix $(BIN_DIR)/thumb-alu.gba
 
 # generate the instruction logs
-	-visualboyadvance-m $(BIN_DIR)/thumb-alu.gba 199000 > file 2>/dev/null |:
+	-visualboyadvance-m $(BIN_DIR)/thumb-alu.gba 200000 > file 2>/dev/null |:
 	@rm file
-	@sed -n -i.bak -e '196634,199000p' out.log
+	@sed -n -i.bak -e '196634,200000p' out.log
 	@rm out.log.bak
 	mv out.log $(LOG_DIR)/thumb-alu.log
