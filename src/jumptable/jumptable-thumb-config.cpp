@@ -384,7 +384,7 @@ void run_01000010(uint16_t opcode) {
             // NEG - Rd = 0 - Rm
             memory.regs[rd] = ~memory.regs[rm] + 1;
             result = memory.regs[rd];
-            set_flag_C(result != 0);
+            set_flag_C(result == 0);
             set_flag_V(get_nth_bit(result, 31) && get_nth_bit(memory.regs[rm], 31));
             break;
 

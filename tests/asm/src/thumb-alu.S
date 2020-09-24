@@ -1384,7 +1384,28 @@ mul_start:
 			LDR   r1, [r7, #0x18]
 			MVN   r0, r1
 			BL    flagcheck
-			
+
+@ NEG tests
+
+            LDR   r0, [r7, #0x0]
+            NEG   r1, r0
+            BL    flagcheck
+
+            LDR   r1, [r7, #0x8]
+            NEG   r1, r0
+            BL    flagcheck
+
+            LDR   r0, [r7, #0x14]
+            NEG   r1, r0
+            BL    flagcheck
+
+            LDR   r1, [r7, #0x18]
+            NEG   r1, r0
+            BL    flagcheck
+
+            LDR   r1, [r7, #0x20]
+            NEG   r1, r0
+            BL    flagcheck	
 infin:
 			B     infin
 

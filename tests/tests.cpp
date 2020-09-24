@@ -630,7 +630,7 @@ TEST_CASE("CPU Thumb Mode - NEG") {
         execute(0b010000'1001'010'011);
 
         REQUIRE(memory.regs[3] == 0x00000000);
-        check_flags_NZCV(false, true, false, false);
+        check_flags_NZCV(false, true, true, false);
     }
 
     SECTION("TST R2, R3 (Carry set)") {
@@ -638,7 +638,7 @@ TEST_CASE("CPU Thumb Mode - NEG") {
         execute(0b010000'1001'010'011);
 
         REQUIRE(memory.regs[3] == 0b11111111'11111111'11111111'11100111);
-        check_flags_NZCV(true, false, true, false);
+        check_flags_NZCV(true, false, false, false);
     }
 
     SECTION("TST R2, R3 (Overflow set)") {
@@ -646,7 +646,7 @@ TEST_CASE("CPU Thumb Mode - NEG") {
         execute(0b010000'1001'010'011);
 
         REQUIRE(memory.regs[3] == 0b10000000'00000000'00000000'00000000);
-        check_flags_NZCV(true, false, true, true);
+        check_flags_NZCV(true, false, false, true);
     }
 }
 
