@@ -20,6 +20,13 @@ test_values:
 			.word 0x00000008 @ 30
 			.word 0x0000000C @ 34
 
+return:
+			.word 0x000046F7 @ this is just MOV LR, PC (thumb)
+
+pop_stack:	.word 0xABCDEF99
+			.word 0x02829743
+			.word 0x38972734
+			.word 0x03000058 @ address of return
 
 @ ******************************************** Test Cases *********************************************
 			.text
@@ -1308,25 +1315,25 @@ bic_start:
 @ MOV #2 tests (low register to low register move)
 
 			LDR   r1, [r7, #0x00]
-			MOV   r1, r2
+			MOV   r2, r1
 			BL    flagcheck
 
 			LDR   r3, [r7, #0x08]
-			MOV   r3, r0
+			MOV   r0, r3
 			BL    flagcheck
 
-			LDR   r5, [r7, #0x14]
-			MOV   r5, r7
+			LDR   r6, [r7, #0x14]
+			MOV   r5, r6
 			BL    flagcheck
 
 @ MOV #3 tests (at least one high register)
 
 			LDR   r1, [r7, #0x00]
-			MOV   r1, r8
+			MOV   r8, r1
 			BL    flagcheck
 
 			LDR   r3, [r7, #0x08]
-			MOV   r3, r9
+			MOV   r9, r3
 			BL    flagcheck
 
 			LDR   r3, [r7, #0x14]
@@ -1437,6 +1444,18 @@ mul_start:
 			LDR   r1, [r7, #0x18]
 			ORR   r0, r1
 			BL    flagcheck
+
+@ POP tests (PC not included)
+			POP {r0, r3, r6}
+			POP {r0, r1, r2, r3, r4, r5, r6, r7}
+			
+@ POP tests (PC included)
+
+			LDR   r0, =pop_stack    @ load the fake stack into r0
+			MOV   SP, r0            @ move it to the stack pointer
+			MOV   LR, PC            @ save the PC into LR
+			POP   {r2, r5, r6, PC}  @ pop, which branches us to 0x03000058 (which contains a MOV PC, LR instruction)
+			B     infin             @ if we succeeded continue
 
 infin:
 			B     infin

@@ -1793,4 +1793,7 @@ TEST_CASE("CPU THUMB Mode - VBA Logs (thumb-alu)") {
             wasPreviousInstructionARM = true;
         }
     }
+
+    // make sure we've reached B infin
+    REQUIRE(fetch() == 0xE7FE);
 }
