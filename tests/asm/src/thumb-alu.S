@@ -28,6 +28,23 @@ pop_stack:	.word 0xABCDEF99
 			.word 0x38972734
 			.word 0x03000058 @ address of return
 
+push_stack: .word 0x48014800
+
+
+@ just a bunch of SWI #0x03 instructions (0x03 is stop). these should be overwritten
+@ when the PUSH tests are run.
+
+overwrite_me_start:
+			.word 0xDF03DF03
+			.word 0xDF03DF03
+			.word 0xDF03DF03
+			.word 0xDF03DF03
+			.word 0xDF03DF03
+			.word 0xDF03DF03
+			.word 0xDF03DF03
+			.word 0xDF0346F7
+overwrite_me_end:	
+
 @ ******************************************** Test Cases *********************************************
 			.text
 @ *****************************************************************************************************
@@ -1455,7 +1472,38 @@ mul_start:
 			MOV   SP, r0            @ move it to the stack pointer
 			MOV   LR, PC            @ save the PC into LR
 			POP   {r2, r5, r6, PC}  @ pop, which branches us to 0x03000058 (which contains a MOV PC, LR instruction)
-			B     infin             @ if we succeeded continue
+			                        @ after all is said and done, we should be back here, ready for PUSH tests
+
+@ PUSH tests
+
+			@ we're going to load instructions in hex form into the registers,
+			@ and then PUSH them ahead of the PC, and let the cpu execute them.
+			@ this verifies that the registers were pushed in the right order.
+
+			LDR   r7, =overwrite_me_end
+			MOV   SP, r7
+			LDR   r7, =push_stack
+
+			@ i would use LDMIA, but i want to make sure tests can be run while relying on 
+			@ as few other instructions as possible. LDR is a simple instruction, so it gets 
+			@ a pass. plus, im just loading the same thing into every register, sooo....
+
+			LDR   r0, [r7, #0x00]
+			LDR   r1, [r7, #0x00]
+			LDR   r2, [r7, #0x00]
+			LDR   r3, [r7, #0x00]
+			LDR   r4, [r7, #0x00]
+			LDR   r5, [r7, #0x00]
+			LDR   r6, [r7, #0x00]
+
+			LDR   r7, =return
+			LDR   r7, [r7, #0x00]
+			
+			PUSH  {r0, r1, r2, r3, r4, r5, r6, r7}
+			
+			LDR   r0, =overwrite_me_start
+			MOV   LR, PC
+			MOV   PC, r0
 
 infin:
 			B     infin
