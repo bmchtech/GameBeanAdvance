@@ -1488,22 +1488,89 @@ mul_start:
 			@ as few other instructions as possible. LDR is a simple instruction, so it gets 
 			@ a pass. plus, im just loading the same thing into every register, sooo....
 
-			LDR   r0, [r7, #0x00]
-			LDR   r1, [r7, #0x00]
-			LDR   r2, [r7, #0x00]
-			LDR   r3, [r7, #0x00]
-			LDR   r4, [r7, #0x00]
-			LDR   r5, [r7, #0x00]
-			LDR   r6, [r7, #0x00]
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x0]
+			LDR   r2, [r7, #0x0]
+			LDR   r3, [r7, #0x0]
+			LDR   r4, [r7, #0x0]
+			LDR   r5, [r7, #0x0]
+			LDR   r6, [r7, #0x0]
 
 			LDR   r7, =return
-			LDR   r7, [r7, #0x00]
+			LDR   r7, [r7, #0x0]
 			
 			PUSH  {r0, r1, r2, r3, r4, r5, r6, r7}
 			
 			LDR   r0, =overwrite_me_start
 			MOV   LR, PC
 			MOV   PC, r0
+
+@ ROR tests (Rs[7:0] == 0)
+			LDR   r7, =test_values
+
+			LDR   r1, [r7, #0x14]
+			LDR   r0, [r7, #0x0]
+			ROR   r1, r0
+			BL    flagcheck
+
+			LDR   r1, [r7, #0x18]
+			LDR   r0, [r7, #0x0]
+			ROR   r1, r0
+			BL    flagcheck
+
+			LDR   r1, [r7, #0x14]
+			LDR   r0, [r7, #0x24]
+			ROR   r1, r0
+			BL    flagcheck
+
+			LDR   r1, [r7, #0x18]
+			LDR   r0, [r7, #0x24]
+			ROR   r1, r0
+			BL    flagcheck
+
+@ ROR tests (Rs[4:0] == 0)
+
+			LDR   r1, [r7, #0x14]
+			LDR   r0, [r7, #0x0]
+			ROR   r1, r0
+			BL    flagcheck
+
+			LDR   r1, [r7, #0x18]
+			LDR   r0, [r7, #0x0]
+			ROR   r1, r0
+			BL    flagcheck
+
+			LDR   r1, [r7, #0x14]
+			LDR   r0, [r7, #0x2C]
+			ROR   r1, r0
+			BL    flagcheck
+
+			LDR   r1, [r7, #0x18]
+			LDR   r0, [r7, #0x2C]
+			ROR   r1, r0
+			BL    flagcheck
+
+@ ROR tests (Rs[4:0] > 0)
+
+			LDR   r1, [r7, #0x14]
+			LDR   r0, [r7, #0x30]
+			ROR   r1, r0
+			BL    flagcheck
+
+			LDR   r1, [r7, #0x18]
+			LDR   r0, [r7, #0x4]
+			ROR   r1, r0
+			BL    flagcheck
+
+			LDR   r1, [r7, #0x14]
+			LDR   r0, [r7, #0x34]
+			ROR   r1, r0
+			BL    flagcheck
+
+			LDR   r1, [r7, #0x18]
+			LDR   r0, [r7, #0x20]
+			ROR   r1, r0
+			BL    flagcheck
 
 infin:
 			B     infin
