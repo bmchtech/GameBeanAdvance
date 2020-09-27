@@ -55,6 +55,10 @@ stmia_data:
 			.word 0x00000000
 			.word 0x00000000
 
+str_testing:
+			.word 0x00000000
+			.word 0x00000000
+
 @ ******************************************** Test Cases *********************************************
 			.text
 @ *****************************************************************************************************
@@ -1779,6 +1783,21 @@ mul_start:
 			LDR   r6, [r7, #0x18]
 			LDR   r6, [r7, #0x1C]
 
+@ STR #1 tests (5-bit immediate offset)
+
+			@ kinda feel guilty testing STR instructions using LDR... but it's whatever
+			@ besides if the emulator got to this point it probably has a working LDR
+
+			LDR   r7, =test_values
+			LDR   r6, =str_testing
+
+			LDR   r3, [r7, #0x14]
+			STR   r3, [r6, #0x00] 
+			LDR   r3, [r7, #0x18]
+			STR   r3, [r6, #0x04] 
+
+			LDR   r3, [r6, #0x00]
+			LDR   r3, [r6, #0x00]
 infin:
 			B     infin
 
