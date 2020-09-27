@@ -59,7 +59,7 @@ main:
 
 tests:
 
-@ ADC tests - without carry
+@ ADC tests (without carry)
 
 			MOV   r1, r1 @ clear carry flag
 
@@ -117,7 +117,7 @@ tests:
 			ADC   r0, r1
 			BL    flagcheck @ NZCV = 1010
 
-@ ADC tests - with carry
+@ ADC tests (with carry)
 
 			LDR   r0, [r7, #0x8] @ these two instructions set the carry flag
 			ASR   r0, r0, #0x0
@@ -1035,9 +1035,10 @@ bic_start:
 
 @ LDMIA tests
 
+			MOV   r8, r7
 			LDMIA r7!, {r0, r2, r5, r6}
 			LDMIA r7!, {r0, r2, r5, r6, r7}
-			LDR   r7, =test_values
+			MOV   r7, r8
 
 @ Note: LDR #1 is minimally tested, because it is required for the tests to even 
 @ run in the first place.
@@ -1570,6 +1571,130 @@ mul_start:
 			LDR   r1, [r7, #0x18]
 			LDR   r0, [r7, #0x20]
 			ROR   r1, r0
+			BL    flagcheck
+
+@ SBC tests (without carry)
+
+			MOV   r1, r1 @ clear carry flag
+
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x0]
+			SBC   r1, r0
+			BL    flagcheck
+
+			MOV   r1, r1 @ clear carry flag
+
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x4]
+			SBC   r1, r0
+			BL    flagcheck
+
+			MOV   r1, r1 @ clear carry flag
+
+			LDR   r0, [r7, #0x4]
+			LDR   r1, [r7, #0x30]
+			SBC   r1, r0
+			BL    flagcheck
+
+			MOV   r1, r1 @ clear carry flag
+
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0x10]
+			SBC   r1, r0
+			BL    flagcheck
+
+			MOV   r1, r1 @ clear carry flag
+
+			LDR   r0, [r7, #0x14]
+			LDR   r1, [r7, #0x18]
+			SBC   r1, r0
+			BL    flagcheck
+
+			MOV   r1, r1 @ clear carry flag
+
+			LDR   r0, [r7, #0x24]
+			LDR   r1, [r7, #0x28]
+			SBC   r1, r0
+			BL    flagcheck
+
+			MOV   r1, r1 @ clear carry flag
+
+			LDR   r0, [r7, #0x1C]
+			LDR   r1, [r7, #0x0]
+			SBC   r1, r0
+			BL    flagcheck
+
+			MOV   r1, r1 @ clear carry flag
+
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0x10]
+			SBC   r1, r0
+			BL    flagcheck
+
+@ SBC tests (with carry)
+
+			LDR   r0, [r7, #0x8] @ these two instructions set the carry flag
+			ASR   r0, r0, #0x0
+
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x0]
+			SBC   r1, r0
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x8] @ these two instructions set the carry flag
+			ASR   r0, r0, #0x0
+
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x4]
+			SBC   r1, r0
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x8] @ these two instructions set the carry flag
+			ASR   r0, r0, #0x0
+
+			LDR   r0, [r7, #0x4]
+			LDR   r1, [r7, #0x30]
+			SBC   r1, r0
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x8] @ these two instructions set the carry flag
+			ASR   r0, r0, #0x0
+
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0x10]
+			SBC   r1, r0
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x8] @ these two instructions set the carry flag
+			ASR   r0, r0, #0x0
+
+			LDR   r0, [r7, #0x14]
+			LDR   r1, [r7, #0x18]
+			SBC   r1, r0
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x8] @ these two instructions set the carry flag
+			ASR   r0, r0, #0x0
+
+			LDR   r0, [r7, #0x24]
+			LDR   r1, [r7, #0x28]
+			SBC   r1, r0
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x8] @ these two instructions set the carry flag
+			ASR   r0, r0, #0x0
+
+			LDR   r0, [r7, #0x1C]
+			LDR   r1, [r7, #0x0]
+			SBC   r1, r0
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x8] @ these two instructions set the carry flag
+			ASR   r0, r0, #0x0
+
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0x10]
+			SBC   r1, r0
 			BL    flagcheck
 
 infin:

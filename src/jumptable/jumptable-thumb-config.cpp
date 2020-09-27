@@ -338,12 +338,13 @@ void run_01000001(uint16_t opcode) {
             set_flag_N(get_nth_bit(new_rd_value, 31));
             set_flag_Z((new_rd_value == 0));
 
-            // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
-            set_flag_C(get_nth_bit(rm_value, 31) & get_nth_bit(old_rd_value, 31) | 
-            ((get_nth_bit(rm_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31))));
+            // bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rm_value - (get_flag_C() ? 0 : 1), 31);
+            // set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_flag_N()));
+            bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(memory.regs[rm], 31);
+            set_flag_V(!matching_signs && (get_nth_bit(memory.regs[rm], 31) == get_flag_N()));
 
-            bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rm_value, 31);
-            set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_flag_N()));
+            // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
+            set_flag_C((!(((uint64_t)memory.regs[rm]) + (get_flag_C() ? 0 : 1) > (uint32_t)old_rd_value)));
             break;
         }
 
