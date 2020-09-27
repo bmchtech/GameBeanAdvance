@@ -512,7 +512,7 @@ TEST_CASE("CPU Thumb Mode - SBC") {
         execute(0b010000'0110'010'011);
 
         REQUIRE(memory.regs[3] == 0x00000000);
-        check_flags_NZCV(false, true, false, false);
+        check_flags_NZCV(false, true, true, false);
     }
 
     SECTION("SBC R2, R3 (V flag)") {
@@ -522,7 +522,7 @@ TEST_CASE("CPU Thumb Mode - SBC") {
         execute(0b010000'0110'010'011);
 
         REQUIRE(memory.regs[3] == 0x00000000);
-        check_flags_NZCV(false, true, true, true);
+        check_flags_NZCV(false, true, true, false);
     }
 
     SECTION("SBC R2, R3 (No Overflow)") {
@@ -1705,7 +1705,7 @@ TEST_CASE("CPU Thumb Mode - STMIA") {
         REQUIRE(memory.main[0x08000005] == 0xCD);
         REQUIRE(memory.main[0x08000006] == 0xEF);
         REQUIRE(memory.main[0x08000007] == 0x01);
-        REQUIRE(memory.main[0x08000008] == 0x00);
+        REQUIRE(memory.main[0x08000008] == 0x0C);
         REQUIRE(memory.main[0x08000009] == 0x00);
         REQUIRE(memory.main[0x0800000A] == 0x00);
         REQUIRE(memory.main[0x0800000B] == 0x08);

@@ -45,6 +45,16 @@ overwrite_me_start:
 			.word 0xDF0346F7
 overwrite_me_end:	
 
+stmia_data:
+			.word 0x00000000
+			.word 0x00000000
+			.word 0x00000000
+			.word 0x00000000
+			.word 0x00000000
+			.word 0x00000000
+			.word 0x00000000
+			.word 0x00000000
+
 @ ******************************************** Test Cases *********************************************
 			.text
 @ *****************************************************************************************************
@@ -1478,7 +1488,7 @@ mul_start:
 @ PUSH tests
 
 			@ we're going to load instructions in hex form into the registers,
-			@ and then PUSH them ahead of the PC, and let the cpu execute them.
+			@ and then PUSH them to ram, and let the cpu execute them.
 			@ this verifies that the registers were pushed in the right order.
 
 			LDR   r7, =overwrite_me_end
@@ -1696,6 +1706,78 @@ mul_start:
 			LDR   r1, [r7, #0x10]
 			SBC   r1, r0
 			BL    flagcheck
+
+@ STMIA tests
+
+			@ after the showoff that was PUSH tests, i've decided i don't want to do that
+			@ ever again and i'm just going to use ldr to test the STMIA's functionality...
+
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x4]
+			LDR   r2, [r7, #0x8]
+			LDR   r3, [r7, #0xC]
+			LDR   r4, [r7, #0x10]
+			LDR   r5, [r7, #0x14]
+			LDR   r6, [r7, #0x18]
+
+			LDR   r7, =stmia_data
+			STMIA r7!, {r0, r2, r3, r5, r6}
+			LDR   r7, =stmia_data
+			LDR   r6, [r7, #0x0]
+			LDR   r6, [r7, #0x4]
+			LDR   r6, [r7, #0x8]
+			LDR   r6, [r7, #0xC]
+			LDR   r6, [r7, #0x10]
+			LDR   r6, [r7, #0x14]
+			LDR   r6, [r7, #0x18]
+			LDR   r6, [r7, #0x1C]
+
+			MOV   r8, r7
+			LDR   r6, [r7, #0x18]
+
+			LDR   r7, =stmia_data
+			STMIA r7!, {r0, r2, r3, r4, r5, r6, r7}
+			LDR   r7, =stmia_data
+			LDR   r6, [r7, #0x0]
+			LDR   r6, [r7, #0x4]
+			LDR   r6, [r7, #0x8]
+			LDR   r6, [r7, #0xC]
+			LDR   r6, [r7, #0x10]
+			LDR   r6, [r7, #0x14]
+			LDR   r6, [r7, #0x18]
+			LDR   r6, [r7, #0x1C]
+
+			MOV   r8, r7
+			LDR   r6, [r7, #0x18]
+			ADD   r7, #0x3
+
+			LDR   r7, =stmia_data
+			STMIA r7!, {r0, r2, r3, r5, r6}
+			LDR   r7, =stmia_data
+			LDR   r6, [r7, #0x0]
+			LDR   r6, [r7, #0x4]
+			LDR   r6, [r7, #0x8]
+			LDR   r6, [r7, #0xC]
+			LDR   r6, [r7, #0x10]
+			LDR   r6, [r7, #0x14]
+			LDR   r6, [r7, #0x18]
+			LDR   r6, [r7, #0x1C]
+
+			MOV   r8, r7
+			LDR   r6, [r7, #0x18]
+			ADD   r7, #0x3
+			
+			LDR   r7, =stmia_data
+			STMIA r7!, {r0, r2, r3, r4, r5, r6, r7}
+			LDR   r7, =stmia_data
+			LDR   r6, [r7, #0x0]
+			LDR   r6, [r7, #0x4]
+			LDR   r6, [r7, #0x8]
+			LDR   r6, [r7, #0xC]
+			LDR   r6, [r7, #0x10]
+			LDR   r6, [r7, #0x14]
+			LDR   r6, [r7, #0x18]
+			LDR   r6, [r7, #0x1C]
 
 infin:
 			B     infin
