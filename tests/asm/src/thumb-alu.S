@@ -1827,6 +1827,19 @@ mul_start:
 			LDR   r3, [SP, #0x00]
 			LDR   r3, [SP, #0x04]
 
+@ STRB #1 tests (5-bit immediate offset)
+
+			LDR   r7, =test_values
+			LDR   r6, =str_testing
+
+			LDR   r3, [r7, #0x08]
+			STRB  r3, [r6, #0x00] 
+			LDR   r3, [r7, #0x2C]
+			STRB  r3, [r6, #0x04] 
+
+			LDR   r3, [r6, #0x00]
+			LDR   r3, [r6, #0x04]
+
 infin:
 			B     infin
 
