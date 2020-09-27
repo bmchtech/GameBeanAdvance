@@ -546,8 +546,8 @@ void run_01010SBR(uint16_t opcode) {
     uint8_t rn = get_nth_bits(opcode, 3, 6);
     uint8_t rd = get_nth_bits(opcode, 0, 3);
 
-    @IF( S !B) uint32_t value = memory.regs[rd] & 0xF;
-    @IF(!S  B) uint32_t value = memory.regs[rd] & 0xFF;
+    @IF( S !B) uint32_t value = memory.regs[rd] & 0xFF;
+    @IF(!S  B) uint32_t value = memory.regs[rd] & 0xFFFF;
     @IF(!S !B) uint32_t value = memory.regs[rd];
 
     @IF( S !B) memory.main[memory.regs[rm] + memory.regs[rn]] = value;
@@ -579,7 +579,7 @@ void run_10000OFS(uint16_t opcode) {
     uint8_t rd     = get_nth_bits(opcode, 0, 3);
     uint8_t offset = get_nth_bits(opcode, 6, 11);
     
-    *((uint16_t*)(memory.main + memory.regs[rn] + offset * 2)) = memory.regs[rd];
+    *((uint16_t*)(memory.main + memory.regs[rn] + (offset << 1))) = memory.regs[rd];
 }
 
 // load halfword
