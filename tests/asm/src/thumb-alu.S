@@ -1798,6 +1798,22 @@ mul_start:
 
 			LDR   r3, [r6, #0x00]
 			LDR   r3, [r6, #0x00]
+
+@ STR #2 tests (register offset)
+
+			LDR   r7, =test_values
+			LDR   r6, =str_testing
+
+			LDR   r2, [r7, #0x00]
+			LDR   r3, [r7, #0x18]
+			STR   r3, [r6, r2] 
+			LDR   r2, [r7, #0x20]
+			LDR   r3, [r7, #0x14]
+			STR   r3, [r6, r2] 
+
+			LDR   r3, [r6, #0x00]
+			LDR   r3, [r6, #0x00]
+
 infin:
 			B     infin
 

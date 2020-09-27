@@ -550,7 +550,9 @@ void run_01010SBR(uint16_t opcode) {
     @IF(!S  B) uint32_t value = memory.regs[rd] & 0xFF;
     @IF(!S !B) uint32_t value = memory.regs[rd];
 
-    memory.main[memory.regs[rm] + memory.regs[rn]] = value;
+    @IF( S !B) memory.main[memory.regs[rm] + memory.regs[rn]] = value;
+    @IF(!S  B) *((uint16_t*) (memory.main + memory.regs[rm] + memory.regs[rn])) = value;
+    @IF(!S !B) *((uint32_t*) (memory.main + memory.regs[rm] + memory.regs[rn])) = value; 
 }
 
 // load and store with immediate offset
