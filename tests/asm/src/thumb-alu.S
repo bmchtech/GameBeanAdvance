@@ -1797,7 +1797,7 @@ mul_start:
 			STR   r3, [r6, #0x04] 
 
 			LDR   r3, [r6, #0x00]
-			LDR   r3, [r6, #0x00]
+			LDR   r3, [r6, #0x04]
 
 @ STR #2 tests (register offset)
 
@@ -1812,7 +1812,20 @@ mul_start:
 			STR   r3, [r6, r2] 
 
 			LDR   r3, [r6, #0x00]
-			LDR   r3, [r6, #0x00]
+			LDR   r3, [r6, #0x04]
+
+@ STR #3 tests (stack pointer offset)
+
+			LDR   r7, =test_values
+			LDR   r6, =str_testing
+
+			LDR   r3, [r7, #0x18]
+			STR   r3, [SP, #0x00]
+			LDR   r3, [r7, #0x14]
+			STR   r3, [SP, #0x04]
+
+			LDR   r3, [SP, #0x00]
+			LDR   r3, [SP, #0x04]
 
 infin:
 			B     infin
