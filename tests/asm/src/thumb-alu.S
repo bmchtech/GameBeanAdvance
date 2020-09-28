@@ -1993,6 +1993,23 @@ mul_start:
 			SUB   r2, r0, r1
 			BL    flagcheck @ NZCV = 1010
 
+@ TST tests
+
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x8]
+			TST   r0, r1
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x14]
+			LDR   r1, [r7, #0x8]
+			TST   r0, r1
+			BL    flagcheck
+
+			LDR   r0, [r7, #0x14]
+			LDR   r1, [r7, #0x18]
+			TST   r0, r1
+			BL    flagcheck
+
 infin:
 			B     infin
 
