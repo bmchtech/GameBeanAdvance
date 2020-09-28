@@ -1951,6 +1951,48 @@ mul_start:
 			SUB   r0, #0x04
 			BL    flagcheck @ NZCV = 1010
 
+@ SUB #3 tests (three separate registers)
+
+			LDR   r0, [r7, #0x0]
+			LDR   r1, [r7, #0x0]
+			SUB   r2, r0, r1
+			BL    flagcheck @ NZCV = 0100
+
+			LDR   r0, [r7, #0x10]
+			LDR   r1, [r7, #0x10]
+			SUB   r2, r0, r1
+			BL    flagcheck @ NZCV = 1001
+
+			LDR   r0, [r7, #0x4]
+			LDR   r1, [r7, #0x8]
+			SUB   r2, r0, r1
+			BL    flagcheck @ NZCV = 0110
+
+			LDR   r0, [r7, #0x4]
+			LDR   r1, [r7, #0xC]
+			SUB   r2, r0, r1
+			BL    flagcheck @ NZCV = 1000
+
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0x4]
+			SUB   r2, r0, r1
+			BL    flagcheck @ NZCV = 0110
+
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0x4]
+			SUB   r2, r0, r1
+			BL    flagcheck @ NZCV = 1000
+
+			LDR   r0, [r7, #0xC]
+			LDR   r1, [r7, #0xC]
+			SUB   r2, r0, r1
+			BL    flagcheck @ NZCV = 0011
+
+			LDR   r0, [r7, #0x8]
+			LDR   r1, [r7, #0x8]
+			SUB   r2, r0, r1
+			BL    flagcheck @ NZCV = 1010
+
 infin:
 			B     infin
 

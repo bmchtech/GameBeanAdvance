@@ -112,15 +112,14 @@ void run_00011010(uint16_t opcode) {
     // set_flag_C((uint64_t)rn + (uint64_t)rm > rd); // probably can be optimized
 
     // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
-    set_flag_C((get_nth_bit(rm, 31) & get_nth_bit(rn, 31)) | 
-    ((get_nth_bit(rm, 31) ^ get_nth_bit(rn, 31)) & ~(get_nth_bit(rd, 31))));
+    set_flag_C((!(((uint64_t)rn) < memory.regs[get_nth_bits(opcode, 6, 9)])));
 
 
     // this is garbage, but essentially what's going on is:
     // if the two operands had matching signs but their sign differed from the result's sign,
     // then there was an overflow and we set the flag.
-    bool matching_signs = get_nth_bit(rn, 31) == get_nth_bit(rm, 31);
-    set_flag_V(matching_signs && (get_nth_bit(rn, 31) ^ get_flag_N()));
+    bool matching_signs = get_nth_bit(rn, 31) == get_nth_bit(memory.regs[get_nth_bits(opcode, 6, 9)], 31);
+    set_flag_V(!matching_signs && (get_nth_bit(memory.regs[get_nth_bits(opcode, 6, 9)], 31) == get_flag_N()));
 }
 
 // add #1 
@@ -156,8 +155,8 @@ void run_0001111A(uint16_t opcode) {
     // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
     set_flag_C((!(((uint64_t)memory.regs[get_nth_bits(opcode, 3, 6)]) < get_nth_bits(opcode, 6, 9))));
 
-    bool matching_signs = get_nth_bit(immediate_value, 31) == get_nth_bit(rn_value, 31);
-    set_flag_V(matching_signs && (get_nth_bit(immediate_value, 31) ^ get_flag_N()));
+    bool matching_signs = get_nth_bit(rn_value, 31) == get_nth_bit(get_nth_bits(opcode, 6, 9), 31);
+    set_flag_V(!matching_signs && (get_nth_bit(get_nth_bits(opcode, 6, 9), 31) == get_flag_N()));
 }
 
 // move immediate
