@@ -229,13 +229,16 @@ void run_00111ABC(uint16_t opcode) {
 
     set_flag_N(get_nth_bit(new_rd_value, 31));
     set_flag_Z(new_rd_value == 0);
-    set_flag_C(immediate_value > old_rd_value);
+    set_flag_C(immediate_value <= old_rd_value);
 
     // this is garbage, but essentially what's going on is:
     // if the two operands had matching signs but their sign differed from the result's sign,
     // then there was an overflow and we set the flag.
+    /*
     bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 31);
-    set_flag_V(matching_signs && (get_nth_bit(new_rd_value, 31) ^ get_flag_N()));
+    set_flag_V(matching_signs && (get_nth_bit(new_rd_value, 31) ^ get_flag_N()));*/
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 31);
+    set_flag_V(!matching_signs && (get_nth_bit(immediate_value, 31) == get_flag_N()));
 }
 
 // ALU operation - AND, EOR, LSL #2, LSR #2
