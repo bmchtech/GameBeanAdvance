@@ -1883,6 +1883,36 @@ mul_start:
 			LDR   r3, [r6, #0x00]
 			LDR   r3, [r6, #0x04]
 
+@ SUB #1 instruction (3-bit immediate)
+
+			LDR   r0, [r7, #0x0]
+			SUB   r0, r1, #0x0
+			BL    flagcheck @ NZCV = 0100
+
+			LDR   r0, [r7, #0x10]
+			SUB   r0, r1, #0x1
+			BL    flagcheck @ NZCV = 1001
+
+			LDR   r0, [r7, #0x4]
+			SUB   r0, r1, #0x5
+			BL    flagcheck @ NZCV = 0010
+
+			LDR   r0, [r7, #0xC]
+			SUB   r0, r1, #0x5
+			BL    flagcheck @ NZCV = 0011
+
+			LDR   r0, [r7, #0x8]
+			SUB   r0, r1, #0x1
+			BL    flagcheck @ NZCV = 1000
+
+			LDR   r0, [r7, #0x8]
+			SUB   r0, r1, #0x0
+			BL    flagcheck @ NZCV = 1000
+
+			LDR   r0, [r7, #0x8]
+			SUB   r0, r1, #0x7
+			BL    flagcheck @ NZCV = 1010
+
 infin:
 			B     infin
 
