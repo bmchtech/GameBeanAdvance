@@ -13,6 +13,8 @@ INSTRUCTION_SIZE        = int(sys.argv[4])  # the size of an instruction in bits
 JUMPTABLE_BIT_WIDTH     = int(sys.argv[5])  # the number of bits used for indexing into the jumptable
 JUMPTABLE_NAME          = sys.argv[6]       # the name of the jumptable that should be put into the cpp and header files
 JUMPTABLE_INCLUDE_GUARD = sys.argv[7]       # the name of the include guard to use in the header file.
+OPCODE_DATA_TYPE        = sys.argv[8]       # the datatype of the opcode, probably either uint16_t or uint32_t
+INSTRUCTION_NAME        = sys.argv[9]       # the name of the instruction typedef
 
 FUNCTION_HEADER         = "void run_" 
 JUMPTABLE_EXCLUDED_BITS = INSTRUCTION_SIZE - JUMPTABLE_BIT_WIDTH
@@ -107,10 +109,11 @@ for i in range(0, len(lines)):
     # is this a local function
     if lines[i].startswith(LOCAL_HEADER):
         local_function = ""
-        j = i + 2 # go to the start of the local function
+        j = i + 1
         while not lines[j].startswith("}"):
             local_function += lines[j] + "\n"
             j += 1
+        local_function += lines[j] + "\n"
 
         local_functions.append(local_function)
         continue
@@ -235,13 +238,13 @@ for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):
     result_function = jumptable[i]
 
     if result_function != None:
-        function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "(uint16_t opcode)"
+        function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "(" +  OPCODE_DATA_TYPE + " opcode)"
         header_file.write(function_name + ";\n")
         cpp_file.write(function_name + " {\n")
         cpp_file.write('\n'.join(result_function))
         cpp_file.write("\n}\n\n")
     else:
-        function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "(uint16_t opcode)"
+        function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "(" + OPCODE_DATA_TYPE + " opcode)"
         header_file.write(function_name + ";\n")
         cpp_file.write(function_name + " {\n")
         cpp_file.write('\n'.join(default_function))
@@ -249,12 +252,12 @@ for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):
 
 # and now we must loop again to put the actual jumptable in the header file
 # first we add the typedef and the extern
-header_file.write("\ntypedef void (*instruction)(uint16_t);\n")
-header_file.write("extern instruction " + JUMPTABLE_NAME + "[];\n")
+header_file.write("\ntypedef void (*" + INSTRUCTION_NAME + ")(" + OPCODE_DATA_TYPE + ");\n")
+header_file.write("extern " + INSTRUCTION_NAME + " " + JUMPTABLE_NAME + "[];\n")
 
 # then we add the jumptable
 function_names = list("run_" + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)))
-cpp_file.write("\ninstruction " + JUMPTABLE_NAME + "[] = {")
+cpp_file.write("\n" + INSTRUCTION_NAME + " " + JUMPTABLE_NAME + "[] = {")
 for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):
     if i % JUMPTABLE_FORMAT_WIDTH == 0:
         cpp_file.write("\n    ")

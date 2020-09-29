@@ -62,3 +62,30 @@ TEST_CASE("CPU THUMB Mode - VBA Logs (thumb-alu)") {
     // make sure we've reached B infin
     REQUIRE(fetch() == 0xE7FE);
 }
+
+TEST_CASE("CPU ARM Mode - VBA Logs (arm-alu)") {
+    uint32_t num_instructions = 100;
+    CpuState* expected_output = produce_expected_cpu_states("tests/asm/logs/arm-alu.log", num_instructions);
+    
+    get_rom_as_bytes("tests/asm/bin/arm-alu.gba", memory.rom_1, SIZE_ROM_1);
+    set_cpu_state(expected_output[0]);
+
+    bool wasPreviousInstructionTHUMB = true; // if so, we reset the CPU's state
+    for (int i = 0; i < num_instructions - 1; i++) {
+        if (expected_output[i].type == ARM) {
+            if (wasPreviousInstructionTHUMB) {
+                set_bit_T(false);
+                set_cpu_state(expected_output[i]);
+            }
+            
+            uint32_t opcode = fetch();
+            execute(opcode);
+            check_cpu_state(expected_output[i + 1], get_cpu_state(), "Failed at instruction #" + std::to_string(i) + " with opcode 0x" + to_hex_string(opcode));
+        } else {
+            wasPreviousInstructionTHUMB = true;
+        }
+    }
+
+    // make sure we've reached B infin
+    REQUIRE(fetch() == 0xEAFFFFFE);
+}

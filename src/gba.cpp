@@ -103,11 +103,11 @@ bool should_execute(int cond) {
     }
 }
 
-void execute(int opcode) {
+void execute(uint32_t opcode) {
     if (get_bit_T()) {
         jumptable_thumb[opcode >> 8](opcode);
     } else {
-        if (should_execute(opcode & 0xF0000000 >> 28)) {
+        if (should_execute((opcode & 0xF0000000) >> 28)) {
             jumptable_arm[opcode >> 20](opcode);
         }
     }

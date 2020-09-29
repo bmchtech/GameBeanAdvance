@@ -29,256 +29,42 @@
     #define DEBUG_MESSAGE(message) do {} while(0)
 #endif
 
+@LOCAL()
+inline uint32_t addressing_mode_2_immediate(uint32_t opcode)  {
+    bool is_pc = get_nth_bits(opcode, 16, 20) == 15;
+
+    if      (!is_pc &&  get_nth_bit(opcode, 23))   return memory.regs[get_nth_bits(opcode, 16, 20)] + get_nth_bits(opcode, 0, 12);
+    else if (!is_pc && !get_nth_bit(opcode, 23))   return memory.regs[get_nth_bits(opcode, 16, 20)] - get_nth_bits(opcode, 0, 12);
+    else if ( is_pc &&  get_nth_bit(opcode, 23))   return memory.regs[get_nth_bits(opcode, 16, 20)] + get_nth_bits(opcode, 0, 12) + 4;
+    else  /*( is_pc && !get_nth_bit(opcode, 23))*/ return memory.regs[get_nth_bits(opcode, 16, 20)] - get_nth_bits(opcode, 0, 12) + 4;
+}
+
 @DEFAULT()
 void nop(uint32_t opcode) {
     DEBUG_MESSAGE("NOP");
 }
 
+// LDR instruction
+// Addressing Mode 2, immediate mode
+void run_COND0101U001(uint32_t opcode) {
+    uint32_t address = addressing_mode_2_immediate(opcode);
+    uint32_t value = *((uint32_t*) (memory.main + address));
 
-// ADC / UMLAL instruction
-@EXCLUDE(1111------------)
-void run_WXYZ00I0101S(uint32_t opcode) {
+    if ((address & 0b11) == 0b01) value = ((value & 0xFF)     << 24) | (value >> 8);
+    if ((address & 0b11) == 0b10) value = ((value & 0xFFFF)   << 16) | (value >> 16);
+    if ((address & 0b11) == 0b11) value = ((value & 0xFFFFFF) << 8)  | (value >> 24);
 
+    uint8_t rd = get_nth_bits(opcode, 12, 16);
+    if (rd == 15) {
+        *memory.pc = value & 0xFFFFFFFC;
+    } else {
+        memory.regs[rd] = value;
+    }
 }
 
-// ADD / UMULL instruction
-@EXCLUDE(1111------------)
-void run_WXYZ00I0100S(uint32_t opcode) {
-
-}
-
-// AND / MUL instruction
-@EXCLUDE(1111------------)
-void run_WXYZ00I0000S(uint32_t opcode) {
-
-}
-
-// B, BL instructions
-@EXCLUDE(1111------------)
-void run_WXYZ101LABCD(uint32_t opcode) {
-
-}
-
-// BIC instruction
-@EXCLUDE(1111------------)
-void run_WXYZ00I1110S(uint32_t opcode) {
-
-}
-
-// CDP / MCR / MRC instructions
-@EXCLUDE(1111------------)
-void run_WXYZ1110OPCD(uint32_t opcode) {
-
-}
-
-// CMN instruction
-@EXCLUDE(1111------------)
-void run_WXYZ00I10111(uint32_t opcode) {
-
-}
-
-// CMP instruction
-@EXCLUDE(1111------------)
-void run_WXYZ00I10101(uint32_t opcode) {
-
-}
-
-// CPS instruction
-// note: this instruction requires the COND to be 1111.
-void run_111100010000(uint32_t opcode) {
-
-}
-
-// LDC instruction. we won't use a coprocessor, so this should generate
-// an Undefined Instruction exception. also WXYZ is AXYZ here because W 
-// is an important bit-variable. see comment at top of file for more info
-// about WXYZ
-@EXCLUDE(1111------------)
-void run_AXYZ110PUNW1(uint32_t opcode) {
-
-}
-
-// LDM #1 instruction
-// WXYZ is AXYZ here because W  is an important bit-variable. see comment 
-// at top of file for more info about WXYZ
-@EXCLUDE(1111------------)
-void run_AXYZ100PU0W1(uint32_t opcode) {
-
-}
-
-// LDM #2 / #3 instruction
-// #2 has bit 15 clear, #3 has bit 15 set.
-@EXCLUDE(1111------------)
-void run_WXYZ100PU101(uint32_t opcode) {
-
-}
-
-// LDR / LDRT instruction
-// WXYZ is AXYZ here because W  is an important bit-variable. see comment 
-// at top of file for more info about WXYZ
-@EXCLUDE(1111------------)
-void run_AXYZ01IPU0W1(uint32_t opcode) {
-
-}
-
-// LDRB / LDRBT instruction
-// WXYZ is AXYZ here because W  is an important bit-variable. see comment 
-// at top of file for more info about WXYZ
-@EXCLUDE(1111------------)
-void run_AXYZ01IPU1W1(uint32_t opcode) {
-
-}
-
-// LDRH / LDRSB / LDRSH instructions
-// LDRH  is run when opcode[4:7] == 0b1011
-// LDRSB is run when opcode[4:7] == 0b1101
-// LDRSH Is run when opcode[4:7] == 0b1111
-// WXYZ is AXYZ here because W  is an important bit-variable. see comment 
-// at top of file for more info about WXYZ
-@EXCLUDE(1111------------)
-@EXCLUDE(----00010101----)
-@EXCLUDE(----00010111----)
-@EXCLUDE(----0001110-----)
-@EXCLUDE(----0001111-----)
-@EXCLUDE(----0000011-----)
-@EXCLUDE(----0000111-----)
-@EXCLUDE(----0000110-----)
-@EXCLUDE(----0000010-----)
-void run_AXYZ000PU1W1(uint32_t opcode) {
-
-}
-
-// EOR / MLA instruction
-@EXCLUDE(1111------------)
-void run_WXYZ0000001S(uint32_t opcode) {
-
-}
-
-// MOV instruction. opcode[16:19] should be 0, but the hardware doesn't
-// explicitly check this, so neither will the we.
-@EXCLUDE(1111------------)
-void run_WXYZ00I1101S(uint32_t opcode) {
-
-}
-
-// MSR instruction
-@EXCLUDE(1111------------)
-@EXCLUDE(----000--1-0----)
-void run_WXYZ00S10R10(uint32_t opcode) {
-
-}
-
-// MVN instruction. opcode[16:19] should be 0, but the hardware doesn't
-// explicitly check this, so neither will the we.
-@EXCLUDE(1111------------)
-void run_WXYZ00I1111S(uint32_t opcode) {
-
-}
-
-// ORR instruction
-@EXCLUDE(1111------------)
-void run_WXYZ00I1100S(uint32_t opcode) {
-
-}
-
-// RSC / SMLAL instruction
-@EXCLUDE(1111------------)
-void run_WXYZ00I0111S(uint32_t opcode) {
-
-}
-
-// SBC / SMULL instruction
-@EXCLUDE(1111------------)
-void run_WXYZ00I0110S(uint32_t opcode) {
-
-}
-
-// STC instruction. we won't use a coprocessor, so this should generate
-// an Undefined Instruction exception.
-// WXYZ is AXYZ here because W  is an important bit-variable. see comment 
-// at top of file for more info about WXYZ
-@EXCLUDE(1111------------)
-void run_AXYZ110PUNW0(uint32_t opcode) {
-
-}
-
-// STM #1 instruction
-// WXYZ is AXYZ here because W  is an important bit-variable. see comment 
-// at top of file for more info about WXYZ
-@EXCLUDE(1111------------)
-void run_AXYZ100PU0W0(uint32_t opcode) {
-
-}
-
-// STM #2 instruction
-@EXCLUDE(1111------------)
-void run_WXYZ100PU100(uint32_t opcode) {
-
-}
-
-// STR / STRT instruction
-// WXYZ is AXYZ here because W  is an important bit-variable. see comment 
-// at top of file for more info about WXYZ
-@EXCLUDE(1111------------)
-void run_AXYZ01IPU0W0(uint32_t opcode) {
-
-}
-
-// STRB / STRBT instruction
-// WXYZ is AXYZ here because W  is an important bit-variable. see comment 
-// at top of file for more info about WXYZ
-@EXCLUDE(1111------------)
-void run_AXYZ01IPU1W0(uint32_t opcode) {
-
-}
-
-// STRH / RSB / MRS instruction
-// WXYZ is AXYZ here because W  is an important bit-variable. see comment 
-// at top of file for more info about WXYZ
-@EXCLUDE(1111------------)
-@EXCLUDE(----00-10-10----)
-@EXCLUDE(----00-0110-----)
-@EXCLUDE(----00-0111-----)
-@EXCLUDE(----00-0010-----)
-@EXCLUDE(----00-1110-----)
-@EXCLUDE(----00-1111-----)
-@EXCLUDE(----00-1010-----)
-void run_AXYZ000PU1W0(uint32_t opcode) {
-
-}
-
-// SUB instruction
-@EXCLUDE(1111------------)
-void run_WXYZ00I0010S(uint32_t opcode) {
-
-}
-
-// SWI instruction
-@EXCLUDE(1111------------)
-void run_WXYZ1111ABCD(uint32_t opcode) {
-
-}
-
-// SWP instruction
-@EXCLUDE(1111------------)
-void run_WXYZ00010000(uint32_t opcode) {
-
-}
-
-// SWPB instruction
-@EXCLUDE(1111------------)
-void run_WXYZ00010100(uint32_t opcode) {
-
-}
-
-// TEQ instruction
-@EXCLUDE(1111------------)
-void run_WXYZ00I10011(uint32_t opcode) {
-
-}
-
-// TST instruction
-@EXCLUDE(1111------------)
-void run_WXYZ00I10001(uint32_t opcode) {
-
+// B / BL instruction
+void run_COND101LABEF(uint32_t opcode) {
+    @IF(L) *memory.lr = *memory.pc;
+    // unintuitive sign extension: http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
+    *memory.pc += ((((1U << 23) ^ get_nth_bits(opcode, 0, 24)) - (1U << 23)) << 2) + 4;
 }
