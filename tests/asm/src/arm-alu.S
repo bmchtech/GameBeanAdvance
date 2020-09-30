@@ -29,6 +29,11 @@ main:
             .arm
 			LDR   r7, =test_values
 			LDR   r2, [r7, #0x4]!
+			LDR   r2, [r7, #0x8]!
+			LDR   r2, [r7, #0x1C]!
+			LDR   r2, [r7, #-0x20]!
+
+			LDR   r2, [r7], #0x8
 
 infin:
             B     infin

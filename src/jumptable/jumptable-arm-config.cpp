@@ -29,6 +29,14 @@
     #define DEBUG_MESSAGE(message) do {} while(0)
 #endif
 
+
+
+// ********************************************** Addressing Mode 2 **********************************************
+//                                             LDR / LDRB / STR / STRB
+// ***************************************************************************************************************
+
+
+
 @LOCAL()
 inline uint32_t addressing_mode_2_immediate(uint32_t opcode)  {
     bool is_pc = get_nth_bits(opcode, 16, 20) == 15;
@@ -47,6 +55,23 @@ inline uint32_t addressing_mode_2_immediate_preindexed(uint32_t opcode) {
 }
 
 @LOCAL()
+inline uint32_t addressing_mode_2_immediate_postindexed(uint32_t opcode) {
+    uint32_t address = memory.regs[get_nth_bits(opcode, 16, 20)];
+    if (get_nth_bit(opcode, 23)) memory.regs[get_nth_bits(opcode, 16, 20)] += get_nth_bits(opcode, 0, 12);
+    else                         memory.regs[get_nth_bits(opcode, 16, 20)] -= get_nth_bits(opcode, 0, 12);
+    return address;
+}
+
+
+
+
+// *********************************************** Opcode Functions **********************************************
+//                     A list of local helper functions that are used in the instruction set
+// ***************************************************************************************************************
+
+
+
+@LOCAL()
 inline void ldr(uint32_t address, uint32_t opcode) {
     uint32_t value = *((uint32_t*)(memory.main + address));
     if ((address & 0b11) == 0b01) value = ((value & 0xFF)     << 24) | (value >> 8);
@@ -60,6 +85,14 @@ inline void ldr(uint32_t address, uint32_t opcode) {
         memory.regs[rd] = value;
     }
 }
+
+
+
+// *********************************************** Instruction Set ***********************************************
+//                                      The actual ARM Instruction Set Config
+// ***************************************************************************************************************
+
+
 
 @DEFAULT()
 void nop(uint32_t opcode) {
@@ -77,6 +110,13 @@ void run_COND0101U001(uint32_t opcode) {
 // Addressing Mode 2, immedaite pre-indexed
 void run_COND0101U011(uint32_t opcode) {
     uint32_t address = addressing_mode_2_immediate_preindexed(opcode);
+    ldr(address, opcode);
+}
+
+// LDR Instruction
+// Addressing Mode 2, immedaite post-indexed
+void run_COND0100U001(uint32_t opcode) {
+    uint32_t address = addressing_mode_2_immediate_postindexed(opcode);
     ldr(address, opcode);
 }
 
