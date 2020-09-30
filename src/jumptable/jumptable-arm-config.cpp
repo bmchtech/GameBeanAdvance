@@ -39,17 +39,16 @@ inline uint32_t addressing_mode_2_immediate(uint32_t opcode)  {
     else  /*( is_pc && !get_nth_bit(opcode, 23))*/ return memory.regs[get_nth_bits(opcode, 16, 20)] - get_nth_bits(opcode, 0, 12) + 4;
 }
 
-@DEFAULT()
-void nop(uint32_t opcode) {
-    DEBUG_MESSAGE("NOP");
+@LOCAL()
+inline uint32_t addressing_mode_2_immediate_preindexed(uint32_t opcode) {
+    if (get_nth_bit(opcode, 23)) memory.regs[get_nth_bits(opcode, 16, 20)] += get_nth_bits(opcode, 0, 12);
+    else                         memory.regs[get_nth_bits(opcode, 16, 20)] -= get_nth_bits(opcode, 0, 12);
+    return memory.regs[get_nth_bits(opcode, 16, 20)];
 }
 
-// LDR instruction
-// Addressing Mode 2, immediate mode
-void run_COND0101U001(uint32_t opcode) {
-    uint32_t address = addressing_mode_2_immediate(opcode);
-    uint32_t value = *((uint32_t*) (memory.main + address));
-
+@LOCAL()
+inline void ldr(uint32_t address, uint32_t opcode) {
+    uint32_t value = *((uint32_t*)(memory.main + address));
     if ((address & 0b11) == 0b01) value = ((value & 0xFF)     << 24) | (value >> 8);
     if ((address & 0b11) == 0b10) value = ((value & 0xFFFF)   << 16) | (value >> 16);
     if ((address & 0b11) == 0b11) value = ((value & 0xFFFFFF) << 8)  | (value >> 24);
@@ -60,6 +59,25 @@ void run_COND0101U001(uint32_t opcode) {
     } else {
         memory.regs[rd] = value;
     }
+}
+
+@DEFAULT()
+void nop(uint32_t opcode) {
+    DEBUG_MESSAGE("NOP");
+}
+
+// LDR instruction
+// Addressing Mode 2, immediate
+void run_COND0101U001(uint32_t opcode) {
+    uint32_t address = addressing_mode_2_immediate(opcode);
+    ldr(address, opcode);
+}
+
+// LDR Instruction
+// Addressing Mode 2, immedaite pre-indexed
+void run_COND0101U011(uint32_t opcode) {
+    uint32_t address = addressing_mode_2_immediate_preindexed(opcode);
+    ldr(address, opcode);
 }
 
 // B / BL instruction

@@ -9,12 +9,11 @@ struct SetupTeardownListener : Catch::TestEventListenerBase {
 
     using TestEventListenerBase::TestEventListenerBase; // inherit constructor
 
-    void testRunStarting(Catch::TestRunInfo const& testRunInfo) override {
+    void testCaseStarting(Catch::TestCaseInfo const& testInfo) override {
         setup_memory();
-        set_bit_T(true);
     }
     
-    void testRunEnded(Catch::TestRunStats const& testRunStats) override {
+    void testCaseEnded(Catch::TestCaseStats const& testCaseStats) override {
         cleanup_memory();
     }
 };
