@@ -27,7 +27,8 @@ test_values_end:
 @ which should not be indexed backwards
 
 test_values_addendum:
-			.word 0x00000005 @ 0
+			.word 0x00000005 @ 00
+			.word 0x00000010 @ 04
 
 @ ******************************************** Test Cases *********************************************
 			.text
@@ -110,6 +111,20 @@ tests:
 
 			LDR   r3, [r7, #0x2C]
 			LDR   r2, [r7, r3, LSL #0x1F]
+
+@ LDR tests [Scaled register offset] (LSR)
+
+			LDR   r7, =test_values
+			LDR   r9, =test_values_addendum
+
+			LDR   r3, [r9, #0x04]
+			LDR   r2, [r7, r3, LSR #0x00]
+
+			LDR   r3, [r9, #0x04]
+			LDR   r2, [r7, r3, LSR #0x01]
+
+			LDR   r3, [r7, #0x0C]
+			LDR   r2, [r7, r3, LSR #0x1F]
 
 infin:
             B     infin
