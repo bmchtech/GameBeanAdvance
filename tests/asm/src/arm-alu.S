@@ -45,12 +45,14 @@ tests:
 			LDR   r2, [r7, #0x4]
 			LDR   r2, [r7, #0x8]
 
-			LDR   r7, =test_values_end
-			LDR   r2, [r7, #-0x0]
-			LDR   r2, [r7, #-0x4]
-			LDR   r2, [r7, #-0x8]
+			LDR   r8, =test_values_end
+			LDR   r2, [r8, #-0x0]
+			LDR   r2, [r8, #-0x4]
+			LDR   r2, [r8, #-0x8]
 
 @ LDR tests [Register pre-indexed]
+
+			LDR   r7, =test_values
 
 			LDR   r2, [r7, #0x4]!
 			LDR   r2, [r7, #0x8]!
@@ -61,6 +63,8 @@ tests:
 			LDR   r2, [r7, #0x08]!
 
 @ LDR tests [Register post-indexed]
+
+			LDR   r7, =test_values
 
 			LDR   r2, [r7], #0x0
 			LDR   r2, [r7], #0x4
@@ -93,6 +97,19 @@ tests:
 			LDR   r2, [r8, -r3]
 			LDR   r3, [r9, #0x0]
 			LDR   r2, [r8, -r3]
+
+@ LDR tests [Scaled register offset] (LSL)
+
+			LDR   r7, =test_values
+
+			LDR   r3, [r7, #0x20]
+			LDR   r2, [r7, r3, LSL #0x00]
+
+			LDR   r3, [r7, #0x20]
+			LDR   r2, [r7, r3, LSL #0x01]
+
+			LDR   r3, [r7, #0x2C]
+			LDR   r2, [r7, r3, LSL #0x1F]
 
 infin:
             B     infin
