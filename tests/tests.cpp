@@ -63,7 +63,7 @@ TEST_CASE("CPU THUMB Mode - VBA Logs (thumb-alu)") {
     REQUIRE(fetch() == 0xE7FE);
 }
 
-#define ARM_START_INSTRUCTION 191
+#define ARM_START_INSTRUCTION 196
 
 TEST_CASE("CPU ARM Mode - VBA Logs (arm-alu) [Requires Functional THUMB]") {
     uint32_t num_instructions = 290;

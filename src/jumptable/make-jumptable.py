@@ -23,11 +23,14 @@ JUMPTABLE_FORMAT_WIDTH  = 4
 EXCLUSION_HEADER        = "@EXCLUDE("
 DEFAULT_HEADER          = "@DEFAULT("
 LOCAL_HEADER            = "@LOCAL("
+LOCAL_INLINE_HEADER     = "@LOCAL_INLINE("
 
 # formatting for the output files
 HEADER_FILE_HEADER      = '''
 #ifndef ''' + JUMPTABLE_INCLUDE_GUARD + '''
-#define ''' + JUMPTABLE_INCLUDE_GUARD + '''\n\n'''[1:] # the [1:] is used to remove the beginning \n
+#define ''' + JUMPTABLE_INCLUDE_GUARD + '''\n\n
+#include "../util.h"
+#include "../memory.h"\n\n'''[1:] # the [1:] is used to remove the beginning \n
 
 HEADER_FILE_FOOTER      = '''
 #endif'''[1:]
@@ -64,6 +67,7 @@ jumptable = [None] * pow(2, JUMPTABLE_BIT_WIDTH)
 
 default_function = []
 local_functions = []
+local_inline_functions = []
 
 
 
@@ -116,6 +120,18 @@ for i in range(0, len(lines)):
         local_function += lines[j] + "\n"
 
         local_functions.append(local_function)
+        continue
+    
+    # is this a local inline function
+    if lines[i].startswith(LOCAL_INLINE_HEADER):
+        local_inline_function = ""
+        j = i + 1
+        while not lines[j].startswith("}"):
+            local_inline_function += lines[j] + "\n"
+            j += 1
+        local_inline_function += lines[j] + "\n"
+
+        local_inline_functions.append(local_inline_function)
         continue
 
     # is this a default function
@@ -232,6 +248,10 @@ cpp_file.write(CPP_FILE_HEADER)
 # and now the local functions
 for local_function in local_functions:
     cpp_file.write(local_function)
+
+# and now the local inline functions
+for local_inline_function in local_inline_functions:
+    header_file.write(local_inline_function)
 
 # now we write the body
 for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):

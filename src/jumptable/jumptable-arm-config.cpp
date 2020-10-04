@@ -13,9 +13,8 @@
 //     the function will not be inserted in the jumptable at that binary value. - is used as a wildcard in
 //     @EXCLUDE. @DEFAULT() is used for a default function (in this case, the default is a nop function).
 //     default functions are used when no other function matches the jumptable. @LOCAL() to tell the script
-//     that the following function is a local function and should appear in the .cpp file. i'm not using @LOCAL
-//     anymore, but it's still supported by make-jumptable.py in case i ever need it. this all was intended
-//     as a way to make the code cleaner and more readable.
+//     that the following function is a local function and should appear in the .cpp file. osometimes i use
+//     @LOCAL_INLINE() to tell the script this is an inlined function and should be specified in the header.
 //
 // Extra note: 
 //    The first four bits of every instruction will be labeled "WXYZ". This represents the COND value that
@@ -31,49 +30,21 @@
 
 
 
-// ********************************************** Addressing Mode 2 **********************************************
-//                                             LDR / LDRB / STR / STRB
-// ***************************************************************************************************************
-
-
-
-@LOCAL()
-inline uint32_t addressing_mode_2_immediate(uint32_t opcode)  {
-    bool is_pc = get_nth_bits(opcode, 16, 20) == 15;
-
-    if      (!is_pc &&  get_nth_bit(opcode, 23))   return memory.regs[get_nth_bits(opcode, 16, 20)] + get_nth_bits(opcode, 0, 12);
-    else if (!is_pc && !get_nth_bit(opcode, 23))   return memory.regs[get_nth_bits(opcode, 16, 20)] - get_nth_bits(opcode, 0, 12);
-    else if ( is_pc &&  get_nth_bit(opcode, 23))   return memory.regs[get_nth_bits(opcode, 16, 20)] + get_nth_bits(opcode, 0, 12) + 4;
-    else  /*( is_pc && !get_nth_bit(opcode, 23))*/ return memory.regs[get_nth_bits(opcode, 16, 20)] - get_nth_bits(opcode, 0, 12) + 4;
-}
-
-@LOCAL()
-inline uint32_t addressing_mode_2_immediate_preindexed(uint32_t opcode) {
-    if (get_nth_bit(opcode, 23)) memory.regs[get_nth_bits(opcode, 16, 20)] += get_nth_bits(opcode, 0, 12);
-    else                         memory.regs[get_nth_bits(opcode, 16, 20)] -= get_nth_bits(opcode, 0, 12);
-    return memory.regs[get_nth_bits(opcode, 16, 20)];
-}
-
-@LOCAL()
-inline uint32_t addressing_mode_2_immediate_postindexed(uint32_t opcode) {
-    uint32_t address = memory.regs[get_nth_bits(opcode, 16, 20)];
-    if (get_nth_bit(opcode, 23)) memory.regs[get_nth_bits(opcode, 16, 20)] += get_nth_bits(opcode, 0, 12);
-    else                         memory.regs[get_nth_bits(opcode, 16, 20)] -= get_nth_bits(opcode, 0, 12);
-    return address;
-}
-
-
-
-
 // *********************************************** Opcode Functions **********************************************
 //                     A list of local helper functions that are used in the instruction set
 // ***************************************************************************************************************
 
 
 
-@LOCAL()
-inline void ldr(uint32_t address, uint32_t opcode) {
-    uint32_t value = *((uint32_t*)(memory.main + address));
+// https://stackoverflow.com/questions/14721275/how-can-i-use-arithmetic-right-shifting-with-an-unsigned-int
+@LOCAL_INLINE()
+inline uint32_t ASR(uint32_t value, uint8_t shift) {
+    return ((value >> 31) << 32) - value;
+}
+
+@LOCAL_INLINE()
+inline void LDR(uint32_t address, uint32_t opcode) {
+    uint32_t value = *((uint32_t*)(memory.main + (address & 0xFFFFFFFC)));
     if ((address & 0b11) == 0b01) value = ((value & 0xFF)     << 24) | (value >> 8);
     if ((address & 0b11) == 0b10) value = ((value & 0xFFFF)   << 16) | (value >> 16);
     if ((address & 0b11) == 0b11) value = ((value & 0xFFFFFF) << 8)  | (value >> 24);
@@ -84,6 +55,103 @@ inline void ldr(uint32_t address, uint32_t opcode) {
     } else {
         memory.regs[rd] = value;
     }
+}
+
+@LOCAL_INLINE()
+inline uint32_t LSL(uint32_t value, uint8_t shift) {
+    return value << shift;
+}
+
+@LOCAL_INLINE()
+inline uint32_t LSR(uint32_t value, uint8_t shift) {
+    return value >> shift;
+}
+
+@LOCAL_INLINE()
+inline uint32_t ROR(uint32_t value, uint8_t shift) {
+    uint32_t rotated_off = get_nth_bits(value, 0,     shift);  // the value that is rotated off
+    uint32_t rotated_in  = get_nth_bits(value, shift, 32);     // the value that stays after the rotation
+    return rotated_in | (rotated_off << (32 - shift));
+}
+
+@LOCAL_INLINE()
+inline uint32_t RRX(uint32_t value, uint8_t shift) {
+    uint32_t rotated_off = get_nth_bits(value, 0,     shift - 1);  // the value that is rotated off
+    uint32_t rotated_in  = get_nth_bits(value, shift, 32);         // the value that stays after the rotation
+
+    uint32_t result = rotated_in | (rotated_off << (32 - shift)) | (get_flag_C() << (32 - shift + 1));
+    set_flag_C(get_nth_bit(value, shift));
+    return result;
+}
+
+
+
+// ********************************************** Addressing Mode 2 **********************************************
+//                                             LDR / LDRB / STR / STRB
+// ***************************************************************************************************************
+
+
+
+@LOCAL_INLINE()
+inline uint32_t addressing_mode_2_immediate(uint32_t opcode)  {
+    bool is_pc = get_nth_bits(opcode, 16, 20) == 15;
+
+    if      (!is_pc &&  get_nth_bit(opcode, 23))   return memory.regs[get_nth_bits(opcode, 16, 20)] + get_nth_bits(opcode, 0, 12);
+    else if (!is_pc && !get_nth_bit(opcode, 23))   return memory.regs[get_nth_bits(opcode, 16, 20)] - get_nth_bits(opcode, 0, 12);
+    else if ( is_pc &&  get_nth_bit(opcode, 23))   return memory.regs[get_nth_bits(opcode, 16, 20)] + get_nth_bits(opcode, 0, 12) + 4;
+    else  /*( is_pc && !get_nth_bit(opcode, 23))*/ return memory.regs[get_nth_bits(opcode, 16, 20)] - get_nth_bits(opcode, 0, 12) + 4;
+}
+
+@LOCAL_INLINE()
+inline uint32_t addressing_mode_2_immediate_preindexed(uint32_t opcode) {
+    if (get_nth_bit(opcode, 23)) memory.regs[get_nth_bits(opcode, 16, 20)] += get_nth_bits(opcode, 0, 12);
+    else                         memory.regs[get_nth_bits(opcode, 16, 20)] -= get_nth_bits(opcode, 0, 12);
+    return memory.regs[get_nth_bits(opcode, 16, 20)];
+}
+
+@LOCAL_INLINE()
+inline uint32_t addressing_mode_2_immediate_postindexed(uint32_t opcode) {
+    uint32_t address = memory.regs[get_nth_bits(opcode, 16, 20)];
+    if (get_nth_bit(opcode, 23)) memory.regs[get_nth_bits(opcode, 16, 20)] += get_nth_bits(opcode, 0, 12);
+    else                         memory.regs[get_nth_bits(opcode, 16, 20)] -= get_nth_bits(opcode, 0, 12);
+    return address;
+}
+
+// note, this function serves as both the scaled and the unscaled register offset addressing mode
+// why? because they're encoded the same way. an unscaled register offset is the same as a scaled
+// register offset just with the shift as 0, that's like saying MOV is just ADD RD, RN, #0x0.
+// maybe flags might get screwed up though ill have to see
+@LOCAL_INLINE()
+inline uint32_t addressing_mode_2_register_offset(uint32_t opcode) {
+    uint32_t address = memory.regs[get_nth_bits(opcode, 16, 20)];
+    uint32_t operand = memory.regs[get_nth_bits(opcode, 0,  4)];
+    uint32_t shift_immediate = get_nth_bits(opcode, 7, 12);
+
+    uint32_t index = 0;
+    switch (get_nth_bits(opcode, 5, 7)) {
+        case 0b00:
+            index = LSL(operand, shift_immediate);
+            break;
+        
+        case 0b01:
+            index = LSR(operand, shift_immediate);
+            break;
+        
+        case 0b10:
+            if (shift_immediate != 0) index = ASR(operand, shift_immediate);
+            else index = (get_nth_bit(shift_immediate, 31) == 1 ? 0xFFFFFFFF : 0x00000000);
+            break;
+        
+        case 0b11:
+            if (shift_immediate != 0) index = ROR(operand, shift_immediate);
+            else index = RRX(operand, 1);
+            break;
+    }
+
+    if (get_nth_bit(opcode, 23)) address += index;
+    else                         address -= index;
+
+    return address;
 }
 
 
@@ -103,21 +171,28 @@ void nop(uint32_t opcode) {
 // Addressing Mode 2, immediate
 void run_COND0101U001(uint32_t opcode) {
     uint32_t address = addressing_mode_2_immediate(opcode);
-    ldr(address, opcode);
+    LDR(address, opcode);
 }
 
-// LDR Instruction
-// Addressing Mode 2, immedaite pre-indexed
+// LDR instruction
+// Addressing Mode 2, immediate pre-indexed
 void run_COND0101U011(uint32_t opcode) {
     uint32_t address = addressing_mode_2_immediate_preindexed(opcode);
-    ldr(address, opcode);
+    LDR(address, opcode);
 }
 
-// LDR Instruction
-// Addressing Mode 2, immedaite post-indexed
+// LDR instruction
+// Addressing Mode 2, immediate post-indexed
 void run_COND0100U001(uint32_t opcode) {
     uint32_t address = addressing_mode_2_immediate_postindexed(opcode);
-    ldr(address, opcode);
+    LDR(address, opcode);
+}
+
+// LDR instruction
+// Addressing Mode 2, register unscaled/scaled
+void run_COND0111U001(uint32_t opcode) {
+    uint32_t address = addressing_mode_2_register_offset(opcode);
+    LDR(address, opcode);
 }
 
 // B / BL instruction
