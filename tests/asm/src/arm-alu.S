@@ -29,6 +29,7 @@ test_values_end:
 test_values_addendum:
 			.word 0x00000005 @ 00
 			.word 0x00000010 @ 04
+			.word 0xFFFFFFFC @ 04
 
 @ ******************************************** Test Cases *********************************************
 			.text
@@ -102,19 +103,26 @@ tests:
 @ LDR tests [Scaled register offset] (LSL)
 
 			LDR   r7, =test_values
+			LDR   r8, =test_values_end
 
 			LDR   r3, [r7, #0x20]
 			LDR   r2, [r7, r3, LSL #0x00]
-
 			LDR   r3, [r7, #0x20]
 			LDR   r2, [r7, r3, LSL #0x01]
-
 			LDR   r3, [r7, #0x2C]
 			LDR   r2, [r7, r3, LSL #0x1F]
+
+			LDR   r3, [r7, #0x20]
+			LDR   r2, [r7, -r3, LSL #0x00]
+			LDR   r3, [r7, #0x20]
+			LDR   r2, [r7, -r3, LSL #0x01]
+			LDR   r3, [r7, #0x2C]
+			LDR   r2, [r7, -r3, LSL #0x1F]
 
 @ LDR tests [Scaled register offset] (LSR)
 
 			LDR   r7, =test_values
+			LDR   r8, =test_values_end
 			LDR   r9, =test_values_addendum
 
 			LDR   r3, [r9, #0x04]
@@ -125,6 +133,24 @@ tests:
 
 			LDR   r3, [r7, #0x0C]
 			LDR   r2, [r7, r3, LSR #0x1F]
+
+@ LDR tests [Scaled register offset] (ASR)
+
+			LDR   r7, =test_values
+			LDR   r8, =test_values_end
+			LDR   r9, =test_values_addendum
+
+			LDR   r3, [r9, #0x04]
+			LDR   r2, [r7, r3, ASR #0x00]
+
+			LDR   r3, [r9, #0x04]
+			LDR   r2, [r7, r3, ASR #0x01]
+
+			LDR   r3, [r7, #0x0C]
+			LDR   r2, [r7, r3, ASR #0x1F]
+
+			LDR   r3, [r9, #0x08]
+			LDR   r2, [r8, r3, ASR #0x1F]
 
 infin:
             B     infin

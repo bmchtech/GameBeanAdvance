@@ -39,7 +39,18 @@
 // https://stackoverflow.com/questions/14721275/how-can-i-use-arithmetic-right-shifting-with-an-unsigned-int
 @LOCAL_INLINE()
 inline uint32_t ASR(uint32_t value, uint8_t shift) {
-    return ((value >> 31) << 32) - value;
+    if ((value >> 31) == 1) {
+        // breakdown of this formula:
+        // value >> 31                                                         : the most significant bit
+        // (value >> 31) << shift)                                             : the most significant bit, but shifted "shift" times
+        // ((((value >> 31) << shift) - 1)                                     : the most significant bit, but repeated "shift" times
+        // ((((value >> 31) << shift) - 1) << (32 - shift))                    : basically this value is the mask that turns the logical 
+        //                                                                     : shift to an arithmetic shift
+        // ((((value >> 31) << shift) - 1) << (32 - shift)) | (value >> shift) : the arithmetic shift
+        return (((1 << shift) - 1) << (32 - shift)) | (value >> shift);
+    } else {
+        return value >> shift;
+    }
 }
 
 @LOCAL_INLINE()
