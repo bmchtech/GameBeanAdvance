@@ -66,7 +66,7 @@ TEST_CASE("CPU THUMB Mode - VBA Logs (thumb-alu)") {
 #define ARM_START_INSTRUCTION 203
 
 TEST_CASE("CPU ARM Mode - VBA Logs (arm-alu) [Requires Functional THUMB]") {
-    uint32_t num_instructions = 290;
+    uint32_t num_instructions = 1290;
     CpuState* expected_output = produce_expected_cpu_states("tests/asm/logs/arm-alu.log", num_instructions);
     
     get_rom_as_bytes("tests/asm/bin/arm-alu.gba", memory.rom_1, SIZE_ROM_1);

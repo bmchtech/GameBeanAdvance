@@ -12,7 +12,7 @@
 
 void run(std::string rom_name);
 void get_rom_as_bytes(std::string rom_name, uint8_t* out, int out_length);
-int  fetch();
+uint32_t fetch();
 void execute(uint32_t opcode);
 
 // determines whether or not this function should execute based on COND (the high 4 bits of the opcode)

@@ -42,9 +42,9 @@ $(LOG_DIR)/arm-alu.log:  $(SRC_DIR)/arm-alu.S
 	gbafix $(BIN_DIR)/arm-alu.gba
 
 # generate the instruction logs
-	-visualboyadvance-m $(BIN_DIR)/arm-alu.gba 196924 > file 2>/dev/null |:
+	-visualboyadvance-m $(BIN_DIR)/arm-alu.gba 197924 > file 2>/dev/null |:
 	@rm file
-	@sed -n -i.bak -e '196634,196924p' out.log
+	@sed -n -i.bak -e '196634,197924p' out.log
 	@rm out.log.bak
 	mv out.log $(LOG_DIR)/arm-alu.log
 

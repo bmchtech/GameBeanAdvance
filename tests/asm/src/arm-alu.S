@@ -152,5 +152,23 @@ tests:
 			LDR   r3, [r9, #0x08]
 			LDR   r2, [r8, r3, ASR #0x1F]
 
+@ LDR tests [Scaled register offset] (ASR)
+
+			LDR   r7, =test_values
+			LDR   r8, =test_values_end
+			LDR   r9, =test_values_addendum
+
+			LDR   r3, [r9, #0x04]
+			LDR   r2, [r7, r3, ROR #0x00]
+
+			LDR   r3, [r9, #0x04]
+			LDR   r2, [r7, r3, ROR #0x01]
+
+			LDR   r3, [r7, #0x0C]
+			LDR   r2, [r7, r3, ROR #0x1D]
+
+			LDR   r3, [r9, #0x1C]
+			LDR   r2, [r8, r3, ROR #0x1D]
+
 infin:
             B     infin

@@ -65,7 +65,7 @@ void get_rom_as_bytes(std::string rom_name, uint8_t* out, int out_length) {
 
 // note that prefetches might not even be needed, if i just subtract the proper amount
 // when running the opcode.
-int fetch() {
+uint32_t fetch() {
     if (get_bit_T()) {
         uint16_t opcode = *((uint16_t*)(memory.main + (*memory.pc & 0xFFFFFFFE)));
         *memory.pc += 2;
