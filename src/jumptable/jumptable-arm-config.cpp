@@ -97,14 +97,28 @@ inline uint32_t RRX(uint32_t value, uint8_t shift) {
 
 
 
+// ********************************************** Addressing Mode 1 **********************************************
+//                                    MCR, etc. (will be filled out as implemented)
+// ***************************************************************************************************************
+
+
+
+
+@LOCAL()
+uint32_t addressing_mode_1_immediate(uint32_t opcode)  {
+    return get_nth_bits(opcode, 0, 8) << ((get_nth_bits(opcode, 8, 12)) * 2);
+}
+
+
+
 // ********************************************** Addressing Mode 2 **********************************************
 //                                             LDR / LDRB / STR / STRB
 // ***************************************************************************************************************
 
 
 
-@LOCAL_INLINE()
-inline uint32_t addressing_mode_2_immediate(uint32_t opcode)  {
+@LOCAL()
+uint32_t addressing_mode_2_immediate(uint32_t opcode)  {
     bool is_pc = get_nth_bits(opcode, 16, 20) == 15;
 
     if      (!is_pc &&  get_nth_bit(opcode, 23))   return memory.regs[get_nth_bits(opcode, 16, 20)] + get_nth_bits(opcode, 0, 12);
@@ -113,15 +127,15 @@ inline uint32_t addressing_mode_2_immediate(uint32_t opcode)  {
     else  /*( is_pc && !get_nth_bit(opcode, 23))*/ return memory.regs[get_nth_bits(opcode, 16, 20)] - get_nth_bits(opcode, 0, 12) + 4;
 }
 
-@LOCAL_INLINE()
-inline uint32_t addressing_mode_2_immediate_preindexed(uint32_t opcode) {
+@LOCAL()
+uint32_t addressing_mode_2_immediate_preindexed(uint32_t opcode) {
     if (get_nth_bit(opcode, 23)) memory.regs[get_nth_bits(opcode, 16, 20)] += get_nth_bits(opcode, 0, 12);
     else                         memory.regs[get_nth_bits(opcode, 16, 20)] -= get_nth_bits(opcode, 0, 12);
     return memory.regs[get_nth_bits(opcode, 16, 20)];
 }
 
-@LOCAL_INLINE()
-inline uint32_t addressing_mode_2_immediate_postindexed(uint32_t opcode) {
+@LOCAL()
+uint32_t addressing_mode_2_immediate_postindexed(uint32_t opcode) {
     uint32_t address = memory.regs[get_nth_bits(opcode, 16, 20)];
     if (get_nth_bit(opcode, 23)) memory.regs[get_nth_bits(opcode, 16, 20)] += get_nth_bits(opcode, 0, 12);
     else                         memory.regs[get_nth_bits(opcode, 16, 20)] -= get_nth_bits(opcode, 0, 12);
@@ -132,8 +146,8 @@ inline uint32_t addressing_mode_2_immediate_postindexed(uint32_t opcode) {
 // why? because they're encoded the same way. an unscaled register offset is the same as a scaled
 // register offset just with the shift as 0, that's like saying MOV is just ADD RD, RN, #0x0.
 // maybe flags might get screwed up though ill have to see
-@LOCAL_INLINE()
-inline uint32_t addressing_mode_2_register_offset(uint32_t opcode) {
+@LOCAL()
+uint32_t addressing_mode_2_register_offset(uint32_t opcode) {
     uint32_t address = memory.regs[get_nth_bits(opcode, 16, 20)];
     uint32_t operand = memory.regs[get_nth_bits(opcode, 0,  4)];
     uint32_t shift_immediate = get_nth_bits(opcode, 7, 12);
@@ -178,6 +192,13 @@ void nop(uint32_t opcode) {
     DEBUG_MESSAGE("NOP");
 }
 
+// B / BL instruction
+void run_COND101LABEF(uint32_t opcode) {
+    @IF(L) *memory.lr = *memory.pc;
+    // unintuitive sign extension: http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
+    *memory.pc += ((((1U << 23) ^ get_nth_bits(opcode, 0, 24)) - (1U << 23)) << 2) + 4;
+}
+
 // LDR instruction
 // Addressing Mode 2, immediate
 void run_COND0101U001(uint32_t opcode) {
@@ -206,9 +227,7 @@ void run_COND0111U001(uint32_t opcode) {
     LDR(address, opcode);
 }
 
-// B / BL instruction
-void run_COND101LABEF(uint32_t opcode) {
-    @IF(L) *memory.lr = *memory.pc;
-    // unintuitive sign extension: http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
-    *memory.pc += ((((1U << 23) ^ get_nth_bits(opcode, 0, 24)) - (1U << 23)) << 2) + 4;
+// MSR instruction
+void run_COND00010R00(uint32_t opcode) {
+    memory.regs[get_nth_bits(opcode, 12, 16)] = get_nth_bit(opcode, 22) ? memory.spsr : memory.cpsr;
 }

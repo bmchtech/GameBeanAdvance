@@ -10,7 +10,7 @@ struct SetupTeardownListener : Catch::TestEventListenerBase {
     using TestEventListenerBase::TestEventListenerBase; // inherit constructor
 
     void testCaseStarting(Catch::TestCaseInfo const& testInfo) override {
-        setup_memory();
+        gba_init();
     }
     
     void testCaseEnded(Catch::TestCaseStats const& testCaseStats) override {

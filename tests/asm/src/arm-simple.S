@@ -152,7 +152,7 @@ tests:
 			LDR   r3, [r9, #0x08]
 			LDR   r2, [r8, r3, ASR #0x1F]
 
-@ LDR tests [Scaled register offset] (ASR)
+@ LDR tests [Scaled register offset] (ROR)
 
 			LDR   r7, =test_values
 			LDR   r8, =test_values_end
@@ -169,6 +169,14 @@ tests:
 
 			LDR   r3, [r9, #0x1C]
 			LDR   r2, [r8, r3, ROR #0x1D]
+
+@ MRS tests (CPSR)
+@ honestly this is more of a test for the CPSR / SPSR than it is for MRS...
+@ this test is pretty short, but its real significance is that we can finally check condition codes
+@ using MRS! no more BL flagcheck like in thumb-simple.S, just an MRS would do the trick
+
+			MRS   r0, CPSR
+			MRS   r1, SPSR
 
 infin:
             B     infin

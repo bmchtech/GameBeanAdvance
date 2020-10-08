@@ -28,7 +28,8 @@ void setup_memory() {
     memory.sram         = &memory.main[OFFSET_SRAM];
 
     // the program status register
-    memory.psr          = 0x00000000;
+    memory.cpsr          = 0x00000000;
+    memory.spsr          = 0x00000000;
 }
 
 void cleanup_memory() {

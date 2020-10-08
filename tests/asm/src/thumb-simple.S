@@ -513,7 +513,7 @@ tests:
 			BL    flagcheck
 
 @ Conditional Branch tests
-	@ these tests will set the CPSR using ADD instructions, and then run some jumps
+	@ these tests will set the Ccpsr using ADD instructions, and then run some jumps
 	@ to make sure the branches work.
 			B     beq_start
 
@@ -2018,7 +2018,7 @@ infin:
 @ note that this may not look functional, but keep in mind that the vba-m
 @ produces log files that specify which instructions were run in which order.
 @ therefore, by setting up a system that would conditionally run some
-@ instructions based on the CPSR, we can check the flags of the emulator.
+@ instructions based on the Ccpsr, we can check the flags of the emulator.
 
 flagcheck: @ otherwise known as flagcheck_N
 			BMI   flagcheck_Z

@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-// note for test cases: do not assume registers or memory values are set to 0 before starting
+// note for test cases: do not assume registers or memory vsimplees are set to 0 before starting
 // a test. set them manually to 0 if you want them to be 0.
 
 // Just a faster way to check flags
@@ -36,11 +36,11 @@ void check_cpu_state(CpuState expected, CpuState actual, std::string error_messa
     REQUIRE_MESSAGE(expected.opcode == actual.opcode, error_message);
 }
 
-TEST_CASE("CPU THUMB Mode - VBA Logs (thumb-alu)") {
+TEST_CASE("CPU THUMB Mode - VBA Logs (thumb-simple)") {
     uint32_t num_instructions = 3666;
-    CpuState* expected_output = produce_expected_cpu_states("tests/asm/logs/thumb-alu.log", num_instructions);
+    CpuState* expected_output = produce_expected_cpu_states("tests/asm/logs/thumb-simple.log", num_instructions);
     
-    get_rom_as_bytes("tests/asm/bin/thumb-alu.gba", memory.rom_1, SIZE_ROM_1);
+    get_rom_as_bytes("tests/asm/bin/thumb-simple.gba", memory.rom_1, SIZE_ROM_1);
     set_cpu_state(expected_output[0]);
 
     bool wasPreviousInstructionARM = true; // if so, we reset the CPU's state
@@ -65,19 +65,23 @@ TEST_CASE("CPU THUMB Mode - VBA Logs (thumb-alu)") {
 
 #define ARM_START_INSTRUCTION 203
 
-TEST_CASE("CPU ARM Mode - VBA Logs (arm-alu) [Requires Functional THUMB]") {
+TEST_CASE("CPU ARM Mode - VBA Logs (arm-simple) [Requires Functional THUMB]") {
     uint32_t num_instructions = 1290;
-    CpuState* expected_output = produce_expected_cpu_states("tests/asm/logs/arm-alu.log", num_instructions);
+    CpuState* expected_output = produce_expected_cpu_states("tests/asm/logs/arm-simple.log", num_instructions);
     
-    get_rom_as_bytes("tests/asm/bin/arm-alu.gba", memory.rom_1, SIZE_ROM_1);
+    get_rom_as_bytes("tests/asm/bin/arm-simple.gba", memory.rom_1, SIZE_ROM_1);
     set_cpu_state(expected_output[0]);
     set_bit_T(true);
 
     for (int i = 0; i < num_instructions - 1; i++) {
         // ARM instructions won't be run until log #190 is passed (the ARM that occurs before then is needless 
         // busywork as far as these tests are concerned, and make it harder to unit test the emulator).
-        if (i == ARM_START_INSTRUCTION) set_bit_T(false);
-        if (i <  ARM_START_INSTRUCTION) set_bit_T(true);
+        if (i == ARM_START_INSTRUCTION) {
+            set_bit_T(false);
+            memory.cpsr = 0x6000001F; // theres a bit of arm instructions that edit the CPSR that we skip, so let's manually set it.
+        }
+
+        if (i < ARM_START_INSTRUCTION) set_bit_T(true);
 
         if (i > ARM_START_INSTRUCTION || expected_output[i].type == THUMB) {
             uint32_t opcode = fetch();

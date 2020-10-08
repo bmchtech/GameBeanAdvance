@@ -20,9 +20,12 @@
 
 extern Memory memory;
 
-void run(std::string rom_name) {
+void gba_init() {
     setup_memory();
-    
+    set_mode(MODE_SYSTEM);
+}
+
+void gba_run(std::string rom_name) {
     get_rom_as_bytes(rom_name, memory.rom_1, SIZE_ROM_1);
 
     // extract the game name

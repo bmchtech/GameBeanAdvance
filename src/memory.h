@@ -44,9 +44,10 @@ typedef struct Memory {
     uint8_t* rom_3;        // 0xC000000 - 0xDFFFFFF
     uint8_t* sram;         // 0xE000000 - 0xE00FFFF
 
-    // program status register
+    // program status registers
     // NZCV--------------------IFT43210
-    uint32_t psr;
+    uint32_t cpsr;
+    uint32_t spsr;
 } Memory;
 
 // words are 4 bytes, halfwords are 2 bytes
@@ -87,48 +88,48 @@ void setup_memory();
 void cleanup_memory();
 
 inline void set_flag_N(bool condition) {
-    if (condition) memory.psr |= 0x80000000;
-    else           memory.psr &= 0x7FFFFFFF;
+    if (condition) memory.cpsr |= 0x80000000;
+    else           memory.cpsr &= 0x7FFFFFFF;
 }
 
 inline void set_flag_Z(bool condition) {
-    if (condition) memory.psr |= 0x40000000;
-    else           memory.psr &= 0xBFFFFFFF;
+    if (condition) memory.cpsr |= 0x40000000;
+    else           memory.cpsr &= 0xBFFFFFFF;
 }
 
 inline void set_flag_C(bool condition) {
-    if (condition) memory.psr |= 0x20000000;
-    else           memory.psr &= 0xDFFFFFFF;
+    if (condition) memory.cpsr |= 0x20000000;
+    else           memory.cpsr &= 0xDFFFFFFF;
 }
 
 inline void set_flag_V(bool condition) {
-    if (condition) memory.psr |= 0x10000000;
-    else           memory.psr &= 0xEFFFFFFF;
+    if (condition) memory.cpsr |= 0x10000000;
+    else           memory.cpsr &= 0xEFFFFFFF;
 }
 
 inline void set_bit_T(bool condition) {
-    if (condition) memory.psr |= 0x00000020;
-    else           memory.psr &= 0xFFFFFFDF;
+    if (condition) memory.cpsr |= 0x00000020;
+    else           memory.cpsr &= 0xFFFFFFDF;
 }
 
 inline bool get_flag_N() {
-    return (memory.psr >> 31) & 1;
+    return (memory.cpsr >> 31) & 1;
 }
 
 inline bool get_flag_Z() {
-    return (memory.psr >> 30) & 1;
+    return (memory.cpsr >> 30) & 1;
 }
 
 inline bool get_flag_C() {
-    return (memory.psr >> 29) & 1;
+    return (memory.cpsr >> 29) & 1;
 }
 
 inline bool get_flag_V() {
-    return (memory.psr >> 28) & 1;
+    return (memory.cpsr >> 28) & 1;
 }
 
 inline bool get_bit_T() {
-    return (memory.psr >> 5) & 1;
+    return (memory.cpsr >> 5) & 1;
 }
 
 #endif
