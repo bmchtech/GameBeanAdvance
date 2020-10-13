@@ -118,7 +118,7 @@ uint32_t addressing_mode_1_immediate(uint32_t opcode)  {
 
 
 @LOCAL()
-uint32_t addressing_mode_2_immediate(uint32_t opcode)  {
+uint32_t addressing_mode_2_immediate_offset(uint32_t opcode)  {
     bool is_pc = get_nth_bits(opcode, 16, 20) == 15;
 
     if      (!is_pc &&  get_nth_bit(opcode, 23))   return memory.regs[get_nth_bits(opcode, 16, 20)] + get_nth_bits(opcode, 0, 12);
@@ -173,8 +173,17 @@ uint32_t addressing_mode_2_register_offset(uint32_t opcode) {
             break;
     }
 
-    if (get_nth_bit(opcode, 23)) address += index;
-    else                         address -= index;
+    if (get_nth_bit(opcode, 24)) { // offset addressing or pre-indexed addressing
+        if (get_nth_bit(opcode, 23)) address += index;
+        else                         address -= index;
+
+        if (get_nth_bit(opcode, 21)) { // pre-indexed addressing (writeback)
+            memory.regs[get_nth_bits(opcode, 16, 20)] = address;
+        }
+    } else {                       // post-indexed addressing
+        if (get_nth_bit(opcode, 23)) memory.regs[get_nth_bits(opcode, 16, 20)] += index;
+        else                         memory.regs[get_nth_bits(opcode, 16, 20)] -= index;
+    }
 
     return address;
 }
@@ -202,7 +211,14 @@ void run_COND101LABEF(uint32_t opcode) {
 // LDR instruction
 // Addressing Mode 2, immediate
 void run_COND0101U001(uint32_t opcode) {
-    uint32_t address = addressing_mode_2_immediate(opcode);
+    uint32_t address = addressing_mode_2_immediate_offset(opcode);
+    LDR(address, opcode);
+}
+
+// LDR instruction
+// Addressing Mode 2, register unscaled/scaled
+void run_COND011PU0W1(uint32_t opcode) {
+    uint32_t address = addressing_mode_2_register_offset(opcode);
     LDR(address, opcode);
 }
 
@@ -217,13 +233,6 @@ void run_COND0101U011(uint32_t opcode) {
 // Addressing Mode 2, immediate post-indexed
 void run_COND0100U001(uint32_t opcode) {
     uint32_t address = addressing_mode_2_immediate_postindexed(opcode);
-    LDR(address, opcode);
-}
-
-// LDR instruction
-// Addressing Mode 2, register unscaled/scaled
-void run_COND0111U001(uint32_t opcode) {
-    uint32_t address = addressing_mode_2_register_offset(opcode);
     LDR(address, opcode);
 }
 

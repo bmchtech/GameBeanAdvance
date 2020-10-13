@@ -85,6 +85,7 @@ TEST_CASE("CPU ARM Mode - VBA Logs (arm-simple) [Requires Functional THUMB]") {
 
         if (i > ARM_START_INSTRUCTION || expected_output[i].type == THUMB) {
             uint32_t opcode = fetch();
+            std::cout << std::to_string(i) << std::endl;
             execute(opcode);
             check_cpu_state(expected_output[i + 1], get_cpu_state(), "Failed at instruction #" + std::to_string(i) + " with opcode 0x" + to_hex_string(opcode));
         } else {

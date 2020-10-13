@@ -52,30 +52,6 @@ tests:
 			LDR   r2, [r8, #-0x4]
 			LDR   r2, [r8, #-0x8]
 
-@ LDR tests [Register pre-indexed]
-
-			LDR   r7, =test_values
-
-			LDR   r2, [r7, #0x4]!
-			LDR   r2, [r7, #0x8]!
-			LDR   r2, [r7, #0x1C]!
-			LDR   r2, [r7, #-0x20]!
-			LDR   r2, [r7, #0x4]!
-			LDR   r2, [r7, #-0x4]!
-			LDR   r2, [r7, #0x08]!
-
-@ LDR tests [Register post-indexed]
-
-			LDR   r7, =test_values
-
-			LDR   r2, [r7], #0x0
-			LDR   r2, [r7], #0x4
-			LDR   r2, [r7], #0x8
-			LDR   r2, [r7], #0xC
-			LDR   r2, [r7], #-0xC
-			LDR   r2, [r7], #-0x8
-			LDR   r2, [r7], #-0x4
-
 @ LDR tests [Register offset]
 
 			LDR   r7, =test_values
@@ -100,7 +76,9 @@ tests:
 			LDR   r3, [r9, #0x0]
 			LDR   r2, [r8, -r3]
 
-@ LDR tests [Scaled register offset] (LSL)
+@ LDR tests [Scaled register offset]
+
+            @ (LSL)
 
 			LDR   r7, =test_values
 			LDR   r8, =test_values_end
@@ -119,7 +97,7 @@ tests:
 			LDR   r3, [r7, #0x2C]
 			LDR   r2, [r7, -r3, LSL #0x1F]
 
-@ LDR tests [Scaled register offset] (LSR)
+            @ (LSR)
 
 			LDR   r7, =test_values
 			LDR   r8, =test_values_end
@@ -134,7 +112,7 @@ tests:
 			LDR   r3, [r7, #0x0C]
 			LDR   r2, [r7, r3, LSR #0x1F]
 
-@ LDR tests [Scaled register offset] (ASR)
+            @ (ASR)
 
 			LDR   r7, =test_values
 			LDR   r8, =test_values_end
@@ -152,7 +130,7 @@ tests:
 			LDR   r3, [r9, #0x08]
 			LDR   r2, [r8, r3, ASR #0x1F]
 
-@ LDR tests [Scaled register offset] (ROR)
+            @ (ROR)
 
 			LDR   r7, =test_values
 			LDR   r8, =test_values_end
@@ -169,6 +147,143 @@ tests:
 
 			LDR   r3, [r9, #0x1C]
 			LDR   r2, [r8, r3, ROR #0x1D]
+
+@ LDR tests [Immediate pre-indexed]
+
+			LDR   r7, =test_values
+
+			LDR   r2, [r7, #0x4]!
+			LDR   r2, [r7, #0x8]!
+			LDR   r2, [r7, #0x1C]!
+			LDR   r2, [r7, #-0x20]!
+			LDR   r2, [r7, #0x4]!
+			LDR   r2, [r7, #-0x4]!
+			LDR   r2, [r7, #0x08]!
+
+@ LDR tests [Register pre-indexed]
+
+			LDR   r7, =test_values
+
+			LDR   r3, [r7, #0x4]
+			LDR   r2, [r7, r3]!
+			
+			LDR   r3, [r7, #0x8]!
+			LDR   r2, [r7, r3]!
+
+			LDR   r3, [r7, #0x1C]!
+			LDR   r2, [r7, r3]!
+
+			LDR   r3, [r7, #-0x20]!
+			LDR   r2, [r7, r3]!
+
+			LDR   r3, [r7, #0x4]!
+			LDR   r2, [r7, r3]!
+
+			LDR   r3, [r7, #-0x4]!
+			LDR   r2, [r7, r3]!
+
+			LDR   r3, [r7, #0x08]!
+			LDR   r2, [r7, r3]!
+
+@ LDR tests [Scaled register pre-indexed]
+@ we're assuming if you got here, most of the scaled logic works already,
+@ so here's some minimal tests...
+
+			LDR   r7, =test_values
+			LDR   r8, =test_values_end
+			LDR   r9, =test_values_addendum
+
+			LDR   r3, [r7, #0x2C]
+			LDR   r2, [r7,  r3, LSL #0x1F]!
+			LDR   r7, =test_values
+			LDR   r3, [r7, #0x2C]
+			LDR   r2, [r7, -r3, LSL #0x1F]!
+
+			LDR   r7, =test_values
+			LDR   r3, [r9, #0x04]
+			LDR   r2, [r7, r3, LSR #0x01]!
+			LDR   r7, =test_values
+			LDR   r3, [r7, #0x0C]
+			LDR   r2, [r7, r3, LSR #0x1F]!
+
+			LDR   r7, =test_values
+			LDR   r3, [r7, #0x0C]
+			LDR   r2, [r7, r3, ASR #0x1F]!
+			LDR   r7, =test_values
+			LDR   r3, [r9, #0x08]
+			LDR   r2, [r8, r3, ASR #0x1F]!
+
+			LDR   r7, =test_values
+			LDR   r3, [r9, #0x04]
+			LDR   r2, [r7, r3, ROR #0x01]!
+			LDR   r7, =test_values
+			LDR   r3, [r7, #0x0C]
+			LDR   r2, [r7, r3, ROR #0x1D]!
+
+@ LDR tests [Immediate post-indexed]
+
+			LDR   r7, =test_values
+
+			LDR   r2, [r7], #0x0
+			LDR   r2, [r7], #0x4
+			LDR   r2, [r7], #0x8
+			LDR   r2, [r7], #0xC
+			LDR   r2, [r7], #-0xC
+			LDR   r2, [r7], #-0x8
+			LDR   r2, [r7], #-0x4
+
+@ LDR tests [Register post-indexed]
+
+			LDR   r7, =test_values
+
+			LDR   r3, [r7, #0x4]
+			LDR   r2, [r7], r3
+			
+			LDR   r3, [r7, #0x8]!
+			LDR   r2, [r7], r3
+
+			LDR   r3, [r7, #0x1C]!
+			LDR   r2, [r7], r3
+
+			LDR   r3, [r7, #-0x20]!
+			LDR   r2, [r7], r3
+
+			LDR   r3, [r7, #0x4]!
+			LDR   r2, [r7], r3
+
+			LDR   r3, [r7, #-0x4]!
+			LDR   r2, [r7], r3
+
+			LDR   r3, [r7, #0x08]!
+			LDR   r2, [r7], r3
+
+@ LDR tests [Scaled register post-indexed]
+@ we're assuming if you got here, most of the scaled logic works already,
+@ so here's some minimal tests...
+
+			LDR   r7, =test_values
+			LDR   r8, =test_values_end
+			LDR   r9, =test_values_addendum
+
+			LDR   r3, [r7, #0x2C]
+			LDR   r2, [r7], r3, LSL #0x1F
+			LDR   r3, [r7, #0x2C]
+			LDR   r2, [r7], -r3, LSL #0x1F
+
+			LDR   r3, [r9, #0x04]
+			LDR   r2, [r7], r3, LSR #0x01
+			LDR   r3, [r7, #0x0C]
+			LDR   r2, [r7], r3, LSR #0x1F
+
+			LDR   r3, [r7, #0x0C]
+			LDR   r2, [r7], r3, ASR #0x1F
+			LDR   r3, [r9, #0x08]
+			LDR   r2, [r8], r3, ASR #0x1F
+
+			LDR   r3, [r9, #0x04]
+			LDR   r2, [r7], r3, ROR #0x01
+			LDR   r3, [r7, #0x0C]
+			LDR   r2, [r7], r3, ROR #0x1D
 
 @ MRS tests (CPSR)
 @ honestly this is more of a test for the CPSR / SPSR than it is for MRS...
