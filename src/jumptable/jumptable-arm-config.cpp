@@ -69,6 +69,11 @@ inline void LDR(uint32_t address, uint32_t opcode) {
 }
 
 @LOCAL_INLINE()
+inline void LDRB(uint32_t address, uint32_t opcode) {
+    memory.regs[get_nth_bits(opcode, 12, 16)] = (uint32_t) memory.main[address];
+}
+
+@LOCAL_INLINE()
 inline uint32_t LSL(uint32_t value, uint8_t shift) {
     return value << shift;
 }
@@ -210,30 +215,34 @@ void run_COND101LABEF(uint32_t opcode) {
 
 // LDR instruction
 // Addressing Mode 2, immediate
-void run_COND0101U001(uint32_t opcode) {
+void run_COND0101UB01(uint32_t opcode) {
     uint32_t address = addressing_mode_2_immediate_offset(opcode);
-    LDR(address, opcode);
+    @IF(!B) LDR (address, opcode);
+    @IF( B) LDRB(address, opcode);
 }
 
 // LDR instruction
 // Addressing Mode 2, register unscaled/scaled
-void run_COND011PU0W1(uint32_t opcode) {
+void run_COND011PUBW1(uint32_t opcode) {
     uint32_t address = addressing_mode_2_register_offset(opcode);
-    LDR(address, opcode);
+    @IF(!B) LDR (address, opcode);
+    @IF( B) LDRB(address, opcode);
 }
 
 // LDR instruction
 // Addressing Mode 2, immediate pre-indexed
-void run_COND0101U011(uint32_t opcode) {
+void run_COND0101UB11(uint32_t opcode) {
     uint32_t address = addressing_mode_2_immediate_preindexed(opcode);
-    LDR(address, opcode);
+    @IF(!B) LDR (address, opcode);
+    @IF( B) LDRB(address, opcode);
 }
 
 // LDR instruction
 // Addressing Mode 2, immediate post-indexed
-void run_COND0100U001(uint32_t opcode) {
+void run_COND0100UB01(uint32_t opcode) {
     uint32_t address = addressing_mode_2_immediate_postindexed(opcode);
-    LDR(address, opcode);
+    @IF(!B) LDR (address, opcode);
+    @IF( B) LDRB(address, opcode);
 }
 
 // MSR instruction
