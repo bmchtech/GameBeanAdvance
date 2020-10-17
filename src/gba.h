@@ -2,6 +2,7 @@
 #define GBA_H
 
 #include "memory.h"
+#include "arm7tdmi.h"
 #include <string>
 
 #define CART_SIZE         0x1000000
@@ -9,12 +10,6 @@
 #define ROM_ENTRY_POINT   0x000
 #define GAME_TITLE_OFFSET 0x0A0
 #define GAME_TITLE_SIZE   12
-
-void gba_init();
-void gba_run(std::string rom_name);
-void get_rom_as_bytes(std::string rom_name, uint8_t* out, int out_length);
-uint32_t fetch();
-void execute(uint32_t opcode);
 
 #define MODE_USER       0b10000
 #define MODE_FIQ        0b10001
@@ -24,12 +19,28 @@ void execute(uint32_t opcode);
 #define MODE_UNDEFINED  0b11011
 #define MODE_SYSTEM     0b11111
 
-inline void set_mode(int mode) {
-    memory.cpsr = (memory.cpsr & 0xFFFFFFE0) | mode;
-}
 
-// determines whether or not this function should execute based on COND (the high 4 bits of the opcode)
-// note that this only applies to ARM instructions.
-bool should_execute(int opcode);
+class GBA {
+
+    public:
+        // Allocates the memory and sets the mode to System.
+        GBA();
+
+        // Frees the memory - classic destructor.
+        ~GBA();
+
+        // TODO: run the GBA. probably going to be one of the last things that is actually implemented, since manually cycling
+        // the emulator is a lot easier to test. heck, this method might not even exist, idk. but, it's here for now.
+        void run(std::string rom_name);
+
+        // cycles the GBA CPU once, executing one instruction to completion.
+        // maybe this method belongs in an ARM7TDMI class. nobody knows. i don't see the reason for having such a class, so
+        // this is staying here for now.
+        void cycle();
+    
+    private:
+        ARM7TDMI* cpu;
+        Memory*   memory;
+};
 
 #endif

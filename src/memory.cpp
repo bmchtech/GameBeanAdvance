@@ -3,36 +3,34 @@
 
 #include "memory.h"
 
-Memory memory;
-
 // allocates the data for the memory struct
-void setup_memory() {
-    memory.main         = new uint8_t [SIZE_MAIN_MEMORY];
-    memory.regs         = new uint32_t[NUM_REGISTERS];
+Memory::Memory() {
+    main         = new uint8_t [SIZE_MAIN_MEMORY];
+    regs         = new uint32_t[NUM_REGISTERS];
 
     // map a bunch of shortcut pointers
-    memory.sp           = &memory.regs[0xD]; // stack pointer
-    memory.lr           = &memory.regs[0xE]; // link register (branch with link instruction)
-    memory.pc           = &memory.regs[0xF]; // program counter
+    sp           = &regs[0xD]; // stack pointer
+    lr           = &regs[0xE]; // link register (branch with link instruction)
+    pc           = &regs[0xF]; // program counter
 
-    memory.bios         = &memory.main[OFFSET_BIOS];
-    memory.wram_board   = &memory.main[OFFSET_WRAM_BOARD];
-    memory.wram_chip    = &memory.main[OFFSET_WRAM_CHIP];
-    memory.io_registers = &memory.main[OFFSET_IO_REGISTERS];
-    memory.palette_ram  = &memory.main[OFFSET_PALETTE_RAM];
-    memory.vram         = &memory.main[OFFSET_VRAM];
-    memory.oam          = &memory.main[OFFSET_OAM];
-    memory.rom_1        = &memory.main[OFFSET_ROM_1];
-    memory.rom_2        = &memory.main[OFFSET_ROM_2];
-    memory.rom_3        = &memory.main[OFFSET_ROM_3];
-    memory.sram         = &memory.main[OFFSET_SRAM];
+    bios         = &main[OFFSET_BIOS];
+    wram_board   = &main[OFFSET_WRAM_BOARD];
+    wram_chip    = &main[OFFSET_WRAM_CHIP];
+    io_registers = &main[OFFSET_IO_REGISTERS];
+    palette_ram  = &main[OFFSET_PALETTE_RAM];
+    vram         = &main[OFFSET_VRAM];
+    oam          = &main[OFFSET_OAM];
+    rom_1        = &main[OFFSET_ROM_1];
+    rom_2        = &main[OFFSET_ROM_2];
+    rom_3        = &main[OFFSET_ROM_3];
+    sram         = &main[OFFSET_SRAM];
 
     // the program status register
-    memory.cpsr          = 0x00000000;
-    memory.spsr          = 0x00000000;
+    cpsr          = 0x00000000;
+    spsr          = 0x00000000;
 }
 
-void cleanup_memory() {
-    delete[] memory.main;
-    delete[] memory.regs;
+Memory::~Memory() {
+    delete[] main;
+    delete[] regs;
 }

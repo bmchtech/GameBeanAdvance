@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "../src/memory.h"
+#include "../src/arm7tdmi.h"
 
 enum CpuType { ARM, THUMB };
 
@@ -12,7 +13,7 @@ typedef struct CpuState {
     uint32_t* regs;
 } CpuState;
 
-CpuState get_cpu_state();
-void set_cpu_state(CpuState cpu_state);
+CpuState get_cpu_state(ARM7TDMI* cpu);
+void set_cpu_state(ARM7TDMI* cpu, CpuState cpu_state);
 
 #endif

@@ -6,7 +6,8 @@ int main(int argc, char** argv) {
         error("Usage: ./gba <rom_name>");
     }
     
-    run(argv[1]);
+    GBA* gba = new GBA();
+    gba->run(argv[1]);
 
     return 0;
 }

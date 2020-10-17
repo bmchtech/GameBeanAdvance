@@ -30,7 +30,8 @@ HEADER_FILE_HEADER      = '''
 #ifndef ''' + JUMPTABLE_INCLUDE_GUARD + '''
 #define ''' + JUMPTABLE_INCLUDE_GUARD + '''\n\n
 #include "../util.h"
-#include "../memory.h"\n\n'''[1:] # the [1:] is used to remove the beginning \n
+#include "../memory.h"
+#include "../arm7tdmi.h"\n\n'''[1:] # the [1:] is used to remove the beginning \n
 
 HEADER_FILE_FOOTER      = '''
 #endif'''[1:]
@@ -41,14 +42,13 @@ CPP_FILE_HEADER         = '''
 #include "''' + OUTPUT_HEADER_FILE + '"' + '''\n
 #include "../util.h"
 #include "../memory.h"
+#include "../arm7tdmi.h"
 
 #ifdef DEBUG_MESSAGE
     #define DEBUG_MESSAGE(message) std::cout << message << std::endl;
 #else
     #define DEBUG_MESSAGE(message) do {} while(0)
-#endif
-
-extern Memory memory;\n\n'''[1:]
+#endif\n\n'''[1:]
 
 CPP_FILE_FOOTER         = ''''''
 
@@ -258,13 +258,13 @@ for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):
     result_function = jumptable[i]
 
     if result_function != None:
-        function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "(" +  OPCODE_DATA_TYPE + " opcode)"
+        function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "(ARM7TDMI* cpu, " +  OPCODE_DATA_TYPE + " opcode)"
         header_file.write(function_name + ";\n")
         cpp_file.write(function_name + " {\n")
         cpp_file.write('\n'.join(result_function))
         cpp_file.write("\n}\n\n")
     else:
-        function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "(" + OPCODE_DATA_TYPE + " opcode)"
+        function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "(ARM7TDMI* cpu, " + OPCODE_DATA_TYPE + " opcode)"
         header_file.write(function_name + ";\n")
         cpp_file.write(function_name + " {\n")
         cpp_file.write('\n'.join(default_function))
@@ -272,7 +272,7 @@ for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):
 
 # and now we must loop again to put the actual jumptable in the header file
 # first we add the typedef and the extern
-header_file.write("\ntypedef void (*" + INSTRUCTION_NAME + ")(" + OPCODE_DATA_TYPE + ");\n")
+header_file.write("\ntypedef void (*" + INSTRUCTION_NAME + ")(ARM7TDMI*, " + OPCODE_DATA_TYPE + ");\n")
 header_file.write("extern " + INSTRUCTION_NAME + " " + JUMPTABLE_NAME + "[];\n")
 
 # then we add the jumptable

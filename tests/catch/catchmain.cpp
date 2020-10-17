@@ -3,6 +3,7 @@
 #include "../../src/gba.h"
 #include "catch.hpp"
 
+/*
 // setup and teardown for tests. see for more info:
 // https://github.com/catchorg/Catch2/blob/master/docs/event-listeners.md
 struct SetupTeardownListener : Catch::TestEventListenerBase {
@@ -17,4 +18,4 @@ struct SetupTeardownListener : Catch::TestEventListenerBase {
         cleanup_memory();
     }
 };
-CATCH_REGISTER_LISTENER(SetupTeardownListener)
+CATCH_REGISTER_LISTENER(SetupTeardownListener)*/
