@@ -11,15 +11,15 @@
 
 // Just a faster way to check flags
 void check_flags_NZCV(ARM7TDMI* cpu, bool fN, bool fZ, bool fC, bool fV) {
-    REQUIRE(cpu->memory->get_flag_N() == fN);
-    REQUIRE(cpu->memory->get_flag_Z() == fZ);
-    REQUIRE(cpu->memory->get_flag_C() == fC);
-    REQUIRE(cpu->memory->get_flag_V() == fV);
+    REQUIRE(cpu->get_flag_N() == fN);
+    REQUIRE(cpu->get_flag_Z() == fZ);
+    REQUIRE(cpu->get_flag_C() == fC);
+    REQUIRE(cpu->get_flag_V() == fV);
 }
 
 void wipe_registers(ARM7TDMI* cpu) {
     for (int i = 0; i < NUM_REGISTERS; ++i) {
-        cpu->memory->regs[i] = 0x00000000;
+        cpu->regs[i] = 0x00000000;
     }
 }
 
@@ -50,7 +50,7 @@ TEST_CASE("CPU THUMB Mode - VBA Logs (thumb-simple)") {
     for (int i = 0; i < num_instructions - 1; i++) {
         if (expected_output[i].type == THUMB) {
             if (wasPreviousInstructionARM) {
-                cpu->memory->set_bit_T(true);
+                cpu->set_bit_T(true);
                 set_cpu_state(cpu, expected_output[i]);
             }
             
@@ -80,17 +80,17 @@ TEST_CASE("CPU ARM Mode - VBA Logs (arm-simple) [Requires Functional THUMB]") {
     
     get_rom_as_bytes("tests/asm/bin/arm-simple.gba", memory->rom_1, SIZE_ROM_1);
     set_cpu_state(cpu, expected_output[0]);
-    cpu->memory->set_bit_T(true);
+    cpu->set_bit_T(true);
 
     for (int i = 0; i < num_instructions - 1; i++) {
         // ARM instructions won't be run until log #190 is passed (the ARM that occurs before then is needless 
         // busywork as far as these tests are concerned, and make it harder to unit test the emulator).
         if (i == ARM_START_INSTRUCTION) {
-            cpu->memory->set_bit_T(false);
-            cpu->memory->cpsr = 0x6000001F; // theres a bit of arm instructions that edit the CPSR that we skip, so let's manually set it.
+            cpu->set_bit_T(false);
+            cpu->cpsr = 0x6000001F; // theres a bit of arm instructions that edit the CPSR that we skip, so let's manually set it.
         }
 
-        if (i < ARM_START_INSTRUCTION) cpu->memory->set_bit_T(true);
+        if (i < ARM_START_INSTRUCTION) cpu->set_bit_T(true);
 
         if (i > ARM_START_INSTRUCTION || expected_output[i].type == THUMB) {
             uint32_t opcode = cpu->fetch();

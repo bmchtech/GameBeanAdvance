@@ -6,11 +6,22 @@
 
 
 ARM7TDMI::ARM7TDMI(Memory* memory) {
-    this->memory = memory;
+    this->memory = memory;       
+    
+    regs = new uint32_t[NUM_REGISTERS];
+
+    // map a bunch of shortcut pointers
+    sp = &regs[0xD]; // stack pointer
+    lr = &regs[0xE]; // link register (branch with link instruction)
+    pc = &regs[0xF]; // program counter
+
+    // the program status register
+    cpsr = 0x00000000;
+    spsr = 0x00000000;
 }
 
 ARM7TDMI::~ARM7TDMI() {
-
+    delete regs;
 }
 
 void ARM7TDMI::cycle() {
@@ -18,19 +29,19 @@ void ARM7TDMI::cycle() {
 }
 
 uint32_t ARM7TDMI::fetch() {
-    if (memory->get_bit_T()) { // thumb mode: grab a halfword and return it
-        uint16_t opcode = *((uint16_t*)(memory->main + (*memory->pc & 0xFFFFFFFE)));
-        *memory->pc += 2;
+    if (get_bit_T()) { // thumb mode: grab a halfword and return it
+        uint16_t opcode = *((uint16_t*)(memory->main + (*pc & 0xFFFFFFFE)));
+        *pc += 2;
         return opcode;
     } else {           // arm mode: grab a word and return it
-        uint32_t opcode = *((uint32_t*)(memory->main + (*memory->pc & 0xFFFFFFFE)));
-        *memory->pc += 4;
+        uint32_t opcode = *((uint32_t*)(memory->main + (*pc & 0xFFFFFFFE)));
+        *pc += 4;
         return opcode;
     }
 }
 
 void ARM7TDMI::execute(uint32_t opcode) {
-    if (memory->get_bit_T()) {
+    if (get_bit_T()) {
         jumptable_thumb[opcode >> 8](this, opcode);
     } else {
         if (should_execute((opcode & 0xF0000000) >> 28)) {
@@ -47,20 +58,20 @@ bool ARM7TDMI::should_execute(int cond) {
     }
 
     switch (cond) {
-        case 0b0000: return  memory->get_flag_Z(); break;
-        case 0b0001: return !memory->get_flag_Z(); break;
-        case 0b0010: return  memory->get_flag_C(); break;
-        case 0b0011: return !memory->get_flag_C(); break;
-        case 0b0100: return  memory->get_flag_N(); break;
-        case 0b0101: return !memory->get_flag_N(); break;
-        case 0b0110: return  memory->get_flag_V(); break;
-        case 0b0111: return !memory->get_flag_V(); break;
-        case 0b1000: return  memory->get_flag_C() && !memory->get_flag_Z(); break;
-        case 0b1001: return !memory->get_flag_C() ||  memory->get_flag_Z(); break;
-        case 0b1010: return  memory->get_flag_N() ==  memory->get_flag_V(); break;
-        case 0b1011: return  memory->get_flag_N() !=  memory->get_flag_V(); break;
-        case 0b1100: return !memory->get_flag_Z() &&  (memory->get_flag_N() == memory->get_flag_V()); break;
-        case 0b1101: return  memory->get_flag_Z() &&  (memory->get_flag_N() != memory->get_flag_V()); break;
+        case 0b0000: return  get_flag_Z(); break;
+        case 0b0001: return !get_flag_Z(); break;
+        case 0b0010: return  get_flag_C(); break;
+        case 0b0011: return !get_flag_C(); break;
+        case 0b0100: return  get_flag_N(); break;
+        case 0b0101: return !get_flag_N(); break;
+        case 0b0110: return  get_flag_V(); break;
+        case 0b0111: return !get_flag_V(); break;
+        case 0b1000: return  get_flag_C() && !get_flag_Z(); break;
+        case 0b1001: return !get_flag_C() ||  get_flag_Z(); break;
+        case 0b1010: return  get_flag_N() ==  get_flag_V(); break;
+        case 0b1011: return  get_flag_N() !=  get_flag_V(); break;
+        case 0b1100: return !get_flag_Z() &&  (get_flag_N() == get_flag_V()); break;
+        case 0b1101: return  get_flag_Z() &&  (get_flag_N() != get_flag_V()); break;
         default:     return false;
     }
 }

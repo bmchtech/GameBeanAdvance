@@ -27,7 +27,12 @@ inline uint32_t get_nth_bits(uint32_t val, uint8_t start, uint8_t end) {
 inline bool get_nth_bit(uint32_t val, uint8_t n) {
     return (val >> n) & 1;
 }
-        
+
+// sign extend the given value
+inline uint32_t sign_extend(uint32_t val, uint8_t num_bits) {
+    return (val ^ (1U << (num_bits - 1))) - (1U << (num_bits - 1));
+}
+
 // reads the ROM as bytes (given the file name). stores the result into out. any data after out_length will be truncated
 // off the ROM.
 void get_rom_as_bytes(std::string rom_name, uint8_t* out, size_t out_length);

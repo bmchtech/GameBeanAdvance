@@ -14,23 +14,8 @@ class Memory {
         Memory();
         ~Memory();
 
-        // TODO: make this shit private
-
         // the main memory
         uint8_t* main;
-
-        // registers. id name it "register" but thats a keyword apparently...
-        // note that register 8 is the stack pointer
-        //           register 9 is the... (TODO) whatever LR means
-        //           register A is the program counter
-        uint32_t* regs;
-
-        // because doing things like register[0xF] to access the program counter 
-        // is unreadable, here's a lot of shortcuts.
-        uint32_t* pc;  // program counter
-        uint32_t* lr;  // link register
-        uint32_t* sp;  // stack pointer
-        uint8_t*  all; // maps to the beginning of memory
 
         // general internal memory
         uint8_t* bios;         // 0x0000000 - 0x0003FFF
@@ -76,55 +61,28 @@ class Memory {
         #define OFFSET_ROM_3        0xC000000
         #define OFFSET_SRAM         0xE000000
 
-        // program status registers
-        // NZCV--------------------IFT43210
-        uint32_t cpsr;
-        uint32_t spsr;
-
-        inline void set_flag_N(bool condition) {
-            if (condition) cpsr |= 0x80000000;
-            else           cpsr &= 0x7FFFFFFF;
+        inline uint8_t read_byte(uint32_t address) {
+            return main[address];
         }
 
-        inline void set_flag_Z(bool condition) {
-            if (condition) cpsr |= 0x40000000;
-            else           cpsr &= 0xBFFFFFFF;
+        inline uint16_t read_halfword(uint32_t address) {
+            return *((uint16_t*) (main + address));
         }
 
-        inline void set_flag_C(bool condition) {
-            if (condition) cpsr |= 0x20000000;
-            else           cpsr &= 0xDFFFFFFF;
+        inline uint32_t read_word(uint32_t address) {
+            return *((uint32_t*) (main + address));
         }
 
-        inline void set_flag_V(bool condition) {
-            if (condition) cpsr |= 0x10000000;
-            else           cpsr &= 0xEFFFFFFF;
+        inline void write_byte(uint32_t address, uint8_t value) {
+            main[address] = value;
         }
 
-        inline void set_bit_T(bool condition) {
-            if (condition) cpsr |= 0x00000020;
-            else           cpsr &= 0xFFFFFFDF;
+        inline void write_halfword(uint32_t address, uint16_t value) {
+            *((uint16_t*) (main + address)) = value;
         }
 
-        inline bool get_flag_N() {
-            return (cpsr >> 31) & 1;
-        }
-
-        inline bool get_flag_Z() {
-            return (cpsr >> 30) & 1;
-        }
-
-        inline bool get_flag_C() {
-            return (cpsr >> 29) & 1;
-        }
-
-        inline bool get_flag_V() {
-            return (cpsr >> 28) & 1;
-        }
-
-        inline bool get_bit_T() {
-            return (cpsr >> 5) & 1;
+        inline void write_word(uint32_t address, uint32_t value) {
+            *((uint32_t*) (main + address)) = value;
         }
 };
-
 #endif

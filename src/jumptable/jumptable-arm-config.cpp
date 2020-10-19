@@ -55,27 +55,27 @@ inline uint32_t ASR(uint32_t value, uint8_t shift) {
 
 @LOCAL_INLINE()
 inline void LDR(ARM7TDMI* cpu, uint32_t address, uint32_t opcode) {
-    uint32_t value = *((uint32_t*)(cpu->memory->main + (address & 0xFFFFFFFC)));
+    uint32_t value = cpu->memory->read_word(address & 0xFFFFFFFC);
     if ((address & 0b11) == 0b01) value = ((value & 0xFF)     << 24) | (value >> 8);
     if ((address & 0b11) == 0b10) value = ((value & 0xFFFF)   << 16) | (value >> 16);
     if ((address & 0b11) == 0b11) value = ((value & 0xFFFFFF) << 8)  | (value >> 24);
 
     uint8_t rd = get_nth_bits(opcode, 12, 16);
     if (rd == 15) {
-        *cpu->memory->pc = value & 0xFFFFFFFC;
+        *cpu->pc = value & 0xFFFFFFFC;
     } else {
-        cpu->memory->regs[rd] = value;
+        cpu->regs[rd] = value;
     }
 }
 
 @LOCAL_INLINE()
 inline void LDRB(ARM7TDMI* cpu, uint32_t address, uint32_t opcode) {
-    cpu->memory->regs[get_nth_bits(opcode, 12, 16)] = (uint32_t) cpu->memory->main[address];
+    cpu->regs[get_nth_bits(opcode, 12, 16)] = cpu->memory->read_byte(address);
 }
 
 @LOCAL_INLINE()
 inline void LDRBT(ARM7TDMI* cpu, uint32_t address, uint32_t opcode) {
-    cpu->memory->regs[get_nth_bits(opcode, 12, 16)] = (uint32_t) cpu->memory->main[address];
+    cpu->regs[get_nth_bits(opcode, 12, 16)] = cpu->memory->read_byte(address);
 }
 
 @LOCAL_INLINE()
@@ -100,8 +100,8 @@ inline uint32_t RRX(ARM7TDMI* cpu, uint32_t value, uint8_t shift) {
     uint32_t rotated_off = get_nth_bits(value, 0,     shift - 1);  // the value that is rotated off
     uint32_t rotated_in  = get_nth_bits(value, shift, 32);         // the value that stays after the rotation
 
-    uint32_t result = rotated_in | (rotated_off << (32 - shift)) | (cpu->memory->get_flag_C() << (32 - shift + 1));
-    cpu->memory->set_flag_C(get_nth_bit(value, shift));
+    uint32_t result = rotated_in | (rotated_off << (32 - shift)) | (cpu->get_flag_C() << (32 - shift + 1));
+    cpu->set_flag_C(get_nth_bit(value, shift));
     return result;
 }
 
@@ -131,24 +131,24 @@ uint32_t addressing_mode_1_immediate(uint32_t opcode)  {
 uint32_t addressing_mode_2_immediate_offset(ARM7TDMI* cpu, uint32_t opcode)  {
     bool is_pc = get_nth_bits(opcode, 16, 20) == 15;
 
-    if      (!is_pc &&  get_nth_bit(opcode, 23))   return cpu->memory->regs[get_nth_bits(opcode, 16, 20)] + get_nth_bits(opcode, 0, 12);
-    else if (!is_pc && !get_nth_bit(opcode, 23))   return cpu->memory->regs[get_nth_bits(opcode, 16, 20)] - get_nth_bits(opcode, 0, 12);
-    else if ( is_pc &&  get_nth_bit(opcode, 23))   return cpu->memory->regs[get_nth_bits(opcode, 16, 20)] + get_nth_bits(opcode, 0, 12) + 4;
-    else  /*( is_pc && !get_nth_bit(opcode, 23))*/ return cpu->memory->regs[get_nth_bits(opcode, 16, 20)] - get_nth_bits(opcode, 0, 12) + 4;
+    if      (!is_pc &&  get_nth_bit(opcode, 23))   return cpu->regs[get_nth_bits(opcode, 16, 20)] + get_nth_bits(opcode, 0, 12);
+    else if (!is_pc && !get_nth_bit(opcode, 23))   return cpu->regs[get_nth_bits(opcode, 16, 20)] - get_nth_bits(opcode, 0, 12);
+    else if ( is_pc &&  get_nth_bit(opcode, 23))   return cpu->regs[get_nth_bits(opcode, 16, 20)] + get_nth_bits(opcode, 0, 12) + 4;
+    else  /*( is_pc && !get_nth_bit(opcode, 23))*/ return cpu->regs[get_nth_bits(opcode, 16, 20)] - get_nth_bits(opcode, 0, 12) + 4;
 }
 
 @LOCAL()
 uint32_t addressing_mode_2_immediate_preindexed(ARM7TDMI* cpu, uint32_t opcode) {
-    if (get_nth_bit(opcode, 23)) cpu->memory->regs[get_nth_bits(opcode, 16, 20)] += get_nth_bits(opcode, 0, 12);
-    else                         cpu->memory->regs[get_nth_bits(opcode, 16, 20)] -= get_nth_bits(opcode, 0, 12);
-    return cpu->memory->regs[get_nth_bits(opcode, 16, 20)];
+    if (get_nth_bit(opcode, 23)) cpu->regs[get_nth_bits(opcode, 16, 20)] += get_nth_bits(opcode, 0, 12);
+    else                         cpu->regs[get_nth_bits(opcode, 16, 20)] -= get_nth_bits(opcode, 0, 12);
+    return cpu->regs[get_nth_bits(opcode, 16, 20)];
 }
 
 @LOCAL()
 uint32_t addressing_mode_2_immediate_postindexed(ARM7TDMI* cpu, uint32_t opcode) {
-    uint32_t address = cpu->memory->regs[get_nth_bits(opcode, 16, 20)];
-    if (get_nth_bit(opcode, 23)) cpu->memory->regs[get_nth_bits(opcode, 16, 20)] += get_nth_bits(opcode, 0, 12);
-    else                         cpu->memory->regs[get_nth_bits(opcode, 16, 20)] -= get_nth_bits(opcode, 0, 12);
+    uint32_t address = cpu->regs[get_nth_bits(opcode, 16, 20)];
+    if (get_nth_bit(opcode, 23)) cpu->regs[get_nth_bits(opcode, 16, 20)] += get_nth_bits(opcode, 0, 12);
+    else                         cpu->regs[get_nth_bits(opcode, 16, 20)] -= get_nth_bits(opcode, 0, 12);
     return address;
 }
 
@@ -158,8 +158,8 @@ uint32_t addressing_mode_2_immediate_postindexed(ARM7TDMI* cpu, uint32_t opcode)
 // maybe flags might get screwed up though ill have to see
 @LOCAL()
 uint32_t addressing_mode_2_register_offset(ARM7TDMI* cpu, uint32_t opcode) {
-    uint32_t address = cpu->memory->regs[get_nth_bits(opcode, 16, 20)];
-    uint32_t operand = cpu->memory->regs[get_nth_bits(opcode, 0,  4)];
+    uint32_t address = cpu->regs[get_nth_bits(opcode, 16, 20)];
+    uint32_t operand = cpu->regs[get_nth_bits(opcode, 0,  4)];
     uint32_t shift_immediate = get_nth_bits(opcode, 7, 12);
 
     uint32_t index = 0;
@@ -188,11 +188,11 @@ uint32_t addressing_mode_2_register_offset(ARM7TDMI* cpu, uint32_t opcode) {
         else                         address -= index;
 
         if (get_nth_bit(opcode, 21)) { // pre-indexed addressing (writeback)
-            cpu->memory->regs[get_nth_bits(opcode, 16, 20)] = address;
+            cpu->regs[get_nth_bits(opcode, 16, 20)] = address;
         }
     } else {                       // post-indexed addressing
-        if (get_nth_bit(opcode, 23)) cpu->memory->regs[get_nth_bits(opcode, 16, 20)] += index;
-        else                         cpu->memory->regs[get_nth_bits(opcode, 16, 20)] -= index;
+        if (get_nth_bit(opcode, 23)) cpu->regs[get_nth_bits(opcode, 16, 20)] += index;
+        else                         cpu->regs[get_nth_bits(opcode, 16, 20)] -= index;
     }
 
     return address;
@@ -213,9 +213,9 @@ void nop(uint32_t opcode) {
 
 // B / BL instruction
 void run_COND101LABEF(uint32_t opcode) {
-    @IF(L) *cpu->memory->lr = *cpu->memory->pc;
+    @IF(L) *cpu->lr = *cpu->pc;
     // unintuitive sign extension: http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
-    *cpu->memory->pc += ((((1U << 23) ^ get_nth_bits(opcode, 0, 24)) - (1U << 23)) << 2) + 4;
+    *cpu->pc += ((((1U << 23) ^ get_nth_bits(opcode, 0, 24)) - (1U << 23)) << 2) + 4;
 }
 
 // LDR instruction
@@ -252,5 +252,5 @@ void run_COND0100UB01(uint32_t opcode) {
 
 // MSR instruction
 void run_COND00010R00(uint32_t opcode) {
-    cpu->memory->regs[get_nth_bits(opcode, 12, 16)] = get_nth_bit(opcode, 22) ? cpu->memory->spsr : cpu->memory->cpsr;
+    cpu->regs[get_nth_bits(opcode, 12, 16)] = get_nth_bit(opcode, 22) ? cpu->spsr : cpu->cpsr;
 }
