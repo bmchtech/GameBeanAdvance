@@ -563,12 +563,39 @@ tests:
 @ LDRH tests [register pre-indexed]
 
 			LDR   r7, =test_values
-			LDR   r9, =test_values_addendum
 
+			LDR   r9, =test_values_addendum
 			LDR   r3, [r9, #0x04]
 			LDRH  r2, [r9, r3]!
-			LDR   r3, [r9, #0x08]
+
+			LDR   r9, =test_values_addendum
+			LDR   r3, [r9, #0x04]
 			LDRH  r2, [r9, r3]!
+
+@ LDRH tests [immediate post-indexed]
+
+			LDR   r7, =test_values
+			LDR   r9, =test_values_addendum
+
+			LDRH  r2, [r9], #+0x10
+			LDRH  r2, [r9], #-0x04
+			LDRH  r2, [r9], #-0x00
+
+@ LDRH tests [register post-indexed]
+
+			LDR   r7, =test_values
+
+			LDR   r9, =test_values_addendum
+			LDR   r3, [r9, #0x04]
+			LDRH  r2, [r9], r3
+
+			LDR   r9, =test_values_addendum
+			LDR   r3, [r9, #0x0C]
+			LDRH  r2, [r9], r3
+
+			LDR   r9, =test_values_addendum
+			LDR   r3, [r9, #0x00]
+			LDRH  r2, [r9], r3
 
 @ MRS tests (CPSR)
 @ honestly this is more of a test for the CPSR / SPSR than it is for MRS...
