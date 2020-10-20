@@ -560,6 +560,16 @@ tests:
 			LDRH  r2, [r9, #+0x10]!
 			LDRH  r2, [r9, #-0x04]!
 
+@ LDRH tests [register pre-indexed]
+
+			LDR   r7, =test_values
+			LDR   r9, =test_values_addendum
+
+			LDR   r3, [r9, #0x04]
+			LDRH  r2, [r9, r3]!
+			LDR   r3, [r9, #0x08]
+			LDRH  r2, [r9, r3]!
+
 @ MRS tests (CPSR)
 @ honestly this is more of a test for the CPSR / SPSR than it is for MRS...
 @ this test is pretty short, but its real significance is that we can finally check condition codes

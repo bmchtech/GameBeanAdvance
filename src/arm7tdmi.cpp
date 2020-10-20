@@ -4,6 +4,7 @@
 #include "jumptable/jumptable-thumb.h"
 #include "jumptable/jumptable-arm.h"
 
+#include <iostream>
 
 ARM7TDMI::ARM7TDMI(Memory* memory) {
     this->memory = memory;       
