@@ -69,7 +69,7 @@ TEST_CASE("CPU THUMB Mode - VBA Logs (thumb-simple)") {
     delete cpu;
 }
 
-#define ARM_START_INSTRUCTION 203
+#define ARM_START_INSTRUCTION 212
 
 TEST_CASE("CPU ARM Mode - VBA Logs (arm-simple) [Requires Functional THUMB]") {
     Memory* memory = new Memory();

@@ -29,7 +29,9 @@ test_values_end:
 test_values_addendum:
 			.word 0x00000005 @ 00
 			.word 0x00000010 @ 04
-			.word 0xFFFFFFFC @ 04
+			.word 0xFFFFFFFC @ 08
+			.word 0xFFFF7BCD @ 0C
+			.word 0xFFFF8BCD @ 10
 
 @ ******************************************** Test Cases *********************************************
 			.text
@@ -531,6 +533,14 @@ tests:
 			LDRB  r2, [r7], r3, ROR #0x01
 			LDR   r3, [r7, #0x0C]
 			LDRB  r2, [r7], r3, ROR #0x1D
+
+@ LDRH tests [immediate offset]
+
+			LDR   r7, =test_values
+			LDR   r9, =test_values_addendum
+
+			LDRH  r3, [r9, #0x0C]
+			LDRH  r3, [r9, #0x10]
 
 @ MRS tests (CPSR)
 @ honestly this is more of a test for the CPSR / SPSR than it is for MRS...
