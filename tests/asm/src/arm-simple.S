@@ -597,6 +597,132 @@ tests:
 			LDR   r3, [r9, #0x00]
 			LDRH  r2, [r9], r3
 
+@ LDRSB tests [immediate offset]
+
+			LDR   r7, =test_values
+			LDR   r9, =test_values_addendum
+
+			LDRSB r2, [r9, #0x0C]
+			LDRSB r2, [r9, #0x10]
+
+@ LDRSB tests [register offset]
+
+			LDR   r7, =test_values
+			LDR   r9, =test_values_addendum
+
+			LDR   r3, [r7, #0x34]
+			LDRSB r2, [r9, r3]
+			LDR   r3, [r9, #0x04]
+			LDRSB r2, [r9, r3]
+
+@ LDRSB tests [immediate pre-indexed]
+
+			LDR   r7, =test_values
+			LDR   r9, =test_values_addendum
+
+			LDRSB r2, [r9, #+0x10]!
+			LDRSB r2, [r9, #-0x04]!
+
+@ LDRSB tests [register pre-indexed]
+
+			LDR   r7, =test_values
+
+			LDR   r9, =test_values_addendum
+			LDR   r3, [r9, #0x04]
+			LDRSB r2, [r9, r3]!
+
+			LDR   r9, =test_values_addendum
+			LDR   r3, [r9, #0x04]
+			LDRSB r2, [r9, r3]!
+
+@ LDRSB tests [immediate post-indexed]
+
+			LDR   r7, =test_values
+			LDR   r9, =test_values_addendum
+
+			LDRSB r2, [r9], #+0x10
+			LDRSB r2, [r9], #-0x04
+			LDRSB r2, [r9], #-0x00
+
+@ LDRSB tests [register post-indexed]
+
+			LDR   r7, =test_values
+
+			LDR   r9, =test_values_addendum
+			LDR   r3, [r9, #0x04]
+			LDRSB r2, [r9], r3
+
+			LDR   r9, =test_values_addendum
+			LDR   r3, [r9, #0x0C]
+			LDRSB r2, [r9], r3
+
+			LDR   r9, =test_values_addendum
+			LDR   r3, [r9, #0x00]
+			LDRSB r2, [r9], r3
+
+@ LDRSH tests [immediate offset]
+
+			LDR   r7, =test_values
+			LDR   r9, =test_values_addendum
+
+			LDRSH r2, [r9, #0x0C]
+			LDRSH r2, [r9, #0x10]
+
+@ LDRSH tests [register offset]
+
+			LDR   r7, =test_values
+			LDR   r9, =test_values_addendum
+
+			LDR   r3, [r7, #0x34]
+			LDRSH r2, [r9, r3]
+			LDR   r3, [r9, #0x04]
+			LDRSH r2, [r9, r3]
+
+@ LDRSH tests [immediate pre-indexed]
+
+			LDR   r7, =test_values
+			LDR   r9, =test_values_addendum
+
+			LDRSH r2, [r9, #+0x10]!
+			LDRSH r2, [r9, #-0x04]!
+
+@ LDRSH tests [register pre-indexed]
+
+			LDR   r7, =test_values
+
+			LDR   r9, =test_values_addendum
+			LDR   r3, [r9, #0x04]
+			LDRSH r2, [r9, r3]!
+
+			LDR   r9, =test_values_addendum
+			LDR   r3, [r9, #0x04]
+			LDRSH r2, [r9, r3]!
+
+@ LDRSH tests [immediate post-indexed]
+
+			LDR   r7, =test_values
+			LDR   r9, =test_values_addendum
+
+			LDRSH r2, [r9], #+0x10
+			LDRSH r2, [r9], #-0x04
+			LDRSH r2, [r9], #-0x00
+
+@ LDRSH tests [register post-indexed]
+
+			LDR   r7, =test_values
+
+			LDR   r9, =test_values_addendum
+			LDR   r3, [r9, #0x04]
+			LDRSH r2, [r9], r3
+
+			LDR   r9, =test_values_addendum
+			LDR   r3, [r9, #0x0C]
+			LDRSH r2, [r9], r3
+
+			LDR   r9, =test_values_addendum
+			LDR   r3, [r9, #0x00]
+			LDRSH r2, [r9], r3
+
 @ MRS tests (CPSR)
 @ honestly this is more of a test for the CPSR / SPSR than it is for MRS...
 @ this test is pretty short, but its real significance is that we can finally check condition codes
