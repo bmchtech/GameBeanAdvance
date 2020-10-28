@@ -430,6 +430,7 @@ void run_COND101LABEF(uint32_t opcode) {
 // EOR instruction
 // Addressing Mode 1, immediate offset
 void run_COND00I0001S(uint32_t opcode) {
+    addressing_mode_1_immediate(cpu, opcode);
     uint32_t* rd = &cpu->regs[get_nth_bits(opcode, 12, 16)];
 
     *rd = cpu->regs[get_nth_bits(opcode, 16, 20)] ^ cpu->shifter_operand;

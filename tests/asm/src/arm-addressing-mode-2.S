@@ -541,13 +541,5 @@ tests:
 			LDR   r3, [r9, #+0x8]
 			LDRSH r3, [PC, r3]
 
-@ MRS tests (CPSR)
-@ honestly this is more of a test for the CPSR / SPSR than it is for MRS...
-@ this test is pretty short, but its real significance is that we can finally check condition codes
-@ using MRS! no more BL flagcheck like in thumb-simple.S, just an MRS would do the trick
-
-			MRS   r0, CPSR
-			MRS   r1, SPSR
-
 infin:
             B     infin

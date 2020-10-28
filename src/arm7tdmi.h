@@ -40,8 +40,8 @@ class ARM7TDMI {
         uint32_t spsr;            // the saved   program status register
 
         // registers used in ARM mode
-        uint32_t shifter_carry_out;
-        bool shifter_operand;
+        uint32_t shifter_operand;
+        bool shifter_carry_out;
 
         inline void set_flag_N(bool condition) {
             if (condition) cpsr |= 0x80000000;
