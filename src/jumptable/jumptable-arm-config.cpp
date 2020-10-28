@@ -427,6 +427,23 @@ void run_COND101LABEF(uint32_t opcode) {
     *cpu->pc += ((((1U << 23) ^ get_nth_bits(opcode, 0, 24)) - (1U << 23)) << 2) + 4;
 }
 
+// EOR instruction
+// Addressing Mode 1, immediate offset
+void run_COND00I0001S(uint32_t opcode) {
+    uint32_t* rd = &cpu->regs[get_nth_bits(opcode, 12, 16)];
+
+    *rd = cpu->regs[get_nth_bits(opcode, 16, 20)] ^ cpu->shifter_operand;
+    if (get_nth_bit(opcode, 20)) {
+        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
+            cpu->cpsr = cpu->spsr;
+        } else {
+            cpu->set_flag_N(get_nth_bit(*rd, 31));
+            cpu->set_flag_Z(*rd == 0);
+            cpu->set_flag_C(cpu->shifter_carry_out);
+        }
+    }
+}
+
 // LDR instruction
 // Addressing Mode 2, immediate offset
 void run_COND0101UB01(uint32_t opcode) {
