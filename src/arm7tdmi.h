@@ -34,11 +34,14 @@ class ARM7TDMI {
         uint32_t* lr;  // linkage register  aka regs[0xE]
         uint32_t* sp;  // stack pointer     aka regs[0xD]
         
-        
         // program status registers
         // NZCV--------------------IFT43210
         uint32_t cpsr;            // the current program status register
         uint32_t spsr;            // the saved   program status register
+
+        // registers used in ARM mode
+        uint32_t shifter_carry_out;
+        bool shifter_operand;
 
         inline void set_flag_N(bool condition) {
             if (condition) cpsr |= 0x80000000;

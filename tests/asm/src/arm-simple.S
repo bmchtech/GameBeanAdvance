@@ -723,6 +723,20 @@ tests:
 			LDR   r3, [r9, #0x00]
 			LDRSH r2, [r9], r3
 
+@ Addressing Mode 2 PC tests
+
+			LDR   r9, =test_values_addendum
+			LDR   r2, [PC, #-0x8]
+			LDR   r3, [r9, #+0x8]
+			LDR   r3, [PC, r3]
+
+@ Addressing Mode 3 PC tests
+
+			LDR   r9, =test_values_addendum
+			LDRSH r2, [PC, #-0x8]
+			LDR   r3, [r9, #+0x8]
+			LDRSH r3, [PC, r3]
+
 @ MRS tests (CPSR)
 @ honestly this is more of a test for the CPSR / SPSR than it is for MRS...
 @ this test is pretty short, but its real significance is that we can finally check condition codes

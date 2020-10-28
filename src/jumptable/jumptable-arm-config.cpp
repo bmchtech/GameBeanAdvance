@@ -123,17 +123,141 @@ inline uint32_t RRX(ARM7TDMI* cpu, uint32_t value, uint8_t shift) {
 
 
 // ********************************************** Addressing Mode 1 **********************************************
-//                                    MCR, etc. (will be filled out as implemented)
+//                                    MSR, etc. (will be filled out as implemented)
 // ***************************************************************************************************************
 
 
 
 
 @LOCAL()
-uint32_t addressing_mode_1_immediate(uint32_t opcode)  {
-    return get_nth_bits(opcode, 0, 8) << ((get_nth_bits(opcode, 8, 12)) * 2);
+void addressing_mode_1_immediate(ARM7TDMI* cpu, uint32_t opcode) {
+    cpu->shifter_operand   = ROR(get_nth_bits(opcode, 0, 8), ((get_nth_bits(opcode, 8, 12)) * 2));
+    cpu->shifter_carry_out = get_nth_bits(opcode, 8, 12) == 0 ? cpu->get_flag_C() : get_nth_bit(cpu->shifter_operand, 31);
 }
 
+@LOCAL()
+void addressing_mode_1_register_by_immediate(ARM7TDMI* cpu, uint32_t opcode) {
+    uint32_t shift_immediate = get_nth_bits(opcode, 7, 12);
+    uint32_t rm              = cpu->regs[get_nth_bits(opcode, 0, 4)];
+    
+    switch (get_nth_bits(opcode, 5, 7)) {
+        case 0b00: // LSL
+            if (shift_immediate == 0) {
+                cpu->shifter_operand   = 0;
+                cpu->shifter_carry_out = cpu->get_flag_C();
+            } else { // shift_immediate > 0
+                cpu->shifter_operand   = LSL(rm, shift_immediate);
+                cpu->shifter_carry_out = get_nth_bit(rm, 32 - shift_immediate);
+            }
+
+            break;
+
+        case 0b01: // LSR
+            if (shift_immediate == 0) {
+                cpu->shifter_operand   = 0;
+                cpu->shifter_carry_out = get_nth_bit(rm, 31);
+            } else { // shift_immediate > 0
+                cpu->shifter_operand   = LSR(rm, shift_immediate);
+                cpu->shifter_carry_out = get_nth_bit(rm, shift_immediate - 1);
+            }
+            
+            break;
+        
+        case 0b10: // ASR
+            if (shift_immediate == 0) {
+                cpu->shifter_operand   = get_nth_bit(rm, 31) ? 0xFFFFFFFF : 0x00000000;
+                cpu->shifter_carry_out = get_nth_bit(rm, 31);
+            } else { // shift_immediate > 0
+                cpu->shifter_operand   = ASR(rm, shift_immediate);
+                cpu->shifter_carry_out = get_nth_bit(rm, shift_immediate - 1);
+            }
+            
+            break;
+        
+        case 0b11: // ROR / RRX
+            if (shift_immediate == 0) { // RRX
+                cpu->shifter_operand   = cpu->get_flag_C() << 31 | LSR(rm, 1);
+                cpu->shifter_carry_out = get_nth_bit(rm, 0); 
+            } else { // shift_immediate > 0, ROR
+                cpu->shifter_operand   = ROR(rm, shift_immediate);
+                cpu->shifter_carry_out = get_nth_bit(rm, shift_immediate - 1);
+            }
+
+            break;
+    }
+}
+
+// this function's a doozy
+@LOCAL()
+void addressing_mode_1_register_by_register(ARM7TDMI* cpu, uint32_t opcode) {
+    uint32_t rm = cpu->regs[get_nth_bits(opcode, 8, 12)];
+    uint32_t rs = get_nth_bits(cpu->regs[get_nth_bits(opcode, 0, 4)], 0, 8);
+    
+    switch (get_nth_bits(opcode, 5, 7)) {
+        case 0b00: // LSL
+            if        (rs == 0) {
+                cpu->shifter_operand   = rm;
+                cpu->shifter_carry_out = cpu->get_flag_C();
+            } else if (rs < 32) {
+                cpu->shifter_operand   = LSL(rm, rs);
+                cpu->shifter_carry_out = get_nth_bit(rm, 32 - rs);
+            } else if (rs == 32) {
+                cpu->shifter_operand   = 0;
+                cpu->shifter_carry_out = get_nth_bit(rm, 0);
+            } else if (rs > 32) {
+                cpu->shifter_operand   = 0;
+                cpu->shifter_carry_out = 0;
+            }
+
+            break;
+
+        case 0b01: // LSR
+            if        (rs == 0) {
+                cpu->shifter_operand   = rm;
+                cpu->shifter_carry_out = cpu->get_flag_C();
+            } else if (rs < 32) {
+                cpu->shifter_operand   = LSR(rm, rs);
+                cpu->shifter_carry_out = get_nth_bit(rm, rs - 1);
+            } else if (rs == 32) {
+                cpu->shifter_operand   = 0;
+                cpu->shifter_carry_out = get_nth_bit(rm, 31);
+            } else if (rs > 32) {
+                cpu->shifter_operand   = 0;
+                cpu->shifter_carry_out = 0;
+            }
+            
+            break;
+        
+        case 0b10: // ASR
+            if        (rs == 0) {
+                cpu->shifter_operand   = rm;
+                cpu->shifter_carry_out = cpu->get_flag_C();
+            } else if (rs < 32) {
+                cpu->shifter_operand   = ASR(rm, rs);
+                cpu->shifter_carry_out = get_nth_bit(rm, rs - 1);
+            } else { // rs >= 32
+                cpu->shifter_operand   = get_nth_bit(rm, 31) ? 0xFFFFFFFF : 0x00000000;
+                cpu->shifter_carry_out = get_nth_bit(rm, 0);
+            }
+            
+            break;
+        
+        case 0b11: // ROR
+            if        (rs == 0) {
+                cpu->shifter_operand   = rm;
+                cpu->shifter_carry_out = cpu->get_flag_C();
+            } else if (rs & 0xF == 0) {
+                cpu->shifter_operand   = rm;
+                cpu->shifter_carry_out = get_nth_bit(rm, 31);
+            } else { // rs & 0xF > 0
+                cpu->shifter_operand   = ROR(rm, rs & 0xF);
+                cpu->shifter_carry_out = get_nth_bit(rs, rm & 0xF - 1);
+            }
+
+            break;
+        
+    }
+}
 
 
 // ********************************************** Addressing Mode 2 **********************************************
@@ -209,6 +333,10 @@ uint32_t addressing_mode_2_register_offset(ARM7TDMI* cpu, uint32_t opcode) {
         if (get_nth_bit(opcode, 23)) cpu->regs[get_nth_bits(opcode, 16, 20)] += index;
         else                         cpu->regs[get_nth_bits(opcode, 16, 20)] -= index;
     }
+    
+    if (get_nth_bits(opcode, 16, 20) == 15) { // are we register PC?
+        address += 4;
+    }
 
     return address;
 }
@@ -223,16 +351,24 @@ uint32_t addressing_mode_2_register_offset(ARM7TDMI* cpu, uint32_t opcode) {
 
 @LOCAL()
 uint32_t addressing_mode_3_immediate_offset(ARM7TDMI* cpu, uint32_t opcode) {
+    bool is_pc = get_nth_bits(opcode, 16, 20) == 15;
     uint8_t offset = get_nth_bits(opcode, 0, 4) | (get_nth_bits(opcode, 8, 12) << 4);
-    if (get_nth_bit(opcode, 23)) return cpu->regs[get_nth_bits(opcode, 16, 20)] + offset;
-    else                         return cpu->regs[get_nth_bits(opcode, 16, 20)] - offset;
+
+    if      (!is_pc &&  get_nth_bit(opcode, 23))   return cpu->regs[get_nth_bits(opcode, 16, 20)] + offset;
+    else if (!is_pc && !get_nth_bit(opcode, 23))   return cpu->regs[get_nth_bits(opcode, 16, 20)] - offset;
+    else if ( is_pc &&  get_nth_bit(opcode, 23))   return cpu->regs[get_nth_bits(opcode, 16, 20)] + offset + 4;
+    else  /*( is_pc && !get_nth_bit(opcode, 23))*/ return cpu->regs[get_nth_bits(opcode, 16, 20)] - offset + 4;
 }
 
 @LOCAL()
 uint32_t addressing_mode_3_register_offset(ARM7TDMI* cpu, uint32_t opcode) {
+    bool is_pc = get_nth_bits(opcode, 16, 20) == 15;
     uint32_t offset = cpu->regs[get_nth_bits(opcode, 0, 4)];
-    if (get_nth_bit(opcode, 23)) return cpu->regs[get_nth_bits(opcode, 16, 20)] + offset;
-    else                         return cpu->regs[get_nth_bits(opcode, 16, 20)] - offset;
+
+    if      (!is_pc &&  get_nth_bit(opcode, 23))   return cpu->regs[get_nth_bits(opcode, 16, 20)] + offset;
+    else if (!is_pc && !get_nth_bit(opcode, 23))   return cpu->regs[get_nth_bits(opcode, 16, 20)] - offset;
+    else if ( is_pc &&  get_nth_bit(opcode, 23))   return cpu->regs[get_nth_bits(opcode, 16, 20)] + offset + 4;
+    else  /*( is_pc && !get_nth_bit(opcode, 23))*/ return cpu->regs[get_nth_bits(opcode, 16, 20)] - offset + 4;
 }
 
 @LOCAL()
