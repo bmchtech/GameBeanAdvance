@@ -141,5 +141,27 @@ tests:
             LDR      r2,  [r7, #0x18]
             EOR      r2,  r3, ASR #0x2
 
+@ EOR tests [ASR by Register]
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+            LDR      r3,  [r7, #0x14]
+
+            LDR      r2,  [r7, #0x18]
+            LDR      r4,  [r7, #0x00]
+            EOR      r2,  r3, ASR r4
+
+            LDR      r2,  [r7, #0x18]
+            LDR      r4,  [r9, #0x00]
+            EOR      r2,  r3, ASR r4
+
+            LDR      r2,  [r7, #0x18]
+            LDR      r4,  [r7, #0x14]
+            EOR      r2,  r3, ASR r4
+
+            LDR      r2,  [r7, #0x14]
+            LDR      r4,  [r7, #0x08]
+            EOR      r2,  r3, ASR r4
+
 infin:
             B     infin
