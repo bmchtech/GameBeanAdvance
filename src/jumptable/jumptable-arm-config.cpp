@@ -155,6 +155,9 @@ void addressing_mode_1_immediate(ARM7TDMI* cpu, uint32_t opcode) {
 void addressing_mode_1_register_by_immediate(ARM7TDMI* cpu, uint32_t opcode) {
     uint32_t shift_immediate = get_nth_bits(opcode, 7, 12);
     uint32_t rm              = cpu->regs[get_nth_bits(opcode, 0, 4)];
+
+    if (get_nth_bits(opcode, 0, 4) == 15) // are we PC?
+        rm += 4;
     
     switch (get_nth_bits(opcode, 5, 7)) {
         case 0b00: // LSL
@@ -209,9 +212,12 @@ void addressing_mode_1_register_by_register(ARM7TDMI* cpu, uint32_t opcode) {
     uint32_t rm = cpu->regs[get_nth_bits(opcode, 0, 4)];
     uint32_t rs = get_nth_bits(cpu->regs[get_nth_bits(opcode, 8, 12)], 0, 8);
     
-    if (get_nth_bits(opcode, 4, 12) == 0) {
+    if (get_nth_bits(opcode, 4, 12) == 0) { 
+        if (get_nth_bits(opcode, 0, 4) == 15) // are we PC?
+            rm += 4;
+            
         cpu->shifter_operand   = rm;
-        cpu->shifter_carry_out = cpu->get_flag_C(); 
+        cpu->shifter_carry_out = cpu->get_flag_C();
     }
 
     switch (get_nth_bits(opcode, 5, 7)) {

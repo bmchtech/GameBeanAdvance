@@ -51,6 +51,18 @@ tests:
 			MRS      r12, CPSR
 			MRS      r13, SPSR
 
+            LDR      r2,  [r7, #0x10]
+            LDR      r3,  [r7, #0x08]
+            EOR      r2,  r3
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+            LDR      r2,  [r7, #0x18]
+            LDR      r3,  [r7, #0x18]
+            EOR      r2,  r3
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
 @ EOR tests [flag modification]
 
 			LDR      r7,  =test_values
@@ -71,8 +83,6 @@ tests:
             EORS     r2,  r3
 			MRS      r12, CPSR
 			MRS      r13, SPSR
-
-@ EOR tests [pc modification]
-
+			
 infin:
             B     infin
