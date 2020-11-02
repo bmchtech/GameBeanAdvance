@@ -96,7 +96,7 @@ TEST_CASE("CPU THUMB Mode - VBA Logs (thumb-simple)") {
 }
 
 TEST_CASE("CPU ARM Mode - VBA Logs (arm-addresing-mode-1) [Requires Functional THUMB]") {
-    test_arm_mode("tests/asm/bin/arm-addressing-mode-1.gba", "tests/asm/logs/arm-addressing-mode-1.log", 1290, 212);
+    test_arm_mode("tests/asm/bin/arm-addressing-mode-1.gba", "tests/asm/logs/arm-addressing-mode-1.log", 1290, 216);
 }
 
 TEST_CASE("CPU ARM Mode - VBA Logs (arm-addresing-mode-2) [Requires Functional THUMB]") {

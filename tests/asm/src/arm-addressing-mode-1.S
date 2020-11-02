@@ -32,6 +32,7 @@ test_values_addendum:
 			.word 0xFFFFFFFC @ 08
 			.word 0xFFFF7BCD @ 0C
 			.word 0xFFFF8BCD @ 10
+			.word 0x00000020 @ 14
 
 @ ******************************************** Test Cases *********************************************
 			.text
@@ -48,8 +49,6 @@ tests:
 
             LDR      r2,  [r7, #0x18]
             EOR      r2,  #0xFA
-			MRS      r12, CPSR
-			MRS      r13, SPSR
 
 @ EOR tests [Register offset]
 
@@ -58,18 +57,40 @@ tests:
             LDR      r2,  [r7, #0x18]
             LDR      r3,  [r7, #0x14]
             EOR      r2,  r3
-			MRS      r12, CPSR
-			MRS      r13, SPSR
 
 @ EOR tests [LSL by Immediate]
 
 			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+            LDR      r3,  [r7, #0x14]
 
             LDR      r2,  [r7, #0x18]
-            LDR      r3,  [r7, #0x14]
+            EOR      r2,  r3, LSL #0x0
+
+            LDR      r2,  [r7, #0x18]
             EOR      r2,  r3, LSL #0x2
-			MRS      r12, CPSR
-			MRS      r13, SPSR
+
+@ EOR tests [LSL by Register]
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+            LDR      r3,  [r7, #0x14]
+
+            LDR      r2,  [r7, #0x18]
+            LDR      r4,  [r7, #0x00]
+            EOR      r2,  r3, LSL r4
+
+            LDR      r2,  [r7, #0x18]
+            LDR      r4,  [r9, #0x00]
+            EOR      r2,  r3, LSL r4
+
+            LDR      r2,  [r7, #0x18]
+            LDR      r4,  [r9, #0x14]
+            EOR      r2,  r3, LSL r4
+
+            LDR      r2,  [r7, #0x18]
+            LDR      r4,  [r7, #0x14]
+            EOR      r2,  r3, LSL r4
 
 
 infin:
