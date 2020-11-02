@@ -163,5 +163,17 @@ tests:
             LDR      r4,  [r7, #0x08]
             EOR      r2,  r3, ASR r4
 
+@ EOR tests [ROR by Immediate]
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+            LDR      r3,  [r7, #0x14]
+
+            LDR      r2,  [r7, #0x18]
+            EOR      r2,  r3, ASR #0x0
+
+            LDR      r2,  [r7, #0x18]
+            EOR      r2,  r3, ASR #0x2
+
 infin:
             B     infin
