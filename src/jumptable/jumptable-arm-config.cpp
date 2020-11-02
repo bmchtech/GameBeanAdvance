@@ -54,6 +54,22 @@ inline uint32_t ASR(uint32_t value, uint8_t shift) {
 }
 
 @LOCAL_INLINE()
+inline void EOR(ARM7TDMI* cpu, uint32_t opcode) {
+    uint32_t* rd = &cpu->regs[get_nth_bits(opcode, 12, 16)];
+
+    *rd = cpu->regs[get_nth_bits(opcode, 16, 20)] ^ cpu->shifter_operand;
+    if (get_nth_bit(opcode, 20)) {
+        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
+            cpu->cpsr = cpu->spsr;
+        } else {
+            cpu->set_flag_N(get_nth_bit(*rd, 31));
+            cpu->set_flag_Z(*rd == 0);
+            cpu->set_flag_C(cpu->shifter_carry_out);
+        }
+    }
+}
+
+@LOCAL_INLINE()
 inline void LDR(ARM7TDMI* cpu, uint32_t address, uint32_t opcode) {
     uint32_t value = cpu->memory->read_word(address & 0xFFFFFFFC);
     if ((address & 0b11) == 0b01) value = ((value & 0xFF)     << 24) | (value >> 8);
@@ -190,9 +206,14 @@ void addressing_mode_1_register_by_immediate(ARM7TDMI* cpu, uint32_t opcode) {
 // this function's a doozy
 @LOCAL()
 void addressing_mode_1_register_by_register(ARM7TDMI* cpu, uint32_t opcode) {
-    uint32_t rm = cpu->regs[get_nth_bits(opcode, 8, 12)];
-    uint32_t rs = get_nth_bits(cpu->regs[get_nth_bits(opcode, 0, 4)], 0, 8);
+    uint32_t rm = cpu->regs[get_nth_bits(opcode, 0, 4)];
+    uint32_t rs = get_nth_bits(cpu->regs[get_nth_bits(opcode, 8, 12)], 0, 8);
     
+    if (get_nth_bits(opcode, 4, 12) == 0) {
+        cpu->shifter_operand   = rm;
+        cpu->shifter_carry_out = cpu->get_flag_C(); 
+    }
+
     switch (get_nth_bits(opcode, 5, 7)) {
         case 0b00: // LSL
             if        (rs == 0) {
@@ -429,20 +450,17 @@ void run_COND101LABEF(uint32_t opcode) {
 
 // EOR instruction
 // Addressing Mode 1, immediate offset
-void run_COND00I0001S(uint32_t opcode) {
+void run_COND0010001S(uint32_t opcode) {
     addressing_mode_1_immediate(cpu, opcode);
-    uint32_t* rd = &cpu->regs[get_nth_bits(opcode, 12, 16)];
+    EOR(cpu, opcode);
+}
 
-    *rd = cpu->regs[get_nth_bits(opcode, 16, 20)] ^ cpu->shifter_operand;
-    if (get_nth_bit(opcode, 20)) {
-        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-            cpu->cpsr = cpu->spsr;
-        } else {
-            cpu->set_flag_N(get_nth_bit(*rd, 31));
-            cpu->set_flag_Z(*rd == 0);
-            cpu->set_flag_C(cpu->shifter_carry_out);
-        }
-    }
+// EOR instruction
+// Addressing Mode 1, shifts
+void run_COND0000001S(uint32_t opcode) {
+    if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_immediate(cpu, opcode);
+    else                        addressing_mode_1_register_by_register (cpu, opcode);
+    EOR(cpu, opcode);
 }
 
 // LDR instruction

@@ -42,7 +42,7 @@ main:
 
 tests:
 
-@ EOR tests [Immediate offset]
+@ EOR tests [no flag modification]
 
 			LDR      r7,  =test_values
 
@@ -51,15 +51,28 @@ tests:
 			MRS      r12, CPSR
 			MRS      r13, SPSR
 
-@ EOR tests [Register offset]
+@ EOR tests [flag modification]
 
 			LDR      r7,  =test_values
 
             LDR      r2,  [r7, #0x18]
-            LDR      r3,  [r7, #0x14]
-            EOR      r2,  r3
+            EORS     r2,  #0xFA
 			MRS      r12, CPSR
 			MRS      r13, SPSR
+
+            LDR      r2,  [r7, #0x10]
+            LDR      r3,  [r7, #0x08]
+            EORS     r2,  r3
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+            LDR      r2,  [r7, #0x18]
+            LDR      r3,  [r7, #0x18]
+            EORS     r2,  r3
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+@ EOR tests [pc modification]
 
 infin:
             B     infin
