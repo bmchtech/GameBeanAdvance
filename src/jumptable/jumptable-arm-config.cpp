@@ -159,7 +159,7 @@ void addressing_mode_1_register_by_immediate(ARM7TDMI* cpu, uint32_t opcode) {
     switch (get_nth_bits(opcode, 5, 7)) {
         case 0b00: // LSL
             if (shift_immediate == 0) {
-                cpu->shifter_operand   = 0;
+                cpu->shifter_operand   = rm;
                 cpu->shifter_carry_out = cpu->get_flag_C();
             } else { // shift_immediate > 0
                 cpu->shifter_operand   = LSL(rm, shift_immediate);
@@ -458,8 +458,8 @@ void run_COND0010001S(uint32_t opcode) {
 // EOR instruction
 // Addressing Mode 1, shifts
 void run_COND0000001S(uint32_t opcode) {
-    if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_immediate(cpu, opcode);
-    else                        addressing_mode_1_register_by_register (cpu, opcode);
+    if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
+    else                        addressing_mode_1_register_by_immediate(cpu, opcode);
     EOR(cpu, opcode);
 }
 

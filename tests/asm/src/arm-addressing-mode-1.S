@@ -61,5 +61,16 @@ tests:
 			MRS      r12, CPSR
 			MRS      r13, SPSR
 
+@ EOR tests [LSL by Immediate]
+
+			LDR      r7,  =test_values
+
+            LDR      r2,  [r7, #0x18]
+            LDR      r3,  [r7, #0x14]
+            EOR      r2,  r3, LSL #0x2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+
 infin:
             B     infin
