@@ -36,6 +36,25 @@
 
 
 
+@LOCAL_INLINE()
+inline void ADD(ARM7TDMI* cpu, uint32_t opcode) { 
+    uint32_t old_value        = cpu->regs[get_nth_bits(opcode, 12, 16)];
+    uint32_t register_operand = cpu->regs[get_nth_bits(opcode, 16, 20)];
+    uint32_t result           = register_operand + cpu->shifter_operand;
+    cpu->regs[get_nth_bits(opcode, 12, 16)] = result;
+    
+    if (get_nth_bit(opcode, 20)) {
+        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
+            cpu->cpsr = cpu->spsr;
+        } else {
+            cpu->set_flag_Z(result == 0);
+            cpu->set_flag_N(result >> 31);
+            cpu->set_flag_V(((register_operand >> 31) == (cpu->shifter_operand >> 31)) && ((register_operand >> 31) ^ (result >> 31)));
+            cpu->set_flag_C(((register_operand >> 31) || (cpu->shifter_operand >> 31)) && !(result >> 31));
+        }
+    }
+}
+
 // https://stackoverflow.com/questions/14721275/how-can-i-use-arithmetic-right-shifting-with-an-unsigned-int
 @LOCAL_INLINE()
 inline uint32_t ASR(uint32_t value, uint8_t shift) {
@@ -215,7 +234,7 @@ void addressing_mode_1_register_by_register(ARM7TDMI* cpu, uint32_t opcode) {
     if (get_nth_bits(opcode, 4, 12) == 0) { 
         if (get_nth_bits(opcode, 0, 4) == 15) // are we PC?
             rm += 4;
-            
+
         cpu->shifter_operand   = rm;
         cpu->shifter_carry_out = cpu->get_flag_C();
     }
@@ -469,6 +488,13 @@ void run_COND0000001S(uint32_t opcode) {
     EOR(cpu, opcode);
 }
 
+// ADD instruction
+// Addressing Mode 1, immediate offset
+void run_COND0010100S(uint32_t opcode) {
+    addressing_mode_1_immediate(cpu, opcode);
+    ADD(cpu, opcode);
+}
+
 // LDR instruction
 // Addressing Mode 2, immediate offset
 void run_COND0101UB01(uint32_t opcode) {
@@ -562,12 +588,31 @@ void run_COND0000U101(uint32_t opcode) {
 
 // LDRH / LDRSB / LDRSH instructions
 // Addressing Mode 3, register post-indexed
+
+// + in conjunction with:
+
+// ADD instruction
+// Addressing Mode 1, shifts
 void run_COND0000U001(uint32_t opcode) {
-    uint32_t address = addressing_mode_3_register_postindexed(cpu, opcode);
     switch (get_nth_bits(opcode, 4, 8)) {
-        case 0b1011: LDRH (cpu, address, opcode); break;
-        case 0b1101: LDRSB(cpu, address, opcode); break;
-        case 0b1111: LDRSH(cpu, address, opcode); break;
+        case 0b1011: {
+            uint32_t address = addressing_mode_3_register_postindexed(cpu, opcode);
+            LDRH (cpu, address, opcode); break;
+        }
+        case 0b1101: {
+            uint32_t address = addressing_mode_3_register_postindexed(cpu, opcode);
+            LDRSB(cpu, address, opcode); break;
+        }
+        case 0b1111: {
+            uint32_t address = addressing_mode_3_register_postindexed(cpu, opcode);
+            LDRSH(cpu, address, opcode); break;
+        }
+        
+        default:
+            if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
+            else                        addressing_mode_1_register_by_immediate(cpu, opcode);
+            ADD(cpu, opcode);
+            break;
     }
 }
 

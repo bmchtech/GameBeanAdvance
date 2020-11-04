@@ -32,6 +32,7 @@ test_values_addendum:
 			.word 0xFFFFFFFC @ 08
 			.word 0xFFFF7BCD @ 0C
 			.word 0xFFFF8BCD @ 10
+			.word 0x3FFFFFFF @ 14
 
 @ ******************************************** Test Cases *********************************************
 			.text
@@ -42,6 +43,65 @@ main:
 
 tests:
 
+@ ADD tests [flag modification]
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+
+			LDR      r2,  [r7, #0x18] @ pos + pos = pos
+            LDR      r4,  [r9, #0x14]
+			ADDS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x14] @ neg + pos = neg
+            LDR      r4,  [r9, #0x14]
+			ADDS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x18] @ pos + neg = neg
+            LDR      r4,  [r7, #0x14]
+			ADDS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x0C] @ neg + neg = pos
+            LDR      r4,  [r7, #0x14]
+			ADDS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x18] @ pos + pos = neg
+            LDR      r4,  [r7, #0x10]
+			ADDS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x08] @ neg + pos = pos
+            LDR      r4,  [r7, #0x20]
+			ADDS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x18] @ pos + neg = pos
+            LDR      r4,  [r7, #0x24]
+			ADDS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x1C] @ neg + neg = neg
+            LDR      r4,  [r7, #0x0C]
+			ADDS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x08] @ zero case
+            LDR      r4,  [r7, #0x04]
+			ADDS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+			
 @ EOR tests [no flag modification]
 
 			LDR      r7,  =test_values
@@ -83,6 +143,6 @@ tests:
             EORS     r2,  r3
 			MRS      r12, CPSR
 			MRS      r13, SPSR
-			
+
 infin:
             B     infin
