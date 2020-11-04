@@ -402,21 +402,37 @@ tests:
 			MRS      r12, CPSR
 			MRS      r13, SPSR
 
-@ @ BX  tests [switch to ARM]
+@ BX  tests [switch to ARM]
 
-@ 			LDR      r2,  pc
-@ 			ADD      r2,  #0x4
-@ 			BX       r2
+			MOV      r2,  pc
+			ADD      r2,  #0x4
+			BX       r2
 			
-@ 			B        error_bx_arm
-@ 			B        error_bx_arm
-@ 			B        pass_bx_arm
-@ 			B        error_bx_arm
+			B        pass_bx_arm
+			SWI      #0x30000 @ abort - you should not run this instruction.
 
-@ error_bx_arm:
-@ 			B        error_bx_arm
+pass_bx_arm:
 
-@ pass_bx_arm:
+@ BX  tests [switch to THUMB]
+
+			MOV      r2,  pc
+			ADD      r2,  #0x5
+			BX       r2
+			
+			.thumb
+			B pass_bx_thumb
+			NOP
+
+			.arm
+			SWI      #0x30000 @ abort - you should not run this instruction.
+
+pass_bx_thumb:
+
+			.thumb
+			NOP
+			BX       pc
+
+			.arm
 
 @ EOR tests [no flag modification]
 
@@ -487,5 +503,6 @@ tests:
 			MOVS     r3,  r2
 			MRS      r12, CPSR
 			MRS      r13, SPSR
+
 infin:
             B     infin
