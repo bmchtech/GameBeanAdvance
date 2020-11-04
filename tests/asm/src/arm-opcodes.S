@@ -318,6 +318,48 @@ tests:
 			MRS      r12, CPSR
 			MRS      r13, SPSR
 			
+@ AND tests [no flag modification]
+
+			LDR      r7,  =test_values
+
+            LDR      r2,  [r7, #0x18]
+            AND      r2,  #0xFA
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+            LDR      r2,  [r7, #0x10]
+            LDR      r3,  [r7, #0x08]
+            AND      r2,  r3
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+            LDR      r2,  [r7, #0x18]
+            LDR      r3,  [r7, #0x18]
+            AND      r2,  r3
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+@ AND tests [flag modification]
+
+			LDR      r7,  =test_values
+
+            LDR      r2,  [r7, #0x18]
+            ANDS     r2,  #0xFA
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+            LDR      r2,  [r7, #0x10]
+            LDR      r3,  [r7, #0x08]
+            ANDS     r2,  r3
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+            LDR      r2,  [r7, #0x18]
+            LDR      r3,  [r7, #0x18]
+            ANDS     r2,  r3
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+			
 @ EOR tests [no flag modification]
 
 			LDR      r7,  =test_values

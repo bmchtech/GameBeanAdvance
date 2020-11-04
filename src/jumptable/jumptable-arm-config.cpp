@@ -55,8 +55,6 @@ inline void ADD(ARM7TDMI* cpu, uint32_t opcode) {
     }
 }
 
-
-
 @LOCAL_INLINE()
 inline void ADC(ARM7TDMI* cpu, uint32_t opcode) { 
     uint32_t old_value        = cpu->regs[get_nth_bits(opcode, 12, 16)];
@@ -76,7 +74,21 @@ inline void ADC(ARM7TDMI* cpu, uint32_t opcode) {
     }
 }
 
+@LOCAL_INLINE()
+inline void AND(ARM7TDMI* cpu, uint32_t opcode) {
+    uint32_t* rd = &cpu->regs[get_nth_bits(opcode, 12, 16)];
 
+    *rd = cpu->regs[get_nth_bits(opcode, 16, 20)] & cpu->shifter_operand;
+    if (get_nth_bit(opcode, 20)) {
+        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
+            cpu->cpsr = cpu->spsr;
+        } else {
+            cpu->set_flag_N(get_nth_bit(*rd, 31));
+            cpu->set_flag_Z(*rd == 0);
+            cpu->set_flag_C(cpu->shifter_carry_out);
+        }
+    }
+}
 
 // https://stackoverflow.com/questions/14721275/how-can-i-use-arithmetic-right-shifting-with-an-unsigned-int
 @LOCAL_INLINE()
@@ -512,6 +524,13 @@ void run_COND0010100S(uint32_t opcode) {
     ADD(cpu, opcode);
 }
 
+// AND instruction
+// Addressing Mode 1, immediate offset
+void run_COND0010000S(uint32_t opcode) {
+    addressing_mode_1_immediate(cpu, opcode);
+    AND(cpu, opcode);
+}
+
 // B / BL instruction
 void run_COND101LABEF(uint32_t opcode) {
     @IF(L) *cpu->lr = *cpu->pc;
@@ -632,6 +651,11 @@ void run_COND0000U101(uint32_t opcode) {
 
 // ADD instruction [flag modification]
 // Addressing Mode 1, shifts
+
+// + in conjunction with:
+
+// AND instruction [flag modification]
+// Addressing Mode 1, shifts
 void run_COND0000U001(uint32_t opcode) {
     switch (get_nth_bits(opcode, 4, 8)) {
         case 0b1011: {
@@ -650,18 +674,28 @@ void run_COND0000U001(uint32_t opcode) {
         default:
             if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
             else                        addressing_mode_1_register_by_immediate(cpu, opcode);
-            ADD(cpu, opcode);
+            @IF( U) ADD(cpu, opcode);
+            @IF(!U) AND(cpu, opcode);
             break;
     }
 }
 
 // ADD instruction [no flag modification]
 // Addressing Mode 1, shifts
-void run_COND0000U000(uint32_t opcode) {
+void run_COND00001000(uint32_t opcode) {
     if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
     else                        addressing_mode_1_register_by_immediate(cpu, opcode);
     ADD(cpu, opcode);
 }
+
+// AND instruction [no flag modification]
+// Addressing Mode 1, shifts
+void run_COND00000000(uint32_t opcode) {
+    if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
+    else                        addressing_mode_1_register_by_immediate(cpu, opcode);
+    AND(cpu, opcode);
+}
+
 
 // MRS instruction
 void run_COND00010R00(uint32_t opcode) {
