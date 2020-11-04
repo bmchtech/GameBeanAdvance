@@ -359,7 +359,49 @@ tests:
             ANDS     r2,  r3
 			MRS      r12, CPSR
 			MRS      r13, SPSR
-			
+				
+@ BIC tests [no flag modification]
+
+			LDR      r7,  =test_values
+
+            LDR      r2,  [r7, #0x18]
+            BIC      r2,  #0xFA
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+            LDR      r2,  [r7, #0x10]
+            LDR      r3,  [r7, #0x08]
+            BIC      r2,  r3
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+            LDR      r2,  [r7, #0x18]
+            LDR      r3,  [r7, #0x18]
+            BIC      r2,  r3
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+@ BIC tests [flag modification]
+
+			LDR      r7,  =test_values
+
+            LDR      r2,  [r7, #0x18]
+            BICS     r2,  #0xFA
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+            LDR      r2,  [r7, #0x10]
+            LDR      r3,  [r7, #0x08]
+            BICS     r2,  r3
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+            LDR      r2,  [r7, #0x18]
+            LDR      r3,  [r7, #0x18]
+            BICS     r2,  r3
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+					
 @ EOR tests [no flag modification]
 
 			LDR      r7,  =test_values

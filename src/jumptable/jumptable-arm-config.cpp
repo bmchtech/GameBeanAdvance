@@ -90,6 +90,22 @@ inline void AND(ARM7TDMI* cpu, uint32_t opcode) {
     }
 }
 
+@LOCAL_INLINE()
+inline void BIC(ARM7TDMI* cpu, uint32_t opcode) {
+    uint32_t* rd = &cpu->regs[get_nth_bits(opcode, 12, 16)];
+
+    *rd = cpu->regs[get_nth_bits(opcode, 16, 20)] & ~cpu->shifter_operand;
+    if (get_nth_bit(opcode, 20)) {
+        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
+            cpu->cpsr = cpu->spsr;
+        } else {
+            cpu->set_flag_N(get_nth_bit(*rd, 31));
+            cpu->set_flag_Z(*rd == 0);
+            cpu->set_flag_C(cpu->shifter_carry_out);
+        }
+    }
+}
+
 // https://stackoverflow.com/questions/14721275/how-can-i-use-arithmetic-right-shifting-with-an-unsigned-int
 @LOCAL_INLINE()
 inline uint32_t ASR(uint32_t value, uint8_t shift) {
@@ -516,7 +532,6 @@ void run_COND0000101S(uint32_t opcode) {
     ADC(cpu, opcode);
 }
 
-
 // ADD instruction
 // Addressing Mode 1, immediate offset
 void run_COND0010100S(uint32_t opcode) {
@@ -536,6 +551,13 @@ void run_COND101LABEF(uint32_t opcode) {
     @IF(L) *cpu->lr = *cpu->pc;
     // unintuitive sign extension: http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
     *cpu->pc += ((((1U << 23) ^ get_nth_bits(opcode, 0, 24)) - (1U << 23)) << 2) + 4;
+}
+
+// BIC instruction
+// Addressing Mode 1, immediate offset
+void run_COND0011110S(uint32_t opcode) {
+    addressing_mode_1_immediate(cpu, opcode);
+    BIC(cpu, opcode);
 }
 
 // EOR instruction
@@ -587,13 +609,32 @@ void run_COND0100UB01(uint32_t opcode) {
 
 // LDRH / LDRSB / LDRSH instructions
 // Addressing Mode 3, immediate offset
+
+// + in conjunction with
+
+// BIC instruction
+// Addressing Mode 1, shifts [flag modification]
 void run_COND0001U101(uint32_t opcode) {
     uint32_t address = addressing_mode_3_immediate_offset(cpu, opcode);
     switch (get_nth_bits(opcode, 4, 8)) {
         case 0b1011: LDRH (cpu, address, opcode); break;
         case 0b1101: LDRSB(cpu, address, opcode); break;
         case 0b1111: LDRSH(cpu, address, opcode); break;
+
+        default:
+            if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
+            else                        addressing_mode_1_register_by_immediate(cpu, opcode);
+            BIC(cpu, opcode);
+            break;
     }
+}
+
+// BIC instruction
+// Addressing Mode 1, shifts [no flag modification]
+void run_COND00011100(uint32_t opcode) {
+    if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
+    else                        addressing_mode_1_register_by_immediate(cpu, opcode);
+    BIC(cpu, opcode);
 }
 
 // LDRH / LDRSB / LDRSH instructions
