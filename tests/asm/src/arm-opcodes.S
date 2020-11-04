@@ -43,6 +43,105 @@ main:
 
 tests:
 
+@ ADC tests [no flag modification] [no carry]
+
+			LDR      r7,  =test_values
+			LDR      r0,  [r7, #0x00]
+
+			EORS     r0,  r0,  r0, LSL #0x01  @ clear carry flag
+			MRS      r12, CPSR
+			
+			LDR      r2,  [r7, #0x1C]
+            LDR      r4,  [r7, #0x0C]
+			ADC      r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			EORS     r0,  r0,  r0, LSL #0x01  @ clear carry flag
+
+			LDR      r2,  [r7, #0x08]
+            LDR      r4,  [r7, #0x04]
+			ADC      r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+@ ADC tests [flag modification] [no carry]
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+
+			EORS     r0,  r0,  r0, LSL #0x01  @ clear carry flag
+
+			LDR      r2,  [r7, #0x18] @ pos + pos = pos
+            LDR      r4,  [r9, #0x14]
+			ADCS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			EORS     r0,  r0,  r0, LSL #0x01  @ clear carry flag
+
+			LDR      r2,  [r7, #0x14] @ neg + pos = neg
+            LDR      r4,  [r9, #0x14]
+			ADCS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			EORS     r0,  r0,  r0, LSL #0x01  @ clear carry flag
+
+			LDR      r2,  [r7, #0x18] @ pos + neg = neg
+            LDR      r4,  [r7, #0x14]
+			ADCS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			EORS     r0,  r0,  r0, LSL #0x01  @ clear carry flag
+
+			LDR      r2,  [r7, #0x0C] @ neg + neg = pos
+            LDR      r4,  [r7, #0x14]
+			ADCS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			EORS     r0,  r0,  r0, LSL #0x01  @ clear carry flag
+
+			LDR      r2,  [r7, #0x18] @ pos + pos = neg
+            LDR      r4,  [r7, #0x10]
+			ADCS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			EORS     r0,  r0,  r0, LSL #0x01  @ clear carry flag
+
+			LDR      r2,  [r7, #0x08] @ neg + pos = pos
+            LDR      r4,  [r7, #0x20]
+			ADCS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			EORS     r0,  r0,  r0, LSL #0x01  @ clear carry flag
+
+			LDR      r2,  [r7, #0x18] @ pos + neg = pos
+            LDR      r4,  [r7, #0x24]
+			ADCS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			EORS     r0,  r0,  r0, LSL #0x01  @ clear carry flag
+
+			LDR      r2,  [r7, #0x1C] @ neg + neg = neg
+            LDR      r4,  [r7, #0x0C]
+			ADCS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			EORS     r0,  r0,  r0, LSL #0x01  @ clear carry flag
+
+			LDR      r2,  [r7, #0x08] @ zero case
+            LDR      r4,  [r7, #0x04]
+			ADCS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
 @ ADD tests [no flag modification]
 
 			LDR      r7,  =test_values

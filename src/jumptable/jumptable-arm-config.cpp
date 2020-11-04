@@ -466,6 +466,29 @@ void nop(uint32_t opcode) {
     DEBUG_MESSAGE("NOP");
 }
 
+// ADC instruction
+// Addressing Mode 1, immediate offset
+void run_COND0010101S(uint32_t opcode) {
+    addressing_mode_1_immediate(cpu, opcode);
+    ADD(cpu, opcode);
+}
+
+// ADC instruction
+// Addressing Mode 1, shifts
+void run_COND0000101S(uint32_t opcode) {
+    if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
+    else                        addressing_mode_1_register_by_immediate(cpu, opcode);
+    ADD(cpu, opcode);
+}
+
+
+// ADD instruction
+// Addressing Mode 1, immediate offset
+void run_COND0010100S(uint32_t opcode) {
+    addressing_mode_1_immediate(cpu, opcode);
+    ADD(cpu, opcode);
+}
+
 // B / BL instruction
 void run_COND101LABEF(uint32_t opcode) {
     @IF(L) *cpu->lr = *cpu->pc;
@@ -486,13 +509,6 @@ void run_COND0000001S(uint32_t opcode) {
     if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
     else                        addressing_mode_1_register_by_immediate(cpu, opcode);
     EOR(cpu, opcode);
-}
-
-// ADD instruction
-// Addressing Mode 1, immediate offset
-void run_COND0010100S(uint32_t opcode) {
-    addressing_mode_1_immediate(cpu, opcode);
-    ADD(cpu, opcode);
 }
 
 // LDR instruction
