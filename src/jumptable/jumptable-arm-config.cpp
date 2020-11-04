@@ -155,6 +155,22 @@ inline void LDR(ARM7TDMI* cpu, uint32_t address, uint32_t opcode) {
 }
 
 @LOCAL_INLINE()
+inline void MOV(ARM7TDMI* cpu, uint32_t opcode) {
+    uint32_t* rd = &cpu->regs[get_nth_bits(opcode, 12, 16)];
+
+    *rd = cpu->shifter_operand;
+    if (get_nth_bit(opcode, 20)) {
+        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
+            cpu->cpsr = cpu->spsr;
+        } else {
+            cpu->set_flag_N(get_nth_bit(*rd, 31));
+            cpu->set_flag_Z(*rd == 0);
+            cpu->set_flag_C(cpu->shifter_carry_out);
+        }
+    }
+}
+
+@LOCAL_INLINE()
 inline void LDRB(ARM7TDMI* cpu, uint32_t address, uint32_t opcode) {
     cpu->regs[get_nth_bits(opcode, 12, 16)] = cpu->memory->read_byte(address);
 }
@@ -553,6 +569,12 @@ void run_COND101LABEF(uint32_t opcode) {
     *cpu->pc += ((((1U << 23) ^ get_nth_bits(opcode, 0, 24)) - (1U << 23)) << 2) + 4;
 }
 
+// BX instruction
+void run_COND00010010(uint32_t opcode) {
+    cpu->set_bit_T(cpu->regs[get_nth_bits(opcode, 0, 4)] & 0x1);
+    *cpu->pc = cpu->regs[get_nth_bits(opcode, 0, 4)] & 0xFFFFFFFE;
+}
+
 // BIC instruction
 // Addressing Mode 1, immediate offset
 void run_COND0011110S(uint32_t opcode) {
@@ -660,18 +682,47 @@ void run_COND0001U111(uint32_t opcode) {
     }
 }
 
-
 // LDRH / LDRSB / LDRSH instructions
 // Addressing Mode 3, register pre-indexed
+
+// + in conjunction with
+
+// MOV instruction
+// Addressing Mode 1, shifts [flag modification]
+
 void run_COND0001U011(uint32_t opcode) {
-    uint32_t address = addressing_mode_3_register_preindexed(cpu, opcode);
     switch (get_nth_bits(opcode, 4, 8)) {
-        case 0b1011: LDRH (cpu, address, opcode); break;
-        case 0b1101: LDRSB(cpu, address, opcode); break;
-        case 0b1111: LDRSH(cpu, address, opcode); break;
+        case 0b1011: {
+            uint32_t address = addressing_mode_3_register_preindexed(cpu, opcode);
+            LDRH (cpu, address, opcode); 
+            break;
+        }
+        case 0b1101: {
+            uint32_t address = addressing_mode_3_register_preindexed(cpu, opcode);
+            LDRSB(cpu, address, opcode); 
+            break;
+        }
+        case 0b1111: {
+            uint32_t address = addressing_mode_3_register_preindexed(cpu, opcode);
+            LDRSH(cpu, address, opcode); 
+            break;
+        }
+
+        default:
+            if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
+            else                        addressing_mode_1_register_by_immediate(cpu, opcode);
+            MOV(cpu, opcode); 
+            break;
     }
 }
 
+// MOV instruction
+// Addressing Mode 1, shifts [no flag modification]
+void run_COND00011010(uint32_t opcode) {
+    if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
+    else                        addressing_mode_1_register_by_immediate(cpu, opcode);
+    MOV(cpu, opcode);
+}
 
 // LDRH / LDRSB / LDRSH instructions
 // Addressing Mode 3, immediate post-indexed
@@ -737,6 +788,12 @@ void run_COND00000000(uint32_t opcode) {
     AND(cpu, opcode);
 }
 
+// MOV instruction
+// Addressing Mode 1, immediate offset
+void run_COND0011101S(uint32_t opcode) {
+    addressing_mode_1_immediate(cpu, opcode);
+    MOV(cpu, opcode);
+}
 
 // MRS instruction
 void run_COND00010R00(uint32_t opcode) {

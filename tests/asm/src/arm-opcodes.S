@@ -401,7 +401,23 @@ tests:
             BICS     r2,  r3
 			MRS      r12, CPSR
 			MRS      r13, SPSR
-					
+
+@ @ BX  tests [switch to ARM]
+
+@ 			LDR      r2,  pc
+@ 			ADD      r2,  #0x4
+@ 			BX       r2
+			
+@ 			B        error_bx_arm
+@ 			B        error_bx_arm
+@ 			B        pass_bx_arm
+@ 			B        error_bx_arm
+
+@ error_bx_arm:
+@ 			B        error_bx_arm
+
+@ pass_bx_arm:
+
 @ EOR tests [no flag modification]
 
 			LDR      r7,  =test_values
@@ -444,5 +460,32 @@ tests:
 			MRS      r12, CPSR
 			MRS      r13, SPSR
 
+@ MOV tests [no flag modification]
+
+			LDR      r7,  =test_values
+
+            LDR      r2,  [r7, #0x00]
+			MOV      r3,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+            LDR      r2,  [r7, #0x08]
+			MOV      r3,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+@ MOV tests [flag modification]
+
+			LDR      r7,  =test_values
+
+            LDR      r2,  [r7, #0x00]
+			MOVS     r3,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+            LDR      r2,  [r7, #0x08]
+			MOVS     r3,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
 infin:
             B     infin
