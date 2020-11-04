@@ -591,7 +591,7 @@ void run_COND0000U101(uint32_t opcode) {
 
 // + in conjunction with:
 
-// ADD instruction
+// ADD instruction [flag modification]
 // Addressing Mode 1, shifts
 void run_COND0000U001(uint32_t opcode) {
     switch (get_nth_bits(opcode, 4, 8)) {
@@ -616,6 +616,13 @@ void run_COND0000U001(uint32_t opcode) {
     }
 }
 
+// ADD instruction [no flag modification]
+// Addressing Mode 1, shifts
+void run_COND0000U000(uint32_t opcode) {
+    if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
+    else                        addressing_mode_1_register_by_immediate(cpu, opcode);
+    ADD(cpu, opcode);
+}
 
 // MRS instruction
 void run_COND00010R00(uint32_t opcode) {

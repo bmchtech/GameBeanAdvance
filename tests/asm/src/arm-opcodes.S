@@ -43,6 +43,22 @@ main:
 
 tests:
 
+@ ADD tests [no flag modification]
+
+			LDR      r7,  =test_values
+
+			LDR      r2,  [r7, #0x1C]
+            LDR      r4,  [r7, #0x0C]
+			ADD      r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x08]
+            LDR      r4,  [r7, #0x04]
+			ADD      r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
 @ ADD tests [flag modification]
 
 			LDR      r7,  =test_values
