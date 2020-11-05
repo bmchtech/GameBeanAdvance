@@ -90,6 +90,23 @@ inline void AND(ARM7TDMI* cpu, uint32_t opcode) {
     }
 }
 
+// https://stackoverflow.com/questions/14721275/how-can-i-use-arithmetic-right-shifting-with-an-unsigned-int
+@LOCAL_INLINE()
+inline uint32_t ASR(uint32_t value, uint8_t shift) {
+    if ((value >> 31) == 1) {
+        // breakdown of this formula:
+        // value >> 31                                                         : the most significant bit
+        // (value >> 31) << shift)                                             : the most significant bit, but shifted "shift" times
+        // ((((value >> 31) << shift) - 1)                                     : the most significant bit, but repeated "shift" times
+        // ((((value >> 31) << shift) - 1) << (32 - shift))                    : basically this value is the mask that turns the logical 
+        //                                                                     : shift to an arithmetic shift
+        // ((((value >> 31) << shift) - 1) << (32 - shift)) | (value >> shift) : the arithmetic shift
+        return (((1 << shift) - 1) << (32 - shift)) | (value >> shift);
+    } else {
+        return value >> shift;
+    }
+}
+
 @LOCAL_INLINE()
 inline void BIC(ARM7TDMI* cpu, uint32_t opcode) {
     uint32_t* rd = &cpu->regs[get_nth_bits(opcode, 12, 16)];
@@ -106,21 +123,16 @@ inline void BIC(ARM7TDMI* cpu, uint32_t opcode) {
     }
 }
 
-// https://stackoverflow.com/questions/14721275/how-can-i-use-arithmetic-right-shifting-with-an-unsigned-int
 @LOCAL_INLINE()
-inline uint32_t ASR(uint32_t value, uint8_t shift) {
-    if ((value >> 31) == 1) {
-        // breakdown of this formula:
-        // value >> 31                                                         : the most significant bit
-        // (value >> 31) << shift)                                             : the most significant bit, but shifted "shift" times
-        // ((((value >> 31) << shift) - 1)                                     : the most significant bit, but repeated "shift" times
-        // ((((value >> 31) << shift) - 1) << (32 - shift))                    : basically this value is the mask that turns the logical 
-        //                                                                     : shift to an arithmetic shift
-        // ((((value >> 31) << shift) - 1) << (32 - shift)) | (value >> shift) : the arithmetic shift
-        return (((1 << shift) - 1) << (32 - shift)) | (value >> shift);
-    } else {
-        return value >> shift;
-    }
+inline void CMN(ARM7TDMI* cpu, uint32_t opcode) {
+    uint32_t old_value        = cpu->regs[get_nth_bits(opcode, 12, 16)];
+    uint32_t register_operand = cpu->regs[get_nth_bits(opcode, 16, 20)];
+    uint32_t result           = register_operand + cpu->shifter_operand;
+    
+    cpu->set_flag_Z(result == 0);
+    cpu->set_flag_N(result >> 31);
+    cpu->set_flag_V(((register_operand >> 31) == (cpu->shifter_operand >> 31)) && ((register_operand >> 31) ^ (result >> 31)));
+    cpu->set_flag_C(((register_operand >> 31) || (cpu->shifter_operand >> 31)) && !(result >> 31));
 }
 
 @LOCAL_INLINE()
@@ -582,6 +594,13 @@ void run_COND0011110S(uint32_t opcode) {
     BIC(cpu, opcode);
 }
 
+// CMN instruction
+// Addressing Mode 1, immediate offset
+void run_COND00110111(uint32_t opcode) {
+    addressing_mode_1_immediate(cpu, opcode);
+    CMN(cpu, opcode);
+}
+
 // EOR instruction
 // Addressing Mode 1, immediate offset
 void run_COND0010001S(uint32_t opcode) {
@@ -670,15 +689,36 @@ void run_COND0001U001(uint32_t opcode) {
     }
 }
 
-
 // LDRH / LDRSB / LDRSH instructions
 // Addressing Mode 3, immediate pre-indexed
+
+// + in conjunction with
+
+// CMN instruction
+// Addressing Mode 1, shifts
 void run_COND0001U111(uint32_t opcode) {
-    uint32_t address = addressing_mode_3_immediate_preindexed(cpu, opcode);
     switch (get_nth_bits(opcode, 4, 8)) {
-        case 0b1011: LDRH (cpu, address, opcode); break;
-        case 0b1101: LDRSB(cpu, address, opcode); break;
-        case 0b1111: LDRSH(cpu, address, opcode); break;
+        case 0b1011: {
+            uint32_t address = addressing_mode_3_immediate_preindexed(cpu, opcode);
+            LDRH (cpu, address, opcode); 
+            break;
+        }
+        case 0b1101: {
+            uint32_t address = addressing_mode_3_immediate_preindexed(cpu, opcode);
+            LDRSB(cpu, address, opcode); 
+            break;
+        }
+        case 0b1111: {
+            uint32_t address = addressing_mode_3_immediate_preindexed(cpu, opcode);
+            LDRSH(cpu, address, opcode); 
+            break;
+        }
+
+        default:
+            if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
+            else                        addressing_mode_1_register_by_immediate(cpu, opcode);
+            CMN(cpu, opcode);
+            break;
     }
 }
 
