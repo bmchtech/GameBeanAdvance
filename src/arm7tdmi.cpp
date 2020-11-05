@@ -9,7 +9,7 @@
 ARM7TDMI::ARM7TDMI(Memory* memory) {
     this->memory = memory;       
     
-    regs = new uint32_t[NUM_REGISTERS];
+    regs = new uint32_t[NUM_REGISTERS]();
 
     // map a bunch of shortcut pointers
     sp = &regs[0xD]; // stack pointer
@@ -22,7 +22,7 @@ ARM7TDMI::ARM7TDMI(Memory* memory) {
 }
 
 ARM7TDMI::~ARM7TDMI() {
-    delete regs;
+    delete[] regs;
 }
 
 void ARM7TDMI::cycle() {

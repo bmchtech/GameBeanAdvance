@@ -48,4 +48,6 @@ void get_rom_as_bytes(std::string rom_name, uint8_t* out, size_t out_length) {
     for (int i = 0; i < length; i++) {
         out[i] = buffer[i];
     }
+
+    delete[] buffer;
 }

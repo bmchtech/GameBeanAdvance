@@ -5,7 +5,7 @@
 
 // allocates the data for the memory struct
 Memory::Memory() {
-    main         = new uint8_t [SIZE_MAIN_MEMORY];
+    main         = new uint8_t[SIZE_MAIN_MEMORY]();
 
     bios         = &main[OFFSET_BIOS];
     wram_board   = &main[OFFSET_WRAM_BOARD];

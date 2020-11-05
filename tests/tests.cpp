@@ -26,7 +26,8 @@ void test_thumb_mode(std::string gba_file, std::string log_file, int num_instruc
     Memory* memory = new Memory();
     ARM7TDMI* cpu = new ARM7TDMI(memory);
 
-    CpuState* expected_output = produce_expected_cpu_states(log_file, num_instructions);
+    CpuState* cpu_states = new CpuState[num_instructions];
+    CpuState* expected_output = produce_expected_cpu_states(cpu_states, log_file, num_instructions);
     
     get_rom_as_bytes(gba_file, memory->rom_1, SIZE_ROM_1);
     set_cpu_state(cpu, expected_output[0]);
@@ -50,8 +51,9 @@ void test_thumb_mode(std::string gba_file, std::string log_file, int num_instruc
     // make sure we've reached B infin
     REQUIRE(cpu->fetch() == 0xE7FE);
 
-    delete memory;
-    delete cpu;
+    delete   memory;
+    delete   cpu;
+    delete[] cpu_states;
 
 }
 
@@ -59,7 +61,8 @@ void test_arm_mode(std::string gba_file, std::string log_file, int num_instructi
     Memory* memory = new Memory();
     ARM7TDMI* cpu = new ARM7TDMI(memory);
 
-    CpuState* expected_output = produce_expected_cpu_states(log_file, num_instructions);
+    CpuState* cpu_states = new CpuState[num_instructions];
+    CpuState* expected_output = produce_expected_cpu_states(cpu_states, log_file, num_instructions);
     
     get_rom_as_bytes(gba_file, memory->rom_1, SIZE_ROM_1);
     set_cpu_state(cpu, expected_output[0]);
@@ -87,8 +90,9 @@ void test_arm_mode(std::string gba_file, std::string log_file, int num_instructi
     // make sure we've reached B infin
     REQUIRE(cpu->fetch() == 0xEAFFFFFE);
     
-    delete memory;
-    delete cpu;
+    delete   memory;
+    delete   cpu;
+    delete[] cpu_states;
 }
 
 TEST_CASE("CPU THUMB Mode - VBA Logs (thumb-simple)") {
@@ -108,5 +112,5 @@ TEST_CASE("CPU ARM Mode - VBA Logs (arm-addresing-mode-3) [Requires Functional T
 }
 
 TEST_CASE("CPU ARM Mode - VBA Logs (arm-opcodes) [Requires Functional THUMB]") {
-    test_arm_mode("tests/asm/bin/arm-opcodes.gba", "tests/asm/logs/arm-opcodes.log", 1290, 216);
+    test_arm_mode("tests/asm/bin/arm-opcodes.gba", "tests/asm/logs/arm-opcodes.log", 1290, 220);
 }

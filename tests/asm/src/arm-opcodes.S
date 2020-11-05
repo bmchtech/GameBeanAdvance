@@ -34,6 +34,9 @@ test_values_addendum:
 			.word 0xFFFF8BCD @ 10
 			.word 0x3FFFFFFF @ 14
 
+end_value:
+			.word 0x4EC5F500 @ 00
+
 @ ******************************************** Test Cases *********************************************
 			.text
 @ *****************************************************************************************************
@@ -503,6 +506,11 @@ pass_bx_thumb:
 			MOVS     r3,  r2
 			MRS      r12, CPSR
 			MRS      r13, SPSR
+
+@ make sure we reached the end of the file
+
+			LDR      r7, =end_value
+			LDR      r0, [r7, #0x00]
 
 infin:
             B     infin

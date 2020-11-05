@@ -62,7 +62,7 @@ test: $(OBJ_DIR)/gba.o $(OBJ_DIR)/catchmain.o $(OBJ_DIR)/expected_output.o $(OBJ
 $(OBJ_DIR)/catchmain.o:
 	$(CC) $(CFLAGS) $(TEST_CATCH_DIR)/catchmain.cpp -o $(OBJ_DIR)/catchmain.o
 
-$(OBJ_DIR)/expected_output.o: $(OBJ_DIR)/util.o
+$(OBJ_DIR)/expected_output.o: $(OBJ_DIR)/util.o $(TEST_SRC_DIR)/expected_output.cpp
 	$(CC) $(CFLAGS) $(TEST_SRC_DIR)/expected_output.cpp -o $(OBJ_DIR)/expected_output.o 
 
 $(OBJ_DIR)/cpu_state.o: $(TEST_SRC_DIR)/cpu_state.cpp $(TEST_SRC_DIR)/cpu_state.h $(OBJ_DIR)/arm7tdmi.o
