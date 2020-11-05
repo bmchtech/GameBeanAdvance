@@ -437,7 +437,7 @@ pass_bx_thumb:
 
 			.arm
 
-@ CMN tests [flag modification]
+@ CMN tests
 
 			LDR      r7,  =test_values
 			LDR      r9,  =test_values_addendum
@@ -493,6 +493,65 @@ pass_bx_thumb:
 			LDR      r2,  [r7, #0x08] @ zero case
             LDR      r4,  [r7, #0x04]
 			CMN      r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+@ CMP tests
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+
+			LDR      r2,  [r7, #0x18] @ pos + pos 
+            LDR      r4,  [r9, #0x14]
+			CMP      r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x14] @ neg + pos 
+            LDR      r4,  [r9, #0x14]
+			CMP      r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x18] @ pos + neg 
+            LDR      r4,  [r7, #0x14]
+			CMP      r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x0C] @ neg + neg 
+            LDR      r4,  [r7, #0x14]
+			CMP      r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x18] @ pos + pos 
+            LDR      r4,  [r7, #0x10]
+			CMP      r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x08] @ neg + pos 
+            LDR      r4,  [r7, #0x20]
+			CMP      r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x18] @ pos + neg 
+            LDR      r4,  [r7, #0x24]
+			CMP      r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x1C] @ neg + neg 
+            LDR      r4,  [r7, #0x0C]
+			CMP      r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x08] @ zero case
+            LDR      r4,  [r7, #0x04]
+			CMP      r2,  r4
 			MRS      r12, CPSR
 			MRS      r13, SPSR
 

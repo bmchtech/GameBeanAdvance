@@ -136,6 +136,18 @@ inline void CMN(ARM7TDMI* cpu, uint32_t opcode) {
 }
 
 @LOCAL_INLINE()
+inline void CMP(ARM7TDMI* cpu, uint32_t opcode) {
+    uint32_t old_value        = cpu->regs[get_nth_bits(opcode, 12, 16)];
+    uint32_t register_operand = cpu->regs[get_nth_bits(opcode, 16, 20)];
+    uint32_t result           = register_operand + ~cpu->shifter_operand + 1;
+    
+    cpu->set_flag_Z(result == 0);
+    cpu->set_flag_N(result >> 31);
+    cpu->set_flag_V(((register_operand >> 31) ^ (cpu->shifter_operand >> 31)) && ((register_operand >> 31) ^ (result >> 31)));
+    cpu->set_flag_C(register_operand >= cpu->shifter_operand);
+}
+
+@LOCAL_INLINE()
 inline void EOR(ARM7TDMI* cpu, uint32_t opcode) {
     uint32_t* rd = &cpu->regs[get_nth_bits(opcode, 12, 16)];
 
@@ -601,6 +613,13 @@ void run_COND00110111(uint32_t opcode) {
     CMN(cpu, opcode);
 }
 
+// CMP instruction
+// Addressing Mode 1, immediate offset
+void run_COND00110101(uint32_t opcode) {
+    addressing_mode_1_immediate(cpu, opcode);
+    CMP(cpu, opcode);
+}
+
 // EOR instruction
 // Addressing Mode 1, immediate offset
 void run_COND0010001S(uint32_t opcode) {
@@ -655,6 +674,11 @@ void run_COND0100UB01(uint32_t opcode) {
 
 // BIC instruction
 // Addressing Mode 1, shifts [flag modification]
+
+// + in conjunction with
+
+// CMP instruction
+// Addressing Mode 1, shifts
 void run_COND0001U101(uint32_t opcode) {
     uint32_t address = addressing_mode_3_immediate_offset(cpu, opcode);
     switch (get_nth_bits(opcode, 4, 8)) {
@@ -665,7 +689,8 @@ void run_COND0001U101(uint32_t opcode) {
         default:
             if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
             else                        addressing_mode_1_register_by_immediate(cpu, opcode);
-            BIC(cpu, opcode);
+            @IF( U) BIC(cpu, opcode);
+            @IF(!U) CMP(cpu, opcode);
             break;
     }
 }
