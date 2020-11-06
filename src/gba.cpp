@@ -23,7 +23,7 @@ GBA::GBA() {
     memory = new Memory();
     cpu    = new ARM7TDMI(memory);
 
-    cpu->set_mode(MODE_SYSTEM);
+    cpu->set_mode(ARM7TDMI::MODE_SYSTEM);
 }
 
 GBA::~GBA() {

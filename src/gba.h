@@ -11,15 +11,6 @@
 #define GAME_TITLE_OFFSET 0x0A0
 #define GAME_TITLE_SIZE   12
 
-#define MODE_USER       0b10000
-#define MODE_FIQ        0b10001
-#define MODE_IRQ        0b10010
-#define MODE_SUPERVISOR 0b10011
-#define MODE_ABORT      0b10111
-#define MODE_UNDEFINED  0b11011
-#define MODE_SYSTEM     0b11111
-
-
 class GBA {
 
     public:

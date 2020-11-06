@@ -1,7 +1,7 @@
 .PHONY: all test clean
 
 CC             = g++
-CFLAGS         = -c -g
+CFLAGS         = -c -g --std=c++20
 
 SRC_DIR        = src
 OBJ_DIR        = out
@@ -49,7 +49,7 @@ $(OBJ_DIR)/jumptable-arm.o: $(SRC_DIR)/jumptable/jumptable-arm-config.cpp $(OBJ_
 	cd $(SRC_DIR)/jumptable && python make-jumptable.py jumptable-arm-config.cpp jumptable-arm.cpp jumptable-arm.h 32 12 jumptable_arm JUMPTABLE_ARM_H uint32_t instruction_arm
 	$(CC) $(CFLAGS) $(SRC_DIR)/jumptable/jumptable-arm.cpp -o $(OBJ_DIR)/jumptable-arm.o
 
-$(OBJ_DIR)/arm7tdmi.o: $(SRC_DIR)/arm7tdmi.cpp $(OBJ_DIR)/memory.o
+$(OBJ_DIR)/arm7tdmi.o: $(SRC_DIR)/arm7tdmi.cpp $(SRC_DIR)/arm7tdmi.h $(OBJ_DIR)/memory.o
 	$(CC) $(CFLAGS) $(SRC_DIR)/arm7tdmi.cpp -o $(OBJ_DIR)/arm7tdmi.o
 
 # Tests
