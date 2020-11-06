@@ -9,12 +9,10 @@
 ARM7TDMI::ARM7TDMI(Memory* memory) {
     this->memory = memory;       
     
-    regs = new uint32_t[NUM_REGISTERS]();
-
-    // map a bunch of shortcut pointers
-    sp = &regs[0xD]; // stack pointer
-    lr = &regs[0xE]; // link register (branch with link instruction)
-    pc = &regs[0xF]; // program counter
+    // 16 registers * 6 CPU modes
+    register_file = new uint32_t[NUM_REGISTERS * 6]();
+    regs = register_file;
+    current_mode = MODE_USER;
 
     // the program status register
     cpsr = 0x00000000;
@@ -22,7 +20,7 @@ ARM7TDMI::ARM7TDMI(Memory* memory) {
 }
 
 ARM7TDMI::~ARM7TDMI() {
-    delete[] regs;
+    delete[] register_file;
 }
 
 void ARM7TDMI::cycle() {

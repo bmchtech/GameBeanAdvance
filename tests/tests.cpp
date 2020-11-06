@@ -31,6 +31,7 @@ void test_thumb_mode(std::string gba_file, std::string log_file, int num_instruc
     
     get_rom_as_bytes(gba_file, memory->rom_1, SIZE_ROM_1);
     set_cpu_state(cpu, expected_output[0]);
+    cpu->set_mode(ARM7TDMI::MODE_SYSTEM);
 
     bool wasPreviousInstructionARM = true; // if so, we reset the CPU's state
     for (int i = 0; i < num_instructions - 1; i++) {
@@ -54,7 +55,6 @@ void test_thumb_mode(std::string gba_file, std::string log_file, int num_instruc
     delete   memory;
     delete   cpu;
     delete[] cpu_states;
-
 }
 
 void test_arm_mode(std::string gba_file, std::string log_file, int num_instructions, int start_instruction) {
@@ -67,13 +67,14 @@ void test_arm_mode(std::string gba_file, std::string log_file, int num_instructi
     get_rom_as_bytes(gba_file, memory->rom_1, SIZE_ROM_1);
     set_cpu_state(cpu, expected_output[0]);
     cpu->set_bit_T(true);
+    cpu->set_mode(ARM7TDMI::MODE_SYSTEM);
 
     for (int i = 0; i < num_instructions - 1; i++) {
         // ARM instructions won't be run until log #190 is passed (the ARM that occurs before then is needless 
         // busywork as far as these tests are concerned, and make it harder to unit test the emulator).
         if (i == start_instruction) {
             cpu->set_bit_T(false);
-            cpu->cpsr = 0x6000001F; // theres a bit of arm instructions that edit the CPSR that we skip, so let's manually set it.
+            cpu->cpsr = (cpu->cpsr & 0x00FFFFFFFF) | 0x60000000; // theres a bit of arm instructions that edit the CPSR that we skip, so let's manually set it.
         }
 
         if (i < start_instruction) cpu->set_bit_T(true);

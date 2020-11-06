@@ -25,7 +25,7 @@ class ARM7TDMI {
         void execute(uint32_t opcode);
 
         // an explanation of these constants is partially in here as well as cpu-mode.h
-        
+
         static constexpr CpuMode MODE_USER       = {0b10000, 0b1111111111111111, 16 * 0};
         static constexpr CpuMode MODE_FIQ        = {0b10001, 0b1111111111111111, 16 * 1};
         static constexpr CpuMode MODE_IRQ        = {0b10010, 0b1001111111111111, 16 * 2};
@@ -71,16 +71,23 @@ class ARM7TDMI {
 
             for (int i = 0; i < 16; i++) {
                 if (~(mask & 1))
-                    regs[i + new_mode.OFFSET] = regs[i + current_mode.OFFSET];
+                    register_file[i + new_mode.OFFSET] = register_file[i + current_mode.OFFSET];
 
                 mask >>= 1;
             }
 
             current_mode = new_mode;
+            cpsr = (cpsr & 0xFFFFFFE0) | new_mode.CPSR_ENCODING;
+
+            regs = register_file + new_mode.OFFSET;
+            pc = &regs[15];
+            lr = &regs[14];
+            sp = &regs[13];
         }
 
         uint32_t* register_file; // the full file of registers. usually you shouldn't be indexing from here.
         uint32_t* regs;          // the currently used registers in the ARM7TDMI
+
         uint32_t* pc;            // program counter   aka regs[0xF]
         uint32_t* lr;            // linkage register  aka regs[0xE]
         uint32_t* sp;            // stack pointer     aka regs[0xD]
