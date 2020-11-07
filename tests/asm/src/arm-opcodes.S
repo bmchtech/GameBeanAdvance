@@ -37,6 +37,18 @@ test_values_addendum:
 end_value:
 			.word 0x4EC5F500 @ 00
 
+ldm_tests_start:
+			.word 0xE1A0F00E @ return instruction
+			.word 0x00000001
+			.word 0x00000002
+			.word 0x00000003
+			.word 0x00000004
+			.word 0x00000005
+			.word 0x00000006
+			.word 0x00000007
+ldm_tests_end:
+			.word 0xE1A0F00E @ return instruction
+
 @ ******************************************** Test Cases *********************************************
 			.text
 @ *****************************************************************************************************
@@ -596,6 +608,22 @@ pass_bx_thumb:
             EORS     r2,  r3
 			MRS      r12, CPSR
 			MRS      r13, SPSR
+
+@ LDM tests [LDMIA]
+
+			LDR      r7,  =test_values
+			LDMIA    r7,  {r0-r14}
+
+			LDR      r7,  =test_values
+			LDMIA    r7,  {r1, r3, r4, r7, r9, r10, r11, r13, r14}
+
+			LDR      r7,  =test_values
+			LDMIA    r7!, {r1, r3, r4, r8, r9, r10, r11, r13, r14}
+
+			@ LDR      r7,  =ldm_tests_start
+			@ ADD      r7,  #0x4
+			@ MOV      lr,  pc   @ save the PC so i can return later when we branch
+			@ LDMIA    r7,  {r1, r3, r4, r7, r9, r10, r11, r15}
 
 @ MOV tests [no flag modification]
 
