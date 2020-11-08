@@ -882,6 +882,7 @@ void run_COND100PU0W1(uint32_t opcode) {
             @IF( P !U) address -= 4;
 
             cpu->regs[i] = cpu->memory->read_word(address);
+            if (i == 15) cpu->regs[i] += 4;
 
             @IF(!P  U) address += 4;
             @IF(!P !U) address -= 4;
