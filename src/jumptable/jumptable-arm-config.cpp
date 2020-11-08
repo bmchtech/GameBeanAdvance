@@ -798,6 +798,14 @@ void run_COND0001U011(uint32_t opcode) {
     }
 }
 
+// MOV instruction
+// Addressing Mode 1, shifts [no flag modification]
+void run_COND00011010(uint32_t opcode) {
+    if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
+    else                        addressing_mode_1_register_by_immediate(cpu, opcode);
+    MOV(cpu, opcode);
+}
+
 // LDRH / LDRSB / LDRSH instructions
 // Addressing Mode 3, immediate post-indexed
 void run_COND0000U101(uint32_t opcode) {

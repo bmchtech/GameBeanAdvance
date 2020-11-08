@@ -18,8 +18,9 @@ void check_cpu_state(CpuState expected, CpuState actual, std::string error_messa
         REQUIRE_MESSAGE(expected.regs[i] == actual.regs[i], error_message + " at register #" + std::to_string(i));
     }
 
-    REQUIRE_MESSAGE(expected.type   == actual.type,   error_message);
-    REQUIRE_MESSAGE(expected.opcode == actual.opcode, error_message);
+    REQUIRE_MESSAGE(expected.type           == actual.type,           error_message);
+    REQUIRE_MESSAGE(expected.opcode         == actual.opcode,         error_message);
+    REQUIRE_MESSAGE(expected.mem_0x03000000 == actual.mem_0x03000000, error_message);
 }
 
 void test_thumb_mode(std::string gba_file, std::string log_file, int num_instructions) {

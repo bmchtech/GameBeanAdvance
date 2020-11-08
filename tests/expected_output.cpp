@@ -63,6 +63,22 @@ CpuState* produce_expected_cpu_states(CpuState* cpu_states, std::string file_nam
                 }
             }
         }
+
+        if (!(iss >> temp)) {
+            error("Couldn't parse expected log file: no opcode found.");
+        } else {
+            // garbage
+        }
+
+        if (!(iss >> temp)) {
+            error("Couldn't parse expected log file: no opcode found.");
+        } else {
+            ss.str(std::string());
+            ss.clear();
+            ss << std::hex << temp;
+            ss >> a;
+            cpu_states[i].mem_0x03000000 = a;
+        }
     }
 
     return cpu_states;
