@@ -675,6 +675,25 @@ pass_bx_thumb:
 			LDR      r2,  [r7, #0x0C]
 			STR      pc,  [r2]
 
+@ STRB tests
+
+			LDR      r7,  =mem_target_addresses
+			LDR      r8,  =test_values
+
+			LDR      r3,  [r8, #0x14]
+
+			LDR      r2,  [r7, #0x00]
+			STRB     r3,  [r2]
+
+			LDR      r2,  [r7, #0x04]
+			STRB     r3,  [r2]
+
+			LDR      r2,  [r7, #0x08]
+			STRB     r3,  [r2]
+
+			LDR      r2,  [r7, #0x0C]
+			STRB     r3,  [r2]
+
 @ make sure we reached the end of the file
 
 			LDR      r7,  =end_value

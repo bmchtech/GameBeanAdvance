@@ -248,12 +248,12 @@ inline uint32_t RRX(ARM7TDMI* cpu, uint32_t value, uint8_t shift) {
 
 @LOCAL_INLINE()
 inline void STR(ARM7TDMI* cpu, uint32_t address, uint32_t opcode) {
-    cpu->memory->write_word(address, cpu->regs[get_nth_bits(opcode, 12, 16)]);
+    cpu->memory->write_word(address & 0xFFFFFFFC, cpu->regs[get_nth_bits(opcode, 12, 16)]);
 }
 
 @LOCAL_INLINE()
 inline void STRB(ARM7TDMI* cpu, uint32_t address, uint32_t opcode) {
-    cpu->memory->write_word(address, cpu->regs[get_nth_bits(opcode, 12, 16)] & 0xFF);
+    cpu->memory->write_byte(address, cpu->regs[get_nth_bits(opcode, 12, 16)] & 0xFF);
 }
 
 
@@ -650,40 +650,40 @@ void run_COND0000001S(uint32_t opcode) {
 // Addressing Mode 2, immediate offset
 void run_COND0101UB0L(uint32_t opcode) {
     uint32_t address = addressing_mode_2_immediate_offset(cpu, opcode);
-    @IF(!B  L) LDR (cpu, address,              opcode);
-    @IF( B  L) LDRB(cpu, address,              opcode);
-    @IF(!B !L) STR (cpu, address & 0xFFFFFFFC, opcode);
-    @IF( B !L) STRB(cpu, address & 0xFFFFFFFC, opcode);
+    @IF(!B  L) LDR (cpu, address, opcode);
+    @IF( B  L) LDRB(cpu, address, opcode);
+    @IF(!B !L) STR (cpu, address, opcode);
+    @IF( B !L) STRB(cpu, address, opcode);
 }
 
 // LDR / STR / LDRB / STRB  instruction
 // Addressing Mode 2, register unscaled/scaled
 void run_COND011PUBWL(uint32_t opcode) {
     uint32_t address = addressing_mode_2_register_offset(cpu, opcode);
-    @IF(!B  L) LDR (cpu, address,              opcode);
-    @IF( B  L) LDRB(cpu, address,              opcode);
-    @IF(!B !L) STR (cpu, address & 0xFFFFFFFC, opcode);
-    @IF( B !L) STRB(cpu, address & 0xFFFFFFFC, opcode);
+    @IF(!B  L) LDR (cpu, address, opcode);
+    @IF( B  L) LDRB(cpu, address, opcode);
+    @IF(!B !L) STR (cpu, address, opcode);
+    @IF( B !L) STRB(cpu, address, opcode);
 }
 
 // LDR / STR / LDRB / STRB  instruction
 // Addressing Mode 2, immediate pre-indexed
 void run_COND0101UB1L(uint32_t opcode) {
     uint32_t address = addressing_mode_2_immediate_preindexed(cpu, opcode);
-    @IF(!B  L) LDR (cpu, address,              opcode);
-    @IF( B  L) LDRB(cpu, address,              opcode);
-    @IF(!B !L) STR (cpu, address & 0xFFFFFFFC, opcode);
-    @IF( B !L) STRB(cpu, address & 0xFFFFFFFC, opcode);
+    @IF(!B  L) LDR (cpu, address, opcode);
+    @IF( B  L) LDRB(cpu, address, opcode);
+    @IF(!B !L) STR (cpu, address, opcode);
+    @IF( B !L) STRB(cpu, address, opcode);
 }
 
 // LDR / STR / LDRB / STRB  instruction
 // Addressing Mode 2, immediate post-indexed
 void run_COND0100UB0L(uint32_t opcode) {
     uint32_t address = addressing_mode_2_immediate_postindexed(cpu, opcode);
-    @IF(!B  L) LDR (cpu, address,              opcode);
-    @IF( B  L) LDRB(cpu, address,              opcode);
-    @IF(!B !L) STR (cpu, address & 0xFFFFFFFC, opcode);
-    @IF( B !L) STRB(cpu, address & 0xFFFFFFFC, opcode);
+    @IF(!B  L) LDR (cpu, address, opcode);
+    @IF( B  L) LDRB(cpu, address, opcode);
+    @IF(!B !L) STR (cpu, address, opcode);
+    @IF( B !L) STRB(cpu, address, opcode);
 }
 
 // LDRH / LDRSB / LDRSH instructions
