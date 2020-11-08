@@ -11,12 +11,15 @@ ARM7TDMI::ARM7TDMI(Memory* memory) {
     
     // 16 registers * 6 CPU modes
     register_file = new uint32_t[NUM_REGISTERS * 6]();
-    regs = register_file;
-    current_mode = MODE_USER;
+    regs          = register_file;
+    regs[14]      = 0x03007f00;
 
     // the program status register
     cpsr = 0x00000000;
     spsr = 0x00000000;
+
+    // the current mode
+    current_mode = MODE_USER;
 }
 
 ARM7TDMI::~ARM7TDMI() {

@@ -49,6 +49,12 @@ ldm_tests_start:
 ldm_tests_end:
 			.word 0xE1A0F00E @ return instruction
 
+mem_target_addresses:
+			.word 0x03000000 @ 00
+			.word 0x03000001 @ 04
+			.word 0x03000002 @ 08
+			.word 0x03000003 @ 0C
+
 @ ******************************************** Test Cases *********************************************
 			.text
 @ *****************************************************************************************************
@@ -655,12 +661,24 @@ pass_bx_thumb:
 
 @ STR tests
 
-			LDR      r7,  =test_values
-			
+			LDR      r7,  =mem_target_addresses
+
+			LDR      r2,  [r7, #0x00]
+			STR      pc,  [r2]
+
+			LDR      r2,  [r7, #0x04]
+			STR      pc,  [r2]
+
+			LDR      r2,  [r7, #0x08]
+			STR      pc,  [r2]
+
+			LDR      r2,  [r7, #0x0C]
+			STR      pc,  [r2]
+
 @ make sure we reached the end of the file
 
-			LDR      r7, =end_value
-			LDR      r0, [r7, #0x00]
+			LDR      r7,  =end_value
+			LDR      r0,  [r7, #0x00]
 
 infin:
             B     infin

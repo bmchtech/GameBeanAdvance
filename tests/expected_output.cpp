@@ -77,7 +77,7 @@ CpuState* produce_expected_cpu_states(CpuState* cpu_states, std::string file_nam
             ss.clear();
             ss << std::hex << temp;
             ss >> a;
-            cpu_states[i].mem_0x03000000 = a;
+            cpu_states[i].mem_0x03000003 = a;
         }
     }
 

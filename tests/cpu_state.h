@@ -11,7 +11,7 @@ typedef struct CpuState {
     CpuType  type;   // either arm or thumb
     uint32_t opcode;
     uint32_t regs[16];
-    uint32_t mem_0x03000000;
+    uint32_t mem_0x03000003;
 } CpuState;
 
 CpuState get_cpu_state(ARM7TDMI* cpu);
