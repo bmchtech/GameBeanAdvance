@@ -611,14 +611,14 @@ pass_bx_thumb:
 
 @ LDM tests [LDMIA]
 
-			LDR      r7,  =test_values
-			LDMIA    r7,  {r0-r14}
+			@ LDR      r7,  =test_values
+			@ LDMIA    r7,  {r0-r14}
 
-			LDR      r7,  =test_values
-			LDMIA    r7,  {r1, r3, r4, r7, r9, r10, r11, r13, r14}
+			@ LDR      r7,  =test_values
+			@ LDMIA    r7,  {r1, r3, r4, r7, r9, r10, r11, r13, r14}
 
-			LDR      r7,  =test_values
-			LDMIA    r7!, {r1, r3, r4, r8, r9, r10, r11, r13, r14}
+			@ LDR      r7,  =test_values
+			@ LDMIA    r7!, {r1, r3, r4, r8, r9, r10, r11, r13, r14}
 
 			@ LDR      r7,  =ldm_tests_start
 			@ ADD      r7,  #0x4
@@ -653,6 +653,10 @@ pass_bx_thumb:
 			MRS      r12, CPSR
 			MRS      r13, SPSR
 
+@ STR tests
+
+			LDR      r7,  =test_values
+			
 @ make sure we reached the end of the file
 
 			LDR      r7, =end_value
