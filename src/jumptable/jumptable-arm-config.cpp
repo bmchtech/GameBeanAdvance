@@ -248,7 +248,9 @@ inline uint32_t RRX(ARM7TDMI* cpu, uint32_t value, uint8_t shift) {
 
 @LOCAL_INLINE()
 inline void STR(ARM7TDMI* cpu, uint32_t address, uint32_t opcode) {
-    cpu->memory->write_word(address & 0xFFFFFFFC, cpu->regs[get_nth_bits(opcode, 12, 16)]);
+    uint32_t result = cpu->regs[get_nth_bits(opcode, 12, 16)];
+    if (get_nth_bits(opcode, 12, 16) == 15) result += 4;
+    cpu->memory->write_word(address & 0xFFFFFFFC, result);
 }
 
 @LOCAL_INLINE()
@@ -875,20 +877,24 @@ void run_COND00000000(uint32_t opcode) {
 void run_COND100PU0W1(uint32_t opcode) {
     uint32_t address = cpu->regs[get_nth_bits(opcode, 16, 20)];
 
-    int mask = 1;
-    for (int i = 0; i < 16; i++) {
+    @IF(U)  int mask = 1;
+    @IF(!U) int mask = 0x8000; 
+
+    @IF(U)  for (int i = 0;  i <  16; i++) {
+    @IF(!U) for (int i = 15; i >= 0;  i--) {
+
         if (opcode & mask) {
             @IF( P  U) address += 4;
             @IF( P !U) address -= 4;
 
             cpu->regs[i] = cpu->memory->read_word(address);
-            if (i == 15) cpu->regs[i] += 4;
 
             @IF(!P  U) address += 4;
             @IF(!P !U) address -= 4;
         }
 
-        mask <<= 1; 
+        @IF(U)  mask <<= 1; 
+        @IF(!U) mask >>= 1;
     }
 
     *cpu->pc &= 0xFFFFFFFE;
