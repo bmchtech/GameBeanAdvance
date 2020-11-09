@@ -674,7 +674,20 @@ pass_bx_thumb:
 			LDR      r7,  =ldm_tests_end
 			STR      pc,  [r7, #-0x04]
 			LDMDB    r7,  {r1, r3, r4, r7, r9, r10, r11, r15}
-	
+
+@ TODO: LDM 2 tests must be done in an interrupt.
+@ this is because the result is UNPREDICTABLE in
+@ SYSTEM mode, which is the default mode for the GBA.
+@ the exact same applies for LDM 3
+
+@ LDR tests [non-word aligned]
+
+			LDR      r7,  =test_values
+			LDR      r1,  [r7, #0x14]
+			LDR      r2,  [r7, #0x15]
+			LDR      r2,  [r7, #0x16]
+			LDR      r2,  [r7, #0x17]
+
 @ MOV tests [no flag modification]
 
 			LDR      r7,  =test_values
