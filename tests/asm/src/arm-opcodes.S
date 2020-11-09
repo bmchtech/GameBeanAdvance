@@ -688,6 +688,14 @@ pass_bx_thumb:
 			LDR      r2,  [r7, #0x16]
 			LDR      r2,  [r7, #0x17]
 
+@ LDRB tests [non-word aligned]
+
+			LDR      r7,  =test_values
+			LDRB     r1,  [r7, #0x14]
+			LDRB     r2,  [r7, #0x15]
+			LDRB     r2,  [r7, #0x16]
+			LDRB     r2,  [r7, #0x17]
+
 @ MOV tests [no flag modification]
 
 			LDR      r7,  =test_values
