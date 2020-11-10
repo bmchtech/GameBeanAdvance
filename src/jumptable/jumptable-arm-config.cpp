@@ -642,10 +642,22 @@ void run_COND0010001S(uint32_t opcode) {
 
 // EOR instruction
 // Addressing Mode 1, shifts
+
+// + in conjunction with
+
+// MLA instruction
 void run_COND0000001S(uint32_t opcode) {
-    if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
-    else                        addressing_mode_1_register_by_immediate(cpu, opcode);
-    EOR(cpu, opcode);
+    if (get_nth_bits(opcode, 4, 8) != 0b1001) {
+        if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
+        else                        addressing_mode_1_register_by_immediate(cpu, opcode);
+        EOR(cpu, opcode);
+    } else {
+        uint32_t* result = &cpu->regs[get_nth_bits(opcode, 16, 20)];
+        *result = cpu->regs[get_nth_bits(opcode, 0, 4)] * cpu->regs[get_nth_bits(opcode, 8, 12)] + cpu->regs[get_nth_bits(opcode, 12, 16)];
+        
+        @IF(S) cpu->set_flag_Z(*result == 0);
+        @IF(S) cpu->set_flag_N(*result >> 31);
+    }
 }
 
 // LDR / STR / LDRB / STRB instruction

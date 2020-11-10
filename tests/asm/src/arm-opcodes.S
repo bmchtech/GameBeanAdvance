@@ -696,6 +696,62 @@ pass_bx_thumb:
 			LDRB     r2,  [r7, #0x16]
 			LDRB     r2,  [r7, #0x17]
 
+@ TODO: LDRBT. i'll have to do a lot more research
+@ to figure out what parts of the memory map are
+@ restricted for USER mode.
+
+@ MLA tests [no flag modification]
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+			
+			LDR      r2,  [r7, #0x00]
+			LDR      r3,  [r7, #0x18]
+			LDR      r4,  [r7, #0x00]
+			MLA      r1,  r4, r3, r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+			
+			LDR      r2,  [r7, #0x34]
+			LDR      r3,  [r7, #0x18]
+			LDR      r4,  [r9, #0x10]
+			MLA      r1,  r4, r3, r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+			
+			LDR      r2,  [r7, #0x14]
+			LDR      r3,  [r7, #0x18]
+			LDR      r4,  [r9, #0x08]
+			MLA      r1,  r4, r3, r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+@ MLA tests [flag modification]
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+			
+			LDR      r2,  [r7, #0x00]
+			LDR      r3,  [r7, #0x18]
+			LDR      r4,  [r7, #0x00]
+			MLAS     r1,  r4, r3, r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+			
+			LDR      r2,  [r7, #0x34]
+			LDR      r3,  [r7, #0x18]
+			LDR      r4,  [r9, #0x10]
+			MLAS     r1,  r4, r3, r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+			
+			LDR      r2,  [r7, #0x14]
+			LDR      r3,  [r7, #0x18]
+			LDR      r4,  [r9, #0x08]
+			MLAS     r1,  r4, r3, r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+			
 @ MOV tests [no flag modification]
 
 			LDR      r7,  =test_values
