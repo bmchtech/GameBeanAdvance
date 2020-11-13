@@ -10,7 +10,7 @@ ARM7TDMI::ARM7TDMI(Memory* memory) {
     this->memory = memory;       
     
     // 16 registers * 6 CPU modes
-    register_file = new uint32_t[NUM_REGISTERS * 6]();
+    register_file = new uint32_t[16 * 7]();
     regs          = register_file;
     regs[14]      = 0x03007f00;
 

@@ -621,10 +621,10 @@ pass_bx_thumb:
 			LDMIA    r7,  {r0-r14}
 
 			LDR      r7,  =test_values
-			LDMIA    r7,  {r1, r3, r4, r7, r9, r10, r11, r13, r14}
+			LDMIA    r7,  {r1, r2, r3, r4, r7, r9, r10, r11, r14}
 
 			LDR      r7,  =test_values
-			LDMIA    r7!, {r1, r3, r4, r8, r9, r10, r11, r13, r14}
+			LDMIA    r7!, {r0 ,r1, r3, r4, r8, r9, r10, r11, r14}
 
 			LDR      r7,  =ldm_tests_start
 			STR      pc,  [r7, #0x1C]
@@ -636,10 +636,10 @@ pass_bx_thumb:
 			LDMIB    r7,  {r0-r14}
 
 			LDR      r7,  =test_values
-			LDMIB    r7,  {r1, r3, r4, r7, r9, r10, r11, r13, r14}
+			LDMIB    r7,  {r1, r2, r3, r4, r7, r9, r10, r11, r14}
 
 			LDR      r7,  =test_values
-			LDMIB    r7!, {r1, r3, r4, r8, r9, r10, r11, r13, r14}
+			LDMIB    r7!, {r0 ,r1, r3, r4, r8, r9, r10, r11, r14}
 
 			LDR      r7,  =ldm_tests_start
 			STR      pc,  [r7, #0x20]
@@ -651,10 +651,10 @@ pass_bx_thumb:
 			LDMDA    r7,  {r0-r14}
 
 			LDR      r7,  =test_values
-			LDMDA    r7,  {r1, r3, r4, r7, r9, r10, r11, r13, r14}
+			LDMDA    r7,  {r1, r2, r3, r4, r7, r9, r10, r11, r14}
 
 			LDR      r7,  =test_values
-			LDMDA    r7!, {r1, r3, r4, r8, r9, r10, r11, r13, r14}
+			LDMDA    r7!, {r0, r1, r3, r4, r8, r9, r10, r11, r14}
 
 			LDR      r7,  =ldm_tests_end
 			STR      pc,  [r7]
@@ -666,10 +666,10 @@ pass_bx_thumb:
 			LDMDB    r7,  {r0-r14}
 
 			LDR      r7,  =test_values
-			LDMDB    r7,  {r1, r3, r4, r7, r9, r10, r11, r13, r14}
+			LDMDB    r7,  {r1, r2, r3, r4, r7, r9, r10, r11, r14}
 
 			LDR      r7,  =test_values
-			LDMDB    r7!, {r1, r3, r4, r8, r9, r10, r11, r13, r14}
+			LDMDB    r7!, {r0, r1, r3, r4, r8, r9, r10, r11, r14}
 
 			LDR      r7,  =ldm_tests_end
 			STR      pc,  [r7, #-0x04]
@@ -777,6 +777,52 @@ pass_bx_thumb:
 
             LDR      r2,  [r7, #0x08]
 			MOVS     r3,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+@ MUL tests [no flag modification]
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+			
+			LDR      r3,  [r7, #0x18]
+			LDR      r4,  [r7, #0x00]
+			MUL      r1,  r4,  r3
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+			
+			LDR      r3,  [r7, #0x18]
+			LDR      r4,  [r9, #0x10]
+			MUL      r1,  r4,  r3
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+			
+			LDR      r3,  [r7, #0x18]
+			LDR      r4,  [r9, #0x08]
+			MUL      r1,  r4,  r3
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+@ MUL tests [flag modification]
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+			
+			LDR      r3,  [r7, #0x18]
+			LDR      r4,  [r7, #0x00]
+			MULS     r1,  r4,  r3
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+			
+			LDR      r3,  [r7, #0x18]
+			LDR      r4,  [r9, #0x10]
+			MULS     r1,  r4,  r3
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+			
+			LDR      r3,  [r7, #0x18]
+			LDR      r4,  [r9, #0x08]
+			MULS     r1,  r4,  r3
 			MRS      r12, CPSR
 			MRS      r13, SPSR
 

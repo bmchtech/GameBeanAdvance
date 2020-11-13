@@ -600,6 +600,7 @@ void run_COND0010000S(uint32_t opcode) {
 }
 
 // B / BL instruction
+// No addressing mode needed for this instruction
 void run_COND101LABEF(uint32_t opcode) {
     @IF(L) *cpu->lr = *cpu->pc;
     // unintuitive sign extension: http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
@@ -607,6 +608,7 @@ void run_COND101LABEF(uint32_t opcode) {
 }
 
 // BX instruction
+// No addressing mode needed for this instruction
 void run_COND00010010(uint32_t opcode) {
     cpu->set_bit_T(cpu->regs[get_nth_bits(opcode, 0, 4)] & 0x1);
     *cpu->pc = cpu->regs[get_nth_bits(opcode, 0, 4)] & 0xFFFFFFFE;
@@ -646,6 +648,7 @@ void run_COND0010001S(uint32_t opcode) {
 // + in conjunction with
 
 // MLA instruction
+// No addressing mode needed for this instruction
 void run_COND0000001S(uint32_t opcode) {
     if (get_nth_bits(opcode, 4, 8) != 0b1001) {
         if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
@@ -787,7 +790,6 @@ void run_COND0001U111(uint32_t opcode) {
 
 // MOV instruction
 // Addressing Mode 1, shifts [flag modification]
-
 void run_COND0001U011(uint32_t opcode) {
     switch (get_nth_bits(opcode, 4, 8)) {
         case 0b1011: {
@@ -845,16 +847,31 @@ void run_COND0000U101(uint32_t opcode) {
 
 // AND instruction [flag modification]
 // Addressing Mode 1, shifts
+
+// + in conjunction with:
+
+// MUL Instruction [flag modification]
+// No addressing mode needed for this instruction
 void run_COND0000U001(uint32_t opcode) {
     switch (get_nth_bits(opcode, 4, 8)) {
+        // U must be 0 for this case to apply
+        @IF(!U) case 0b1001: {
+        @IF(!U)     cpu->regs[get_nth_bits(opcode, 16, 20)] = cpu->regs[get_nth_bits(opcode, 0, 4)] * cpu->regs[get_nth_bits(opcode, 8, 12)];
+        @IF(!U)     cpu->set_flag_N(cpu->regs[get_nth_bits(opcode, 16, 20)] >> 31);
+        @IF(!U)     cpu->set_flag_Z(cpu->regs[get_nth_bits(opcode, 16, 20)] == 0);
+        @IF(!U)     break;
+        @IF(!U) }
+
         case 0b1011: {
             uint32_t address = addressing_mode_3_register_postindexed(cpu, opcode);
             LDRH (cpu, address, opcode); break;
         }
+
         case 0b1101: {
             uint32_t address = addressing_mode_3_register_postindexed(cpu, opcode);
             LDRSB(cpu, address, opcode); break;
         }
+
         case 0b1111: {
             uint32_t address = addressing_mode_3_register_postindexed(cpu, opcode);
             LDRSH(cpu, address, opcode); break;
@@ -879,13 +896,23 @@ void run_COND00001000(uint32_t opcode) {
 
 // AND instruction [no flag modification]
 // Addressing Mode 1, shifts
+
+// + in conjunction with
+
+// MUL instruction [no flag modification] 
+// No addressing mode needed for this instruction
 void run_COND00000000(uint32_t opcode) {
-    if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
-    else                        addressing_mode_1_register_by_immediate(cpu, opcode);
-    AND(cpu, opcode);
+    if (get_nth_bits(opcode, 4, 8) == 0b1001) {
+        cpu->regs[get_nth_bits(opcode, 16, 20)] = cpu->regs[get_nth_bits(opcode, 0, 4)] * cpu->regs[get_nth_bits(opcode, 8, 12)];
+    } else {
+        if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
+        else                        addressing_mode_1_register_by_immediate(cpu, opcode);
+        AND(cpu, opcode);
+    }
 }
 
 // LDM 1 instruction
+// No addressing mode needed for this instruction
 void run_COND100PU0W1(uint32_t opcode) {
     uint32_t address = cpu->regs[get_nth_bits(opcode, 16, 20)];
 
@@ -922,6 +949,7 @@ void run_COND0011101S(uint32_t opcode) {
 }
 
 // MRS instruction
+// No addressing mode needed for this instruction
 void run_COND00010R00(uint32_t opcode) {
     cpu->regs[get_nth_bits(opcode, 12, 16)] = get_nth_bit(opcode, 22) ? cpu->spsr : cpu->cpsr;
 }

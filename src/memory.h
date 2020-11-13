@@ -2,12 +2,11 @@
 #define MEMORY_H
 
 #include <cstdint>
+#include "util.h"
 
 // for more details on the GBA memory map: https://problemkaputt.de/gbatek.htm#gbamemorymap
 // i'm going to probably have to split this struct into more specific values later,
 // but for now ill just do the ones i can see myself easily using.
-
-#define NUM_REGISTERS       16
 
 class Memory {
     public:
@@ -62,26 +61,32 @@ class Memory {
         #define OFFSET_SRAM         0xE000000
 
         inline uint8_t read_byte(uint32_t address) {
+            if (address >= SIZE_MAIN_MEMORY) error("Address out of range on read byte (" + to_hex_string(address) + ")");
             return main[address];
         }
 
         inline uint16_t read_halfword(uint32_t address) {
+            if (address + 2 >= SIZE_MAIN_MEMORY) error("Address out of range on read halfword (" + to_hex_string(address) + ")");
             return *((uint16_t*) (main + address));
         }
 
         inline uint32_t read_word(uint32_t address) {
+            if (address + 4 >= SIZE_MAIN_MEMORY) error("Address out of range on read word (" + to_hex_string(address) + ")");
             return *((uint32_t*) (main + address));
         }
 
         inline void write_byte(uint32_t address, uint8_t value) {
+            if (address >= SIZE_MAIN_MEMORY) error("Address out of range on write byte (" + to_hex_string(address) + ")");
             main[address] = value;
         }
 
         inline void write_halfword(uint32_t address, uint16_t value) {
+            if (address + 2 >= SIZE_MAIN_MEMORY) error("Address out of range on write halfword (" + to_hex_string(address) + ")");
             *((uint16_t*) (main + address)) = value;
         }
 
         inline void write_word(uint32_t address, uint32_t value) {
+            if (address + 4 >= SIZE_MAIN_MEMORY) error("Address out of range on write word (" + to_hex_string(address) + ")");
             *((uint32_t*) (main + address)) = value;
         }
 };

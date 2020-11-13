@@ -6,6 +6,7 @@
 #include <string>
 #include <stdint.h>
 #include <fstream>
+#include <iostream>
 
 // reads a log file and outputs a list of cpu_state
 CpuState* produce_expected_cpu_states(CpuState* cpu_states, std::string file_name, uint32_t num_lines) {
