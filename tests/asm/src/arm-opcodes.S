@@ -825,6 +825,34 @@ pass_bx_thumb:
 			MULS     r1,  r4,  r3
 			MRS      r12, CPSR
 			MRS      r13, SPSR
+			
+@ MVN tests [no flag modification]
+
+			LDR      r7,  =test_values
+
+            LDR      r2,  [r7, #0x00]
+			MVN      r3,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+            LDR      r2,  [r7, #0x08]
+			MVN      r3,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+@ MVN tests [flag modification]
+
+			LDR      r7,  =test_values
+
+            LDR      r2,  [r7, #0x00]
+			MVNS     r3,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+            LDR      r2,  [r7, #0x08]
+			MVNS     r3,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
 
 @ STR tests
 

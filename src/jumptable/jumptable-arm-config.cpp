@@ -179,22 +179,6 @@ inline void LDR(ARM7TDMI* cpu, uint32_t address, uint32_t opcode) {
 }
 
 @LOCAL_INLINE()
-inline void MOV(ARM7TDMI* cpu, uint32_t opcode) {
-    uint32_t* rd = &cpu->regs[get_nth_bits(opcode, 12, 16)];
-
-    *rd = cpu->shifter_operand;
-    if (get_nth_bit(opcode, 20)) {
-        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-            cpu->cpsr = cpu->spsr;
-        } else {
-            cpu->set_flag_N(get_nth_bit(*rd, 31));
-            cpu->set_flag_Z(*rd == 0);
-            cpu->set_flag_C(cpu->shifter_carry_out);
-        }
-    }
-}
-
-@LOCAL_INLINE()
 inline void LDRB(ARM7TDMI* cpu, uint32_t address, uint32_t opcode) {
     cpu->regs[get_nth_bits(opcode, 12, 16)] = cpu->memory->read_byte(address);
 }
@@ -227,6 +211,38 @@ inline uint32_t LSL(uint32_t value, uint8_t shift) {
 @LOCAL_INLINE()
 inline uint32_t LSR(uint32_t value, uint8_t shift) {
     return value >> shift;
+}
+
+@LOCAL_INLINE()
+inline void MOV(ARM7TDMI* cpu, uint32_t opcode) {
+    uint32_t* rd = &cpu->regs[get_nth_bits(opcode, 12, 16)];
+
+    *rd = cpu->shifter_operand;
+    if (get_nth_bit(opcode, 20)) {
+        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
+            cpu->cpsr = cpu->spsr;
+        } else {
+            cpu->set_flag_N(get_nth_bit(*rd, 31));
+            cpu->set_flag_Z(*rd == 0);
+            cpu->set_flag_C(cpu->shifter_carry_out);
+        }
+    }
+}
+
+@LOCAL_INLINE()
+inline void MVN(ARM7TDMI* cpu, uint32_t opcode) {
+    uint32_t* rd = &cpu->regs[get_nth_bits(opcode, 12, 16)];
+
+    *rd = ~cpu->shifter_operand;
+    if (get_nth_bit(opcode, 20)) {
+        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
+            cpu->cpsr = cpu->spsr;
+        } else {
+            cpu->set_flag_N(get_nth_bit(*rd, 31));
+            cpu->set_flag_Z(*rd == 0);
+            cpu->set_flag_C(cpu->shifter_carry_out);
+        }
+    }
 }
 
 @LOCAL_INLINE()
@@ -757,6 +773,11 @@ void run_COND0001U001(uint32_t opcode) {
 
 // CMN instruction
 // Addressing Mode 1, shifts
+
+// + in conjunction with
+
+// MVN instruction
+// Addressing Mode 1, shifts [flag modification]
 void run_COND0001U111(uint32_t opcode) {
     switch (get_nth_bits(opcode, 4, 8)) {
         case 0b1011: {
@@ -778,9 +799,18 @@ void run_COND0001U111(uint32_t opcode) {
         default:
             if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
             else                        addressing_mode_1_register_by_immediate(cpu, opcode);
-            CMN(cpu, opcode);
+            @IF(!U) CMN(cpu, opcode);
+            @IF( U) MVN(cpu, opcode);
             break;
     }
+}
+
+// MVN instruction
+// Addressing Mode 1, shifts [no flag modification]
+void run_COND00011110(uint32_t opcode) {
+    if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
+    else                        addressing_mode_1_register_by_immediate(cpu, opcode);
+    MVN(cpu, opcode);
 }
 
 // LDRH / LDRSB / LDRSH instructions
@@ -952,4 +982,11 @@ void run_COND0011101S(uint32_t opcode) {
 // No addressing mode needed for this instruction
 void run_COND00010R00(uint32_t opcode) {
     cpu->regs[get_nth_bits(opcode, 12, 16)] = get_nth_bit(opcode, 22) ? cpu->spsr : cpu->cpsr;
+}
+
+// MVN instruction
+// Addressing mode 1, immediate offset
+void run_COND0011111S(uint32_t opcode) {
+    if (get_nth_bit(opcode, 4)) addressing_mode_1_immediate(cpu, opcode);
+    MVN(cpu, opcode);
 }
