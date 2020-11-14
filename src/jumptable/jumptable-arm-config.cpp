@@ -1030,7 +1030,8 @@ void run_COND0011111S(uint32_t opcode) {
 }
 
 // ORR instruction
-// stub
+// Addressing Mode 1, immediate offset 
+// Addressing Mode 1, shifts [no flag modification]
 @EXCLUDE(----00011001)
 void run_COND00I1100S(uint32_t opcode) {
     @IF(!I) if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
