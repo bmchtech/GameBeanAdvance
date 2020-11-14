@@ -246,6 +246,22 @@ inline void MVN(ARM7TDMI* cpu, uint32_t opcode) {
 }
 
 @LOCAL_INLINE()
+inline void ORR(ARM7TDMI* cpu, uint32_t opcode) {
+    uint32_t* rd = &cpu->regs[get_nth_bits(opcode, 12, 16)];
+
+    *rd |= cpu->shifter_operand;
+    if (get_nth_bit(opcode, 20)) {
+        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
+            cpu->cpsr = cpu->spsr;
+        } else {
+            cpu->set_flag_N(get_nth_bit(*rd, 31));
+            cpu->set_flag_Z(*rd == 0);
+            cpu->set_flag_C(cpu->shifter_carry_out);
+        }
+    }
+}
+
+@LOCAL_INLINE()
 inline uint32_t ROR(uint32_t value, uint8_t shift) {
     uint32_t rotated_off = get_nth_bits(value, 0,     shift);  // the value that is rotated off
     uint32_t rotated_in  = get_nth_bits(value, shift, 32);     // the value that stays after the rotation
@@ -757,12 +773,34 @@ void run_COND00011100(uint32_t opcode) {
 
 // LDRH / LDRSB / LDRSH instructions
 // Addressing Mode 3, register offset
+
+// + in conjunction with
+
+// ORR instruction
+// Addressing Mode 1, shifts [flag modification]
 void run_COND0001U001(uint32_t opcode) {
-    uint32_t address = addressing_mode_3_register_offset(cpu, opcode);
     switch (get_nth_bits(opcode, 4, 8)) {
-        case 0b1011: LDRH (cpu, address, opcode); break;
-        case 0b1101: LDRSB(cpu, address, opcode); break;
-        case 0b1111: LDRSH(cpu, address, opcode); break;
+        case 0b1011: {
+            uint32_t address = addressing_mode_3_register_offset(cpu, opcode);
+            LDRH (cpu, address, opcode); 
+            break;
+        }
+        case 0b1101: {
+            uint32_t address = addressing_mode_3_register_offset(cpu, opcode);
+            LDRSB(cpu, address, opcode); 
+            break;
+        }
+        case 0b1111: {
+            uint32_t address = addressing_mode_3_register_offset(cpu, opcode);
+            LDRSH(cpu, address, opcode); 
+            break;
+        }
+
+        default:
+            if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
+            else                        addressing_mode_1_register_by_immediate(cpu, opcode);
+            ORR(cpu, opcode);
+            break;
     }
 }
 
@@ -989,4 +1027,14 @@ void run_COND00010R00(uint32_t opcode) {
 void run_COND0011111S(uint32_t opcode) {
     if (get_nth_bit(opcode, 4)) addressing_mode_1_immediate(cpu, opcode);
     MVN(cpu, opcode);
+}
+
+// ORR instruction
+// stub
+@EXCLUDE(----00011001)
+void run_COND00I1100S(uint32_t opcode) {
+    @IF(!I) if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
+    @IF(!I) else                        addressing_mode_1_register_by_immediate(cpu, opcode);
+    @IF( I)                             addressing_mode_1_immediate            (cpu, opcode);
+    ORR(cpu, opcode);
 }

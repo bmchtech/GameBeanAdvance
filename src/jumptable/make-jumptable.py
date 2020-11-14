@@ -208,6 +208,10 @@ for i in range(0, len(lines)):
                             val = False
                             cond = cond[1:]
 
+                        if not cond in keys:
+                            print("Error: bit-variable " + cond + " not found.")
+                            exit(1)
+                            
                         if get_nth_bit(current_iteration, keys.index(cond)) != val:
                             result = False
 
