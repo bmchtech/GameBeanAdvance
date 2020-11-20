@@ -298,6 +298,25 @@ inline void RSB(ARM7TDMI* cpu, uint32_t opcode) {
 }
 
 @LOCAL_INLINE()
+inline void RSC(ARM7TDMI* cpu, uint32_t opcode) {
+    uint32_t old_value        = cpu->regs[get_nth_bits(opcode, 12, 16)];
+    uint32_t register_operand = cpu->regs[get_nth_bits(opcode, 16, 20)];
+    uint32_t result           = cpu->shifter_operand - register_operand - ((~cpu->get_flag_C()) & 1);
+    cpu->regs[get_nth_bits(opcode, 12, 16)] = result;
+    
+    if (get_nth_bit(opcode, 20)) {
+        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
+            cpu->cpsr = cpu->spsr;
+        } else {
+            cpu->set_flag_Z(result == 0);
+            cpu->set_flag_N(result >> 31);
+            cpu->set_flag_V(((register_operand >> 31) ^ (cpu->shifter_operand >> 31)) && ((register_operand >> 31) == (result >> 31)));
+            cpu->set_flag_C(cpu->shifter_operand >= register_operand);
+        }
+    }
+}
+
+@LOCAL_INLINE()
 inline void STR(ARM7TDMI* cpu, uint32_t address, uint32_t opcode) {
     uint32_t result = cpu->regs[get_nth_bits(opcode, 12, 16)];
     if (get_nth_bits(opcode, 12, 16) == 15) result += 4;
@@ -1036,8 +1055,8 @@ void run_COND0011101S(uint32_t opcode) {
 // MRS instruction
 // No addressing mode needed for this instruction
 void run_COND00010R00(uint32_t opcode) {
-    @IF( R) cpu->regs[get_nth_bits(opcode, 12, 16)] = cpu->spsr;
     @IF(!R) cpu->regs[get_nth_bits(opcode, 12, 16)] = cpu->cpsr;
+    @IF( R) cpu->regs[get_nth_bits(opcode, 12, 16)] = cpu->spsr;
 }
 
 // MVN instruction
@@ -1061,9 +1080,19 @@ void run_COND00I1100S(uint32_t opcode) {
 // RSB instruction
 // Addressing Mode 1, immediate offset 
 // Addressing Mode 1, shifts
-void run_COND00I0011S(uint32_t opcode) {
+
+// + in conjunction with
+
+// RSC instruction
+// Addressing Mode 1, immediate offset 
+// Addressing Mode 1, shifts
+void run_COND00I0E11S(uint32_t opcode) {
     @IF(!I) if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
     @IF(!I) else                        addressing_mode_1_register_by_immediate(cpu, opcode);
     @IF( I)                             addressing_mode_1_immediate            (cpu, opcode);
-    RSB(cpu, opcode);
+
+    // E for carr-E.... carry.... haha...
+    // the C was already used in COND so...
+    @IF(!E) RSB(cpu, opcode);
+    @IF( E) RSC(cpu, opcode);
 }
