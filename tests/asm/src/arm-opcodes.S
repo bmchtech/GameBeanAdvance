@@ -895,6 +895,82 @@ pass_bx_thumb:
             ORRS     r2,  r3
 			MRS      r12, CPSR
 			MRS      r13, SPSR
+
+@ RSB tests [no flag modification]
+
+			LDR      r7,  =test_values
+
+			LDR      r2,  [r7, #0x1C]
+            LDR      r4,  [r7, #0x0C]
+			RSB      r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x08]
+            LDR      r4,  [r7, #0x04]
+			RSB      r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+@ RSB tests [flag modification]
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+
+			LDR      r2,  [r7, #0x18] @ pos + pos = pos
+            LDR      r4,  [r9, #0x14]
+			RSBS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x14] @ neg + pos = neg
+            LDR      r4,  [r9, #0x14]
+			RSBS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x18] @ pos + neg = neg
+            LDR      r4,  [r7, #0x14]
+			RSBS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x0C] @ neg + neg = pos
+            LDR      r4,  [r7, #0x14]
+			RSBS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x18] @ pos + pos = neg
+            LDR      r4,  [r7, #0x10]
+			RSBS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x08] @ neg + pos = pos
+            LDR      r4,  [r7, #0x20]
+			RSBS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x18] @ pos + neg = pos
+            LDR      r4,  [r7, #0x24]
+			RSBS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x1C] @ neg + neg = neg
+            LDR      r4,  [r7, #0x0C]
+			RSBS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x08] @ zero case
+            LDR      r4,  [r7, #0x04]
+			RSBS     r3,  r2,  r4
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
 @ STR tests
 
 			LDR      r7,  =mem_target_addresses
