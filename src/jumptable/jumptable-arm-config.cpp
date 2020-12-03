@@ -53,6 +53,18 @@ inline void set_flags_default_NZ(ARM7TDMI* cpu, uint32_t result) {
 }
 
 @LOCAL_INLINE()
+inline void set_flags_default_NZ_with_opcode_checking(ARM7TDMI* cpu, uint32_t result, uint32_t opcode) {
+    if (get_nth_bit(opcode, 20)) {
+        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
+            cpu->cpsr = cpu->spsr;
+        } else {
+            set_flags_NZ(cpu, result >> 31, result == 0);
+            cpu->set_flag_C(cpu->shifter_carry_out);
+        }
+    }
+}
+
+@LOCAL_INLINE()
 inline void ADD(ARM7TDMI* cpu, uint32_t opcode) { 
     uint32_t old_value        = cpu->regs[get_nth_bits(opcode, 12, 16)];
     uint32_t register_operand = cpu->regs[get_nth_bits(opcode, 16, 20)];
@@ -93,14 +105,7 @@ inline void AND(ARM7TDMI* cpu, uint32_t opcode) {
     uint32_t* rd = &cpu->regs[get_nth_bits(opcode, 12, 16)];
 
     *rd = cpu->regs[get_nth_bits(opcode, 16, 20)] & cpu->shifter_operand;
-    if (get_nth_bit(opcode, 20)) {
-        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-            cpu->cpsr = cpu->spsr;
-        } else {
-            set_flags_default_NZ(cpu, *rd);
-            cpu->set_flag_C(cpu->shifter_carry_out);
-        }
-    }
+    set_flags_default_NZ_with_opcode_checking(cpu, *rd, opcode);
 }
 
 // https://stackoverflow.com/questions/14721275/how-can-i-use-arithmetic-right-shifting-with-an-unsigned-int
@@ -125,14 +130,7 @@ inline void BIC(ARM7TDMI* cpu, uint32_t opcode) {
     uint32_t* rd = &cpu->regs[get_nth_bits(opcode, 12, 16)];
 
     *rd = cpu->regs[get_nth_bits(opcode, 16, 20)] & ~cpu->shifter_operand;
-    if (get_nth_bit(opcode, 20)) {
-        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-            cpu->cpsr = cpu->spsr;
-        } else {
-            set_flags_default_NZ(cpu, *rd);
-            cpu->set_flag_C(cpu->shifter_carry_out);
-        }
-    }
+    set_flags_default_NZ_with_opcode_checking(cpu, *rd, opcode);
 }
 
 @LOCAL_INLINE()
@@ -162,14 +160,7 @@ inline void EOR(ARM7TDMI* cpu, uint32_t opcode) {
     uint32_t* rd = &cpu->regs[get_nth_bits(opcode, 12, 16)];
 
     *rd = cpu->regs[get_nth_bits(opcode, 16, 20)] ^ cpu->shifter_operand;
-    if (get_nth_bit(opcode, 20)) {
-        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-            cpu->cpsr = cpu->spsr;
-        } else {
-            set_flags_default_NZ(cpu, *rd);
-            cpu->set_flag_C(cpu->shifter_carry_out);
-        }
-    }
+    set_flags_default_NZ_with_opcode_checking(cpu, *rd, opcode);
 }
 
 @LOCAL_INLINE()
@@ -227,14 +218,7 @@ inline void MOV(ARM7TDMI* cpu, uint32_t opcode) {
     uint32_t* rd = &cpu->regs[get_nth_bits(opcode, 12, 16)];
 
     *rd = cpu->shifter_operand;
-    if (get_nth_bit(opcode, 20)) {
-        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-            cpu->cpsr = cpu->spsr;
-        } else {
-            set_flags_default_NZ(cpu, *rd);
-            cpu->set_flag_C(cpu->shifter_carry_out);
-        }
-    }
+    set_flags_default_NZ_with_opcode_checking(cpu, *rd, opcode);
 }
 
 @LOCAL_INLINE()
@@ -242,14 +226,7 @@ inline void MVN(ARM7TDMI* cpu, uint32_t opcode) {
     uint32_t* rd = &cpu->regs[get_nth_bits(opcode, 12, 16)];
 
     *rd = ~cpu->shifter_operand;
-    if (get_nth_bit(opcode, 20)) {
-        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-            cpu->cpsr = cpu->spsr;
-        } else {
-            set_flags_default_NZ(cpu, *rd);
-            cpu->set_flag_C(cpu->shifter_carry_out);
-        }
-    }
+    set_flags_default_NZ_with_opcode_checking(cpu, *rd, opcode);
 }
 
 @LOCAL_INLINE()
@@ -257,14 +234,7 @@ inline void ORR(ARM7TDMI* cpu, uint32_t opcode) {
     uint32_t* rd = &cpu->regs[get_nth_bits(opcode, 12, 16)];
 
     *rd |= cpu->shifter_operand;
-    if (get_nth_bit(opcode, 20)) {
-        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-            cpu->cpsr = cpu->spsr;
-        } else {
-            set_flags_default_NZ(cpu, *rd);
-            cpu->set_flag_C(cpu->shifter_carry_out);
-        }
-    }
+    set_flags_default_NZ_with_opcode_checking(cpu, *rd, opcode);
 }
 
 @LOCAL_INLINE()
