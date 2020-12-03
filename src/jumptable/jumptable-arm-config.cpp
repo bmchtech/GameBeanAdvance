@@ -316,6 +316,24 @@ inline void RSC(ARM7TDMI* cpu, uint32_t opcode) {
 }
 
 @LOCAL_INLINE()
+inline void SBC(ARM7TDMI* cpu, uint32_t opcode) {
+    uint32_t register_operand = cpu->regs[get_nth_bits(opcode, 16, 20)];
+    uint32_t result           = register_operand - cpu->shifter_operand - ((~cpu->get_flag_C()) & 1);
+    cpu->regs[get_nth_bits(opcode, 12, 16)] = result;
+    
+    if (get_nth_bit(opcode, 20)) {
+        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
+            cpu->cpsr = cpu->spsr;
+        } else {
+            cpu->set_flag_Z(result == 0);
+            cpu->set_flag_N(result >> 31);
+            cpu->set_flag_V(((cpu->shifter_operand >> 31) ^ (register_operand >> 31)) && ((cpu->shifter_operand >> 31) == (result >> 31)));
+            cpu->set_flag_C(cpu->shifter_operand <= register_operand);
+        }
+    }
+}
+
+@LOCAL_INLINE()
 inline void STR(ARM7TDMI* cpu, uint32_t address, uint32_t opcode) {
     uint32_t result = cpu->regs[get_nth_bits(opcode, 12, 16)];
     if (get_nth_bits(opcode, 12, 16) == 15) result += 4;
@@ -820,11 +838,13 @@ void run_COND0001U001(uint32_t opcode) {
             LDRH (cpu, address, opcode); 
             break;
         }
+
         case 0b1101: {
             uint32_t address = addressing_mode_3_register_offset(cpu, opcode);
             LDRSB(cpu, address, opcode); 
             break;
         }
+
         case 0b1111: {
             uint32_t address = addressing_mode_3_register_offset(cpu, opcode);
             LDRSH(cpu, address, opcode); 
@@ -858,11 +878,13 @@ void run_COND0001U111(uint32_t opcode) {
             LDRH (cpu, address, opcode); 
             break;
         }
+
         case 0b1101: {
             uint32_t address = addressing_mode_3_immediate_preindexed(cpu, opcode);
             LDRSB(cpu, address, opcode); 
             break;
         }
+
         case 0b1111: {
             uint32_t address = addressing_mode_3_immediate_preindexed(cpu, opcode);
             LDRSH(cpu, address, opcode); 
@@ -900,11 +922,13 @@ void run_COND0001U011(uint32_t opcode) {
             LDRH (cpu, address, opcode); 
             break;
         }
+
         case 0b1101: {
             uint32_t address = addressing_mode_3_register_preindexed(cpu, opcode);
             LDRSB(cpu, address, opcode); 
             break;
         }
+
         case 0b1111: {
             uint32_t address = addressing_mode_3_register_preindexed(cpu, opcode);
             LDRSH(cpu, address, opcode); 
@@ -929,13 +953,44 @@ void run_COND00011010(uint32_t opcode) {
 
 // LDRH / LDRSB / LDRSH instructions
 // Addressing Mode 3, immediate post-indexed
+
+// + in conjunction with
+
+// SBC instruction
+// Addressing Mode 1, shifts [flag modification]
 void run_COND0000U101(uint32_t opcode) {
-    uint32_t address = addressing_mode_3_immediate_postindexed(cpu, opcode);
     switch (get_nth_bits(opcode, 4, 8)) {
-        case 0b1011: LDRH (cpu, address, opcode); break;
-        case 0b1101: LDRSB(cpu, address, opcode); break;
-        case 0b1111: LDRSH(cpu, address, opcode); break;
+        case 0b1011: {
+            uint32_t address = addressing_mode_3_immediate_postindexed(cpu, opcode);
+            LDRH (cpu, address, opcode); 
+            break;
+        }
+
+        case 0b1101: {
+            uint32_t address = addressing_mode_3_immediate_postindexed(cpu, opcode);
+            LDRSB(cpu, address, opcode); 
+            break;
+        }
+
+        case 0b1111: {
+            uint32_t address = addressing_mode_3_immediate_postindexed(cpu, opcode);
+            LDRSH(cpu, address, opcode); 
+            break;
+        }
+
+        default:
+            if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
+            else                        addressing_mode_1_register_by_immediate(cpu, opcode);
+            SBC(cpu, opcode);
     }
+}
+
+// SBC Instruction
+// Addressing Mode 1, shifts [no flag modification]
+void run_COND00001100(uint32_t opcode) {
+    if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
+    else                        addressing_mode_1_register_by_immediate(cpu, opcode);
+    SBC(cpu, opcode);
 }
 
 // LDRH / LDRSB / LDRSH instructions
