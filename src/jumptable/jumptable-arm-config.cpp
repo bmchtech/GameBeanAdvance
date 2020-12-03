@@ -1159,14 +1159,19 @@ void run_COND00I0E11S(uint32_t opcode) {
 // SMLAL instruction
 void run_COND0000111S(uint32_t opcode) {
     switch (get_nth_bits(opcode, 4, 8)) {
-        case 1001: { // SMLAL
-            uint64_t result = (uint64_t) cpu->regs[get_nth_bits(opcode, 0, 4)] * (uint64_t) cpu->regs[get_nth_bits(opcode, 8, 11)];
-            uint32_t* rd_lo = &cpu->regs[get_nth_bits(opcode, 12, 16)];
-            uint32_t* rd_hi = &cpu->regs[get_nth_bits(opcode, 12, 16)];
+        case 0b1001: { // SMLAL
+            // unintuitive sign extension 
+            // http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
+            const uint64_t mask = 1U << (32 - 1);
 
-            result += (((uint64_t) *rd_hi) << 32) + *rd_lo;
-            *rd_lo = result & 0xFFFFFFFF;
-            *rd_hi = result >> 32;
+            uint64_t result = ((((int64_t) cpu->regs[get_nth_bits(opcode, 0, 4)])  ^ mask) - mask) * 
+                              ((((int64_t) cpu->regs[get_nth_bits(opcode, 8, 12)]) ^ mask) - mask);
+            uint32_t* rd_lo = &cpu->regs[get_nth_bits(opcode, 12, 16)];
+            uint32_t* rd_hi = &cpu->regs[get_nth_bits(opcode, 16, 20)];
+
+            result += (((uint64_t) *rd_hi) << 32) | ((uint64_t) *rd_lo);
+            *rd_lo = (uint32_t) (result & 0xFFFFFFFF);
+            *rd_hi = (uint32_t) (result >> 32);
             
             if (get_nth_bit(opcode, 20)) {
                 if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
