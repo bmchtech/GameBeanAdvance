@@ -28,13 +28,29 @@
     #define DEBUG_MESSAGE(message) do {} while(0)
 #endif
 
-
-
 // *********************************************** Opcode Functions **********************************************
 //                     A list of local helper functions that are used in the instruction set
 // ***************************************************************************************************************
 
 
+@LOCAL_INLINE()
+inline void set_flags_NZCV(ARM7TDMI* cpu, bool N, bool Z, bool C, bool V) {
+    cpu->set_flag_N(N);
+    cpu->set_flag_Z(Z);
+    cpu->set_flag_C(C);
+    cpu->set_flag_V(V);
+}
+
+@LOCAL_INLINE()
+inline void set_flags_NZ(ARM7TDMI* cpu, bool N, bool Z) {
+    cpu->set_flag_N(N);
+    cpu->set_flag_Z(Z);
+}
+
+@LOCAL_INLINE()
+inline void set_flags_default_NZ(ARM7TDMI* cpu, uint32_t result) {
+    set_flags_NZ(cpu, result >> 31, result == 0);
+}
 
 @LOCAL_INLINE()
 inline void ADD(ARM7TDMI* cpu, uint32_t opcode) { 
@@ -47,8 +63,7 @@ inline void ADD(ARM7TDMI* cpu, uint32_t opcode) {
         if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
             cpu->cpsr = cpu->spsr;
         } else {
-            cpu->set_flag_Z(result == 0);
-            cpu->set_flag_N(result >> 31);
+            set_flags_default_NZ(cpu, result);
             cpu->set_flag_V(((register_operand >> 31) == (cpu->shifter_operand >> 31)) && ((register_operand >> 31) ^ (result >> 31)));
             cpu->set_flag_C(((register_operand >> 31) || (cpu->shifter_operand >> 31)) && !(result >> 31));
         }
@@ -66,8 +81,7 @@ inline void ADC(ARM7TDMI* cpu, uint32_t opcode) {
         if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
             cpu->cpsr = cpu->spsr;
         } else {
-            cpu->set_flag_Z(result == 0);
-            cpu->set_flag_N(result >> 31);
+            set_flags_default_NZ(cpu, result);
             cpu->set_flag_V(((register_operand >> 31) == (cpu->shifter_operand >> 31)) && ((register_operand >> 31) ^ (result >> 31)));
             cpu->set_flag_C(((register_operand >> 31) || (cpu->shifter_operand >> 31)) && !(result >> 31));
         }
@@ -83,8 +97,7 @@ inline void AND(ARM7TDMI* cpu, uint32_t opcode) {
         if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
             cpu->cpsr = cpu->spsr;
         } else {
-            cpu->set_flag_N(get_nth_bit(*rd, 31));
-            cpu->set_flag_Z(*rd == 0);
+            set_flags_default_NZ(cpu, *rd);
             cpu->set_flag_C(cpu->shifter_carry_out);
         }
     }
@@ -116,8 +129,7 @@ inline void BIC(ARM7TDMI* cpu, uint32_t opcode) {
         if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
             cpu->cpsr = cpu->spsr;
         } else {
-            cpu->set_flag_N(get_nth_bit(*rd, 31));
-            cpu->set_flag_Z(*rd == 0);
+            set_flags_default_NZ(cpu, *rd);
             cpu->set_flag_C(cpu->shifter_carry_out);
         }
     }
@@ -129,8 +141,7 @@ inline void CMN(ARM7TDMI* cpu, uint32_t opcode) {
     uint32_t register_operand = cpu->regs[get_nth_bits(opcode, 16, 20)];
     uint32_t result           = register_operand + cpu->shifter_operand;
     
-    cpu->set_flag_Z(result == 0);
-    cpu->set_flag_N(result >> 31);
+    set_flags_default_NZ(cpu, result);
     cpu->set_flag_V(((register_operand >> 31) == (cpu->shifter_operand >> 31)) && ((register_operand >> 31) ^ (result >> 31)));
     cpu->set_flag_C(((register_operand >> 31) || (cpu->shifter_operand >> 31)) && !(result >> 31));
 }
@@ -141,8 +152,7 @@ inline void CMP(ARM7TDMI* cpu, uint32_t opcode) {
     uint32_t register_operand = cpu->regs[get_nth_bits(opcode, 16, 20)];
     uint32_t result           = register_operand + ~cpu->shifter_operand + 1;
     
-    cpu->set_flag_Z(result == 0);
-    cpu->set_flag_N(result >> 31);
+    set_flags_default_NZ(cpu, result);
     cpu->set_flag_V(((register_operand >> 31) ^ (cpu->shifter_operand >> 31)) && ((register_operand >> 31) ^ (result >> 31)));
     cpu->set_flag_C(register_operand >= cpu->shifter_operand);
 }
@@ -156,8 +166,7 @@ inline void EOR(ARM7TDMI* cpu, uint32_t opcode) {
         if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
             cpu->cpsr = cpu->spsr;
         } else {
-            cpu->set_flag_N(get_nth_bit(*rd, 31));
-            cpu->set_flag_Z(*rd == 0);
+            set_flags_default_NZ(cpu, *rd);
             cpu->set_flag_C(cpu->shifter_carry_out);
         }
     }
@@ -222,8 +231,7 @@ inline void MOV(ARM7TDMI* cpu, uint32_t opcode) {
         if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
             cpu->cpsr = cpu->spsr;
         } else {
-            cpu->set_flag_N(get_nth_bit(*rd, 31));
-            cpu->set_flag_Z(*rd == 0);
+            set_flags_default_NZ(cpu, *rd);
             cpu->set_flag_C(cpu->shifter_carry_out);
         }
     }
@@ -238,8 +246,7 @@ inline void MVN(ARM7TDMI* cpu, uint32_t opcode) {
         if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
             cpu->cpsr = cpu->spsr;
         } else {
-            cpu->set_flag_N(get_nth_bit(*rd, 31));
-            cpu->set_flag_Z(*rd == 0);
+            set_flags_default_NZ(cpu, *rd);
             cpu->set_flag_C(cpu->shifter_carry_out);
         }
     }
@@ -254,8 +261,7 @@ inline void ORR(ARM7TDMI* cpu, uint32_t opcode) {
         if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
             cpu->cpsr = cpu->spsr;
         } else {
-            cpu->set_flag_N(get_nth_bit(*rd, 31));
-            cpu->set_flag_Z(*rd == 0);
+            set_flags_default_NZ(cpu, *rd);
             cpu->set_flag_C(cpu->shifter_carry_out);
         }
     }
@@ -289,8 +295,7 @@ inline void RSB(ARM7TDMI* cpu, uint32_t opcode) {
         if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
             cpu->cpsr = cpu->spsr;
         } else {
-            cpu->set_flag_Z(result == 0);
-            cpu->set_flag_N(result >> 31);
+            set_flags_default_NZ(cpu, result);
             cpu->set_flag_V(((register_operand >> 31) ^ (cpu->shifter_operand >> 31)) && ((register_operand >> 31) == (result >> 31)));
             cpu->set_flag_C(cpu->shifter_operand >= register_operand);
         }
@@ -307,8 +312,7 @@ inline void RSC(ARM7TDMI* cpu, uint32_t opcode) {
         if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
             cpu->cpsr = cpu->spsr;
         } else {
-            cpu->set_flag_Z(result == 0);
-            cpu->set_flag_N(result >> 31);
+            set_flags_default_NZ(cpu, result);
             cpu->set_flag_V(((register_operand >> 31) ^ (cpu->shifter_operand >> 31)) && ((register_operand >> 31) == (result >> 31)));
             cpu->set_flag_C(cpu->shifter_operand >= register_operand);
         }
@@ -325,8 +329,7 @@ inline void SBC(ARM7TDMI* cpu, uint32_t opcode) {
         if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
             cpu->cpsr = cpu->spsr;
         } else {
-            cpu->set_flag_Z(result == 0);
-            cpu->set_flag_N(result >> 31);
+            set_flags_default_NZ(cpu, result);
             cpu->set_flag_V(((cpu->shifter_operand >> 31) ^ (register_operand >> 31)) && ((cpu->shifter_operand >> 31) == (result >> 31)));
             cpu->set_flag_C(cpu->shifter_operand <= register_operand);
         }
