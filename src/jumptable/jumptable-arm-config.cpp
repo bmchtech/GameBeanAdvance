@@ -65,21 +65,26 @@ inline void set_flags_default_NZ_with_opcode_checking(ARM7TDMI* cpu, uint32_t re
 }
 
 @LOCAL_INLINE()
+inline void set_flags_default_NZCV_with_opcode_checking(ARM7TDMI* cpu, uint32_t result, uint32_t opcode, bool C, bool V) {
+    if (get_nth_bit(opcode, 20)) {
+        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
+            cpu->cpsr = cpu->spsr;
+        } else {
+            set_flags_NZCV(cpu, result >> 31, result == 0, C, V);
+        }
+    }
+}
+
+@LOCAL_INLINE()
 inline void ADD(ARM7TDMI* cpu, uint32_t opcode) { 
     uint32_t old_value        = cpu->regs[get_nth_bits(opcode, 12, 16)];
     uint32_t register_operand = cpu->regs[get_nth_bits(opcode, 16, 20)];
     uint32_t result           = register_operand + cpu->shifter_operand;
     cpu->regs[get_nth_bits(opcode, 12, 16)] = result;
     
-    if (get_nth_bit(opcode, 20)) {
-        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-            cpu->cpsr = cpu->spsr;
-        } else {
-            set_flags_default_NZ(cpu, result);
-            cpu->set_flag_V(((register_operand >> 31) == (cpu->shifter_operand >> 31)) && ((register_operand >> 31) ^ (result >> 31)));
-            cpu->set_flag_C(((register_operand >> 31) || (cpu->shifter_operand >> 31)) && !(result >> 31));
-        }
-    }
+    set_flags_default_NZCV_with_opcode_checking(cpu, result, opcode,
+        ((register_operand >> 31) || (cpu->shifter_operand >> 31)) && !(result >> 31),
+        ((register_operand >> 31) == (cpu->shifter_operand >> 31)) && ((register_operand >> 31) ^ (result >> 31)));
 }
 
 @LOCAL_INLINE()
@@ -89,15 +94,9 @@ inline void ADC(ARM7TDMI* cpu, uint32_t opcode) {
     uint32_t result           = register_operand + cpu->shifter_operand + cpu->get_flag_C();
     cpu->regs[get_nth_bits(opcode, 12, 16)] = result;
     
-    if (get_nth_bit(opcode, 20)) {
-        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-            cpu->cpsr = cpu->spsr;
-        } else {
-            set_flags_default_NZ(cpu, result);
-            cpu->set_flag_V(((register_operand >> 31) == (cpu->shifter_operand >> 31)) && ((register_operand >> 31) ^ (result >> 31)));
-            cpu->set_flag_C(((register_operand >> 31) || (cpu->shifter_operand >> 31)) && !(result >> 31));
-        }
-    }
+    set_flags_default_NZCV_with_opcode_checking(cpu, result, opcode,
+        ((register_operand >> 31) || (cpu->shifter_operand >> 31)) && !(result >> 31),
+        ((register_operand >> 31) == (cpu->shifter_operand >> 31)) && ((register_operand >> 31) ^ (result >> 31)));
 }
 
 @LOCAL_INLINE()
@@ -261,15 +260,9 @@ inline void RSB(ARM7TDMI* cpu, uint32_t opcode) {
     uint32_t result           = cpu->shifter_operand - register_operand;
     cpu->regs[get_nth_bits(opcode, 12, 16)] = result;
     
-    if (get_nth_bit(opcode, 20)) {
-        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-            cpu->cpsr = cpu->spsr;
-        } else {
-            set_flags_default_NZ(cpu, result);
-            cpu->set_flag_V(((register_operand >> 31) ^ (cpu->shifter_operand >> 31)) && ((register_operand >> 31) == (result >> 31)));
-            cpu->set_flag_C(cpu->shifter_operand >= register_operand);
-        }
-    }
+    set_flags_default_NZCV_with_opcode_checking(cpu, result, opcode,
+        (cpu->shifter_operand >= register_operand),
+        ((register_operand >> 31) ^ (cpu->shifter_operand >> 31)) && ((register_operand >> 31) == (result >> 31)));
 }
 
 @LOCAL_INLINE()
@@ -278,15 +271,9 @@ inline void RSC(ARM7TDMI* cpu, uint32_t opcode) {
     uint32_t result           = cpu->shifter_operand - register_operand - ((~cpu->get_flag_C()) & 1);
     cpu->regs[get_nth_bits(opcode, 12, 16)] = result;
     
-    if (get_nth_bit(opcode, 20)) {
-        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-            cpu->cpsr = cpu->spsr;
-        } else {
-            set_flags_default_NZ(cpu, result);
-            cpu->set_flag_V(((register_operand >> 31) ^ (cpu->shifter_operand >> 31)) && ((register_operand >> 31) == (result >> 31)));
-            cpu->set_flag_C(cpu->shifter_operand >= register_operand);
-        }
-    }
+    set_flags_default_NZCV_with_opcode_checking(cpu, result, opcode,
+        (cpu->shifter_operand >= register_operand),
+        ((register_operand >> 31) ^ (cpu->shifter_operand >> 31)) && ((register_operand >> 31) == (result >> 31)));
 }
 
 @LOCAL_INLINE()
@@ -295,15 +282,10 @@ inline void SBC(ARM7TDMI* cpu, uint32_t opcode) {
     uint32_t result           = register_operand - cpu->shifter_operand - ((~cpu->get_flag_C()) & 1);
     cpu->regs[get_nth_bits(opcode, 12, 16)] = result;
     
-    if (get_nth_bit(opcode, 20)) {
-        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-            cpu->cpsr = cpu->spsr;
-        } else {
-            set_flags_default_NZ(cpu, result);
-            cpu->set_flag_V(((cpu->shifter_operand >> 31) ^ (register_operand >> 31)) && ((cpu->shifter_operand >> 31) == (result >> 31)));
-            cpu->set_flag_C(cpu->shifter_operand <= register_operand);
-        }
-    }
+    
+    set_flags_default_NZCV_with_opcode_checking(cpu, result, opcode,
+        (cpu->shifter_operand <= register_operand),
+        ((cpu->shifter_operand >> 31) ^ (register_operand >> 31)) && ((cpu->shifter_operand >> 31) == (result >> 31)));
 }
 
 @LOCAL_INLINE()
