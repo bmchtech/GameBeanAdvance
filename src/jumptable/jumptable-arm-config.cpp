@@ -299,7 +299,6 @@ inline void RSB(ARM7TDMI* cpu, uint32_t opcode) {
 
 @LOCAL_INLINE()
 inline void RSC(ARM7TDMI* cpu, uint32_t opcode) {
-    uint32_t old_value        = cpu->regs[get_nth_bits(opcode, 12, 16)];
     uint32_t register_operand = cpu->regs[get_nth_bits(opcode, 16, 20)];
     uint32_t result           = cpu->shifter_operand - register_operand - ((~cpu->get_flag_C()) & 1);
     cpu->regs[get_nth_bits(opcode, 12, 16)] = result;
@@ -1085,7 +1084,7 @@ void run_COND00I1100S(uint32_t opcode) {
 
 // RSC instruction
 // Addressing Mode 1, immediate offset 
-// Addressing Mode 1, shifts
+@EXCLUDE(----0000111-)
 void run_COND00I0E11S(uint32_t opcode) {
     @IF(!I) if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
     @IF(!I) else                        addressing_mode_1_register_by_immediate(cpu, opcode);
@@ -1095,4 +1094,40 @@ void run_COND00I0E11S(uint32_t opcode) {
     // the C was already used in COND so...
     @IF(!E) RSB(cpu, opcode);
     @IF( E) RSC(cpu, opcode);
+}
+
+// RSC instruction
+// Addressing Mode 1, shifts
+
+// + in conjunction with
+
+// SMLAL instruction
+void run_COND0000111S(uint32_t opcode) {
+    switch (get_nth_bits(opcode, 4, 8)) {
+        case 1001: { // SMLAL
+            uint64_t result = (uint64_t) cpu->regs[get_nth_bits(opcode, 0, 4)] * (uint64_t) cpu->regs[get_nth_bits(opcode, 8, 11)];
+            uint32_t* rd_lo = &cpu->regs[get_nth_bits(opcode, 12, 16)];
+            uint32_t* rd_hi = &cpu->regs[get_nth_bits(opcode, 12, 16)];
+
+            result += (((uint64_t) *rd_hi) << 32) + *rd_lo;
+            *rd_lo = result & 0xFFFFFFFF;
+            *rd_hi = result >> 32;
+            
+            if (get_nth_bit(opcode, 20)) {
+                if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
+                    cpu->cpsr = cpu->spsr;
+                } else {
+                    cpu->set_flag_Z(result == 0);
+                    cpu->set_flag_N(result >> 31);
+                }
+            }
+        
+            break;
+        }
+
+        default: // RSC
+            if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
+            else                        addressing_mode_1_register_by_immediate(cpu, opcode);
+            RSC(cpu, opcode);
+    }
 }
