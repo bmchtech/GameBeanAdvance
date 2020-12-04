@@ -1348,6 +1348,27 @@ pass_bx_thumb:
 			LDR      r5,  [r7, #0x00]
 			SMLAL    r2, r3, r4, r5
 
+@ SMULL tests
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+
+			LDR      r2,  [r7, #0x14]
+			LDR      r3,  [r9, #0x10]
+			LDR      r4,  [r7, #0x18]
+			LDR      r5,  [r9, #0x0C]
+			SMULL    r2, r3, r4, r5
+
+			LDR      r4,  [r7, #0x04]
+			LDR      r5,  [r9, #0x0C]
+			SMULL    r2, r3, r4, r5
+
+			LDR      r2,  [r7, #0x00]
+			LDR      r3,  [r7, #0x00]
+			LDR      r4,  [r7, #0x00]
+			LDR      r5,  [r7, #0x00]
+			SMULL    r2, r3, r4, r5
+
 @ STR tests
 
 			LDR      r7,  =mem_target_addresses

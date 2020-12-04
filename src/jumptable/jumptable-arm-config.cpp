@@ -289,6 +289,21 @@ inline void SBC(ARM7TDMI* cpu, uint32_t opcode) {
 }
 
 @LOCAL_INLINE()
+inline void SMULL(ARM7TDMI* cpu, uint32_t opcode) {
+    // unintuitive sign extension 
+    // http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
+    const uint64_t mask = 1U << (32 - 1);
+
+    uint64_t result = ((((int64_t) cpu->regs[get_nth_bits(opcode, 0, 4)])  ^ mask) - mask) * 
+                      ((((int64_t) cpu->regs[get_nth_bits(opcode, 8, 12)]) ^ mask) - mask);
+                      
+    cpu->regs[get_nth_bits(opcode, 12, 16)] = (uint32_t) (result & 0xFFFFFFFF);
+    cpu->regs[get_nth_bits(opcode, 16, 20)] = (uint32_t) (result >> 32);
+    
+    set_flags_default_NZ_with_opcode_checking(cpu, result, opcode);
+}
+
+@LOCAL_INLINE()
 inline void STR(ARM7TDMI* cpu, uint32_t address, uint32_t opcode) {
     uint32_t result = cpu->regs[get_nth_bits(opcode, 12, 16)];
     if (get_nth_bits(opcode, 12, 16) == 15) result += 4;
@@ -913,8 +928,15 @@ void run_COND00011010(uint32_t opcode) {
 
 // SBC instruction
 // Addressing Mode 1, shifts [flag modification]
+
+// + in conjunction with
+
+// SMULL instruction [flag modification]
 void run_COND0000U101(uint32_t opcode) {
     switch (get_nth_bits(opcode, 4, 8)) {
+        case 0b1001: {
+            SMULL(cpu, opcode);
+        }
         case 0b1011: {
             uint32_t address = addressing_mode_3_immediate_postindexed(cpu, opcode);
             LDRH (cpu, address, opcode); 
@@ -940,12 +962,23 @@ void run_COND0000U101(uint32_t opcode) {
     }
 }
 
-// SBC Instruction
-// Addressing Mode 1, shifts [no flag modification]
+// SBC Instruction [no flag modification]
+// Addressing Mode 1, shifts 
+
+// + in conjunction with:
+
+// SMULL instruction [no flag modification]
 void run_COND00001100(uint32_t opcode) {
-    if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
-    else                        addressing_mode_1_register_by_immediate(cpu, opcode);
-    SBC(cpu, opcode);
+    switch (get_nth_bits(opcode, 4, 8)) {
+        case 0b1001:
+            SMULL(cpu, opcode);
+            break;
+
+        default:
+            if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
+            else                        addressing_mode_1_register_by_immediate(cpu, opcode);
+            SBC(cpu, opcode);
+    }
 }
 
 // LDRH / LDRSB / LDRSH instructions
