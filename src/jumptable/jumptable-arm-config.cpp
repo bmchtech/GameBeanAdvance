@@ -296,11 +296,17 @@ inline void SMULL(ARM7TDMI* cpu, uint32_t opcode) {
 
     uint64_t result = ((((int64_t) cpu->regs[get_nth_bits(opcode, 0, 4)])  ^ mask) - mask) * 
                       ((((int64_t) cpu->regs[get_nth_bits(opcode, 8, 12)]) ^ mask) - mask);
-                      
+
     cpu->regs[get_nth_bits(opcode, 12, 16)] = (uint32_t) (result & 0xFFFFFFFF);
     cpu->regs[get_nth_bits(opcode, 16, 20)] = (uint32_t) (result >> 32);
-    
-    set_flags_default_NZ_with_opcode_checking(cpu, result, opcode);
+
+    if (get_nth_bit(opcode, 20)) {
+        if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
+            cpu->cpsr = cpu->spsr;
+        } else {
+            set_flags_NZ(cpu, result >> 63, result == 0);
+        }
+    }
 }
 
 @LOCAL_INLINE()
@@ -936,7 +942,9 @@ void run_COND0000U101(uint32_t opcode) {
     switch (get_nth_bits(opcode, 4, 8)) {
         case 0b1001: {
             SMULL(cpu, opcode);
+            break;
         }
+
         case 0b1011: {
             uint32_t address = addressing_mode_3_immediate_postindexed(cpu, opcode);
             LDRH (cpu, address, opcode); 
@@ -1166,7 +1174,7 @@ void run_COND0000111S(uint32_t opcode) {
                     cpu->cpsr = cpu->spsr;
                 } else {
                     cpu->set_flag_Z(result == 0);
-                    cpu->set_flag_N(result >> 31);
+                    cpu->set_flag_N(result >> 63);
                 }
             }
         

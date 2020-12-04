@@ -1327,7 +1327,7 @@ pass_bx_thumb:
 			MRS      r12, CPSR
 			MRS      r13, SPSR
 
-@ SMLAL tests
+@ SMLAL tests [no flag modification]
 
 			LDR      r7,  =test_values
 			LDR      r9,  =test_values_addendum
@@ -1337,18 +1337,51 @@ pass_bx_thumb:
 			LDR      r4,  [r7, #0x18]
 			LDR      r5,  [r9, #0x0C]
 			SMLAL    r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
 
 			LDR      r4,  [r7, #0x04]
 			LDR      r5,  [r9, #0x0C]
 			SMLAL    r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
 
 			LDR      r2,  [r7, #0x00]
 			LDR      r3,  [r7, #0x00]
 			LDR      r4,  [r7, #0x00]
 			LDR      r5,  [r7, #0x00]
 			SMLAL    r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
 
-@ SMULL tests
+@ SMLAL tests [flag modification]
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+
+			LDR      r2,  [r7, #0x14]
+			LDR      r3,  [r9, #0x10]
+			LDR      r4,  [r7, #0x18]
+			LDR      r5,  [r9, #0x0C]
+			SMLALS   r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r4,  [r7, #0x04]
+			LDR      r5,  [r9, #0x0C]
+			SMLALS   r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x00]
+			LDR      r3,  [r7, #0x00]
+			LDR      r4,  [r7, #0x00]
+			LDR      r5,  [r7, #0x00]
+			SMLALS   r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+@ SMULL tests [no flag modification]
 
 			LDR      r7,  =test_values
 			LDR      r9,  =test_values_addendum
@@ -1358,16 +1391,49 @@ pass_bx_thumb:
 			LDR      r4,  [r7, #0x18]
 			LDR      r5,  [r9, #0x0C]
 			SMULL    r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
 
 			LDR      r4,  [r7, #0x04]
 			LDR      r5,  [r9, #0x0C]
 			SMULL    r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
 
 			LDR      r2,  [r7, #0x00]
 			LDR      r3,  [r7, #0x00]
 			LDR      r4,  [r7, #0x00]
 			LDR      r5,  [r7, #0x00]
 			SMULL    r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+@ SMULL tests [flag modification]
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+
+			LDR      r2,  [r7, #0x14]
+			LDR      r3,  [r9, #0x10]
+			LDR      r4,  [r7, #0x18]
+			LDR      r5,  [r9, #0x0C]
+			SMULLS   r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r4,  [r7, #0x04]
+			LDR      r5,  [r9, #0x0C]
+			SMULLS   r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x00]
+			LDR      r3,  [r7, #0x00]
+			LDR      r4,  [r7, #0x00]
+			LDR      r5,  [r7, #0x00]
+			SMULLS   r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
 
 @ STR tests
 
