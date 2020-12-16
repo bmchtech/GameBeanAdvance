@@ -33,6 +33,7 @@ test_values_addendum:
 			.word 0xFFFF7BCD @ 0C
 			.word 0xFFFF8BCD @ 10
 			.word 0x3FFFFFFF @ 14
+			.word 0x00000020 @ 18
 
 end_value:
 			.word 0x4EC5F500 @ 00
@@ -615,7 +616,7 @@ pass_bx_thumb:
 			MRS      r12, CPSR
 			MRS      r13, SPSR
 
-@ LDM tests [LDMIA]
+@ LDM 1 tests [LDMIA]
 
 			LDR      r7,  =test_values
 			LDMIA    r7,  {r0-r14}
@@ -630,7 +631,7 @@ pass_bx_thumb:
 			STR      pc,  [r7, #0x1C]
 			LDMIA    r7,  {r1, r3, r4, r7, r9, r10, r11, r15}
 
-@ LDM tests [LDMIB]
+@ LDM 1 tests [LDMIB]
 
 			LDR      r7,  =test_values
 			LDMIB    r7,  {r0-r14}
@@ -645,7 +646,7 @@ pass_bx_thumb:
 			STR      pc,  [r7, #0x20]
 			LDMIB    r7,  {r1, r3, r4, r7, r9, r10, r11, r15}
 
-@ LDM tests [LDMDA]
+@ LDM 1 tests [LDMDA]
 
 			LDR      r7,  =test_values
 			LDMDA    r7,  {r0-r14}
@@ -660,7 +661,7 @@ pass_bx_thumb:
 			STR      pc,  [r7]
 			LDMDA    r7,  {r1, r3, r4, r7, r9, r10, r11, r15}
 
-@ LDM tests [LDMDB]
+@ LDM 1 tests [LDMDB]
 
 			LDR      r7,  =test_values
 			LDMDB    r7,  {r0-r14}
@@ -802,6 +803,9 @@ pass_bx_thumb:
 			MUL      r1,  r4,  r3
 			MRS      r12, CPSR
 			MRS      r13, SPSR
+
+@ put the literals here
+.ltorg
 
 @ MUL tests [flag modification]
 
@@ -1434,6 +1438,118 @@ pass_bx_thumb:
 			SMULLS   r2, r3, r4, r5
 			MRS      r12, CPSR
 			MRS      r13, SPSR
+
+@ STM 1 tests [STMIA]
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+
+			LDR      r0,  [r7, #0x14]
+			LDR      r1,  [r7, #0x18]
+			LDR      r4,  [r7, #0x18]
+			LDR      r6,  [r7, #0x0C]
+			LDR      r8,  [r7, #0x14]
+			LDR      r10, [r7, #0x18]
+			LDR      r13, [r7, #0x18]
+			LDR      r14, [r7, #0x0C]
+
+			LDR      r2,  =mem_target_addresses
+			LDR      r3,  [r2, #0x00]
+			
+			STMIA    r3!, {r0, r1, r4, r6, r8, r10, r13, r14}
+
+			@ set r2 to 32
+			LDR      r2,  [r9, #0x18]
+
+stmia_1_loop:
+			LDR      r5,  [r3], #0x1
+			SUBS     r2,  #0x1
+			BNE      stmia_1_loop
+
+@ STM 1 tests [STMIB]
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+
+			LDR      r0,  [r7, #0x14]
+			LDR      r1,  [r7, #0x18]
+			LDR      r4,  [r7, #0x18]
+			LDR      r6,  [r7, #0x0C]
+			LDR      r8,  [r7, #0x14]
+			LDR      r10, [r7, #0x18]
+			LDR      r13, [r7, #0x18]
+			LDR      r14, [r7, #0x0C]
+
+			LDR      r2,  =mem_target_addresses
+			LDR      r3,  [r2, #0x00]
+			
+			STMIB    r3!, {r0, r1, r4, r6, r8, r10, r13, r14}
+
+			@ set r2 to 32
+			LDR      r2,  [r9, #0x18]
+
+stmib_1_loop:
+			LDR      r5,  [r3], #0x1
+			SUBS     r2,  #0x1
+			BNE      stmib_1_loop
+
+@ STM 1 tests [STMDA]
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+
+			LDR      r0,  [r7, #0x14]
+			LDR      r1,  [r7, #0x18]
+			LDR      r4,  [r7, #0x18]
+			LDR      r6,  [r7, #0x0C]
+			LDR      r8,  [r7, #0x14]
+			LDR      r10, [r7, #0x18]
+			LDR      r13, [r7, #0x18]
+			LDR      r14, [r7, #0x0C]
+
+			LDR      r2,  =mem_target_addresses
+			LDR      r3,  [r2, #0x00]
+			LDR      r2,  [r9, #0x18]
+			ADD      r11, r3,  r2
+			
+			STMDA    r11!, {r0, r1, r4, r6, r8, r10, r13, r14}
+
+			@ set r2 to 32
+			LDR      r2,  [r9, #0x18]
+
+stmda_1_loop:
+			LDR      r5,  [r3], #0x1
+			SUBS     r2,  #0x1
+			BNE      stmda_1_loop
+
+@ STM 1 tests [STMDB]
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+
+			LDR      r0,  [r7, #0x14]
+			LDR      r1,  [r7, #0x18]
+			LDR      r4,  [r7, #0x18]
+			LDR      r6,  [r7, #0x0C]
+			LDR      r8,  [r7, #0x14]
+			LDR      r10, [r7, #0x18]
+			LDR      r13, [r7, #0x18]
+			LDR      r14, [r7, #0x0C]
+
+			LDR      r2,  =mem_target_addresses
+			LDR      r3,  [r2, #0x00]
+			LDR      r2,  [r9, #0x18]
+			ADD      r11, r3,  r2
+			
+			STMDB    r11!, {r0, r1, r4, r6, r8, r10, r13, r14}
+
+			@ set r2 to 32
+			LDR      r2,  [r9, #0x18]
+
+stmdb_1_loop:
+			LDR      r5,  [r3], #0x1
+			SUBS     r2,  #0x1
+			BNE      stmdb_1_loop
 
 @ STR tests
 

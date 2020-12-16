@@ -114,9 +114,9 @@ $(LOG_DIR)/arm-opcodes.log: $(SRC_DIR)/arm-opcodes.S
 	gbafix $(BIN_DIR)/arm-opcodes.gba
 
 # generate the instruction logs
-	-visualboyadvance-m $(BIN_DIR)/arm-opcodes.gba 197924 > file 2>/dev/null |:
+	-visualboyadvance-m $(BIN_DIR)/arm-opcodes.gba 198634 > file 2>/dev/null |:
 	@rm file
-	@sed -n -i.bak -e '196634,197924p' out.log
+	@sed -n -i.bak -e '196634,198634p' out.log
 	@rm out.log.bak
 	mv out.log $(LOG_DIR)/arm-opcodes.log
 

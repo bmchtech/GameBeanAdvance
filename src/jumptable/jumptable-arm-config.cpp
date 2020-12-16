@@ -970,7 +970,7 @@ void run_COND0000U101(uint32_t opcode) {
     }
 }
 
-// SBC Instruction [no flag modification]
+// SBC instruction [no flag modification]
 // Addressing Mode 1, shifts 
 
 // + in conjunction with:
@@ -987,6 +987,20 @@ void run_COND00001100(uint32_t opcode) {
             else                        addressing_mode_1_register_by_immediate(cpu, opcode);
             SBC(cpu, opcode);
     }
+}
+
+// SUB Instruction
+// Addressing Mode 1, immediate
+void run_COND0010010S(uint32_t opcode) {
+    addressing_mode_1_immediate(cpu, opcode);
+    SBC(cpu, opcode);
+}
+
+// SBC Instruction
+// Addressing Mode 1, immediate
+void run_COND0010110S(uint32_t opcode) {
+    addressing_mode_1_immediate(cpu, opcode);
+    SBC(cpu, opcode);
 }
 
 // LDRH / LDRSB / LDRSH instructions
@@ -1065,9 +1079,9 @@ void run_COND00000000(uint32_t opcode) {
     }
 }
 
-// LDM 1 instruction
+// LDM 1 / STM 1 instruction
 // No addressing mode needed for this instruction
-void run_COND100PU0W1(uint32_t opcode) {
+void run_COND100PU0WL(uint32_t opcode) {
     uint32_t address = cpu->regs[get_nth_bits(opcode, 16, 20)];
 
     @IF(U)  int mask = 1;
@@ -1080,7 +1094,8 @@ void run_COND100PU0W1(uint32_t opcode) {
             @IF( P  U) address += 4;
             @IF( P !U) address -= 4;
 
-            cpu->regs[i] = cpu->memory->read_word(address);
+            @IF( L) cpu->regs[i] = cpu->memory->read_word(address);
+            @IF(!L) cpu->memory->write_word(address, cpu->regs[i]);
 
             @IF(!P  U) address += 4;
             @IF(!P !U) address -= 4;
