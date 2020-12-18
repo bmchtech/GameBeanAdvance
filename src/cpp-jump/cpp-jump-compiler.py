@@ -60,31 +60,49 @@ import ply.lex as lex
 # <format>               ::= - FORMAT: <formatted-binary-sequence>
 # <component-footer>     ::= [/COMPONENT]
 
+# Note that the above EBNF is written to summarize the important parts of C++ Jump, as well as to give
+# an overview for the following regex. Because of this, some of the of the regex shown below match things
+# not in the EBNF like left and right square brackets to make grammar checking easier.
+
 # here's some regex to help match the above, as well as some associated tokens
 
 tokens = [
-    'RULE_HEADER',
+    'RULE',
+    'COMPONENT',
+
     'INCLUDE',
     'EXCLUDE',
-    'COMPONENT'
-    'RULE_END',
-
-    'COMPONENT_HEADER',
     'FORMAT',
-    'COMPONENT_END'
+
+    'IDENTIFIER',
+    'BINARY_SEQUENCE',
+    'FORMATTED_BINARY_SEQUENCE',
+
+    'LBRACKET',
+    'RBRACKET',
+    'DASH',
+    'COLON',
+    'SLASH'
 ]
 
-t_ignore  = ' \t'    # ignores spaces and tabs
+t_ignore                    = r' '
 
-t_RULE_HEADER    = r'\[RULE RULE1]'
-INCLUDE          = r'\- INCLUDE: ([01\-]+)'
-EXCLUDE          = r'\- EXCLUDE: ([01\-]+)'
-COMPONENT        = r'\- COMPONENT: ([A-Za-z_]+)'
-RULE_FOOTER      = r'\[/RULE]'
+t_RULE                      = r'RULE'
+t_COMPONENT                 = r'COMPONENT'
 
-COMPONENT_HEADER = r'\[COMPONENT ([A-Za-z_]+)]'
-FORMAT_REGEX     = r'\- FORMAT: ([01A-Z\-]+)'
-COMPONENT_FOOTER = r'\[/COMPONENT]'
+t_INCLUDE                   = r'INCLUDE'
+t_EXCLUDE                   = r'EXCLUDE'
+t_FORMAT                    = r'FORMAT'
+
+t_IDENTIFIER                = r'[A-Za-z_][A-Za-z_0-9]*'
+t_BINARY_SEQUENCE           = r'[01-]+'
+t_FORMATTED_BINARY_SEQUENCE = r'[01A-Z-]'
+
+t_LBRACKET                  = r'\['
+t_RBRACKET                  = r'\]'
+t_DASH                      = r'-'
+t_COLON                     = r':'
+t_SLASH                     = r'/'
 
 # Define a rule so we can track line numbers
 def t_newline(t):
@@ -96,5 +114,5 @@ with open("test.cpp", 'r') as f:
     lexer.input(f.read())
     
 # tokenize
-while True:
-    tok = lexer.token()
+for tok in lexer:
+    print(tok)
