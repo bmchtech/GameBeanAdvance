@@ -1586,6 +1586,9 @@ stmdb_1_loop:
 			LDR      r2,  [r7, #0x0C]
 			STRB     r3,  [r2]
 
+@ STRH tests
+
+
 @ make sure we reached the end of the file
 
 			LDR      r7,  =end_value

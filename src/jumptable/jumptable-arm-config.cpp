@@ -626,6 +626,11 @@ uint32_t addressing_mode_3_register_postindexed(ARM7TDMI* cpu, uint32_t opcode) 
 
 
 
+[[RULE]
+ [INCLUDE ]
+ [EXCLUDE ]
+ [COMPONENT ADDRESSING-MODE-1]
+ [COMPONENT ADD]]
 @DEFAULT()
 void nop(uint32_t opcode) {
     DEBUG_MESSAGE("NOP");
@@ -640,6 +645,7 @@ void run_COND0010101S(uint32_t opcode) {
 
 // ADC instruction
 // Addressing Mode 1, shifts
+// MARKED
 void run_COND0000101S(uint32_t opcode) {
     if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
     else                        addressing_mode_1_register_by_immediate(cpu, opcode);
@@ -670,6 +676,7 @@ void run_COND101LABEF(uint32_t opcode) {
 
 // BX instruction
 // No addressing mode needed for this instruction
+// MARKED
 void run_COND00010010(uint32_t opcode) {
     cpu->set_bit_T(cpu->regs[get_nth_bits(opcode, 0, 4)] & 0x1);
     *cpu->pc = cpu->regs[get_nth_bits(opcode, 0, 4)] & 0xFFFFFFFE;
@@ -710,6 +717,7 @@ void run_COND0010001S(uint32_t opcode) {
 
 // MLA instruction
 // No addressing mode needed for this instruction
+// MARKED
 void run_COND0000001S(uint32_t opcode) {
     if (get_nth_bits(opcode, 4, 8) != 0b1001) {
         if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
@@ -794,6 +802,7 @@ void run_COND0001U101(uint32_t opcode) {
 
 // BIC instruction
 // Addressing Mode 1, shifts [no flag modification]
+// MARKED
 void run_COND00011100(uint32_t opcode) {
     if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
     else                        addressing_mode_1_register_by_immediate(cpu, opcode);
@@ -878,6 +887,7 @@ void run_COND0001U111(uint32_t opcode) {
 
 // MVN instruction
 // Addressing Mode 1, shifts [no flag modification]
+// MARKED
 void run_COND00011110(uint32_t opcode) {
     if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
     else                        addressing_mode_1_register_by_immediate(cpu, opcode);
@@ -921,6 +931,7 @@ void run_COND0001U011(uint32_t opcode) {
 
 // MOV instruction
 // Addressing Mode 1, shifts [no flag modification]
+// MARKED
 void run_COND00011010(uint32_t opcode) {
     if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
     else                        addressing_mode_1_register_by_immediate(cpu, opcode);
@@ -976,6 +987,7 @@ void run_COND0000U101(uint32_t opcode) {
 // + in conjunction with:
 
 // SMULL instruction [no flag modification]
+// MARKED
 void run_COND00001100(uint32_t opcode) {
     switch (get_nth_bits(opcode, 4, 8)) {
         case 0b1001:
@@ -1056,6 +1068,7 @@ void run_COND0000U001(uint32_t opcode) {
 
 // ADD instruction [no flag modification]
 // Addressing Mode 1, shifts
+// MARKED
 void run_COND00001000(uint32_t opcode) {
     if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
     else                        addressing_mode_1_register_by_immediate(cpu, opcode);
@@ -1069,6 +1082,7 @@ void run_COND00001000(uint32_t opcode) {
 
 // MUL instruction [no flag modification] 
 // No addressing mode needed for this instruction
+// MARKED
 void run_COND00000000(uint32_t opcode) {
     if (get_nth_bits(opcode, 4, 8) == 0b1001) {
         cpu->regs[get_nth_bits(opcode, 16, 20)] = cpu->regs[get_nth_bits(opcode, 0, 4)] * cpu->regs[get_nth_bits(opcode, 8, 12)];
@@ -1119,6 +1133,7 @@ void run_COND0011101S(uint32_t opcode) {
 
 // MRS instruction
 // No addressing mode needed for this instruction
+// MARKED
 void run_COND00010R00(uint32_t opcode) {
     @IF(!R) cpu->regs[get_nth_bits(opcode, 12, 16)] = cpu->cpsr;
     @IF( R) cpu->regs[get_nth_bits(opcode, 12, 16)] = cpu->spsr;
@@ -1134,6 +1149,7 @@ void run_COND0011111S(uint32_t opcode) {
 // ORR instruction
 // Addressing Mode 1, immediate offset 
 // Addressing Mode 1, shifts [no flag modification]
+// MARKED
 @EXCLUDE(----00011001)
 void run_COND00I1100S(uint32_t opcode) {
     @IF(!I) if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
@@ -1150,6 +1166,7 @@ void run_COND00I1100S(uint32_t opcode) {
 
 // RSC instruction
 // Addressing Mode 1, immediate offset 
+// MARKED
 @EXCLUDE(----0000111-)
 void run_COND00I0E11S(uint32_t opcode) {
     @IF(!I) if (get_nth_bit(opcode, 4)) addressing_mode_1_register_by_register (cpu, opcode);
@@ -1168,6 +1185,7 @@ void run_COND00I0E11S(uint32_t opcode) {
 // + in conjunction with
 
 // SMLAL instruction
+// MARKED
 void run_COND0000111S(uint32_t opcode) {
     switch (get_nth_bits(opcode, 4, 8)) {
         case 0b1001: { // SMLAL
@@ -1201,4 +1219,4 @@ void run_COND0000111S(uint32_t opcode) {
             else                        addressing_mode_1_register_by_immediate(cpu, opcode);
             RSC(cpu, opcode);
     }
-}
+
