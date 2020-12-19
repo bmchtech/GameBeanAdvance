@@ -1,5 +1,6 @@
 import ply.lex  as lex
 import ply.yacc as yacc
+import string
 
 ############################################### OVERVIEW ###############################################
 
@@ -212,11 +213,11 @@ def p_complete_item(p):
 
 def p_complete_rule(p):
     'complete_rule : rule_header list_rule_component rule_footer'
-    p[0] = [p[1], p[2]]
+    p[0] = ['RULE', p[1], p[2]]
 
 def p_rule_header(p):
     'rule_header : LBRACKET RULE IDENTIFIER RBRACKET NEWLINE'
-    p[0] = p[2]
+    p[0] = p[3]
 
 def p_list_rule_component_single(p):
     'list_rule_component : rule_component'
@@ -262,10 +263,11 @@ def p_rule_footer(p):
 
 def p_complete_component(p):
     'complete_component : component_header format_statement component_footer'
-    p[0] = ["COMPONENT", p[2]]
+    p[0] = ["COMPONENT", p[1], p[2]]
 
 def p_component_header(p):
     'component_header : LBRACKET COMPONENT IDENTIFIER RBRACKET NEWLINE'
+    p[0] = p[3]
 
 def p_format_statement(p):
     'format_statement : DASH FORMAT COLON list_formatted_binary_item NEWLINE'
@@ -293,6 +295,98 @@ ast = None
 with open('test.cpp', 'r') as f:
     ast = parser.parse(f.read() + '\n')
 
-print(ast)
 
-############################################ Syntax Checking ############################################
+
+
+
+########################################### WELL-FORMEDENESS ###########################################
+
+# C++ Jump AST is well-formed if:
+# 1. it is a list of well-formed rules and well-formed components
+#
+# A Rule is well-formed if:
+# 1. it contains          one well-formed include  statement
+# 2. it contains at least one well-formed exclude  statement 
+# 3. it contains at least one well-formed component statement
+# 4. the length of the binary sequences in all include/exclude statements are equal
+#
+# An include statement is well-formed if:
+# 1. its binary sequence is made up of only 0s, 1s, and -s.
+# 
+# An exclude statement is well-formed if:
+# 1. its binary sequence is made up of only 0s, 1s, and -s.
+#
+# A component statement is well-formed if:
+# 1. its identifier is bound (i.e. there exists a well-formed component that matches the identifier)
+#
+# A component is well-formed if:
+# 1. its format statement is well-formed
+
+# ASSUME: tree is a list_complete_item
+def check_cpp_jump_ast(source: list):
+    bound_component_identifiers     = []
+    requested_component_identifiers = []
+
+    # ASSUME: tree is a complete_rule
+    def check_rule(tree: list):
+        has_include   = False
+        has_exclude   = False
+        has_component = False
+
+        for statement in tree[2]:
+            if (statement[0] == 'INCLUDE'):   
+                check_include_statement(statement)
+                has_include = True
+            if (statement[0] == 'EXCLUDE'):
+                has_exclude = True
+                check_exclude_statement(statement)
+            if (statement[0] == 'COMPONENT'):
+                has_component = True 
+                check_component_statement(statement)
+
+    # ASSUME: tree is an include_statement
+    def check_include_statement(tree: list):
+        check_binary_sequence(tree[1])
+
+    # ASSUME: tree is an exclude_statement
+    def check_exclude_statement(tree: list):
+        check_binary_sequence(tree[1])
+
+    # ASSUME: tree is a binary_sequence
+    def check_binary_sequence(tree: list):
+        for element in tree:
+            if not element in ['0', '1', '-']:
+                print("Malformed binary sequence: {}" + element)
+                exit(-1)
+
+    # ASSUME: tree is a component_statement
+    # This function will add the identifier to requsted_component_identifiers.
+    # The outer function will check that this identifier is bound once everything 
+    # else has been deemed as well-formed.
+    def check_component_statement(tree: list):
+        requested_component_identifiers.append(tree[1])
+
+    # ASSUME: tree is a component
+    def check_component(tree: list):
+        check_formatted_binary_sequence(tree[2])
+        bound_component_identifiers.append(tree[1])
+    
+    # ASSUME: tree is a formatted_binary_sequence
+    def check_formatted_binary_sequence(tree: list):
+        for element in tree:
+            if not element in ['0', '1', '-'] + list(string.ascii_uppercase):
+                print("Malformed formatted binary sequence: {}".format(element))
+                exit(-1)
+
+    for item in source:
+        if (item[0] == 'RULE'): 
+            check_rule(item)
+        if (item[0] == 'COMPONENT'):
+            check_component(item)
+
+    for component in requested_component_identifiers:
+        if not component in bound_component_identifiers:
+            print("Rule component {} does not have a definition.".format(component))
+            exit(-1)
+
+check_cpp_jump_ast(ast)
