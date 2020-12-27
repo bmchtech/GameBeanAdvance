@@ -6,9 +6,9 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = 'BINARY BINARY_VARIABLE COLON COMPONENT DASH EXCLUDE FORMAT IDENTIFIER INCLUDE LBRACKET NEWLINE RBRACKET RULE SLASHlist_complete_item : complete_itemlist_complete_item : list_complete_item complete_itemcomplete_item : complete_rule\n                     | complete_componentcomplete_rule : rule_header list_rule_component rule_footerrule_header : LBRACKET RULE IDENTIFIER RBRACKET NEWLINElist_rule_component : rule_componentlist_rule_component : list_rule_component rule_componentrule_component : include_statement\n                      | exclude_statement\n                      | component_statementinclude_statement : DASH INCLUDE COLON list_binary_item NEWLINElist_binary_item : binary_itemlist_binary_item : list_binary_item binary_itembinary_item : BINARY\n                   | DASHexclude_statement : DASH EXCLUDE COLON list_binary_item NEWLINEcomponent_statement : DASH COMPONENT COLON IDENTIFIER NEWLINErule_footer : LBRACKET SLASH RULE RBRACKET NEWLINEcomplete_component : component_header format_statement component_footercomponent_header : LBRACKET COMPONENT IDENTIFIER RBRACKET NEWLINEformat_statement : DASH FORMAT COLON list_formatted_binary_item NEWLINElist_formatted_binary_item : formatted_binary_itemlist_formatted_binary_item : list_formatted_binary_item formatted_binary_itemformatted_binary_item : binary_item\n                             | BINARY_VARIABLEcomponent_footer : LBRACKET SLASH COMPONENT RBRACKET NEWLINE'
+_lr_signature = 'ADDRESSABLE_BITS BINARY BINARY_VARIABLE COLON COMPONENT DASH EXCLUDE FORMAT IDENTIFIER INCLUDE LBRACKET NAME NEWLINE NUMBER OPCODE_SIZE RBRACKET RULE SETTINGS SLASH TOTAL_BITSlist_complete_item : complete_itemlist_complete_item : list_complete_item complete_itemcomplete_item : complete_settings\n                     | complete_rule\n                     | complete_componentcomplete_settings : settings_header name total_bits addressable_bits opcode_size settings_footersettings_header : LBRACKET SETTINGS RBRACKET NEWLINEname : DASH NAME COLON IDENTIFIER NEWLINEtotal_bits : DASH TOTAL_BITS COLON NUMBER NEWLINEaddressable_bits : DASH ADDRESSABLE_BITS COLON NUMBER NEWLINEopcode_size : DASH OPCODE_SIZE COLON NUMBER NEWLINEsettings_footer : LBRACKET SLASH SETTINGS RBRACKET NEWLINEcomplete_rule : rule_header list_rule_component rule_footerrule_header : LBRACKET RULE IDENTIFIER RBRACKET NEWLINElist_rule_component : rule_componentlist_rule_component : list_rule_component rule_componentrule_component : include_statement\n                      | exclude_statement\n                      | component_statementinclude_statement : DASH INCLUDE COLON list_binary_item NEWLINElist_binary_item : binary_itemlist_binary_item : list_binary_item binary_itembinary_item : BINARY\n                   | DASHexclude_statement : DASH EXCLUDE COLON list_binary_item NEWLINEcomponent_statement : DASH COMPONENT COLON IDENTIFIER NEWLINErule_footer : LBRACKET SLASH RULE RBRACKET NEWLINEcomplete_component : component_header format_statement component_footercomponent_header : LBRACKET COMPONENT IDENTIFIER RBRACKET NEWLINEformat_statement : DASH FORMAT COLON list_formatted_binary_item NEWLINElist_formatted_binary_item : formatted_binary_itemlist_formatted_binary_item : list_formatted_binary_item formatted_binary_itemformatted_binary_item : binary_item\n                             | BINARY_VARIABLEcomponent_footer : LBRACKET SLASH COMPONENT RBRACKET NEWLINE'
     
-_lr_action_items = {'LBRACKET':([0,1,2,3,4,8,9,10,11,12,13,15,19,20,25,53,55,56,58,60,61,],[7,7,-1,-3,-4,-2,21,-7,-9,-10,-11,26,-5,-8,-20,-12,-17,-18,-22,-19,-27,]),'$end':([1,2,3,4,8,19,25,60,61,],[0,-1,-3,-4,-2,-5,-20,-19,-27,]),'DASH':([5,6,9,10,11,12,13,20,31,32,35,39,40,41,42,43,46,47,48,49,50,51,53,54,55,56,59,],[14,16,14,-7,-9,-10,-11,-8,39,39,39,-16,39,-13,-15,39,39,-23,-25,-26,-6,-21,-12,-14,-17,-18,-24,]),'RULE':([7,30,],[17,38,]),'COMPONENT':([7,14,34,],[18,24,45,]),'INCLUDE':([14,],[22,]),'EXCLUDE':([14,],[23,]),'FORMAT':([16,],[27,]),'IDENTIFIER':([17,18,33,],[28,29,44,]),'SLASH':([21,26,],[30,34,]),'COLON':([22,23,24,27,],[31,32,33,35,]),'RBRACKET':([28,29,38,45,],[36,37,52,57,]),'BINARY':([31,32,35,39,40,41,42,43,46,47,48,49,54,59,],[42,42,42,-16,42,-13,-15,42,42,-23,-25,-26,-14,-24,]),'BINARY_VARIABLE':([35,39,42,46,47,48,49,59,],[49,-16,-15,49,-23,-25,-26,-24,]),'NEWLINE':([36,37,39,40,41,42,43,44,46,47,48,49,52,54,57,59,],[50,51,-16,53,-13,-15,55,56,58,-23,-25,-26,60,-14,61,-24,]),}
+_lr_action_items = {'LBRACKET':([0,1,2,3,4,5,10,13,14,15,16,17,19,27,28,33,52,71,78,80,81,83,89,90,95,96,],[9,9,-1,-3,-4,-5,-2,29,-15,-17,-18,-19,34,-13,-16,-28,72,-6,-20,-25,-26,-30,-27,-35,-11,-12,]),'$end':([1,2,3,4,5,10,27,33,71,89,90,96,],[0,-1,-3,-4,-5,-2,-13,-28,-6,-27,-35,-12,]),'DASH':([6,7,8,11,13,14,15,16,17,24,28,39,44,45,48,49,58,59,60,61,62,65,66,67,68,69,70,76,78,79,80,81,84,88,93,],[12,18,20,25,18,-15,-17,-18,-19,40,-16,53,58,58,58,-7,-24,58,-21,-23,58,58,-31,-33,-34,-14,-29,-8,-20,-22,-25,-26,-32,-9,-10,]),'SETTINGS':([9,85,],[21,91,]),'RULE':([9,43,],[22,57,]),'COMPONENT':([9,18,47,],[23,32,64,]),'NAME':([12,],[26,]),'INCLUDE':([18,],[30,]),'EXCLUDE':([18,],[31,]),'FORMAT':([20,],[35,]),'RBRACKET':([21,37,38,57,64,91,],[36,50,51,77,82,94,]),'IDENTIFIER':([22,23,42,46,],[37,38,56,63,]),'TOTAL_BITS':([25,],[41,]),'COLON':([26,30,31,32,35,41,54,73,],[42,44,45,46,48,55,74,86,]),'SLASH':([29,34,72,],[43,47,85,]),'NEWLINE':([36,50,51,56,58,59,60,61,62,63,65,66,67,68,75,77,79,82,84,87,92,94,],[49,69,70,76,-24,78,-21,-23,80,81,83,-31,-33,-34,88,89,-22,90,-32,93,95,96,]),'ADDRESSABLE_BITS':([40,],[54,]),'BINARY':([44,45,48,58,59,60,61,62,65,66,67,68,79,84,],[61,61,61,-24,61,-21,-23,61,61,-31,-33,-34,-22,-32,]),'BINARY_VARIABLE':([48,58,61,65,66,67,68,84,],[68,-24,-23,68,-31,-33,-34,-32,]),'OPCODE_SIZE':([53,],[73,]),'NUMBER':([55,74,86,],[75,87,92,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -17,7 +17,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'list_complete_item':([0,],[1,]),'complete_item':([0,1,],[2,8,]),'complete_rule':([0,1,],[3,3,]),'complete_component':([0,1,],[4,4,]),'rule_header':([0,1,],[5,5,]),'component_header':([0,1,],[6,6,]),'list_rule_component':([5,],[9,]),'rule_component':([5,9,],[10,20,]),'include_statement':([5,9,],[11,11,]),'exclude_statement':([5,9,],[12,12,]),'component_statement':([5,9,],[13,13,]),'format_statement':([6,],[15,]),'rule_footer':([9,],[19,]),'component_footer':([15,],[25,]),'list_binary_item':([31,32,],[40,43,]),'binary_item':([31,32,35,40,43,46,],[41,41,48,54,54,48,]),'list_formatted_binary_item':([35,],[46,]),'formatted_binary_item':([35,46,],[47,59,]),}
+_lr_goto_items = {'list_complete_item':([0,],[1,]),'complete_item':([0,1,],[2,10,]),'complete_settings':([0,1,],[3,3,]),'complete_rule':([0,1,],[4,4,]),'complete_component':([0,1,],[5,5,]),'settings_header':([0,1,],[6,6,]),'rule_header':([0,1,],[7,7,]),'component_header':([0,1,],[8,8,]),'name':([6,],[11,]),'list_rule_component':([7,],[13,]),'rule_component':([7,13,],[14,28,]),'include_statement':([7,13,],[15,15,]),'exclude_statement':([7,13,],[16,16,]),'component_statement':([7,13,],[17,17,]),'format_statement':([8,],[19,]),'total_bits':([11,],[24,]),'rule_footer':([13,],[27,]),'component_footer':([19,],[33,]),'addressable_bits':([24,],[39,]),'opcode_size':([39,],[52,]),'list_binary_item':([44,45,],[59,62,]),'binary_item':([44,45,48,59,62,65,],[60,60,67,79,79,67,]),'list_formatted_binary_item':([48,],[65,]),'formatted_binary_item':([48,65,],[66,84,]),'settings_footer':([52,],[71,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -27,31 +27,39 @@ for _k, _v in _lr_goto_items.items():
 del _lr_goto_items
 _lr_productions = [
   ("S' -> list_complete_item","S'",1,None,None,None),
-  ('list_complete_item -> complete_item','list_complete_item',1,'p_list_complete_item_single','cpp-jump-compiler.py',198),
-  ('list_complete_item -> list_complete_item complete_item','list_complete_item',2,'p_list_complete_item_group','cpp-jump-compiler.py',202),
-  ('complete_item -> complete_rule','complete_item',1,'p_complete_item','cpp-jump-compiler.py',206),
-  ('complete_item -> complete_component','complete_item',1,'p_complete_item','cpp-jump-compiler.py',207),
-  ('complete_rule -> rule_header list_rule_component rule_footer','complete_rule',3,'p_complete_rule','cpp-jump-compiler.py',211),
-  ('rule_header -> LBRACKET RULE IDENTIFIER RBRACKET NEWLINE','rule_header',5,'p_rule_header','cpp-jump-compiler.py',215),
-  ('list_rule_component -> rule_component','list_rule_component',1,'p_list_rule_component_single','cpp-jump-compiler.py',219),
-  ('list_rule_component -> list_rule_component rule_component','list_rule_component',2,'p_list_rule_component_group','cpp-jump-compiler.py',223),
-  ('rule_component -> include_statement','rule_component',1,'p_rule_component','cpp-jump-compiler.py',227),
-  ('rule_component -> exclude_statement','rule_component',1,'p_rule_component','cpp-jump-compiler.py',228),
-  ('rule_component -> component_statement','rule_component',1,'p_rule_component','cpp-jump-compiler.py',229),
-  ('include_statement -> DASH INCLUDE COLON list_binary_item NEWLINE','include_statement',5,'p_include_statement','cpp-jump-compiler.py',233),
-  ('list_binary_item -> binary_item','list_binary_item',1,'p_list_binary_item_single','cpp-jump-compiler.py',237),
-  ('list_binary_item -> list_binary_item binary_item','list_binary_item',2,'p_list_binary_item_group','cpp-jump-compiler.py',241),
-  ('binary_item -> BINARY','binary_item',1,'p_binary_item','cpp-jump-compiler.py',245),
-  ('binary_item -> DASH','binary_item',1,'p_binary_item','cpp-jump-compiler.py',246),
-  ('exclude_statement -> DASH EXCLUDE COLON list_binary_item NEWLINE','exclude_statement',5,'p_exclude_statement','cpp-jump-compiler.py',250),
-  ('component_statement -> DASH COMPONENT COLON IDENTIFIER NEWLINE','component_statement',5,'p_component_statement','cpp-jump-compiler.py',254),
-  ('rule_footer -> LBRACKET SLASH RULE RBRACKET NEWLINE','rule_footer',5,'p_rule_footer','cpp-jump-compiler.py',258),
-  ('complete_component -> component_header format_statement component_footer','complete_component',3,'p_complete_component','cpp-jump-compiler.py',261),
-  ('component_header -> LBRACKET COMPONENT IDENTIFIER RBRACKET NEWLINE','component_header',5,'p_component_header','cpp-jump-compiler.py',265),
-  ('format_statement -> DASH FORMAT COLON list_formatted_binary_item NEWLINE','format_statement',5,'p_format_statement','cpp-jump-compiler.py',268),
-  ('list_formatted_binary_item -> formatted_binary_item','list_formatted_binary_item',1,'p_list_formatted_binary_item_single','cpp-jump-compiler.py',272),
-  ('list_formatted_binary_item -> list_formatted_binary_item formatted_binary_item','list_formatted_binary_item',2,'p_list_formatted_binary_item_group','cpp-jump-compiler.py',276),
-  ('formatted_binary_item -> binary_item','formatted_binary_item',1,'p_formatted_binary_item','cpp-jump-compiler.py',280),
-  ('formatted_binary_item -> BINARY_VARIABLE','formatted_binary_item',1,'p_formatted_binary_item','cpp-jump-compiler.py',281),
-  ('component_footer -> LBRACKET SLASH COMPONENT RBRACKET NEWLINE','component_footer',5,'p_component_footer','cpp-jump-compiler.py',285),
+  ('list_complete_item -> complete_item','list_complete_item',1,'p_list_complete_item_single','cpp-jump-compiler.py',237),
+  ('list_complete_item -> list_complete_item complete_item','list_complete_item',2,'p_list_complete_item_group','cpp-jump-compiler.py',241),
+  ('complete_item -> complete_settings','complete_item',1,'p_complete_item','cpp-jump-compiler.py',245),
+  ('complete_item -> complete_rule','complete_item',1,'p_complete_item','cpp-jump-compiler.py',246),
+  ('complete_item -> complete_component','complete_item',1,'p_complete_item','cpp-jump-compiler.py',247),
+  ('complete_settings -> settings_header name total_bits addressable_bits opcode_size settings_footer','complete_settings',6,'p_complete_settings','cpp-jump-compiler.py',251),
+  ('settings_header -> LBRACKET SETTINGS RBRACKET NEWLINE','settings_header',4,'p_settings_header','cpp-jump-compiler.py',254),
+  ('name -> DASH NAME COLON IDENTIFIER NEWLINE','name',5,'p_name','cpp-jump-compiler.py',257),
+  ('total_bits -> DASH TOTAL_BITS COLON NUMBER NEWLINE','total_bits',5,'p_total_bits','cpp-jump-compiler.py',260),
+  ('addressable_bits -> DASH ADDRESSABLE_BITS COLON NUMBER NEWLINE','addressable_bits',5,'p_addressable_bits','cpp-jump-compiler.py',263),
+  ('opcode_size -> DASH OPCODE_SIZE COLON NUMBER NEWLINE','opcode_size',5,'p_opcode_size','cpp-jump-compiler.py',266),
+  ('settings_footer -> LBRACKET SLASH SETTINGS RBRACKET NEWLINE','settings_footer',5,'p_settings_footer','cpp-jump-compiler.py',269),
+  ('complete_rule -> rule_header list_rule_component rule_footer','complete_rule',3,'p_complete_rule','cpp-jump-compiler.py',272),
+  ('rule_header -> LBRACKET RULE IDENTIFIER RBRACKET NEWLINE','rule_header',5,'p_rule_header','cpp-jump-compiler.py',276),
+  ('list_rule_component -> rule_component','list_rule_component',1,'p_list_rule_component_single','cpp-jump-compiler.py',280),
+  ('list_rule_component -> list_rule_component rule_component','list_rule_component',2,'p_list_rule_component_group','cpp-jump-compiler.py',284),
+  ('rule_component -> include_statement','rule_component',1,'p_rule_component','cpp-jump-compiler.py',288),
+  ('rule_component -> exclude_statement','rule_component',1,'p_rule_component','cpp-jump-compiler.py',289),
+  ('rule_component -> component_statement','rule_component',1,'p_rule_component','cpp-jump-compiler.py',290),
+  ('include_statement -> DASH INCLUDE COLON list_binary_item NEWLINE','include_statement',5,'p_include_statement','cpp-jump-compiler.py',294),
+  ('list_binary_item -> binary_item','list_binary_item',1,'p_list_binary_item_single','cpp-jump-compiler.py',298),
+  ('list_binary_item -> list_binary_item binary_item','list_binary_item',2,'p_list_binary_item_group','cpp-jump-compiler.py',302),
+  ('binary_item -> BINARY','binary_item',1,'p_binary_item','cpp-jump-compiler.py',306),
+  ('binary_item -> DASH','binary_item',1,'p_binary_item','cpp-jump-compiler.py',307),
+  ('exclude_statement -> DASH EXCLUDE COLON list_binary_item NEWLINE','exclude_statement',5,'p_exclude_statement','cpp-jump-compiler.py',311),
+  ('component_statement -> DASH COMPONENT COLON IDENTIFIER NEWLINE','component_statement',5,'p_component_statement','cpp-jump-compiler.py',315),
+  ('rule_footer -> LBRACKET SLASH RULE RBRACKET NEWLINE','rule_footer',5,'p_rule_footer','cpp-jump-compiler.py',319),
+  ('complete_component -> component_header format_statement component_footer','complete_component',3,'p_complete_component','cpp-jump-compiler.py',322),
+  ('component_header -> LBRACKET COMPONENT IDENTIFIER RBRACKET NEWLINE','component_header',5,'p_component_header','cpp-jump-compiler.py',326),
+  ('format_statement -> DASH FORMAT COLON list_formatted_binary_item NEWLINE','format_statement',5,'p_format_statement','cpp-jump-compiler.py',330),
+  ('list_formatted_binary_item -> formatted_binary_item','list_formatted_binary_item',1,'p_list_formatted_binary_item_single','cpp-jump-compiler.py',334),
+  ('list_formatted_binary_item -> list_formatted_binary_item formatted_binary_item','list_formatted_binary_item',2,'p_list_formatted_binary_item_group','cpp-jump-compiler.py',338),
+  ('formatted_binary_item -> binary_item','formatted_binary_item',1,'p_formatted_binary_item','cpp-jump-compiler.py',342),
+  ('formatted_binary_item -> BINARY_VARIABLE','formatted_binary_item',1,'p_formatted_binary_item','cpp-jump-compiler.py',343),
+  ('component_footer -> LBRACKET SLASH COMPONENT RBRACKET NEWLINE','component_footer',5,'p_component_footer','cpp-jump-compiler.py',347),
 ]

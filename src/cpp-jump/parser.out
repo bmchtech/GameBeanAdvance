@@ -5,70 +5,91 @@ Grammar
 Rule 0     S' -> list_complete_item
 Rule 1     list_complete_item -> complete_item
 Rule 2     list_complete_item -> list_complete_item complete_item
-Rule 3     complete_item -> complete_rule
-Rule 4     complete_item -> complete_component
-Rule 5     complete_rule -> rule_header list_rule_component rule_footer
-Rule 6     rule_header -> LBRACKET RULE IDENTIFIER RBRACKET NEWLINE
-Rule 7     list_rule_component -> rule_component
-Rule 8     list_rule_component -> list_rule_component rule_component
-Rule 9     rule_component -> include_statement
-Rule 10    rule_component -> exclude_statement
-Rule 11    rule_component -> component_statement
-Rule 12    include_statement -> DASH INCLUDE COLON list_binary_item NEWLINE
-Rule 13    list_binary_item -> binary_item
-Rule 14    list_binary_item -> list_binary_item binary_item
-Rule 15    binary_item -> BINARY
-Rule 16    binary_item -> DASH
-Rule 17    exclude_statement -> DASH EXCLUDE COLON list_binary_item NEWLINE
-Rule 18    component_statement -> DASH COMPONENT COLON IDENTIFIER NEWLINE
-Rule 19    rule_footer -> LBRACKET SLASH RULE RBRACKET NEWLINE
-Rule 20    complete_component -> component_header format_statement component_footer
-Rule 21    component_header -> LBRACKET COMPONENT IDENTIFIER RBRACKET NEWLINE
-Rule 22    format_statement -> DASH FORMAT COLON list_formatted_binary_item NEWLINE
-Rule 23    list_formatted_binary_item -> formatted_binary_item
-Rule 24    list_formatted_binary_item -> list_formatted_binary_item formatted_binary_item
-Rule 25    formatted_binary_item -> binary_item
-Rule 26    formatted_binary_item -> BINARY_VARIABLE
-Rule 27    component_footer -> LBRACKET SLASH COMPONENT RBRACKET NEWLINE
+Rule 3     complete_item -> complete_settings
+Rule 4     complete_item -> complete_rule
+Rule 5     complete_item -> complete_component
+Rule 6     complete_settings -> settings_header name total_bits addressable_bits opcode_size settings_footer
+Rule 7     settings_header -> LBRACKET SETTINGS RBRACKET NEWLINE
+Rule 8     name -> DASH NAME COLON IDENTIFIER NEWLINE
+Rule 9     total_bits -> DASH TOTAL_BITS COLON NUMBER NEWLINE
+Rule 10    addressable_bits -> DASH ADDRESSABLE_BITS COLON NUMBER NEWLINE
+Rule 11    opcode_size -> DASH OPCODE_SIZE COLON NUMBER NEWLINE
+Rule 12    settings_footer -> LBRACKET SLASH SETTINGS RBRACKET NEWLINE
+Rule 13    complete_rule -> rule_header list_rule_component rule_footer
+Rule 14    rule_header -> LBRACKET RULE IDENTIFIER RBRACKET NEWLINE
+Rule 15    list_rule_component -> rule_component
+Rule 16    list_rule_component -> list_rule_component rule_component
+Rule 17    rule_component -> include_statement
+Rule 18    rule_component -> exclude_statement
+Rule 19    rule_component -> component_statement
+Rule 20    include_statement -> DASH INCLUDE COLON list_binary_item NEWLINE
+Rule 21    list_binary_item -> binary_item
+Rule 22    list_binary_item -> list_binary_item binary_item
+Rule 23    binary_item -> BINARY
+Rule 24    binary_item -> DASH
+Rule 25    exclude_statement -> DASH EXCLUDE COLON list_binary_item NEWLINE
+Rule 26    component_statement -> DASH COMPONENT COLON IDENTIFIER NEWLINE
+Rule 27    rule_footer -> LBRACKET SLASH RULE RBRACKET NEWLINE
+Rule 28    complete_component -> component_header format_statement component_footer
+Rule 29    component_header -> LBRACKET COMPONENT IDENTIFIER RBRACKET NEWLINE
+Rule 30    format_statement -> DASH FORMAT COLON list_formatted_binary_item NEWLINE
+Rule 31    list_formatted_binary_item -> formatted_binary_item
+Rule 32    list_formatted_binary_item -> list_formatted_binary_item formatted_binary_item
+Rule 33    formatted_binary_item -> binary_item
+Rule 34    formatted_binary_item -> BINARY_VARIABLE
+Rule 35    component_footer -> LBRACKET SLASH COMPONENT RBRACKET NEWLINE
 
 Terminals, with rules where they appear
 
-BINARY               : 15
-BINARY_VARIABLE      : 26
-COLON                : 12 17 18 22
-COMPONENT            : 18 21 27
-DASH                 : 12 16 17 18 22
-EXCLUDE              : 17
-FORMAT               : 22
-IDENTIFIER           : 6 18 21
-INCLUDE              : 12
-LBRACKET             : 6 19 21 27
-NEWLINE              : 6 12 17 18 19 21 22 27
-RBRACKET             : 6 19 21 27
-RULE                 : 6 19
-SLASH                : 19 27
+ADDRESSABLE_BITS     : 10
+BINARY               : 23
+BINARY_VARIABLE      : 34
+COLON                : 8 9 10 11 20 25 26 30
+COMPONENT            : 26 29 35
+DASH                 : 8 9 10 11 20 24 25 26 30
+EXCLUDE              : 25
+FORMAT               : 30
+IDENTIFIER           : 8 14 26 29
+INCLUDE              : 20
+LBRACKET             : 7 12 14 27 29 35
+NAME                 : 8
+NEWLINE              : 7 8 9 10 11 12 14 20 25 26 27 29 30 35
+NUMBER               : 9 10 11
+OPCODE_SIZE          : 11
+RBRACKET             : 7 12 14 27 29 35
+RULE                 : 14 27
+SETTINGS             : 7 12
+SLASH                : 12 27 35
+TOTAL_BITS           : 9
 error                : 
 
 Nonterminals, with rules where they appear
 
-binary_item          : 13 14 25
-complete_component   : 4
+addressable_bits     : 6
+binary_item          : 21 22 33
+complete_component   : 5
 complete_item        : 1 2
-complete_rule        : 3
-component_footer     : 20
-component_header     : 20
-component_statement  : 11
-exclude_statement    : 10
-format_statement     : 20
-formatted_binary_item : 23 24
-include_statement    : 9
-list_binary_item     : 12 14 17
+complete_rule        : 4
+complete_settings    : 3
+component_footer     : 28
+component_header     : 28
+component_statement  : 19
+exclude_statement    : 18
+format_statement     : 28
+formatted_binary_item : 31 32
+include_statement    : 17
+list_binary_item     : 20 22 25
 list_complete_item   : 2 0
-list_formatted_binary_item : 22 24
-list_rule_component  : 5 8
-rule_component       : 7 8
-rule_footer          : 5
-rule_header          : 5
+list_formatted_binary_item : 30 32
+list_rule_component  : 13 16
+name                 : 6
+opcode_size          : 6
+rule_component       : 15 16
+rule_footer          : 13
+rule_header          : 13
+settings_footer      : 6
+settings_header      : 6
+total_bits           : 6
 
 Parsing method: LALR
 
@@ -77,40 +98,50 @@ state 0
     (0) S' -> . list_complete_item
     (1) list_complete_item -> . complete_item
     (2) list_complete_item -> . list_complete_item complete_item
-    (3) complete_item -> . complete_rule
-    (4) complete_item -> . complete_component
-    (5) complete_rule -> . rule_header list_rule_component rule_footer
-    (20) complete_component -> . component_header format_statement component_footer
-    (6) rule_header -> . LBRACKET RULE IDENTIFIER RBRACKET NEWLINE
-    (21) component_header -> . LBRACKET COMPONENT IDENTIFIER RBRACKET NEWLINE
+    (3) complete_item -> . complete_settings
+    (4) complete_item -> . complete_rule
+    (5) complete_item -> . complete_component
+    (6) complete_settings -> . settings_header name total_bits addressable_bits opcode_size settings_footer
+    (13) complete_rule -> . rule_header list_rule_component rule_footer
+    (28) complete_component -> . component_header format_statement component_footer
+    (7) settings_header -> . LBRACKET SETTINGS RBRACKET NEWLINE
+    (14) rule_header -> . LBRACKET RULE IDENTIFIER RBRACKET NEWLINE
+    (29) component_header -> . LBRACKET COMPONENT IDENTIFIER RBRACKET NEWLINE
 
-    LBRACKET        shift and go to state 7
+    LBRACKET        shift and go to state 9
 
     list_complete_item             shift and go to state 1
     complete_item                  shift and go to state 2
-    complete_rule                  shift and go to state 3
-    complete_component             shift and go to state 4
-    rule_header                    shift and go to state 5
-    component_header               shift and go to state 6
+    complete_settings              shift and go to state 3
+    complete_rule                  shift and go to state 4
+    complete_component             shift and go to state 5
+    settings_header                shift and go to state 6
+    rule_header                    shift and go to state 7
+    component_header               shift and go to state 8
 
 state 1
 
     (0) S' -> list_complete_item .
     (2) list_complete_item -> list_complete_item . complete_item
-    (3) complete_item -> . complete_rule
-    (4) complete_item -> . complete_component
-    (5) complete_rule -> . rule_header list_rule_component rule_footer
-    (20) complete_component -> . component_header format_statement component_footer
-    (6) rule_header -> . LBRACKET RULE IDENTIFIER RBRACKET NEWLINE
-    (21) component_header -> . LBRACKET COMPONENT IDENTIFIER RBRACKET NEWLINE
+    (3) complete_item -> . complete_settings
+    (4) complete_item -> . complete_rule
+    (5) complete_item -> . complete_component
+    (6) complete_settings -> . settings_header name total_bits addressable_bits opcode_size settings_footer
+    (13) complete_rule -> . rule_header list_rule_component rule_footer
+    (28) complete_component -> . component_header format_statement component_footer
+    (7) settings_header -> . LBRACKET SETTINGS RBRACKET NEWLINE
+    (14) rule_header -> . LBRACKET RULE IDENTIFIER RBRACKET NEWLINE
+    (29) component_header -> . LBRACKET COMPONENT IDENTIFIER RBRACKET NEWLINE
 
-    LBRACKET        shift and go to state 7
+    LBRACKET        shift and go to state 9
 
-    complete_item                  shift and go to state 8
-    complete_rule                  shift and go to state 3
-    complete_component             shift and go to state 4
-    rule_header                    shift and go to state 5
-    component_header               shift and go to state 6
+    complete_item                  shift and go to state 10
+    complete_settings              shift and go to state 3
+    complete_rule                  shift and go to state 4
+    complete_component             shift and go to state 5
+    settings_header                shift and go to state 6
+    rule_header                    shift and go to state 7
+    component_header               shift and go to state 8
 
 state 2
 
@@ -122,59 +153,78 @@ state 2
 
 state 3
 
-    (3) complete_item -> complete_rule .
+    (3) complete_item -> complete_settings .
 
-    LBRACKET        reduce using rule 3 (complete_item -> complete_rule .)
-    $end            reduce using rule 3 (complete_item -> complete_rule .)
+    LBRACKET        reduce using rule 3 (complete_item -> complete_settings .)
+    $end            reduce using rule 3 (complete_item -> complete_settings .)
 
 
 state 4
 
-    (4) complete_item -> complete_component .
+    (4) complete_item -> complete_rule .
 
-    LBRACKET        reduce using rule 4 (complete_item -> complete_component .)
-    $end            reduce using rule 4 (complete_item -> complete_component .)
+    LBRACKET        reduce using rule 4 (complete_item -> complete_rule .)
+    $end            reduce using rule 4 (complete_item -> complete_rule .)
 
 
 state 5
 
-    (5) complete_rule -> rule_header . list_rule_component rule_footer
-    (7) list_rule_component -> . rule_component
-    (8) list_rule_component -> . list_rule_component rule_component
-    (9) rule_component -> . include_statement
-    (10) rule_component -> . exclude_statement
-    (11) rule_component -> . component_statement
-    (12) include_statement -> . DASH INCLUDE COLON list_binary_item NEWLINE
-    (17) exclude_statement -> . DASH EXCLUDE COLON list_binary_item NEWLINE
-    (18) component_statement -> . DASH COMPONENT COLON IDENTIFIER NEWLINE
+    (5) complete_item -> complete_component .
 
-    DASH            shift and go to state 14
+    LBRACKET        reduce using rule 5 (complete_item -> complete_component .)
+    $end            reduce using rule 5 (complete_item -> complete_component .)
 
-    list_rule_component            shift and go to state 9
-    rule_component                 shift and go to state 10
-    include_statement              shift and go to state 11
-    exclude_statement              shift and go to state 12
-    component_statement            shift and go to state 13
 
 state 6
 
-    (20) complete_component -> component_header . format_statement component_footer
-    (22) format_statement -> . DASH FORMAT COLON list_formatted_binary_item NEWLINE
+    (6) complete_settings -> settings_header . name total_bits addressable_bits opcode_size settings_footer
+    (8) name -> . DASH NAME COLON IDENTIFIER NEWLINE
 
-    DASH            shift and go to state 16
+    DASH            shift and go to state 12
 
-    format_statement               shift and go to state 15
+    name                           shift and go to state 11
 
 state 7
 
-    (6) rule_header -> LBRACKET . RULE IDENTIFIER RBRACKET NEWLINE
-    (21) component_header -> LBRACKET . COMPONENT IDENTIFIER RBRACKET NEWLINE
+    (13) complete_rule -> rule_header . list_rule_component rule_footer
+    (15) list_rule_component -> . rule_component
+    (16) list_rule_component -> . list_rule_component rule_component
+    (17) rule_component -> . include_statement
+    (18) rule_component -> . exclude_statement
+    (19) rule_component -> . component_statement
+    (20) include_statement -> . DASH INCLUDE COLON list_binary_item NEWLINE
+    (25) exclude_statement -> . DASH EXCLUDE COLON list_binary_item NEWLINE
+    (26) component_statement -> . DASH COMPONENT COLON IDENTIFIER NEWLINE
 
-    RULE            shift and go to state 17
-    COMPONENT       shift and go to state 18
+    DASH            shift and go to state 18
 
+    list_rule_component            shift and go to state 13
+    rule_component                 shift and go to state 14
+    include_statement              shift and go to state 15
+    exclude_statement              shift and go to state 16
+    component_statement            shift and go to state 17
 
 state 8
+
+    (28) complete_component -> component_header . format_statement component_footer
+    (30) format_statement -> . DASH FORMAT COLON list_formatted_binary_item NEWLINE
+
+    DASH            shift and go to state 20
+
+    format_statement               shift and go to state 19
+
+state 9
+
+    (7) settings_header -> LBRACKET . SETTINGS RBRACKET NEWLINE
+    (14) rule_header -> LBRACKET . RULE IDENTIFIER RBRACKET NEWLINE
+    (29) component_header -> LBRACKET . COMPONENT IDENTIFIER RBRACKET NEWLINE
+
+    SETTINGS        shift and go to state 21
+    RULE            shift and go to state 22
+    COMPONENT       shift and go to state 23
+
+
+state 10
 
     (2) list_complete_item -> list_complete_item complete_item .
 
@@ -182,474 +232,715 @@ state 8
     $end            reduce using rule 2 (list_complete_item -> list_complete_item complete_item .)
 
 
-state 9
-
-    (5) complete_rule -> rule_header list_rule_component . rule_footer
-    (8) list_rule_component -> list_rule_component . rule_component
-    (19) rule_footer -> . LBRACKET SLASH RULE RBRACKET NEWLINE
-    (9) rule_component -> . include_statement
-    (10) rule_component -> . exclude_statement
-    (11) rule_component -> . component_statement
-    (12) include_statement -> . DASH INCLUDE COLON list_binary_item NEWLINE
-    (17) exclude_statement -> . DASH EXCLUDE COLON list_binary_item NEWLINE
-    (18) component_statement -> . DASH COMPONENT COLON IDENTIFIER NEWLINE
-
-    LBRACKET        shift and go to state 21
-    DASH            shift and go to state 14
-
-    rule_footer                    shift and go to state 19
-    rule_component                 shift and go to state 20
-    include_statement              shift and go to state 11
-    exclude_statement              shift and go to state 12
-    component_statement            shift and go to state 13
-
-state 10
-
-    (7) list_rule_component -> rule_component .
-
-    LBRACKET        reduce using rule 7 (list_rule_component -> rule_component .)
-    DASH            reduce using rule 7 (list_rule_component -> rule_component .)
-
-
 state 11
 
-    (9) rule_component -> include_statement .
+    (6) complete_settings -> settings_header name . total_bits addressable_bits opcode_size settings_footer
+    (9) total_bits -> . DASH TOTAL_BITS COLON NUMBER NEWLINE
 
-    LBRACKET        reduce using rule 9 (rule_component -> include_statement .)
-    DASH            reduce using rule 9 (rule_component -> include_statement .)
+    DASH            shift and go to state 25
 
+    total_bits                     shift and go to state 24
 
 state 12
 
-    (10) rule_component -> exclude_statement .
+    (8) name -> DASH . NAME COLON IDENTIFIER NEWLINE
 
-    LBRACKET        reduce using rule 10 (rule_component -> exclude_statement .)
-    DASH            reduce using rule 10 (rule_component -> exclude_statement .)
+    NAME            shift and go to state 26
 
 
 state 13
 
-    (11) rule_component -> component_statement .
+    (13) complete_rule -> rule_header list_rule_component . rule_footer
+    (16) list_rule_component -> list_rule_component . rule_component
+    (27) rule_footer -> . LBRACKET SLASH RULE RBRACKET NEWLINE
+    (17) rule_component -> . include_statement
+    (18) rule_component -> . exclude_statement
+    (19) rule_component -> . component_statement
+    (20) include_statement -> . DASH INCLUDE COLON list_binary_item NEWLINE
+    (25) exclude_statement -> . DASH EXCLUDE COLON list_binary_item NEWLINE
+    (26) component_statement -> . DASH COMPONENT COLON IDENTIFIER NEWLINE
 
-    LBRACKET        reduce using rule 11 (rule_component -> component_statement .)
-    DASH            reduce using rule 11 (rule_component -> component_statement .)
+    LBRACKET        shift and go to state 29
+    DASH            shift and go to state 18
 
+    rule_footer                    shift and go to state 27
+    rule_component                 shift and go to state 28
+    include_statement              shift and go to state 15
+    exclude_statement              shift and go to state 16
+    component_statement            shift and go to state 17
 
 state 14
 
-    (12) include_statement -> DASH . INCLUDE COLON list_binary_item NEWLINE
-    (17) exclude_statement -> DASH . EXCLUDE COLON list_binary_item NEWLINE
-    (18) component_statement -> DASH . COMPONENT COLON IDENTIFIER NEWLINE
+    (15) list_rule_component -> rule_component .
 
-    INCLUDE         shift and go to state 22
-    EXCLUDE         shift and go to state 23
-    COMPONENT       shift and go to state 24
+    LBRACKET        reduce using rule 15 (list_rule_component -> rule_component .)
+    DASH            reduce using rule 15 (list_rule_component -> rule_component .)
 
 
 state 15
 
-    (20) complete_component -> component_header format_statement . component_footer
-    (27) component_footer -> . LBRACKET SLASH COMPONENT RBRACKET NEWLINE
+    (17) rule_component -> include_statement .
 
-    LBRACKET        shift and go to state 26
+    LBRACKET        reduce using rule 17 (rule_component -> include_statement .)
+    DASH            reduce using rule 17 (rule_component -> include_statement .)
 
-    component_footer               shift and go to state 25
 
 state 16
 
-    (22) format_statement -> DASH . FORMAT COLON list_formatted_binary_item NEWLINE
+    (18) rule_component -> exclude_statement .
 
-    FORMAT          shift and go to state 27
+    LBRACKET        reduce using rule 18 (rule_component -> exclude_statement .)
+    DASH            reduce using rule 18 (rule_component -> exclude_statement .)
 
 
 state 17
 
-    (6) rule_header -> LBRACKET RULE . IDENTIFIER RBRACKET NEWLINE
+    (19) rule_component -> component_statement .
 
-    IDENTIFIER      shift and go to state 28
+    LBRACKET        reduce using rule 19 (rule_component -> component_statement .)
+    DASH            reduce using rule 19 (rule_component -> component_statement .)
 
 
 state 18
 
-    (21) component_header -> LBRACKET COMPONENT . IDENTIFIER RBRACKET NEWLINE
+    (20) include_statement -> DASH . INCLUDE COLON list_binary_item NEWLINE
+    (25) exclude_statement -> DASH . EXCLUDE COLON list_binary_item NEWLINE
+    (26) component_statement -> DASH . COMPONENT COLON IDENTIFIER NEWLINE
 
-    IDENTIFIER      shift and go to state 29
+    INCLUDE         shift and go to state 30
+    EXCLUDE         shift and go to state 31
+    COMPONENT       shift and go to state 32
 
 
 state 19
 
-    (5) complete_rule -> rule_header list_rule_component rule_footer .
+    (28) complete_component -> component_header format_statement . component_footer
+    (35) component_footer -> . LBRACKET SLASH COMPONENT RBRACKET NEWLINE
 
-    LBRACKET        reduce using rule 5 (complete_rule -> rule_header list_rule_component rule_footer .)
-    $end            reduce using rule 5 (complete_rule -> rule_header list_rule_component rule_footer .)
+    LBRACKET        shift and go to state 34
 
+    component_footer               shift and go to state 33
 
 state 20
 
-    (8) list_rule_component -> list_rule_component rule_component .
+    (30) format_statement -> DASH . FORMAT COLON list_formatted_binary_item NEWLINE
 
-    LBRACKET        reduce using rule 8 (list_rule_component -> list_rule_component rule_component .)
-    DASH            reduce using rule 8 (list_rule_component -> list_rule_component rule_component .)
+    FORMAT          shift and go to state 35
 
 
 state 21
 
-    (19) rule_footer -> LBRACKET . SLASH RULE RBRACKET NEWLINE
-
-    SLASH           shift and go to state 30
-
-
-state 22
-
-    (12) include_statement -> DASH INCLUDE . COLON list_binary_item NEWLINE
-
-    COLON           shift and go to state 31
-
-
-state 23
-
-    (17) exclude_statement -> DASH EXCLUDE . COLON list_binary_item NEWLINE
-
-    COLON           shift and go to state 32
-
-
-state 24
-
-    (18) component_statement -> DASH COMPONENT . COLON IDENTIFIER NEWLINE
-
-    COLON           shift and go to state 33
-
-
-state 25
-
-    (20) complete_component -> component_header format_statement component_footer .
-
-    LBRACKET        reduce using rule 20 (complete_component -> component_header format_statement component_footer .)
-    $end            reduce using rule 20 (complete_component -> component_header format_statement component_footer .)
-
-
-state 26
-
-    (27) component_footer -> LBRACKET . SLASH COMPONENT RBRACKET NEWLINE
-
-    SLASH           shift and go to state 34
-
-
-state 27
-
-    (22) format_statement -> DASH FORMAT . COLON list_formatted_binary_item NEWLINE
-
-    COLON           shift and go to state 35
-
-
-state 28
-
-    (6) rule_header -> LBRACKET RULE IDENTIFIER . RBRACKET NEWLINE
+    (7) settings_header -> LBRACKET SETTINGS . RBRACKET NEWLINE
 
     RBRACKET        shift and go to state 36
 
 
+state 22
+
+    (14) rule_header -> LBRACKET RULE . IDENTIFIER RBRACKET NEWLINE
+
+    IDENTIFIER      shift and go to state 37
+
+
+state 23
+
+    (29) component_header -> LBRACKET COMPONENT . IDENTIFIER RBRACKET NEWLINE
+
+    IDENTIFIER      shift and go to state 38
+
+
+state 24
+
+    (6) complete_settings -> settings_header name total_bits . addressable_bits opcode_size settings_footer
+    (10) addressable_bits -> . DASH ADDRESSABLE_BITS COLON NUMBER NEWLINE
+
+    DASH            shift and go to state 40
+
+    addressable_bits               shift and go to state 39
+
+state 25
+
+    (9) total_bits -> DASH . TOTAL_BITS COLON NUMBER NEWLINE
+
+    TOTAL_BITS      shift and go to state 41
+
+
+state 26
+
+    (8) name -> DASH NAME . COLON IDENTIFIER NEWLINE
+
+    COLON           shift and go to state 42
+
+
+state 27
+
+    (13) complete_rule -> rule_header list_rule_component rule_footer .
+
+    LBRACKET        reduce using rule 13 (complete_rule -> rule_header list_rule_component rule_footer .)
+    $end            reduce using rule 13 (complete_rule -> rule_header list_rule_component rule_footer .)
+
+
+state 28
+
+    (16) list_rule_component -> list_rule_component rule_component .
+
+    LBRACKET        reduce using rule 16 (list_rule_component -> list_rule_component rule_component .)
+    DASH            reduce using rule 16 (list_rule_component -> list_rule_component rule_component .)
+
+
 state 29
 
-    (21) component_header -> LBRACKET COMPONENT IDENTIFIER . RBRACKET NEWLINE
+    (27) rule_footer -> LBRACKET . SLASH RULE RBRACKET NEWLINE
 
-    RBRACKET        shift and go to state 37
+    SLASH           shift and go to state 43
 
 
 state 30
 
-    (19) rule_footer -> LBRACKET SLASH . RULE RBRACKET NEWLINE
+    (20) include_statement -> DASH INCLUDE . COLON list_binary_item NEWLINE
 
-    RULE            shift and go to state 38
+    COLON           shift and go to state 44
 
 
 state 31
 
-    (12) include_statement -> DASH INCLUDE COLON . list_binary_item NEWLINE
-    (13) list_binary_item -> . binary_item
-    (14) list_binary_item -> . list_binary_item binary_item
-    (15) binary_item -> . BINARY
-    (16) binary_item -> . DASH
+    (25) exclude_statement -> DASH EXCLUDE . COLON list_binary_item NEWLINE
 
-    BINARY          shift and go to state 42
-    DASH            shift and go to state 39
+    COLON           shift and go to state 45
 
-    list_binary_item               shift and go to state 40
-    binary_item                    shift and go to state 41
 
 state 32
 
-    (17) exclude_statement -> DASH EXCLUDE COLON . list_binary_item NEWLINE
-    (13) list_binary_item -> . binary_item
-    (14) list_binary_item -> . list_binary_item binary_item
-    (15) binary_item -> . BINARY
-    (16) binary_item -> . DASH
+    (26) component_statement -> DASH COMPONENT . COLON IDENTIFIER NEWLINE
 
-    BINARY          shift and go to state 42
-    DASH            shift and go to state 39
+    COLON           shift and go to state 46
 
-    list_binary_item               shift and go to state 43
-    binary_item                    shift and go to state 41
 
 state 33
 
-    (18) component_statement -> DASH COMPONENT COLON . IDENTIFIER NEWLINE
+    (28) complete_component -> component_header format_statement component_footer .
 
-    IDENTIFIER      shift and go to state 44
+    LBRACKET        reduce using rule 28 (complete_component -> component_header format_statement component_footer .)
+    $end            reduce using rule 28 (complete_component -> component_header format_statement component_footer .)
 
 
 state 34
 
-    (27) component_footer -> LBRACKET SLASH . COMPONENT RBRACKET NEWLINE
+    (35) component_footer -> LBRACKET . SLASH COMPONENT RBRACKET NEWLINE
 
-    COMPONENT       shift and go to state 45
+    SLASH           shift and go to state 47
 
 
 state 35
 
-    (22) format_statement -> DASH FORMAT COLON . list_formatted_binary_item NEWLINE
-    (23) list_formatted_binary_item -> . formatted_binary_item
-    (24) list_formatted_binary_item -> . list_formatted_binary_item formatted_binary_item
-    (25) formatted_binary_item -> . binary_item
-    (26) formatted_binary_item -> . BINARY_VARIABLE
-    (15) binary_item -> . BINARY
-    (16) binary_item -> . DASH
+    (30) format_statement -> DASH FORMAT . COLON list_formatted_binary_item NEWLINE
 
-    BINARY_VARIABLE shift and go to state 49
-    BINARY          shift and go to state 42
-    DASH            shift and go to state 39
+    COLON           shift and go to state 48
 
-    list_formatted_binary_item     shift and go to state 46
-    formatted_binary_item          shift and go to state 47
-    binary_item                    shift and go to state 48
 
 state 36
 
-    (6) rule_header -> LBRACKET RULE IDENTIFIER RBRACKET . NEWLINE
+    (7) settings_header -> LBRACKET SETTINGS RBRACKET . NEWLINE
 
-    NEWLINE         shift and go to state 50
+    NEWLINE         shift and go to state 49
 
 
 state 37
 
-    (21) component_header -> LBRACKET COMPONENT IDENTIFIER RBRACKET . NEWLINE
+    (14) rule_header -> LBRACKET RULE IDENTIFIER . RBRACKET NEWLINE
 
-    NEWLINE         shift and go to state 51
+    RBRACKET        shift and go to state 50
 
 
 state 38
 
-    (19) rule_footer -> LBRACKET SLASH RULE . RBRACKET NEWLINE
+    (29) component_header -> LBRACKET COMPONENT IDENTIFIER . RBRACKET NEWLINE
 
-    RBRACKET        shift and go to state 52
+    RBRACKET        shift and go to state 51
 
 
 state 39
 
-    (16) binary_item -> DASH .
+    (6) complete_settings -> settings_header name total_bits addressable_bits . opcode_size settings_footer
+    (11) opcode_size -> . DASH OPCODE_SIZE COLON NUMBER NEWLINE
 
-    NEWLINE         reduce using rule 16 (binary_item -> DASH .)
-    BINARY          reduce using rule 16 (binary_item -> DASH .)
-    DASH            reduce using rule 16 (binary_item -> DASH .)
-    BINARY_VARIABLE reduce using rule 16 (binary_item -> DASH .)
+    DASH            shift and go to state 53
 
+    opcode_size                    shift and go to state 52
 
 state 40
 
-    (12) include_statement -> DASH INCLUDE COLON list_binary_item . NEWLINE
-    (14) list_binary_item -> list_binary_item . binary_item
-    (15) binary_item -> . BINARY
-    (16) binary_item -> . DASH
+    (10) addressable_bits -> DASH . ADDRESSABLE_BITS COLON NUMBER NEWLINE
 
-    NEWLINE         shift and go to state 53
-    BINARY          shift and go to state 42
-    DASH            shift and go to state 39
+    ADDRESSABLE_BITS shift and go to state 54
 
-    binary_item                    shift and go to state 54
 
 state 41
 
-    (13) list_binary_item -> binary_item .
+    (9) total_bits -> DASH TOTAL_BITS . COLON NUMBER NEWLINE
 
-    NEWLINE         reduce using rule 13 (list_binary_item -> binary_item .)
-    BINARY          reduce using rule 13 (list_binary_item -> binary_item .)
-    DASH            reduce using rule 13 (list_binary_item -> binary_item .)
+    COLON           shift and go to state 55
 
 
 state 42
 
-    (15) binary_item -> BINARY .
+    (8) name -> DASH NAME COLON . IDENTIFIER NEWLINE
 
-    NEWLINE         reduce using rule 15 (binary_item -> BINARY .)
-    BINARY          reduce using rule 15 (binary_item -> BINARY .)
-    DASH            reduce using rule 15 (binary_item -> BINARY .)
-    BINARY_VARIABLE reduce using rule 15 (binary_item -> BINARY .)
+    IDENTIFIER      shift and go to state 56
 
 
 state 43
 
-    (17) exclude_statement -> DASH EXCLUDE COLON list_binary_item . NEWLINE
-    (14) list_binary_item -> list_binary_item . binary_item
-    (15) binary_item -> . BINARY
-    (16) binary_item -> . DASH
+    (27) rule_footer -> LBRACKET SLASH . RULE RBRACKET NEWLINE
 
-    NEWLINE         shift and go to state 55
-    BINARY          shift and go to state 42
-    DASH            shift and go to state 39
+    RULE            shift and go to state 57
 
-    binary_item                    shift and go to state 54
 
 state 44
 
-    (18) component_statement -> DASH COMPONENT COLON IDENTIFIER . NEWLINE
+    (20) include_statement -> DASH INCLUDE COLON . list_binary_item NEWLINE
+    (21) list_binary_item -> . binary_item
+    (22) list_binary_item -> . list_binary_item binary_item
+    (23) binary_item -> . BINARY
+    (24) binary_item -> . DASH
 
-    NEWLINE         shift and go to state 56
+    BINARY          shift and go to state 61
+    DASH            shift and go to state 58
 
+    list_binary_item               shift and go to state 59
+    binary_item                    shift and go to state 60
 
 state 45
 
-    (27) component_footer -> LBRACKET SLASH COMPONENT . RBRACKET NEWLINE
+    (25) exclude_statement -> DASH EXCLUDE COLON . list_binary_item NEWLINE
+    (21) list_binary_item -> . binary_item
+    (22) list_binary_item -> . list_binary_item binary_item
+    (23) binary_item -> . BINARY
+    (24) binary_item -> . DASH
 
-    RBRACKET        shift and go to state 57
+    BINARY          shift and go to state 61
+    DASH            shift and go to state 58
 
+    list_binary_item               shift and go to state 62
+    binary_item                    shift and go to state 60
 
 state 46
 
-    (22) format_statement -> DASH FORMAT COLON list_formatted_binary_item . NEWLINE
-    (24) list_formatted_binary_item -> list_formatted_binary_item . formatted_binary_item
-    (25) formatted_binary_item -> . binary_item
-    (26) formatted_binary_item -> . BINARY_VARIABLE
-    (15) binary_item -> . BINARY
-    (16) binary_item -> . DASH
+    (26) component_statement -> DASH COMPONENT COLON . IDENTIFIER NEWLINE
 
-    NEWLINE         shift and go to state 58
-    BINARY_VARIABLE shift and go to state 49
-    BINARY          shift and go to state 42
-    DASH            shift and go to state 39
+    IDENTIFIER      shift and go to state 63
 
-    formatted_binary_item          shift and go to state 59
-    binary_item                    shift and go to state 48
 
 state 47
 
-    (23) list_formatted_binary_item -> formatted_binary_item .
+    (35) component_footer -> LBRACKET SLASH . COMPONENT RBRACKET NEWLINE
 
-    NEWLINE         reduce using rule 23 (list_formatted_binary_item -> formatted_binary_item .)
-    BINARY_VARIABLE reduce using rule 23 (list_formatted_binary_item -> formatted_binary_item .)
-    BINARY          reduce using rule 23 (list_formatted_binary_item -> formatted_binary_item .)
-    DASH            reduce using rule 23 (list_formatted_binary_item -> formatted_binary_item .)
+    COMPONENT       shift and go to state 64
 
 
 state 48
 
-    (25) formatted_binary_item -> binary_item .
+    (30) format_statement -> DASH FORMAT COLON . list_formatted_binary_item NEWLINE
+    (31) list_formatted_binary_item -> . formatted_binary_item
+    (32) list_formatted_binary_item -> . list_formatted_binary_item formatted_binary_item
+    (33) formatted_binary_item -> . binary_item
+    (34) formatted_binary_item -> . BINARY_VARIABLE
+    (23) binary_item -> . BINARY
+    (24) binary_item -> . DASH
 
-    NEWLINE         reduce using rule 25 (formatted_binary_item -> binary_item .)
-    BINARY_VARIABLE reduce using rule 25 (formatted_binary_item -> binary_item .)
-    BINARY          reduce using rule 25 (formatted_binary_item -> binary_item .)
-    DASH            reduce using rule 25 (formatted_binary_item -> binary_item .)
+    BINARY_VARIABLE shift and go to state 68
+    BINARY          shift and go to state 61
+    DASH            shift and go to state 58
 
+    list_formatted_binary_item     shift and go to state 65
+    formatted_binary_item          shift and go to state 66
+    binary_item                    shift and go to state 67
 
 state 49
 
-    (26) formatted_binary_item -> BINARY_VARIABLE .
+    (7) settings_header -> LBRACKET SETTINGS RBRACKET NEWLINE .
 
-    NEWLINE         reduce using rule 26 (formatted_binary_item -> BINARY_VARIABLE .)
-    BINARY_VARIABLE reduce using rule 26 (formatted_binary_item -> BINARY_VARIABLE .)
-    BINARY          reduce using rule 26 (formatted_binary_item -> BINARY_VARIABLE .)
-    DASH            reduce using rule 26 (formatted_binary_item -> BINARY_VARIABLE .)
+    DASH            reduce using rule 7 (settings_header -> LBRACKET SETTINGS RBRACKET NEWLINE .)
 
 
 state 50
 
-    (6) rule_header -> LBRACKET RULE IDENTIFIER RBRACKET NEWLINE .
+    (14) rule_header -> LBRACKET RULE IDENTIFIER RBRACKET . NEWLINE
 
-    DASH            reduce using rule 6 (rule_header -> LBRACKET RULE IDENTIFIER RBRACKET NEWLINE .)
+    NEWLINE         shift and go to state 69
 
 
 state 51
 
-    (21) component_header -> LBRACKET COMPONENT IDENTIFIER RBRACKET NEWLINE .
+    (29) component_header -> LBRACKET COMPONENT IDENTIFIER RBRACKET . NEWLINE
 
-    DASH            reduce using rule 21 (component_header -> LBRACKET COMPONENT IDENTIFIER RBRACKET NEWLINE .)
+    NEWLINE         shift and go to state 70
 
 
 state 52
 
-    (19) rule_footer -> LBRACKET SLASH RULE RBRACKET . NEWLINE
+    (6) complete_settings -> settings_header name total_bits addressable_bits opcode_size . settings_footer
+    (12) settings_footer -> . LBRACKET SLASH SETTINGS RBRACKET NEWLINE
 
-    NEWLINE         shift and go to state 60
+    LBRACKET        shift and go to state 72
 
+    settings_footer                shift and go to state 71
 
 state 53
 
-    (12) include_statement -> DASH INCLUDE COLON list_binary_item NEWLINE .
+    (11) opcode_size -> DASH . OPCODE_SIZE COLON NUMBER NEWLINE
 
-    LBRACKET        reduce using rule 12 (include_statement -> DASH INCLUDE COLON list_binary_item NEWLINE .)
-    DASH            reduce using rule 12 (include_statement -> DASH INCLUDE COLON list_binary_item NEWLINE .)
+    OPCODE_SIZE     shift and go to state 73
 
 
 state 54
 
-    (14) list_binary_item -> list_binary_item binary_item .
+    (10) addressable_bits -> DASH ADDRESSABLE_BITS . COLON NUMBER NEWLINE
 
-    NEWLINE         reduce using rule 14 (list_binary_item -> list_binary_item binary_item .)
-    BINARY          reduce using rule 14 (list_binary_item -> list_binary_item binary_item .)
-    DASH            reduce using rule 14 (list_binary_item -> list_binary_item binary_item .)
+    COLON           shift and go to state 74
 
 
 state 55
 
-    (17) exclude_statement -> DASH EXCLUDE COLON list_binary_item NEWLINE .
+    (9) total_bits -> DASH TOTAL_BITS COLON . NUMBER NEWLINE
 
-    LBRACKET        reduce using rule 17 (exclude_statement -> DASH EXCLUDE COLON list_binary_item NEWLINE .)
-    DASH            reduce using rule 17 (exclude_statement -> DASH EXCLUDE COLON list_binary_item NEWLINE .)
+    NUMBER          shift and go to state 75
 
 
 state 56
 
-    (18) component_statement -> DASH COMPONENT COLON IDENTIFIER NEWLINE .
+    (8) name -> DASH NAME COLON IDENTIFIER . NEWLINE
 
-    LBRACKET        reduce using rule 18 (component_statement -> DASH COMPONENT COLON IDENTIFIER NEWLINE .)
-    DASH            reduce using rule 18 (component_statement -> DASH COMPONENT COLON IDENTIFIER NEWLINE .)
+    NEWLINE         shift and go to state 76
 
 
 state 57
 
-    (27) component_footer -> LBRACKET SLASH COMPONENT RBRACKET . NEWLINE
+    (27) rule_footer -> LBRACKET SLASH RULE . RBRACKET NEWLINE
 
-    NEWLINE         shift and go to state 61
+    RBRACKET        shift and go to state 77
 
 
 state 58
 
-    (22) format_statement -> DASH FORMAT COLON list_formatted_binary_item NEWLINE .
+    (24) binary_item -> DASH .
 
-    LBRACKET        reduce using rule 22 (format_statement -> DASH FORMAT COLON list_formatted_binary_item NEWLINE .)
+    NEWLINE         reduce using rule 24 (binary_item -> DASH .)
+    BINARY          reduce using rule 24 (binary_item -> DASH .)
+    DASH            reduce using rule 24 (binary_item -> DASH .)
+    BINARY_VARIABLE reduce using rule 24 (binary_item -> DASH .)
 
 
 state 59
 
-    (24) list_formatted_binary_item -> list_formatted_binary_item formatted_binary_item .
+    (20) include_statement -> DASH INCLUDE COLON list_binary_item . NEWLINE
+    (22) list_binary_item -> list_binary_item . binary_item
+    (23) binary_item -> . BINARY
+    (24) binary_item -> . DASH
 
-    NEWLINE         reduce using rule 24 (list_formatted_binary_item -> list_formatted_binary_item formatted_binary_item .)
-    BINARY_VARIABLE reduce using rule 24 (list_formatted_binary_item -> list_formatted_binary_item formatted_binary_item .)
-    BINARY          reduce using rule 24 (list_formatted_binary_item -> list_formatted_binary_item formatted_binary_item .)
-    DASH            reduce using rule 24 (list_formatted_binary_item -> list_formatted_binary_item formatted_binary_item .)
+    NEWLINE         shift and go to state 78
+    BINARY          shift and go to state 61
+    DASH            shift and go to state 58
 
+    binary_item                    shift and go to state 79
 
 state 60
 
-    (19) rule_footer -> LBRACKET SLASH RULE RBRACKET NEWLINE .
+    (21) list_binary_item -> binary_item .
 
-    LBRACKET        reduce using rule 19 (rule_footer -> LBRACKET SLASH RULE RBRACKET NEWLINE .)
-    $end            reduce using rule 19 (rule_footer -> LBRACKET SLASH RULE RBRACKET NEWLINE .)
+    NEWLINE         reduce using rule 21 (list_binary_item -> binary_item .)
+    BINARY          reduce using rule 21 (list_binary_item -> binary_item .)
+    DASH            reduce using rule 21 (list_binary_item -> binary_item .)
 
 
 state 61
 
-    (27) component_footer -> LBRACKET SLASH COMPONENT RBRACKET NEWLINE .
+    (23) binary_item -> BINARY .
 
-    LBRACKET        reduce using rule 27 (component_footer -> LBRACKET SLASH COMPONENT RBRACKET NEWLINE .)
-    $end            reduce using rule 27 (component_footer -> LBRACKET SLASH COMPONENT RBRACKET NEWLINE .)
+    NEWLINE         reduce using rule 23 (binary_item -> BINARY .)
+    BINARY          reduce using rule 23 (binary_item -> BINARY .)
+    DASH            reduce using rule 23 (binary_item -> BINARY .)
+    BINARY_VARIABLE reduce using rule 23 (binary_item -> BINARY .)
+
+
+state 62
+
+    (25) exclude_statement -> DASH EXCLUDE COLON list_binary_item . NEWLINE
+    (22) list_binary_item -> list_binary_item . binary_item
+    (23) binary_item -> . BINARY
+    (24) binary_item -> . DASH
+
+    NEWLINE         shift and go to state 80
+    BINARY          shift and go to state 61
+    DASH            shift and go to state 58
+
+    binary_item                    shift and go to state 79
+
+state 63
+
+    (26) component_statement -> DASH COMPONENT COLON IDENTIFIER . NEWLINE
+
+    NEWLINE         shift and go to state 81
+
+
+state 64
+
+    (35) component_footer -> LBRACKET SLASH COMPONENT . RBRACKET NEWLINE
+
+    RBRACKET        shift and go to state 82
+
+
+state 65
+
+    (30) format_statement -> DASH FORMAT COLON list_formatted_binary_item . NEWLINE
+    (32) list_formatted_binary_item -> list_formatted_binary_item . formatted_binary_item
+    (33) formatted_binary_item -> . binary_item
+    (34) formatted_binary_item -> . BINARY_VARIABLE
+    (23) binary_item -> . BINARY
+    (24) binary_item -> . DASH
+
+    NEWLINE         shift and go to state 83
+    BINARY_VARIABLE shift and go to state 68
+    BINARY          shift and go to state 61
+    DASH            shift and go to state 58
+
+    formatted_binary_item          shift and go to state 84
+    binary_item                    shift and go to state 67
+
+state 66
+
+    (31) list_formatted_binary_item -> formatted_binary_item .
+
+    NEWLINE         reduce using rule 31 (list_formatted_binary_item -> formatted_binary_item .)
+    BINARY_VARIABLE reduce using rule 31 (list_formatted_binary_item -> formatted_binary_item .)
+    BINARY          reduce using rule 31 (list_formatted_binary_item -> formatted_binary_item .)
+    DASH            reduce using rule 31 (list_formatted_binary_item -> formatted_binary_item .)
+
+
+state 67
+
+    (33) formatted_binary_item -> binary_item .
+
+    NEWLINE         reduce using rule 33 (formatted_binary_item -> binary_item .)
+    BINARY_VARIABLE reduce using rule 33 (formatted_binary_item -> binary_item .)
+    BINARY          reduce using rule 33 (formatted_binary_item -> binary_item .)
+    DASH            reduce using rule 33 (formatted_binary_item -> binary_item .)
+
+
+state 68
+
+    (34) formatted_binary_item -> BINARY_VARIABLE .
+
+    NEWLINE         reduce using rule 34 (formatted_binary_item -> BINARY_VARIABLE .)
+    BINARY_VARIABLE reduce using rule 34 (formatted_binary_item -> BINARY_VARIABLE .)
+    BINARY          reduce using rule 34 (formatted_binary_item -> BINARY_VARIABLE .)
+    DASH            reduce using rule 34 (formatted_binary_item -> BINARY_VARIABLE .)
+
+
+state 69
+
+    (14) rule_header -> LBRACKET RULE IDENTIFIER RBRACKET NEWLINE .
+
+    DASH            reduce using rule 14 (rule_header -> LBRACKET RULE IDENTIFIER RBRACKET NEWLINE .)
+
+
+state 70
+
+    (29) component_header -> LBRACKET COMPONENT IDENTIFIER RBRACKET NEWLINE .
+
+    DASH            reduce using rule 29 (component_header -> LBRACKET COMPONENT IDENTIFIER RBRACKET NEWLINE .)
+
+
+state 71
+
+    (6) complete_settings -> settings_header name total_bits addressable_bits opcode_size settings_footer .
+
+    LBRACKET        reduce using rule 6 (complete_settings -> settings_header name total_bits addressable_bits opcode_size settings_footer .)
+    $end            reduce using rule 6 (complete_settings -> settings_header name total_bits addressable_bits opcode_size settings_footer .)
+
+
+state 72
+
+    (12) settings_footer -> LBRACKET . SLASH SETTINGS RBRACKET NEWLINE
+
+    SLASH           shift and go to state 85
+
+
+state 73
+
+    (11) opcode_size -> DASH OPCODE_SIZE . COLON NUMBER NEWLINE
+
+    COLON           shift and go to state 86
+
+
+state 74
+
+    (10) addressable_bits -> DASH ADDRESSABLE_BITS COLON . NUMBER NEWLINE
+
+    NUMBER          shift and go to state 87
+
+
+state 75
+
+    (9) total_bits -> DASH TOTAL_BITS COLON NUMBER . NEWLINE
+
+    NEWLINE         shift and go to state 88
+
+
+state 76
+
+    (8) name -> DASH NAME COLON IDENTIFIER NEWLINE .
+
+    DASH            reduce using rule 8 (name -> DASH NAME COLON IDENTIFIER NEWLINE .)
+
+
+state 77
+
+    (27) rule_footer -> LBRACKET SLASH RULE RBRACKET . NEWLINE
+
+    NEWLINE         shift and go to state 89
+
+
+state 78
+
+    (20) include_statement -> DASH INCLUDE COLON list_binary_item NEWLINE .
+
+    LBRACKET        reduce using rule 20 (include_statement -> DASH INCLUDE COLON list_binary_item NEWLINE .)
+    DASH            reduce using rule 20 (include_statement -> DASH INCLUDE COLON list_binary_item NEWLINE .)
+
+
+state 79
+
+    (22) list_binary_item -> list_binary_item binary_item .
+
+    NEWLINE         reduce using rule 22 (list_binary_item -> list_binary_item binary_item .)
+    BINARY          reduce using rule 22 (list_binary_item -> list_binary_item binary_item .)
+    DASH            reduce using rule 22 (list_binary_item -> list_binary_item binary_item .)
+
+
+state 80
+
+    (25) exclude_statement -> DASH EXCLUDE COLON list_binary_item NEWLINE .
+
+    LBRACKET        reduce using rule 25 (exclude_statement -> DASH EXCLUDE COLON list_binary_item NEWLINE .)
+    DASH            reduce using rule 25 (exclude_statement -> DASH EXCLUDE COLON list_binary_item NEWLINE .)
+
+
+state 81
+
+    (26) component_statement -> DASH COMPONENT COLON IDENTIFIER NEWLINE .
+
+    LBRACKET        reduce using rule 26 (component_statement -> DASH COMPONENT COLON IDENTIFIER NEWLINE .)
+    DASH            reduce using rule 26 (component_statement -> DASH COMPONENT COLON IDENTIFIER NEWLINE .)
+
+
+state 82
+
+    (35) component_footer -> LBRACKET SLASH COMPONENT RBRACKET . NEWLINE
+
+    NEWLINE         shift and go to state 90
+
+
+state 83
+
+    (30) format_statement -> DASH FORMAT COLON list_formatted_binary_item NEWLINE .
+
+    LBRACKET        reduce using rule 30 (format_statement -> DASH FORMAT COLON list_formatted_binary_item NEWLINE .)
+
+
+state 84
+
+    (32) list_formatted_binary_item -> list_formatted_binary_item formatted_binary_item .
+
+    NEWLINE         reduce using rule 32 (list_formatted_binary_item -> list_formatted_binary_item formatted_binary_item .)
+    BINARY_VARIABLE reduce using rule 32 (list_formatted_binary_item -> list_formatted_binary_item formatted_binary_item .)
+    BINARY          reduce using rule 32 (list_formatted_binary_item -> list_formatted_binary_item formatted_binary_item .)
+    DASH            reduce using rule 32 (list_formatted_binary_item -> list_formatted_binary_item formatted_binary_item .)
+
+
+state 85
+
+    (12) settings_footer -> LBRACKET SLASH . SETTINGS RBRACKET NEWLINE
+
+    SETTINGS        shift and go to state 91
+
+
+state 86
+
+    (11) opcode_size -> DASH OPCODE_SIZE COLON . NUMBER NEWLINE
+
+    NUMBER          shift and go to state 92
+
+
+state 87
+
+    (10) addressable_bits -> DASH ADDRESSABLE_BITS COLON NUMBER . NEWLINE
+
+    NEWLINE         shift and go to state 93
+
+
+state 88
+
+    (9) total_bits -> DASH TOTAL_BITS COLON NUMBER NEWLINE .
+
+    DASH            reduce using rule 9 (total_bits -> DASH TOTAL_BITS COLON NUMBER NEWLINE .)
+
+
+state 89
+
+    (27) rule_footer -> LBRACKET SLASH RULE RBRACKET NEWLINE .
+
+    LBRACKET        reduce using rule 27 (rule_footer -> LBRACKET SLASH RULE RBRACKET NEWLINE .)
+    $end            reduce using rule 27 (rule_footer -> LBRACKET SLASH RULE RBRACKET NEWLINE .)
+
+
+state 90
+
+    (35) component_footer -> LBRACKET SLASH COMPONENT RBRACKET NEWLINE .
+
+    LBRACKET        reduce using rule 35 (component_footer -> LBRACKET SLASH COMPONENT RBRACKET NEWLINE .)
+    $end            reduce using rule 35 (component_footer -> LBRACKET SLASH COMPONENT RBRACKET NEWLINE .)
+
+
+state 91
+
+    (12) settings_footer -> LBRACKET SLASH SETTINGS . RBRACKET NEWLINE
+
+    RBRACKET        shift and go to state 94
+
+
+state 92
+
+    (11) opcode_size -> DASH OPCODE_SIZE COLON NUMBER . NEWLINE
+
+    NEWLINE         shift and go to state 95
+
+
+state 93
+
+    (10) addressable_bits -> DASH ADDRESSABLE_BITS COLON NUMBER NEWLINE .
+
+    DASH            reduce using rule 10 (addressable_bits -> DASH ADDRESSABLE_BITS COLON NUMBER NEWLINE .)
+
+
+state 94
+
+    (12) settings_footer -> LBRACKET SLASH SETTINGS RBRACKET . NEWLINE
+
+    NEWLINE         shift and go to state 96
+
+
+state 95
+
+    (11) opcode_size -> DASH OPCODE_SIZE COLON NUMBER NEWLINE .
+
+    LBRACKET        reduce using rule 11 (opcode_size -> DASH OPCODE_SIZE COLON NUMBER NEWLINE .)
+
+
+state 96
+
+    (12) settings_footer -> LBRACKET SLASH SETTINGS RBRACKET NEWLINE .
+
+    LBRACKET        reduce using rule 12 (settings_footer -> LBRACKET SLASH SETTINGS RBRACKET NEWLINE .)
+    $end            reduce using rule 12 (settings_footer -> LBRACKET SLASH SETTINGS RBRACKET NEWLINE .)
 
