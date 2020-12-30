@@ -1,5 +1,6 @@
 import ply.lex  as lex
 import ply.yacc as yacc
+import math
 import string
 import sys
 
@@ -39,8 +40,10 @@ import sys
 # Here's an example of a Component to explain how this works:
 # [COMPONENT ADD]
 # - FORMAT: 010011B10010]
-# @IF( B) uint32_t result = 2;
-# @IF(!B) uint32_t result = 3;
+# {
+#   @IF( B) uint32_t result = 2;
+#   @IF(!B) uint32_t result = 3;
+# }
 # [/COMPONENT]
 #
 #
@@ -126,33 +129,42 @@ tokens = [
     'DASH',
     'COLON',
     'SLASH',
+    'LCURLY',
+    'RCURLY',
     'NUMBER',
-    'NEWLINE'
+    'NEWLINE',
+
+    'CPLUSPLUS'
 ] + reserved
 
 states = (
     ('binary',   'exclusive'),
     ('settings', 'inclusive'),
+    ('cpp',      'exclusive')
 )
 
-t_ignore          = r' '
+t_ignore                 = r' '
+t_cpp_ignore             = r''
 
-t_BINARY          = r'[01]'
-t_BINARY_VARIABLE = r'[A-Z]'
+t_BINARY                 = r'[01]'
+t_BINARY_VARIABLE        = r'[A-Z]'
 
-t_LBRACKET        = r'\['
-t_RBRACKET        = r'\]'
-t_DASH            = r'-'
-t_COLON           = r':'
-t_SLASH           = r'/'
+t_LBRACKET               = r'\['
+t_RBRACKET               = r'\]'
+t_DASH                   = r'-'
+t_COLON                  = r':'
+t_SLASH                  = r'/'
 
-t_binary_ignore   = r' '
-t_binary_COLON    = r':'
+t_binary_ignore          = r' '
+t_binary_COLON           = r':'
 t_binary_BINARY          = r'[01]'
 t_binary_BINARY_VARIABLE = r'[A-Z]'
 t_binary_DASH            = r'-'
 
 t_settings_NUMBER        = r'[0-9]+'
+
+# for matching a line of c++ code
+t_cpp_CPLUSPLUS          = r'\s+.*\n'
 
 def t_IDENTIFIER(t):
     r'[A-Za-z_][A-Za-z_0-9]*'
@@ -172,6 +184,18 @@ def t_IDENTIFIER(t):
 
     return t
 
+# '{' signifies the beginning of a code block
+def t_LCURLY(t):
+    r'{'
+    t.lexer.push_state('cpp')
+    return t
+
+# '}' signifies the end of a code block
+def t_cpp_RCURLY(t):
+    r'(?<=\n)}'
+    t.lexer.pop_state()
+    return t
+
 # https://www.dabeaz.com/ply/ply.html#ply_nn23
 # Define a rule so we can track line numbers
 def t_newline(t):
@@ -186,6 +210,13 @@ def t_binary_newline(t):
     t.lexer.begin('INITIAL')
     t.type = 'NEWLINE'
     return t
+
+def t_cpp_newline(t):
+    r'\n+'
+    t.lexer.lineno += 1
+    t.type = 'NEWLINE'
+    return t
+
 
 # On error, we report the illegal character and skip to continue.
 # We also set a flag to let the compiler know that it shouldn't
@@ -206,8 +237,19 @@ def t_binary_error(t):
     print('Illegal character "%s"' % t.value[0])
     t.lexer.skip(1)
 
+def t_cpp_error(t):
+    global error_found
+    error_found = True
+
+    print('Illegal character "%s"' % t.value[0])
+    t.lexer.skip(1)
+
 # set up the lexer
 lexer = lex.lex()
+
+
+
+
 
 ############################################ SYNTAX ANALYSIS ############################################
 # Here, we generate an AST given the tokens generated beforehand
@@ -328,8 +370,8 @@ def p_rule_footer(p):
     'rule_footer : LBRACKET SLASH RULE RBRACKET NEWLINE'
 
 def p_complete_component(p):
-    'complete_component : component_header format_statement component_footer'
-    p[0] = ["COMPONENT", p[1], p[2]]
+    'complete_component : component_header format_statement code_statement component_footer'
+    p[0] = ["COMPONENT", p[1], p[2], p[3]]
 
 def p_component_header(p):
     'component_header : LBRACKET COMPONENT IDENTIFIER RBRACKET NEWLINE'
@@ -338,6 +380,18 @@ def p_component_header(p):
 def p_format_statement(p):
     'format_statement : DASH FORMAT COLON list_formatted_binary_item NEWLINE'
     p[0] = p[4]
+
+def p_code_statement(p):
+    'code_statement : LCURLY NEWLINE list_cplusplus RCURLY NEWLINE'
+    p[0] = p[3]
+
+def p_list_cplusplus_single(p):
+    '''list_cplusplus : CPLUSPLUS'''
+    p[0] = [p[1]]
+
+def p_list_cplusplus_group(p):
+    '''list_cplusplus : list_cplusplus CPLUSPLUS'''
+    p[0] = p[1] + [p[2]]
 
 def p_list_formatted_binary_item_single(p):
     'list_formatted_binary_item : formatted_binary_item'
@@ -406,14 +460,18 @@ parser = yacc.yacc()
 # 1. len(binary_sequence) == settings['ADDRESSABLE_BITS']
 # 2. every element of binary_sequence is one of: ['0', '1', '-']
 #
-# component_statement = ['COMPONENT', component_name] 
+# component_statement = ['COMPONENT', component_name, C++] 
 # component_statement is well-formed if:
 # 1. component_name is defined in a component ONCE (i.e. [COMPONENT component_name] exists)
+# NOTE: C++ is just an array of lines of C++ code
 #
 # component = ['COMPONENT', component_name, formatted_binary_sequence]
 # component is well-formed if:
 # 1. len(formatted_binary_sequence) == settings['ADDRESSABLE_BITS']
 # 2. every element of binary_sequence is one of: ['0', '1', '-', 'A-Z']
+
+# TODO: add a check to make sure all rule includes are unique (i.e., there is no index
+# that can match two rules)
 
 # ASSUME: tree is a list_complete_item
 def check_cpp_jump_ast(source: list):
@@ -572,8 +630,28 @@ def check_cpp_jump_ast(source: list):
 ################################### MAKING THE AST READABLE ###################################
 
 # Now we will map the AST to a series of classes / data structures that will be easier to work with
+# Here's some short useful functions to start us off:
 
-# First of all, Settings: Settings is just going to be a dictionary with the name of each setting as the key
+# Gets the nth bit of the binary representation of n
+def get_nth_bit(value, n):
+    return (value >> n) & 1
+
+# Returns True iff for all bits (i, j) in (include, index):
+# 1) i == '1' and j == '1'
+# 2) i == '0' and j == '0'
+# 3) i == '-'
+# Note that i represents the include bit, and j represents the bit we're matching against it.
+def is_compatible_bits(include, index):
+    for k in range(len(include)):
+        i = include[k]
+        j = str(get_nth_bit(index, k))
+        if not ((i == '0' and j == '0') or \
+                (i == '1' and j == '1') or \
+                (i == '-')):
+           return False
+    return True
+
+# Now, we deal with Settings: Settings is just going to be a dictionary with the name of each setting as the key
 # and the value of the setting as the, well, value. This can be constructed as so:
 # NOTE: wf stands for well_formed
 
@@ -601,6 +679,26 @@ class Rule:
         self.excludes   = list(map(lambda x : x[1], exclude_statements_wf))
         self.components = list(map(lambda x : x[1], component_statements_wf))
 
+        # now we reverse the include and excludes because we want the lowest significant bit
+        # in the earliest spot in the array, for convenience sake
+        self.include.reverse()
+        for exclude in self.excludes:
+            exclude.reverse()
+    
+    # A helper method that will return True iff two conditions are true:
+    # 1) the include matches the given value
+    # 2) the excludes don't match the given value
+    def does_match_index(self, value: int):
+        # first check the include
+        if not is_compatible_bits(self.include, value):
+            return False
+
+        # and now the excludes
+        for exclude in self.excludes:
+            if is_compatible_bits(exclude, value):
+                return False
+        return True
+
 def get_rules(ast):
     # turn every element of ast that is a rule into a Rule object
     return list(map(Rule, filter(lambda x : x[0] == 'RULE', ast)))
@@ -610,10 +708,45 @@ class Component:
     def __init__(self, component_wf):
         self.name   = component_wf[1]
         self.format = component_wf[2]
+        self.code   = component_wf[3]
 
 def get_components(ast):
     # turn every element of ast that is a component into a Component object
     return list(map(Component, filter(lambda x : x[0] == 'COMPONENT', ast)))
+
+
+
+
+
+###################################### TRANSLATING TO CPP ######################################
+
+# And here's the main function that will do all the fancy translating from JPP to CPP. The idea
+# is that we start with an empty jumptable, and for each entry we find the rule that corresponds
+# to the entry. Then, we use that rule to figure out what components we need. We can infer the
+# values of the bit variables given the index of the jumptable that we are currently filling in.
+# Then, we apply the bit variables (the @IF() stuff) to the component code, and write the
+# whole code to the file.
+
+# Used to determine which rule in rules has an include that matches i. Returns None if there are
+# no such matches.
+def get_matching_rule(rules, i):
+    matching_rules = list(filter(lambda x : x.does_match_index(i), rules))
+    if len(matching_rules) == 0:
+        return None
+    
+    # DANGER!
+    return matching_rules[0]
+
+# The function that will actually fill in the jumptable
+def translate_and_write(settings, rules, components):
+    jumptable_size = int(math.pow(2, settings['ADDRESSABLE_BITS']))
+
+    # i will be the current index of the jumptable that we are filling in
+    for i in range(jumptable_size):
+        rule = get_matching_rule(rules, i)
+        if not rule is None:
+            print("index {} matches with a rule!".format(i))
+
 
 
 
@@ -630,3 +763,5 @@ def compile(file_name):
         settings   = get_settings(ast)
         rules      = get_rules(ast)
         components = get_components(ast)
+
+        translate_and_write(settings, rules, components)
