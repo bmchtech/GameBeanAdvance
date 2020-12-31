@@ -34,7 +34,8 @@ class TestWellFormedness(unittest.TestCase):
                                              ['ADDRESSABLE_BITS', '4'], 
                                              ['OPCODE_SIZE', '32']],
                                 ['RULE', 'ADC', [['COMPONENT', 'ADDRESSING_MODE_3']]],
-                                ['COMPONENT', 'ADDRESSING_MODE_3', ['0', '1', '1', '0']]])
+                                ['COMPONENT', 'ADDRESSING_MODE_3', ['P', '1', '0', '0'],
+                                                 [[[["P", 1]], " int x = 2;\n"]]]])
     
     def test_rules_multiple_include_statement(self):
         with self.assertRaises(SystemExit):
@@ -45,7 +46,8 @@ class TestWellFormedness(unittest.TestCase):
                                 ['RULE', 'ADC', [['INCLUDE', ['0', '1', '0', '1']],
                                                  ['INCLUDE', ['0', '1', '0', '1']],
                                                  ['COMPONENT', 'ADDRESSING_MODE_3']]],
-                                ['COMPONENT', 'ADDRESSING_MODE_3', ['0', '1', '1', '0']]])
+                                ['COMPONENT', 'ADDRESSING_MODE_3', ['P', '1', '0', '0'],
+                                                 [[[["P", 1]], " int x = 2;\n"]]]])
     
     def test_rules_no_component_statement(self):
         with self.assertRaises(SystemExit):
@@ -63,7 +65,8 @@ class TestWellFormedness(unittest.TestCase):
                                              ['OPCODE_SIZE', '32']],
                                 ['RULE', 'ADC', [['INCLUDE', ['0', '1', '0', '1']],
                                                  ['COMPONENT', 'ADDRESSING_MODE_3']]],
-                                ['COMPONENT', 'ADDRESSING_MODE_3', ['0', '1', '0', '0']]])
+                                ['COMPONENT', 'ADDRESSING_MODE_3', ['P', '1', '0', '0'],
+                                                 [[[["P", 1]], " int x = 2;\n"]]]])
     
     def test_rules_component_incompatible_2(self):
         with self.assertRaises(SystemExit):
@@ -73,7 +76,8 @@ class TestWellFormedness(unittest.TestCase):
                                              ['OPCODE_SIZE', '32']],
                                 ['RULE', 'ADC', [['INCLUDE', ['0', '1', '-', '0']],
                                                  ['COMPONENT', 'ADDRESSING_MODE_3']]],
-                                ['COMPONENT', 'ADDRESSING_MODE_3', ['0', '1', '0', '0']]])
+                                ['COMPONENT', 'ADDRESSING_MODE_3', ['P', '1', '0', '0'],
+                                                 [[[["P", 1]], " int x = 2;\n"]]]])
     
     def test_rules_include_length_mismatched(self):
         with self.assertRaises(SystemExit):
@@ -83,7 +87,8 @@ class TestWellFormedness(unittest.TestCase):
                                              ['OPCODE_SIZE', '32']],
                                 ['RULE', 'ADC', [['INCLUDE', ['0', '1', '0']],
                                                  ['COMPONENT', 'ADDRESSING_MODE_3']]],
-                                ['COMPONENT', 'ADDRESSING_MODE_3', ['0', '1', '0', '0']]])
+                                ['COMPONENT', 'ADDRESSING_MODE_3', ['P', '1', '0', '0'],
+                                                 [[[["P", 1]], " int x = 2;\n"]]]])
     
     def test_rules_include_invalid_sequence(self):
         with self.assertRaises(SystemExit):
@@ -93,7 +98,8 @@ class TestWellFormedness(unittest.TestCase):
                                              ['OPCODE_SIZE', '32']],
                                 ['RULE', 'ADC', [['INCLUDE', ['0', '1', 'A', '0']],
                                                  ['COMPONENT', 'ADDRESSING_MODE_3']]],
-                                ['COMPONENT', 'ADDRESSING_MODE_3', ['0', '1', '0', '0']]])
+                                ['COMPONENT', 'ADDRESSING_MODE_3', ['P', '1', '0', '0'],
+                                                 [[[["P", 1]], " int x = 2;\n"]]]])
     
     def test_rules_exclude_length_mismatched(self):
         with self.assertRaises(SystemExit):
@@ -104,7 +110,8 @@ class TestWellFormedness(unittest.TestCase):
                                 ['RULE', 'ADC', [['INCLUDE', ['0', '1', '0', '0']],
                                                  ['EXCLUDE', ['0', '1', '0']],
                                                  ['COMPONENT', 'ADDRESSING_MODE_3']]],
-                                ['COMPONENT', 'ADDRESSING_MODE_3', ['0', '1', '0', '0']]])
+                                ['COMPONENT', 'ADDRESSING_MODE_3', ['P', '1', '0', '0'],
+                                                 [[[["P", 1]], " int x = 2;\n"]]]])
     
     def test_rules_exclude_invalid_sequence(self):
         with self.assertRaises(SystemExit):
@@ -115,7 +122,8 @@ class TestWellFormedness(unittest.TestCase):
                                 ['RULE', 'ADC', [['INCLUDE', ['0', '1', '0', '0']],
                                                  ['EXCLUDE', ['0', '1', 'A', '0']],
                                                  ['COMPONENT', 'ADDRESSING_MODE_3']]],
-                                ['COMPONENT', 'ADDRESSING_MODE_3', ['0', '1', '0', '0']]])
+                                ['COMPONENT', 'ADDRESSING_MODE_3', ['P', '1', '0', '0'],
+                                                 [[[["P", 1]], " int x = 2;\n"]]]])
     
     def test_rules_component_statement_never_defined(self):
         with self.assertRaises(SystemExit):
@@ -134,8 +142,10 @@ class TestWellFormedness(unittest.TestCase):
                                              ['OPCODE_SIZE', '32']],
                                 ['RULE', 'ADC', [['INCLUDE', ['0', '1', '0', '0']],
                                                  ['COMPONENT', 'ADDRESSING_MODE_3']]],
-                                ['COMPONENT', 'ADDRESSING_MODE_3', ['0', '1', '0', '0']],
-                                ['COMPONENT', 'ADDRESSING_MODE_3', ['0', '1', '1', '0']]])
+                                ['COMPONENT', 'ADDRESSING_MODE_3', ['P', '1', '0', '0'],
+                                                 [[[["P", 1]], " int x = 2;\n"]]],
+                                ['COMPONENT', 'ADDRESSING_MODE_3', ['P', '1', '0', '0'],
+                                                 [[[["P", 1]], " int x = 2;\n"]]]])
     
     def test_components_format_length_mismatched(self):
         with self.assertRaises(SystemExit):
@@ -145,7 +155,8 @@ class TestWellFormedness(unittest.TestCase):
                                              ['OPCODE_SIZE', '32']],
                                 ['RULE', 'ADC', [['INCLUDE', ['0', '1', '0', '0']],
                                                  ['COMPONENT', 'ADDRESSING_MODE_3']]],
-                                ['COMPONENT', 'ADDRESSING_MODE_3', ['0', '1', '0']]])
+                                ['COMPONENT', 'ADDRESSING_MODE_3', ['P', '1', '0'],
+                                                 [[[["P", 1]], " int x = 2;\n"]]]])
     
     def test_components_format_invalid_sequence(self):
         with self.assertRaises(SystemExit):
@@ -155,7 +166,19 @@ class TestWellFormedness(unittest.TestCase):
                                              ['OPCODE_SIZE', '32']],
                                 ['RULE', 'ADC', [['INCLUDE', ['0', '1', '0', '0']],
                                                  ['COMPONENT', 'ADDRESSING_MODE_3']]],
-                                ['COMPONENT', 'ADDRESSING_MODE_3', ['0', '1', '0', '01']]])
+                                ['COMPONENT', 'ADDRESSING_MODE_3', ['P', '1', '0', '01'],
+                                                 [[[["P", 1]], " int x = 2;\n"]]]])
+    
+    def test_components_format_bitvariable_not_found(self):
+        with self.assertRaises(SystemExit):
+            check_cpp_jump_ast([['SETTINGS', ['NAME', 'ARM7TDMI_ARM'], 
+                                             ['TOTAL_BITS', '16'], 
+                                             ['ADDRESSABLE_BITS', '4'], 
+                                             ['OPCODE_SIZE', '32']],
+                                ['RULE', 'ADC', [['INCLUDE', ['0', '1', '0', '0']],
+                                                 ['COMPONENT', 'ADDRESSING_MODE_3']]],
+                                ['COMPONENT', 'ADDRESSING_MODE_3', ['P', '1', '0', '0'],
+                                                 [[[["A", 1]], " int x = 2;\n"]]]])
 
 if __name__ == '__main__':
     unittest.main()

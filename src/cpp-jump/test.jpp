@@ -16,20 +16,14 @@
 - FORMAT: 1ABC
 {
     // yes this is useless code but its filler so
-    int x = 2;
+    @IF(!A  B) std::cout << "b" << std::endl;
     int y = 3;
-    if (x == 2) {
-        std::cout << "addressing_mode_1" << std::endl;
-    }
 }
 [/COMPONENT]
 
 [COMPONENT ADD]
 - FORMAT: 1-PC
 {
-    // yes this is *also* useless code but its filler so
-    if (y == 3) {
-        std::cout << "add" << std::endl;
-    }
+    @IF(!P C) int x = 2;
 }
 [/COMPONENT]

@@ -134,17 +134,26 @@ tokens = [
     'NUMBER',
     'NEWLINE',
 
-    'CPLUSPLUS'
+    'IF_BEGIN',
+    'TRUE_BITVARIABLE',
+    'FALSE_BITVARIABLE',
+    'IF_END',
+
+    'CPLUSPLUS',
+    'WHITESPACE'
 ] + reserved
 
 states = (
     ('binary',   'exclusive'),
     ('settings', 'inclusive'),
-    ('cpp',      'exclusive')
+    ('cpp',      'exclusive'),
+    ('if',       'exclusive'),
+    ('tab',      'exclusive')
 )
 
 t_ignore                 = r' '
 t_cpp_ignore             = r''
+t_tab_ignore             = r''
 
 t_BINARY                 = r'[01]'
 t_BINARY_VARIABLE        = r'[A-Z]'
@@ -163,8 +172,23 @@ t_binary_DASH            = r'-'
 
 t_settings_NUMBER        = r'[0-9]+'
 
+t_if_TRUE_BITVARIABLE    = r'[A-Z]'
+t_if_FALSE_BITVARIABLE   = r'![A-Z]'
+
 # for matching a line of c++ code
-t_cpp_CPLUSPLUS          = r'\s+.*\n'
+t_cpp_CPLUSPLUS          = r'[^@\s].*'
+
+t_if_ignore = ' '
+
+def t_cpp_IF_BEGIN(t):
+    r'@IF\('
+    t.lexer.push_state('if')
+    return t
+
+def t_if_IF_END(t):
+    r'\)'
+    t.lexer.pop_state()
+    return t
 
 def t_IDENTIFIER(t):
     r'[A-Za-z_][A-Za-z_0-9]*'
@@ -191,8 +215,9 @@ def t_LCURLY(t):
     return t
 
 # '}' signifies the end of a code block
-def t_cpp_RCURLY(t):
+def t_tab_RCURLY(t):
     r'(?<=\n)}'
+    t.lexer.pop_state()
     t.lexer.pop_state()
     return t
 
@@ -214,9 +239,15 @@ def t_binary_newline(t):
 def t_cpp_newline(t):
     r'\n+'
     t.lexer.lineno += 1
+    t.lexer.push_state('tab')
     t.type = 'NEWLINE'
     return t
 
+def t_tab_WHITESPACE(t):
+    r'[ \s]+'
+    t.lexer.pop_state()
+    t.type = 'WHITESPACE'
+    return t
 
 # On error, we report the illegal character and skip to continue.
 # We also set a flag to let the compiler know that it shouldn't
@@ -227,21 +258,35 @@ def t_error(t):
     global error_found
     error_found = True
 
-    print('Illegal character "%s"' % t.value[0])
+    print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
 def t_binary_error(t):
     global error_found
     error_found = True
 
-    print('Illegal character "%s"' % t.value[0])
+    print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
 def t_cpp_error(t):
     global error_found
     error_found = True
 
-    print('Illegal character "%s"' % t.value[0])
+    print("Illegal character '%s'" % t.value[0])
+    t.lexer.skip(1)
+
+def t_if_error(t):
+    global error_found
+    error_found = True
+
+    print("Illegal character '%s'" % t.value[0])
+    t.lexer.skip(1)
+
+def t_tab_error(t):
+    global error_found
+    error_found = True
+
+    print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
 # set up the lexer
@@ -276,7 +321,7 @@ lexer = lex.lex()
 # And the AST it generates:
 # ['COMPONENT', ['1', 'A', 'B', 'C']]
 
-# The default rule - the AST will be full of a collection of "complete_items"
+# The default rule - the AST will be full of a collection of 'complete_items'
 # The following two functions are a list pattern for list_complete_item. One handles the case where
 # the list has one item, one where it has many items. This pattern will appear many times.
 def p_list_complete_item_single(p):
@@ -343,7 +388,7 @@ def p_rule_component(p):
 
 def p_include_statement(p):
     'include_statement : DASH INCLUDE COLON list_binary_item NEWLINE'
-    p[0] = ["INCLUDE", p[4]]
+    p[0] = ['INCLUDE', p[4]]
 
 def p_list_binary_item_single(p):
     '''list_binary_item : binary_item'''
@@ -360,18 +405,18 @@ def p_binary_item(p):
 
 def p_exclude_statement(p):
     'exclude_statement : DASH EXCLUDE COLON list_binary_item NEWLINE'
-    p[0] = ["EXCLUDE", p[4]]
+    p[0] = ['EXCLUDE', p[4]]
 
 def p_component_statement(p):
     'component_statement : DASH COMPONENT COLON IDENTIFIER NEWLINE'
-    p[0] = ["COMPONENT", p[4]]
+    p[0] = ['COMPONENT', p[4]]
 
 def p_rule_footer(p):
     'rule_footer : LBRACKET SLASH RULE RBRACKET NEWLINE'
 
 def p_complete_component(p):
     'complete_component : component_header format_statement code_statement component_footer'
-    p[0] = ["COMPONENT", p[1], p[2], p[3]]
+    p[0] = ['COMPONENT', p[1], p[2], p[3]]
 
 def p_component_header(p):
     'component_header : LBRACKET COMPONENT IDENTIFIER RBRACKET NEWLINE'
@@ -385,13 +430,41 @@ def p_code_statement(p):
     'code_statement : LCURLY NEWLINE list_cplusplus RCURLY NEWLINE'
     p[0] = p[3]
 
-def p_list_cplusplus_single(p):
-    '''list_cplusplus : CPLUSPLUS'''
+def p_list_cplusplus_single_A(p):
+    '''list_cplusplus : WHITESPACE CPLUSPLUS NEWLINE'''
+    p[0] = [[[], p[2], p[1]]]
+
+def p_list_cplusplus_single_B(p):
+    '''list_cplusplus : WHITESPACE IF_BEGIN list_bitvariable IF_END CPLUSPLUS NEWLINE'''
+    p[0] = [[p[3], p[5], p[1]]]
+
+def p_list_cplusplus_group_A(p):
+    '''list_cplusplus : list_cplusplus WHITESPACE CPLUSPLUS NEWLINE'''
+    p[1].append([[], p[3], p[2]])
+    p[0] = p[1]
+
+def p_list_cplusplus_group_B(p):
+    '''list_cplusplus : list_cplusplus WHITESPACE IF_BEGIN list_bitvariable IF_END CPLUSPLUS NEWLINE'''
+    p[1].append([p[4], p[6], p[2]])
+    p[0] = p[1]
+
+def p_list_bitvariable_single(p):
+    'list_bitvariable : bitvariable'
     p[0] = [p[1]]
 
-def p_list_cplusplus_group(p):
-    '''list_cplusplus : list_cplusplus CPLUSPLUS'''
+def p_list_bitvariable_group(p):
+    'list_bitvariable : list_bitvariable bitvariable'
     p[0] = p[1] + [p[2]]
+
+def p_bitvariable_A(p):
+    'bitvariable : TRUE_BITVARIABLE'
+    p[0] = [p[1], 1]
+
+def p_bitvariable_B(p):
+    'bitvariable : FALSE_BITVARIABLE'
+    # we index [1] twice because p[1] = ![A-Z], and we don't want to include the !
+    # in the ast.
+    p[0] = [p[1][1], 0]
 
 def p_list_formatted_binary_item_single(p):
     'list_formatted_binary_item : formatted_binary_item'
@@ -460,15 +533,17 @@ parser = yacc.yacc()
 # 1. len(binary_sequence) == settings['ADDRESSABLE_BITS']
 # 2. every element of binary_sequence is one of: ['0', '1', '-']
 #
-# component_statement = ['COMPONENT', component_name, C++] 
+# component_statement = ['COMPONENT', component_name] 
 # component_statement is well-formed if:
 # 1. component_name is defined in a component ONCE (i.e. [COMPONENT component_name] exists)
-# NOTE: C++ is just an array of lines of C++ code
+# 2. every element of [cpp_sattement ...] is well_formed
 #
-# component = ['COMPONENT', component_name, formatted_binary_sequence]
+# component = ['COMPONENT', component_name, formatted_binary_sequence, [cpp_statement ...]]
 # component is well-formed if:
 # 1. len(formatted_binary_sequence) == settings['ADDRESSABLE_BITS']
 # 2. every element of binary_sequence is one of: ['0', '1', '-', 'A-Z']
+# 3. every bit variable in cpp_statement can be found somewhere in formatted_binary_sequence
+# NOTE: cpp_statement = [bit_variables C++ leading_whitespace]
 
 # TODO: add a check to make sure all rule includes are unique (i.e., there is no index
 # that can match two rules)
@@ -511,7 +586,7 @@ def check_cpp_jump_ast(source: list):
 
         # candidates should never be empty if lookup_component is called after the main for loop
         # of this function ends.
-        assert_with_error(len(candidates) == 1, "Error: More than one component defined with name {}".format(component_name))
+        assert_with_error(len(candidates) == 1, 'Error: More than one component defined with name {}'.format(component_name))
         return candidates[0]
 
     # forma = format
@@ -539,7 +614,7 @@ def check_cpp_jump_ast(source: list):
         nonlocal addressable_bits
         addressable_bits = int(tree[3][1])
     
-    # the conditions for "rules" and "rule" are both checked here
+    # the conditions for 'rules' and 'rule' are both checked here
     # makes things simpler.
     def check_rules(tree: list):
         has_include          = False
@@ -602,12 +677,16 @@ def check_cpp_jump_ast(source: list):
     def check_component(tree: list):
         pending_assertions.append([lambda: len(tree[2]) == addressable_bits,
                                    ('Error: size of binary sequence {} differs from ' +
-                                   'ADDRESSABLE_BITS').format(''.join(tree[1]))])
+                                   'ADDRESSABLE_BITS').format(''.join(tree[2]))])
         for item in tree[2]:
             assert_with_error(item in ['0', '1', '-'] + list(string.ascii_uppercase), 
                              'Error: invalid character in FORMAT: {}'.format(item))
 
         collected_components.append(tree)
+        for cpp_line in tree[3]:
+            for bitvariable in cpp_line[0]:
+                assert_with_error(bitvariable[0] in tree[2],
+                                  'Error: bitvariable {} not found in format statement {}'.format(bitvariable[0], tree[2]))
     
     # check that the AST is well-formed
     for element in source:
@@ -707,9 +786,46 @@ def get_rules(ast):
 class Component:
     def __init__(self, component_wf):
         self.name   = component_wf[1]
-        self.format = component_wf[2]
-        self.code   = component_wf[3]
+    
+        # curse you python, how dare you make 'format' a keyword
+        forma = component_wf[2]
+        forma.reverse()
 
+        # each element in the code array is an anonymous function that takes in the index into the
+        # jumptable and produces the line of code if the index matches the assignments of bitvariables.
+        # else, it returns ''
+        self.code = []
+        for line in component_wf[3]:
+            # to break this line of code down:
+            # for each bitvariable:
+            #     get the nth bit of index that is in the same location as that bitvariable
+            #     check if its equal to bitvariable[1] (the given assignment for the bitvariable)
+            #     make sure this is true for all bitvariables
+            # if the result is true, return the line of code. else, return 0
+
+            self.code.append(self.generate_verifier(line, forma))
+            print(line)
+
+    def generate_verifier(self, line, forma):
+        # closure for generating an element of self.code
+
+        def check_bit(index, bitvariable):
+            return get_nth_bit(index, forma.index(bitvariable[0])) == bitvariable[1]
+
+        bitvariables       = line[0]
+        leading_whitespace = line[2]
+        line_of_code       = leading_whitespace + line[1] + "\n"
+        return lambda x : line_of_code if all([check_bit(x, bitvariable) for bitvariable in bitvariables]) else ''
+
+    # produces code for the given index
+    def produce_code(self, index):
+        print('producing for {}'.format(index))
+        result = ''
+        for line in self.code:
+            result += line(index)
+
+        return result
+        
 def get_components(ast):
     # turn every element of ast that is a component into a Component object
     return list(map(Component, filter(lambda x : x[0] == 'COMPONENT', ast)))
@@ -737,15 +853,31 @@ def get_matching_rule(rules, i):
     # DANGER!
     return matching_rules[0]
 
+# Used to find the component with the given name
+def find_component_with_name(name, components):
+    # We know that because this is wf that a component with the given name *does* exist.
+    return next(filter(lambda x : x.name == name, components))
+
 # The function that will actually fill in the jumptable
 def translate_and_write(settings, rules, components):
     jumptable_size = int(math.pow(2, settings['ADDRESSABLE_BITS']))
 
-    # i will be the current index of the jumptable that we are filling in
-    for i in range(jumptable_size):
-        rule = get_matching_rule(rules, i)
-        if not rule is None:
-            print("index {} matches with a rule!".format(i))
+    # temporary name:
+    with open('output.cpp', 'w+') as f:
+        # i will be the current index of the jumptable that we are filling in
+        for i in range(jumptable_size):
+            f.write(('void entry_{0:0' + str(settings['ADDRESSABLE_BITS']) + 'b}() {{').format(i))
+
+            rule = get_matching_rule(rules, i)
+            if not rule is None:
+                f.write("\n")
+                # Now we can go through each component
+                for component_name in rule.components:
+                    component = find_component_with_name(component_name, components)
+                    f.write(component.produce_code(i))
+
+            f.write('}\n')
+            f.write('\n')
 
 
 
