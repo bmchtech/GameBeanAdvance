@@ -1,3 +1,5 @@
+from copy import copy
+                
 import ply.lex  as lex
 import ply.yacc as yacc
 import math
@@ -111,12 +113,10 @@ reserved = [
     'RULE',
     'COMPONENT',
     'NAME',
-    'TOTAL_BITS',
-    'ADDRESSABLE_BITS',
-    'OPCODE_SIZE',
     'INCLUDE',
     'EXCLUDE',
-    'FORMAT'
+    'FORMAT',
+    'OPCODE_FORMAT'
 ]
 
 tokens = [
@@ -131,7 +131,6 @@ tokens = [
     'SLASH',
     'LCURLY',
     'RCURLY',
-    'NUMBER',
     'NEWLINE',
 
     'IF_BEGIN',
@@ -145,7 +144,6 @@ tokens = [
 
 states = (
     ('binary',   'exclusive'),
-    ('settings', 'inclusive'),
     ('cpp',      'exclusive'),
     ('if',       'exclusive'),
     ('tab',      'exclusive')
@@ -169,8 +167,6 @@ t_binary_COLON           = r':'
 t_binary_BINARY          = r'[01]'
 t_binary_BINARY_VARIABLE = r'[A-Z]'
 t_binary_DASH            = r'-'
-
-t_settings_NUMBER        = r'[0-9]+'
 
 t_if_TRUE_BITVARIABLE    = r'[A-Z]'
 t_if_FALSE_BITVARIABLE   = r'![A-Z]'
@@ -198,13 +194,10 @@ def t_IDENTIFIER(t):
         t.type = t.value
     
     if t.value in ['INCLUDE', 'EXCLUDE']:
-        t.lexer.begin('INITIAL')
-
-    if t.value in ['FORMAT']:
         t.lexer.begin('binary')
-    
-    if t.value in ['SETTINGS']:
-        t.lexer.begin('settings')
+
+    if t.value in ['FORMAT', 'OPCODE_FORMAT']:
+        t.lexer.begin('binary')
 
     return t
 
@@ -339,8 +332,8 @@ def p_complete_item(p):
     p[0] = p[1]
 
 def p_complete_settings(p):
-    'complete_settings : settings_header name total_bits addressable_bits opcode_size settings_footer'
-    p[0] = ['SETTINGS'] + p[2:6]
+    'complete_settings : settings_header name opcode_format settings_footer'
+    p[0] = ['SETTINGS', p[2], p[3]]
 
 def p_settings_header(p):
     'settings_header : LBRACKET SETTINGS RBRACKET NEWLINE'
@@ -349,17 +342,9 @@ def p_name(p):
     'name : DASH NAME COLON IDENTIFIER NEWLINE'
     p[0] = ['NAME', p[4]]
 
-def p_total_bits(p):
-    'total_bits : DASH TOTAL_BITS COLON NUMBER NEWLINE'
-    p[0] = ['TOTAL_BITS', p[4]]
-
-def p_addressable_bits(p):
-    'addressable_bits : DASH ADDRESSABLE_BITS COLON NUMBER NEWLINE'
-    p[0] = ['ADDRESSABLE_BITS', p[4]]
-
-def p_opcode_size(p):
-    'opcode_size : DASH OPCODE_SIZE COLON NUMBER NEWLINE'
-    p[0] = ['OPCODE_SIZE', p[4]]
+def p_opcode_format(p):
+    'opcode_format : DASH OPCODE_FORMAT COLON list_formatted_binary_item NEWLINE'
+    p[0] = ['OPCODE_FORMAT', p[4]]
 
 def p_settings_footer(p):
     'settings_footer : LBRACKET SLASH SETTINGS RBRACKET NEWLINE'
@@ -482,6 +467,9 @@ def p_formatted_binary_item(p):
 def p_component_footer(t):
     'component_footer : LBRACKET SLASH COMPONENT RBRACKET NEWLINE'
 
+def p_error(p):
+    print("Error at {}".format(parser.token()))
+
 parser = yacc.yacc()
 
 
@@ -500,13 +488,9 @@ parser = yacc.yacc()
 #
 # settings = ['SETTINGS',
 #             ['NAME',             name], 
-#             ['TOTAL_BITS',       total_bits], 
-#             ['ADDRESSABLE_BITS', addressable_bits],
-#             ['OPCODE_BITS',      opcode_bits]]
+#             ['OPCODE_FORMAT',    opcode_format]]
 # settings is well-formed if:
-# 1. total_bits  >= addressable_bits
-# 2. opcode_bits >= total_bits
-# 3. an entry exists for name.
+# 1. every occurrence in opcode_format is one of: '-', 'I', 'D',
 #
 # rules = [rule ...]
 # rules is well-formed if:
@@ -527,11 +511,13 @@ parser = yacc.yacc()
 # include_statement is well-formed if:
 # 1. len(binary_sequence) == settings['ADDRESSABLE_BITS']
 # 2. every element of binary_sequence is one of: ['0', '1', '-']
+# 3. every element of opcode_format in settings that is a '-' is also a '-' in binary_sequence
 #
 # exclude_statement = ['EXCLUDE', binary_sequence]
 # exclude_statement is well-formed if:
 # 1. len(binary_sequence) == settings['ADDRESSABLE_BITS']
 # 2. every element of binary_sequence is one of: ['0', '1', '-']
+# 3. every element of opcode_format in settings that is a '-' is also a '-' in binary_sequence
 #
 # component_statement = ['COMPONENT', component_name] 
 # component_statement is well-formed if:
@@ -543,7 +529,13 @@ parser = yacc.yacc()
 # 1. len(formatted_binary_sequence) == settings['ADDRESSABLE_BITS']
 # 2. every element of binary_sequence is one of: ['0', '1', '-', 'A-Z']
 # 3. every bit variable in cpp_statement can be found somewhere in formatted_binary_sequence
+# 4. every element of opcode_format in settings that is a '-' is also a '-' in binary_sequence
+# 5. any bit-variable is at an index that is marked as "I" in the settings
 # NOTE: cpp_statement = [bit_variables C++ leading_whitespace]
+# NOTE: there is a way to have this compiler deal with #5 on its own - maybe ill implement it later.
+# NOTE: #4 does not have to be checked. It is impossible to write a well-formed ast that only
+#       violates condition #4. The reasoning is that if condition #4 is violated, then so is
+#       either condition #4 of rule, or condition #3 of include.
 
 # TODO: add a check to make sure all rule includes are unique (i.e., there is no index
 # that can match two rules)
@@ -551,10 +543,17 @@ parser = yacc.yacc()
 # ASSUME: tree is a list_complete_item
 def check_cpp_jump_ast(source: list):
     # if this tree is well formed, then it has a well-formed settings.
-    # and if this tree has a well-formed settings, then it has a valid addressable_bits
-    # and if it has a valid addressable_bits, then by the time this function is done
+    # and if this tree has a well-formed settings, then it has a valid opcode_size
+    # and if it has a valid opcode_size, then by the time this function is done
     # checking all the important parts, this variable must have a value.
-    addressable_bits = -1
+    opcode_size = -1
+
+    # by the end of evaluation, this has a list of indices where "I" shows up in the
+    # OPCODE_FORMAT specified in the settings.
+    indices_I = []
+
+    # this is just the same as indices_I... but with "-"
+    indices_DASH = []
 
     # by the end of evaluation, this will be full of all components we have parsed through.
     collected_components = []
@@ -604,15 +603,18 @@ def check_cpp_jump_ast(source: list):
         return True
 
     def check_settings(tree: list):
-        assert_with_error(int(tree[2][1]) >= int(tree[3][1]), 
-                          'Error: ADDRESSABLE_BITS > TOTAL_BITS')
-        assert_with_error(int(tree[4][1]) >= int(tree[2][1]), 
-                          'Error: TOTAL_BITS > OPCODE_BITS')
-        assert_with_error(not tree[0][1] is None,
-                          'Error: Invalid name for settings: {}'.format(tree[0][1]))
+        for i in range(len(tree[2][1])):
+            bit = tree[2][1][i]
+            assert_with_error(bit in ['I', 'D', '-'],
+                              'Error: invalid bit in settings: {}'.format(bit))
+            
+            if bit == 'I':
+                indices_I.append(i)
+            if bit == '-':
+                indices_DASH.append(i)
 
-        nonlocal addressable_bits
-        addressable_bits = int(tree[3][1])
+        nonlocal opcode_size
+        opcode_size = len(tree[2][1])
     
     # the conditions for 'rules' and 'rule' are both checked here
     # makes things simpler.
@@ -655,18 +657,30 @@ def check_cpp_jump_ast(source: list):
 
     
     def check_include_statement(tree: list):
-        pending_assertions.append([lambda: len(tree[1]) == addressable_bits,
+        pending_assertions.append([lambda: len(tree[1]) == opcode_size,
                                    ('Error: size of binary sequence {} differs from ' +
-                                   'ADDRESSABLE_BITS').format(''.join(tree[1]))])
-        for item in tree[1]:
-            assert_with_error(item in ['0', '1', '-'], 'Error: invalid character in INCLUDE: {}'.format(item))
+                                   'opcode_size').format(''.join(tree[1]))])
+        for i in range(len(tree[1])):
+            assert_with_error(tree[1][i] in ['0', '1', '-'], 'Error: invalid character in INCLUDE: {}'.format(tree[1][i]))
+
+            if not tree[1][i] == '-':
+                i_copy = copy(i)
+
+                pending_assertions.append([lambda : not i_copy in indices_DASH,
+                                           'Error: value {} specified at an index which is not marked as insignificant.'.format(tree[1][i])])
     
     def check_exclude_statement(tree: list):
-        pending_assertions.append([lambda: len(tree[1]) == addressable_bits,
+        pending_assertions.append([lambda: len(tree[1]) == opcode_size,
                                    ('Error: size of binary sequence {} differs from ' +
-                                   'ADDRESSABLE_BITS').format(''.join(tree[1]))])
-        for item in tree[1]:
-            assert_with_error(item in ['0', '1', '-'], 'Error: invalid character in EXCLUDE: {}'.format(item))
+                                   'opcode_size').format(''.join(tree[1]))])
+        for i in range(len(tree[1])):
+            assert_with_error(tree[1][i] in ['0', '1', '-'], 'Error: invalid character in EXCLUDE: {}'.format(tree[1][i]))
+
+            if not tree[1][i] == '-':
+                i_copy = copy(i)
+
+                pending_assertions.append([lambda : not i_copy in indices_DASH,
+                                           'Error: value {} specified at an index which is not marked as insignificant.'.format(tree[1][i])])
     
     def check_component_statement(tree: list):
         pending_assertions.append([lambda: [x[1] for x in collected_components].count(tree[1]) != 0,
@@ -675,19 +689,26 @@ def check_cpp_jump_ast(source: list):
                                    'Error: component: {} was defined more than once.'.format(tree[1])])
     
     def check_component(tree: list):
-        pending_assertions.append([lambda: len(tree[2]) == addressable_bits,
+        pending_assertions.append([lambda: len(tree[2]) == opcode_size,
                                    ('Error: size of binary sequence {} differs from ' +
-                                   'ADDRESSABLE_BITS').format(''.join(tree[2]))])
-        for item in tree[2]:
-            assert_with_error(item in ['0', '1', '-'] + list(string.ascii_uppercase), 
-                             'Error: invalid character in FORMAT: {}'.format(item))
+                                   'opcode_size').format(''.join(tree[2]))])
+        for i in range(len(tree[2])):
+            assert_with_error(tree[2][i] in ['0', '1', '-'] + list(string.ascii_uppercase), 
+                             'Error: invalid character in FORMAT: {}'.format(tree[2][i]))
+
+            # are we a bitvariable?
+            if not tree[2][i] in ['0', '1', '-']:
+                i_copy = copy(i)
+
+                pending_assertions.append([lambda : i_copy in indices_I,
+                                           'Error: bitvariable specified at an index which is not specified as an index bit in the settings.'])
 
         collected_components.append(tree)
         for cpp_line in tree[3]:
             for bitvariable in cpp_line[0]:
                 assert_with_error(bitvariable[0] in tree[2],
                                   'Error: bitvariable {} not found in format statement {}'.format(bitvariable[0], tree[2]))
-    
+        
     # check that the AST is well-formed
     for element in source:
         if element[0] == 'SETTINGS':
@@ -698,7 +719,7 @@ def check_cpp_jump_ast(source: list):
             check_rules(element)
         if element[0] == 'COMPONENT':
             check_component(element)
-    
+
     for assertion in pending_assertions:
         assert_with_error(assertion[0](), assertion[1])
 
@@ -715,6 +736,14 @@ def check_cpp_jump_ast(source: list):
 def get_nth_bit(value, n):
     return (value >> n) & 1
 
+# Similarly, sets the nth bit of the binary representation of n and returns it
+def set_nth_bit(value, n):
+    return value | (1 << n)
+
+# Similarly, clears the nth bit of the binary representation of n and returns it
+def clear_nth_bit(value, n):
+    return value & (0 << n)
+
 # Returns True iff for all bits (i, j) in (include, index):
 # 1) i == '1' and j == '1'
 # 2) i == '0' and j == '0'
@@ -730,19 +759,74 @@ def is_compatible_bits(include, index):
            return False
     return True
 
-# Now, we deal with Settings: Settings is just going to be a dictionary with the name of each setting as the key
-# and the value of the setting as the, well, value. This can be constructed as so:
-# NOTE: wf stands for well_formed
+# Now, we deal with Settings: Settings is going to decode the OPCODE_FORMAT into something that's
+# more easily useable
+
+class Settings:
+    def __init__(self, ast):
+        # Grab the settings. We already know there should only be one, so grabbing list(...)[0] should be okay.
+        settings_wf_raw = list(filter(lambda x : x[0] == 'SETTINGS', ast))[0]
+        self.name = settings_wf_raw[1][1]
+
+        opcode_format = settings_wf_raw[2][1]
+        opcode_format.reverse()
+
+        # These are defined the same way as in check_cpp_jump_ast
+        self.indices_I           = [i for i in range(len(opcode_format)) if opcode_format[i] == 'I']
+        self.indices_D           = [i for i in range(len(opcode_format)) if opcode_format[i] == 'D']
+        self.indices_DASH        = [i for i in range(len(opcode_format)) if opcode_format[i] == '-']
+
+        self.opcode_size      = len(opcode_format)
+        self.addressable_bits = len(self.indices_I) + len(self.indices_D)
+    
+    # given the current iteration, we return the index into the jumptable.
+    # this works by taking the iteration and plugging it into the I bits.
+    # for example, if the opcode_format is IID-, and we are at iteration
+    # x (where x is 2 bits,) then the index we return is x << 2 (because
+    # we're shifting x to where the I is located.
+    # the discriminator is obtained by the same process, just with D bits
+    # instead of I bits.
+    def map_iteration_to_index_and_discriminator(self, iteration):
+        index         = 0
+        discriminator = 0
+        current_bit   = 0
+
+        for i in range(self.opcode_size):
+            if i in self.indices_I:
+                if get_nth_bit(iteration, current_bit) == 1:
+                    index = set_nth_bit(index, self.indices_I.index(i))
+                current_bit += 1
+
+            if i in self.indices_D:
+                if get_nth_bit(iteration, current_bit) == 1:
+                    discriminator = set_nth_bit(discriminator, self.indices_D.index(i))
+                current_bit += 1
+        
+        print('{0:4b} -> '.format(iteration), end='')
+        print('{0:4b}'.format(index), end='')
+        print(', {0:4b}'.format(discriminator), end='\n')
+        
+        return index, discriminator
+    
+    # takes the given iteration (which is an assignment of I and D bits)
+    # and inflates it to a full opcode, where there are now zeroes in the
+    # dash positions
+    def inflate_iteration(self, iteration):
+        opcode      = 0
+        current_bit = 0
+
+        for i in range(self.opcode_size):
+            if not i in self.indices_DASH:
+                if get_nth_bit(iteration, current_bit) == 1:
+                    opcode = set_nth_bit(opcode, i)
+                current_bit += 1
+        
+        print('{0:4b} ---> '.format(iteration), end='')
+        print('{0:4b}'.format(opcode), end='\n')
+        return opcode
 
 def get_settings(ast):
-    # Grab the settings. We already know there should only be one, so grabbing list(...)[0] should be okay.
-    settings_wf_raw = list(filter(lambda x : x[0] == 'SETTINGS', ast))[0]
-    return {
-        'NAME':                 settings_wf_raw[1][1],
-        'TOTAL_BITS':       int(settings_wf_raw[2][1]),
-        'ADDRESSABLE_BITS': int(settings_wf_raw[3][1]),
-        'OPCODE_SIZE':      int(settings_wf_raw[4][1])
-    }
+    return Settings(ast)
 
 # Now, we grab all the rules and formalize them in this class:
 class Rule:
@@ -804,7 +888,6 @@ class Component:
             # if the result is true, return the line of code. else, return 0
 
             self.code.append(self.generate_verifier(line, forma))
-            print(line)
 
     def generate_verifier(self, line, forma):
         # closure for generating an element of self.code
@@ -820,9 +903,9 @@ class Component:
     # produces code for the given index
     def produce_code(self, index):
         print('producing for {}'.format(index))
-        result = ''
+        result = []
         for line in self.code:
-            result += line(index)
+            result.append(line(index))
 
         return result
         
@@ -858,26 +941,111 @@ def find_component_with_name(name, components):
     # We know that because this is wf that a component with the given name *does* exist.
     return next(filter(lambda x : x.name == name, components))
 
+# given an array of discriminators, returns a C++ expression
+# to extract the full discriminator from the opcode
+def get_expression(discriminators):
+  num_contiguous = 0
+  starting_index = -1
+  expression     = []
+  bits_flushed   = 0
+
+  for discriminator in discriminators + [-1]:
+    if not discriminator == starting_index + 1:
+      shift = starting_index - num_contiguous + 1
+      mask  = int(math.pow(2, num_contiguous)) - 1
+      expression.append("(((opcode >> {}) & {}) << {})".format(shift, mask, bits_flushed))
+      
+      bits_flushed   += num_contiguous
+      num_contiguous = 0
+      starting_index = discriminator
+
+    num_contiguous += 1
+    starting_index = discriminator
+
+  return " | ".join(expression)
+
+# returns the C++ type that can match the opcode. maximum 64 bits.
+# structs can be used to make this higher, but cmon whose heard of
+# a computer chip that uses more than 64 bits for its opcode size?
+# either way i can remedy this by producing a struct that's large
+# enough.
+def get_opcode_type(opcode_size):
+    if   opcode_size <= 8:
+        return "uint8_t"
+    elif opcode_size <= 16:
+        return "uint16_t"
+    elif opcode_size <= 32:
+        return "uint32_t"
+    elif opcode_size <= 64:
+        return "uint64_t"
+    else:
+        print("Opcode size too large (given {} bits)! Maximum supported is 64.".format(opcode_size))
+
 # The function that will actually fill in the jumptable
 def translate_and_write(settings, rules, components):
-    jumptable_size = int(math.pow(2, settings['ADDRESSABLE_BITS']))
+    jumptable_size   = int(math.pow(2, len(settings.indices_I)))
+    addressable_size = int(math.pow(2, settings.addressable_bits))
+
+    # contains a list of components at each index
+    preliminary_jumptable = [[] for i in range(jumptable_size)]
+    print(preliminary_jumptable)
+
+    # i will be the current index of the jumptable that we are filling in
+    for i in range(addressable_size):
+        print(preliminary_jumptable)
+        #f.write(('void entry_{0:0' + str(settings['ADDRESSABLE_BITS']) + 'b}() {{').format(i))
+
+        rule = get_matching_rule(rules, settings.inflate_iteration(i))
+
+        if not rule is None:
+            print("Found {} at {}".format(rule.name, i))
+            index, discriminator = settings.map_iteration_to_index_and_discriminator(i)
+            preliminary_jumptable[index].append([discriminator, settings.inflate_iteration(i), rule.components])
+
+        # rule = get_matching_rule(rules, i)
+        # if not rule is None:
+        #     f.write("\n")
+        #     # Now we can go through each component
+        #     for component_name in rule.components:
+        #         component = find_component_with_name(component_name, components)
+        #         f.write(component.produce_code(i))
+
+        #f.write('}\n')
+        #f.write('\n')
+
+    print(preliminary_jumptable)
+
+    opcode_type = get_opcode_type(settings.opcode_size)
 
     # temporary name:
     with open('output.cpp', 'w+') as f:
-        # i will be the current index of the jumptable that we are filling in
-        for i in range(jumptable_size):
-            f.write(('void entry_{0:0' + str(settings['ADDRESSABLE_BITS']) + 'b}() {{').format(i))
+        for index in range(jumptable_size):
+            # NOTE: If the program uses the variable "discriminator", then this will break.
+            #       one remedy is to generate a unique identifier that doesn't match any
+            #       of the ones in the given program, but that requires collecting all existing
+            #       identifiers. It's probably just easier to just include something in the readme
+            #       warning about this.
+            # TODO: include something in the readme warning about this
 
-            rule = get_matching_rule(rules, i)
-            if not rule is None:
-                f.write("\n")
-                # Now we can go through each component
-                for component_name in rule.components:
+            f.write(('void entry_{0:0' + str(len(settings.indices_I)) + 'b}() {{\n').format(index))
+            f.write("    {} discriminator = {};\n".format(opcode_type, get_expression(settings.indices_D)))
+            f.write("\n")
+            f.write("    switch (discriminator) {\n")
+
+            for element in preliminary_jumptable[index]:
+                discriminator = element[0]
+                opcode        = element[1]
+                f.write(("        case 0b{0:" + str(len(settings.indices_D)) + "b}: {{\n").format(discriminator))
+
+                for component_name in element[2]:
                     component = find_component_with_name(component_name, components)
-                    f.write(component.produce_code(i))
+                    f.write(''.join('            {}\n'.format(x.strip()) for x in component.produce_code(opcode)))
+                f.write("            break;\n")
+                f.write("        }\n")
 
-            f.write('}\n')
-            f.write('\n')
+            f.write("    }\n")
+            f.write("}\n")
+            f.write("\n")
 
 
 

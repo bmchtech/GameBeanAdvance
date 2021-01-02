@@ -1,4 +1,4 @@
-from cpp_jump_compiler import compile, lexer
+from cpp_jump_compiler import compile, lexer, check_cpp_jump_ast
 
 # with open('test.jpp', 'r') as f:
 #     lexer.input(f.read() + '\n')

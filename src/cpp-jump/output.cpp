@@ -1,39 +1,76 @@
-void entry_0000() {}
+void entry_00() {
+    uint8_t discriminator = (((opcode >> 0) & 0) << 0) | (((opcode >> 1) & 1) << 0);
 
-void entry_0001() {}
-
-void entry_0010() {}
-
-void entry_0011() {}
-
-void entry_0100() {}
-
-void entry_0101() {}
-
-void entry_0110() {}
-
-void entry_0111() {}
-
-void entry_1000() {
-    // yes this is useless code but its filler so
-    int y = 3;
+    switch (discriminator) {
+        case 0b0: {
+            // yes this is useless code but its filler so
+            int a = 3;
+            
+            int b = 6;
+            int result = a - b;
+            break;
+        }
+    }
 }
 
-void entry_1001() {}
+void entry_01() {
+    uint8_t discriminator = (((opcode >> 0) & 0) << 0) | (((opcode >> 1) & 1) << 0);
 
-void entry_1010() {
-    // yes this is useless code but its filler so
-    std::cout << "b" << std::endl;
-    int y = 3;
+    switch (discriminator) {
+        case 0b0: {
+            // yes this is useless code but its filler so
+            int a = 3;
+            
+            int b = 6;
+            int result = a - b;
+            break;
+        }
+    }
 }
 
-void entry_1011() {}
+void entry_10() {
+    uint8_t discriminator = (((opcode >> 0) & 0) << 0) | (((opcode >> 1) & 1) << 0);
 
-void entry_1100() {}
+    switch (discriminator) {
+        case 0b0: {
+            // yes this is useless code but its filler so
+            
+            int a = 5;
+            int b = 6;
+            int result = a - b;
+            break;
+        }
+        case 0b1: {
+            // yes this is useless code but its filler so
+            
+            int a = 5;
+            int b = 6;
+            int result = a + b;
+            break;
+        }
+    }
+}
 
-void entry_1101() {}
+void entry_11() {
+    uint8_t discriminator = (((opcode >> 0) & 0) << 0) | (((opcode >> 1) & 1) << 0);
 
-void entry_1110() {}
-
-void entry_1111() {}
+    switch (discriminator) {
+        case 0b0: {
+            // yes this is useless code but its filler so
+            
+            int a = 5;
+            int b = 6;
+            int result = a - b;
+            break;
+        }
+        case 0b1: {
+            // yes this is useless code but its filler so
+            
+            int a = 5;
+            int b = 6;
+            int result = a + b;
+            break;
+        }
+    }
+}
 

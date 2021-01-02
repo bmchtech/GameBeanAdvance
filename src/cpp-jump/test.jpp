@@ -1,29 +1,41 @@
 [SETTINGS]
-- NAME: ARM7TDMI_ARM
-- TOTAL_BITS: 16
-- ADDRESSABLE_BITS: 4
-- OPCODE_SIZE: 32
+- NAME: ARM7TDMI_PINKY
+- OPCODE_FORMAT: IID-
 [/SETTINGS]
 
+[RULE RULE0]
+- INCLUDE: --0-
+- COMPONENT: ADDRESSING_MODE_1
+- COMPONENT: SUB
+[/RULE]
+
 [RULE RULE1]
-- INCLUDE: 10--
-- EXCLUDE: ---1
+- INCLUDE: 1-1-
 - COMPONENT: ADDRESSING_MODE_1
 - COMPONENT: ADD
 [/RULE]
 
 [COMPONENT ADDRESSING_MODE_1]
-- FORMAT: 1ABC
+- FORMAT: AB--
 {
     // yes this is useless code but its filler so
-    @IF(!A  B) std::cout << "b" << std::endl;
-    int y = 3;
+    @IF(!A) int a = 3;
+    @IF( A) int a = 5;
+
+    int b = 6;
 }
 [/COMPONENT]
 
 [COMPONENT ADD]
-- FORMAT: 1-PC
+- FORMAT: --1-
 {
-    @IF(!P C) int x = 2;
+    int result = a + b;
+}
+[/COMPONENT]
+
+[COMPONENT SUB]
+- FORMAT: --0-
+{
+    int result = a - b;
 }
 [/COMPONENT]
