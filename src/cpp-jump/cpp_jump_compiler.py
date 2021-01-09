@@ -112,7 +112,7 @@ reserved = [
     'SETTINGS',
     'RULE',
     'COMPONENT',
-    'NAME',
+    'NAMESPACE',
     'INCLUDE',
     'EXCLUDE',
     'FORMAT',
@@ -248,38 +248,18 @@ def t_tab_WHITESPACE(t):
 error_found = False
 
 def t_error(t):
-    global error_found
-    error_found = True
-
-    print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
 def t_binary_error(t):
-    global error_found
-    error_found = True
-
-    print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
 def t_cpp_error(t):
-    global error_found
-    error_found = True
-
-    print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
 def t_if_error(t):
-    global error_found
-    error_found = True
-
-    print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
 def t_tab_error(t):
-    global error_found
-    error_found = True
-
-    print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
 # set up the lexer
@@ -339,8 +319,8 @@ def p_settings_header(p):
     'settings_header : LBRACKET SETTINGS RBRACKET NEWLINE'
 
 def p_name(p):
-    'name : DASH NAME COLON IDENTIFIER NEWLINE'
-    p[0] = ['NAME', p[4]]
+    'name : DASH NAMESPACE COLON IDENTIFIER NEWLINE'
+    p[0] = ['NAMESPACE', p[4]]
 
 def p_opcode_format(p):
     'opcode_format : DASH OPCODE_FORMAT COLON list_formatted_binary_item NEWLINE'
@@ -468,6 +448,8 @@ def p_component_footer(t):
     'component_footer : LBRACKET SLASH COMPONENT RBRACKET NEWLINE'
 
 def p_error(p):
+    global error_found
+    error_found = True
     print("Error at {}".format(parser.token()))
 
 parser = yacc.yacc()
@@ -487,7 +469,7 @@ parser = yacc.yacc()
 # 2. everything it contains is also well-formed.
 #
 # settings = ['SETTINGS',
-#             ['NAME',             name], 
+#             ['NAMESPACE',             name], 
 #             ['OPCODE_FORMAT',    opcode_format]]
 # settings is well-formed if:
 # 1. every occurrence in opcode_format is one of: '-', 'I', 'D',
@@ -530,7 +512,7 @@ parser = yacc.yacc()
 # 2. every element of binary_sequence is one of: ['0', '1', '-', 'A-Z']
 # 3. every bit variable in cpp_statement can be found somewhere in formatted_binary_sequence
 # 4. every element of opcode_format in settings that is a '-' is also a '-' in binary_sequence
-# 5. any bit-variable is at an index that is marked as "I" in the settings
+# 5. any bit-variable is at an index that is not marked as '-' in the settings
 # NOTE: cpp_statement = [bit_variables C++ leading_whitespace]
 # NOTE: there is a way to have this compiler deal with #5 on its own - maybe ill implement it later.
 # NOTE: #4 does not have to be checked. It is impossible to write a well-formed ast that only
@@ -700,8 +682,8 @@ def check_cpp_jump_ast(source: list):
             if not tree[2][i] in ['0', '1', '-']:
                 i_copy = copy(i)
 
-                pending_assertions.append([lambda : i_copy in indices_I,
-                                           'Error: bitvariable specified at an index which is not specified as an index bit in the settings.'])
+                pending_assertions.append([lambda : not i_copy in indices_DASH,
+                                           'Error: bitvariable specified at an index which is specified as a dash bit in the settings.'])
 
         collected_components.append(tree)
         for cpp_line in tree[3]:
@@ -766,7 +748,7 @@ class Settings:
     def __init__(self, ast):
         # Grab the settings. We already know there should only be one, so grabbing list(...)[0] should be okay.
         settings_wf_raw = list(filter(lambda x : x[0] == 'SETTINGS', ast))[0]
-        self.name = settings_wf_raw[1][1]
+        self.namespace = settings_wf_raw[1][1]
 
         opcode_format = settings_wf_raw[2][1]
         opcode_format.reverse()
@@ -802,10 +784,6 @@ class Settings:
                     discriminator = set_nth_bit(discriminator, self.indices_D.index(i))
                 current_bit += 1
         
-        print('{0:4b} -> '.format(iteration), end='')
-        print('{0:4b}'.format(index), end='')
-        print(', {0:4b}'.format(discriminator), end='\n')
-        
         return index, discriminator
     
     # takes the given iteration (which is an assignment of I and D bits)
@@ -820,9 +798,7 @@ class Settings:
                 if get_nth_bit(iteration, current_bit) == 1:
                     opcode = set_nth_bit(opcode, i)
                 current_bit += 1
-        
-        print('{0:4b} ---> '.format(iteration), end='')
-        print('{0:4b}'.format(opcode), end='\n')
+
         return opcode
 
 def get_settings(ast):
@@ -902,7 +878,6 @@ class Component:
 
     # produces code for the given index
     def produce_code(self, index):
-        print('producing for {}'.format(index))
         result = []
         for line in self.code:
             result.append(line(index))
@@ -944,43 +919,59 @@ def find_component_with_name(name, components):
 # given an array of discriminators, returns a C++ expression
 # to extract the full discriminator from the opcode
 def get_expression(discriminators):
-  num_contiguous = 0
-  starting_index = -1
-  expression     = []
-  bits_flushed   = 0
+    num_contiguous = 0
+    starting_index = -1
+    expression     = []
+    bits_flushed   = 0
 
-  for discriminator in discriminators + [-1]:
-    if not discriminator == starting_index + 1:
-      shift = starting_index - num_contiguous + 1
-      mask  = int(math.pow(2, num_contiguous)) - 1
-      expression.append("(((opcode >> {}) & {}) << {})".format(shift, mask, bits_flushed))
+    for discriminator in discriminators + [-1]:
+        if not discriminator == starting_index + 1:
+            shift = starting_index - num_contiguous + 1
+            mask  = int(math.pow(2, num_contiguous)) - 1
+            expression.append('(((opcode >> {}) & {}) << {})'.format(shift, mask, bits_flushed))
       
-      bits_flushed   += num_contiguous
-      num_contiguous = 0
-      starting_index = discriminator
+            bits_flushed   += num_contiguous
+            num_contiguous = 0
+            starting_index = discriminator
 
-    num_contiguous += 1
-    starting_index = discriminator
+        num_contiguous += 1
+        starting_index = discriminator
 
-  return " | ".join(expression)
+    return ' | '.join(expression)
 
 # returns the C++ type that can match the opcode. maximum 64 bits.
 # structs can be used to make this higher, but cmon whose heard of
 # a computer chip that uses more than 64 bits for its opcode size?
 # either way i can remedy this by producing a struct that's large
 # enough.
-def get_opcode_type(opcode_size):
-    if   opcode_size <= 8:
+def get_data_type_by_size(data_size):
+    if   data_size <= 8:
         return "uint8_t"
-    elif opcode_size <= 16:
+    elif data_size <= 16:
         return "uint16_t"
-    elif opcode_size <= 32:
+    elif data_size <= 32:
         return "uint32_t"
-    elif opcode_size <= 64:
+    elif data_size <= 64:
         return "uint64_t"
     else:
-        print("Opcode size too large (given {} bits)! Maximum supported is 64.".format(opcode_size))
+        print("data size too large (given {} bits)! Maximum supported is 64.".format(data_size))
 
+# takes an array of lines of code, and if there is multiple consecutive empty
+# lines, it turns them into one giant line instead. this should be done before
+# outputing to a file for a complicated aesthetic reason that has to do with the
+# @IF blocks.
+def beautify_lines_of_code(lines_of_code):
+    was_empty_line = False
+    beautified_lines_of_code = []
+
+    for line_of_code in lines_of_code:
+        if was_empty_line or not line_of_code.isspace():    
+            beautified_lines_of_code += line_of_code
+
+        was_empty_line = line_of_code.isspace()
+    
+    return beautified_lines_of_code
+    
 # The function that will actually fill in the jumptable
 def translate_and_write(settings, rules, components):
     jumptable_size   = int(math.pow(2, len(settings.indices_I)))
@@ -988,17 +979,14 @@ def translate_and_write(settings, rules, components):
 
     # contains a list of components at each index
     preliminary_jumptable = [[] for i in range(jumptable_size)]
-    print(preliminary_jumptable)
 
     # i will be the current index of the jumptable that we are filling in
     for i in range(addressable_size):
-        print(preliminary_jumptable)
         #f.write(('void entry_{0:0' + str(settings['ADDRESSABLE_BITS']) + 'b}() {{').format(i))
 
         rule = get_matching_rule(rules, settings.inflate_iteration(i))
 
         if not rule is None:
-            print("Found {} at {}".format(rule.name, i))
             index, discriminator = settings.map_iteration_to_index_and_discriminator(i)
             preliminary_jumptable[index].append([discriminator, settings.inflate_iteration(i), rule.components])
 
@@ -1013,12 +1001,49 @@ def translate_and_write(settings, rules, components):
         #f.write('}\n')
         #f.write('\n')
 
-    print(preliminary_jumptable)
+    opcode_type = get_data_type_by_size(settings.opcode_size)
 
-    opcode_type = get_opcode_type(settings.opcode_size)
+    # assemble the arguments required:
+    arguments = [opcode_type + ' opcode']
+    arguments_string = ' '.join(arguments)
+
+    # first the header file because frankly it's a lot easier
+    # temporary name:
+    with open('output.h', 'w+') as f:
+        # first the include guard
+        f.write('#pragma once\n')
+        f.write('\n')
+
+        # then the includes
+        f.write('#include <cstdint>\n')
+        f.write('\n')
+
+        # the namespace
+        f.write('namespace {} {{\n'.format(settings.namespace))
+
+        # then we have the typedef so we can use function pointers in a sane way
+        f.write('    typedef void (*instruction)({});\n'.format(opcode_type))
+        f.write('\n')
+
+        # now we have the function definitions
+        for index in range(jumptable_size):
+            f.write(('    void entry_{0:0' + str(len(settings.indices_I)) + 'b}(' + arguments_string + ');\n').format(index))
+        f.write('\n')
+        f.write('    void execute_instruction({});\n'.format(arguments_string))
+        f.write('\n')
+
+        # and the jumptable itself
+        f.write('    extern instruction jumptable[];\n')
+        f.write('}')
 
     # temporary name:
     with open('output.cpp', 'w+') as f:
+        # first we put some includes...
+        f.write('#include <cstdint>\n')
+        f.write('#include <iostream>\n')
+        f.write('#include "output.h"\n')
+        f.write('\n')
+
         for index in range(jumptable_size):
             # NOTE: If the program uses the variable "discriminator", then this will break.
             #       one remedy is to generate a unique identifier that doesn't match any
@@ -1026,26 +1051,45 @@ def translate_and_write(settings, rules, components):
             #       identifiers. It's probably just easier to just include something in the readme
             #       warning about this.
             # TODO: include something in the readme warning about this
-
-            f.write(('void entry_{0:0' + str(len(settings.indices_I)) + 'b}() {{\n').format(index))
-            f.write("    {} discriminator = {};\n".format(opcode_type, get_expression(settings.indices_D)))
-            f.write("\n")
-            f.write("    switch (discriminator) {\n")
+            
+            # welcome to this ugliness:
+            # population 0 because as soon as i wrote this line i got the hell out of here
+            f.write(('void ' + settings.namespace + '::entry_{0:0' + str(len(settings.indices_I)) + 'b}(' + arguments_string + ') {{\n').format(index))
+            f.write('    {} discriminator = {};\n'.format(opcode_type, get_expression(settings.indices_D)))
+            f.write('\n')
+            f.write('    switch (discriminator) {\n')
 
             for element in preliminary_jumptable[index]:
                 discriminator = element[0]
                 opcode        = element[1]
-                f.write(("        case 0b{0:" + str(len(settings.indices_D)) + "b}: {{\n").format(discriminator))
+                f.write(('        case 0b{0:' + str(len(settings.indices_D)) + 'b}: {{\n').format(discriminator))
 
                 for component_name in element[2]:
                     component = find_component_with_name(component_name, components)
-                    f.write(''.join('            {}\n'.format(x.strip()) for x in component.produce_code(opcode)))
-                f.write("            break;\n")
-                f.write("        }\n")
+                    code_lines = ['            {}\n'.format(x.strip()) for x in component.produce_code(opcode)]
+                    code_lines = beautify_lines_of_code(code_lines)
+                    f.write(''.join(code_lines))
 
-            f.write("    }\n")
-            f.write("}\n")
-            f.write("\n")
+                f.write('            break;\n')
+                f.write('        }\n')
+
+            f.write('    }\n')
+            f.write('}\n')
+            f.write('\n')
+
+        # second to last step: provide an implementation for execute_instruction
+        passed_in_arguments_string = ' '.join(arguments_string.split(" ")[1::2])
+        f.write('void {}::execute_instruction({}) {{\n'.format(settings.namespace, arguments_string))
+        indices_expression = get_expression(settings.indices_I)
+        f.write('    {}::jumptable[{}]({});\n'.format(settings.namespace, indices_expression, passed_in_arguments_string))
+        f.write('}\n')
+        f.write('\n')
+
+        # finally to fill in the jumptable addresses
+        f.write('{}::instruction {}::jumptable[] = {{\n'.format(settings.namespace, settings.namespace))
+        for index in range(jumptable_size):
+            f.write(('    &' + settings.namespace + '::entry_{0:0' + str(len(settings.indices_I)) +'b},\n').format(index))
+        f.write('};\n')
 
 
 
@@ -1057,6 +1101,9 @@ def translate_and_write(settings, rules, components):
 def compile(file_name):
     with open(file_name, 'r') as f:
         ast = parser.parse(f.read() + '\n')
+        if error_found:
+            exit(-1)
+
         check_cpp_jump_ast(ast)
 
         # get the important bits from the ast

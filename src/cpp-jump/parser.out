@@ -10,7 +10,7 @@ Rule 4     complete_item -> complete_rule
 Rule 5     complete_item -> complete_component
 Rule 6     complete_settings -> settings_header name opcode_format settings_footer
 Rule 7     settings_header -> LBRACKET SETTINGS RBRACKET NEWLINE
-Rule 8     name -> DASH NAME COLON IDENTIFIER NEWLINE
+Rule 8     name -> DASH NAMESPACE COLON IDENTIFIER NEWLINE
 Rule 9     opcode_format -> DASH OPCODE_FORMAT COLON list_formatted_binary_item NEWLINE
 Rule 10    settings_footer -> LBRACKET SLASH SETTINGS RBRACKET NEWLINE
 Rule 11    complete_rule -> rule_header list_rule_component rule_footer
@@ -63,7 +63,7 @@ IF_END               : 31 33
 INCLUDE              : 18
 LBRACKET             : 7 10 12 25 27 42
 LCURLY               : 29
-NAME                 : 8
+NAMESPACE            : 8
 NEWLINE              : 7 8 9 10 12 18 23 24 25 27 28 29 29 30 31 32 33 42
 OPCODE_FORMAT        : 9
 RBRACKET             : 7 10 12 25 27 42
@@ -192,7 +192,7 @@ state 5
 state 6
 
     (6) complete_settings -> settings_header . name opcode_format settings_footer
-    (8) name -> . DASH NAME COLON IDENTIFIER NEWLINE
+    (8) name -> . DASH NAMESPACE COLON IDENTIFIER NEWLINE
 
     DASH            shift and go to state 12
 
@@ -257,9 +257,9 @@ state 11
 
 state 12
 
-    (8) name -> DASH . NAME COLON IDENTIFIER NEWLINE
+    (8) name -> DASH . NAMESPACE COLON IDENTIFIER NEWLINE
 
-    NAME            shift and go to state 26
+    NAMESPACE       shift and go to state 26
 
 
 state 13
@@ -381,7 +381,7 @@ state 25
 
 state 26
 
-    (8) name -> DASH NAME . COLON IDENTIFIER NEWLINE
+    (8) name -> DASH NAMESPACE . COLON IDENTIFIER NEWLINE
 
     COLON           shift and go to state 42
 
@@ -498,7 +498,7 @@ state 41
 
 state 42
 
-    (8) name -> DASH NAME COLON . IDENTIFIER NEWLINE
+    (8) name -> DASH NAMESPACE COLON . IDENTIFIER NEWLINE
 
     IDENTIFIER      shift and go to state 56
 
@@ -638,7 +638,7 @@ state 55
 
 state 56
 
-    (8) name -> DASH NAME COLON IDENTIFIER . NEWLINE
+    (8) name -> DASH NAMESPACE COLON IDENTIFIER . NEWLINE
 
     NEWLINE         shift and go to state 75
 
@@ -825,9 +825,9 @@ state 74
 
 state 75
 
-    (8) name -> DASH NAME COLON IDENTIFIER NEWLINE .
+    (8) name -> DASH NAMESPACE COLON IDENTIFIER NEWLINE .
 
-    DASH            reduce using rule 8 (name -> DASH NAME COLON IDENTIFIER NEWLINE .)
+    DASH            reduce using rule 8 (name -> DASH NAMESPACE COLON IDENTIFIER NEWLINE .)
 
 
 state 76

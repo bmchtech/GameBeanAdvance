@@ -1,5 +1,5 @@
 [SETTINGS]
-- NAME: ARM7TDMI_PINKY
+- NAMESPACE: arm_pinky
 - OPCODE_FORMAT: IID-
 [/SETTINGS]
 
@@ -7,20 +7,23 @@
 - INCLUDE: --0-
 - COMPONENT: ADDRESSING_MODE_1
 - COMPONENT: SUB
+- COMPONENT: PRINT
 [/RULE]
 
 [RULE RULE1]
 - INCLUDE: 1-1-
 - COMPONENT: ADDRESSING_MODE_1
 - COMPONENT: ADD
+- COMPONENT: PRINT
 [/RULE]
 
 [COMPONENT ADDRESSING_MODE_1]
-- FORMAT: AB--
+- FORMAT: ABC-
 {
     // yes this is useless code but its filler so
     @IF(!A) int a = 3;
     @IF( A) int a = 5;
+    @IF( C) // special comment! :D
 
     int b = 6;
 }
@@ -37,5 +40,12 @@
 - FORMAT: --0-
 {
     int result = a - b;
+}
+[/COMPONENT]
+
+[COMPONENT PRINT]
+- FORMAT: ----
+{
+    std::cout << std::to_string(result) << std::endl;
 }
 [/COMPONENT]
