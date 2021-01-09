@@ -116,7 +116,8 @@ reserved = [
     'INCLUDE',
     'EXCLUDE',
     'FORMAT',
-    'OPCODE_FORMAT'
+    'OPCODE_FORMAT',
+    'INCLUDES'
 ]
 
 tokens = [
@@ -312,8 +313,8 @@ def p_complete_item(p):
     p[0] = p[1]
 
 def p_complete_settings(p):
-    'complete_settings : settings_header name opcode_format settings_footer'
-    p[0] = ['SETTINGS', p[2], p[3]]
+    'complete_settings : settings_header name opcode_format includes settings_footer'
+    p[0] = ['SETTINGS', p[2], p[3], p[4]]
 
 def p_settings_header(p):
     'settings_header : LBRACKET SETTINGS RBRACKET NEWLINE'
@@ -325,6 +326,18 @@ def p_name(p):
 def p_opcode_format(p):
     'opcode_format : DASH OPCODE_FORMAT COLON list_formatted_binary_item NEWLINE'
     p[0] = ['OPCODE_FORMAT', p[4]]
+
+def p_includes(p):
+    'includes : DASH INCLUDES COLON list_includes NEWLINE'
+    p[0] = ['INCLUDES', p[4]]
+
+def p_list_includes_single(p):
+    'list_includes : IDENTIFIER'
+    p[0] = [p[1]]
+
+def p_list_includes_group(p):
+    'list_includes : list_includes IDENTIFIER'
+    p[0] = p[1] + [p[2]]
 
 def p_settings_footer(p):
     'settings_footer : LBRACKET SLASH SETTINGS RBRACKET NEWLINE'
@@ -473,6 +486,7 @@ parser = yacc.yacc()
 #             ['OPCODE_FORMAT',    opcode_format]]
 # settings is well-formed if:
 # 1. every occurrence in opcode_format is one of: '-', 'I', 'D',
+# 2. no include shows up more than once (this can be fixed by removing duplicate occurrences)
 #
 # rules = [rule ...]
 # rules is well-formed if:
@@ -597,6 +611,9 @@ def check_cpp_jump_ast(source: list):
 
         nonlocal opcode_size
         opcode_size = len(tree[2][1])
+
+        # remove all duplicates from the includes
+        tree[3][1] = list(dict.fromkeys(tree[3][1]))
     
     # the conditions for 'rules' and 'rule' are both checked here
     # makes things simpler.
@@ -683,7 +700,7 @@ def check_cpp_jump_ast(source: list):
                 i_copy = copy(i)
 
                 pending_assertions.append([lambda : not i_copy in indices_DASH,
-                                           'Error: bitvariable specified at an index which is specified as a dash bit in the settings.'])
+                                           'Error: bitvariable specified at an index which is specified as an insignificant bit in the settings.'])
 
         collected_components.append(tree)
         for cpp_line in tree[3]:
@@ -749,6 +766,7 @@ class Settings:
         # Grab the settings. We already know there should only be one, so grabbing list(...)[0] should be okay.
         settings_wf_raw = list(filter(lambda x : x[0] == 'SETTINGS', ast))[0]
         self.namespace = settings_wf_raw[1][1]
+        self.includes  = settings_wf_raw[3][1]
 
         opcode_format = settings_wf_raw[2][1]
         opcode_format.reverse()
@@ -973,7 +991,7 @@ def beautify_lines_of_code(lines_of_code):
     return beautified_lines_of_code
     
 # The function that will actually fill in the jumptable
-def translate_and_write(settings, rules, components):
+def translate_and_write(settings, rules, components, output_file_name):
     jumptable_size   = int(math.pow(2, len(settings.indices_I)))
     addressable_size = int(math.pow(2, settings.addressable_bits))
 
@@ -1008,8 +1026,7 @@ def translate_and_write(settings, rules, components):
     arguments_string = ' '.join(arguments)
 
     # first the header file because frankly it's a lot easier
-    # temporary name:
-    with open('output.h', 'w+') as f:
+    with open('{}.h'.format(output_file_name), 'w+') as f:
         # first the include guard
         f.write('#pragma once\n')
         f.write('\n')
@@ -1036,12 +1053,13 @@ def translate_and_write(settings, rules, components):
         f.write('    extern instruction jumptable[];\n')
         f.write('}')
 
-    # temporary name:
-    with open('output.cpp', 'w+') as f:
+    # now the cpp file:
+    with open('{}.cpp'.format(output_file_name), 'w+') as f:
         # first we put some includes...
         f.write('#include <cstdint>\n')
-        f.write('#include <iostream>\n')
-        f.write('#include "output.h"\n')
+        for include in settings.includes:
+            f.write('#include "{}"\n'.format(include))
+        f.write('#include "{}.h"\n'.format(output_file_name))
         f.write('\n')
 
         for index in range(jumptable_size):
@@ -1098,8 +1116,8 @@ def translate_and_write(settings, rules, components):
 ##################################### FINALLY THE COMPILER #####################################
 
 # This one's simple. Here's a function you can use to run the compiler:
-def compile(file_name):
-    with open(file_name, 'r') as f:
+def compile(input_file_name, output_file_name):
+    with open(input_file_name, 'r') as f:
         ast = parser.parse(f.read() + '\n')
         if error_found:
             exit(-1)
@@ -1111,4 +1129,4 @@ def compile(file_name):
         rules      = get_rules(ast)
         components = get_components(ast)
 
-        translate_and_write(settings, rules, components)
+        translate_and_write(settings, rules, components, output_file_name)

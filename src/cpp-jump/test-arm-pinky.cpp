@@ -1,5 +1,5 @@
 #include <iostream>
-#include "output.h"
+#include "pinky.h"
 
 int main() {
     for (int i = 0; i < 16; i++) {

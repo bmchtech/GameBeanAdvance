@@ -1,6 +1,6 @@
 #include <cstdint>
-#include <iostream>
-#include "output.h"
+#include "iostream"
+#include "pinky.h"
 
 void arm_pinky::entry_00(uint8_t opcode) {
     uint8_t discriminator = (((opcode >> 0) & 0) << 0) | (((opcode >> 1) & 1) << 0);

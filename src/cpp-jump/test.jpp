@@ -1,6 +1,7 @@
 [SETTINGS]
 - NAMESPACE: arm_pinky
 - OPCODE_FORMAT: IID-
+- INCLUDES: iostream
 [/SETTINGS]
 
 [RULE RULE0]

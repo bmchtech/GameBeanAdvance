@@ -2,9 +2,10 @@
 from cpp_jump_compiler import compile
 from os import sys
 
-if len(sys.argv) < 2:
-    print("Usage: python {} <file_name>".format(sys.argv[0]))
+if len(sys.argv) < 3:
+    print("Usage: {} <input_file_name> <output_file_name>".format(sys.argv[0]))
     exit(-1)
     
 with open(sys.argv[1], 'r') as f:
-    compile(sys.argv[1])
+    #                    this part removes the file extension
+    compile(sys.argv[1], sys.argv[2][:sys.argv[2].rfind('.')])
