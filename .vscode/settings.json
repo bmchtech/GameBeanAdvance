@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.jpp": "cpp",
         "array": "cpp",
         "atomic": "cpp",
         "hash_map": "cpp",
@@ -63,6 +64,14 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp",
         "variant": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "__locale": "cpp",
+        "__bit_reference": "cpp",
+        "__functional_base": "cpp",
+        "__node_handle": "cpp",
+        "bitset": "cpp",
+        "__memory": "cpp",
+        "filesystem": "cpp",
+        "locale": "cpp"
     }
 }

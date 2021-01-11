@@ -47,7 +47,7 @@ void ARM7TDMI::execute(uint32_t opcode) {
         jumptable_thumb[opcode >> 8](this, opcode);
     } else {
         if (should_execute((opcode & 0xF0000000) >> 28)) {
-            jumptable_arm[opcode >> 20](this, opcode);
+            arm::execute_instruction(opcode, this);
         }
     }
 }

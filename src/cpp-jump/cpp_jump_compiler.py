@@ -117,7 +117,8 @@ reserved = [
     'EXCLUDE',
     'FORMAT',
     'OPCODE_FORMAT',
-    'INCLUDES'
+    'INCLUDES',
+    'ARGUMENTS'
 ]
 
 tokens = [
@@ -188,7 +189,7 @@ def t_if_IF_END(t):
     return t
 
 def t_IDENTIFIER(t):
-    r'[A-Za-z_][A-Za-z_0-9]*'
+    r'[A-Za-z_.][A-Za-z_0-9./]*\*?'
 
     # handle reserved keywords that may have been wrongly interpretted as an identifier
     if t.value in reserved:
@@ -313,8 +314,8 @@ def p_complete_item(p):
     p[0] = p[1]
 
 def p_complete_settings(p):
-    'complete_settings : settings_header name opcode_format includes settings_footer'
-    p[0] = ['SETTINGS', p[2], p[3], p[4]]
+    'complete_settings : settings_header name opcode_format includes arguments settings_footer'
+    p[0] = ['SETTINGS', p[2], p[3], p[4], p[5]]
 
 def p_settings_header(p):
     'settings_header : LBRACKET SETTINGS RBRACKET NEWLINE'
@@ -337,6 +338,18 @@ def p_list_includes_single(p):
 
 def p_list_includes_group(p):
     'list_includes : list_includes IDENTIFIER'
+    p[0] = p[1] + [p[2]]
+
+def p_arguments(p):
+    'arguments : DASH ARGUMENTS COLON list_arguments NEWLINE'
+    p[0] = ['ARGUMENTS', p[4]]
+
+def p_list_arguments_single(p):
+    'list_arguments : IDENTIFIER'
+    p[0] = [p[1]]
+
+def p_list_arguments_group(p):
+    'list_arguments : list_arguments IDENTIFIER'
     p[0] = p[1] + [p[2]]
 
 def p_settings_footer(p):
@@ -482,11 +495,14 @@ parser = yacc.yacc()
 # 2. everything it contains is also well-formed.
 #
 # settings = ['SETTINGS',
-#             ['NAMESPACE',             name], 
-#             ['OPCODE_FORMAT',    opcode_format]]
+#             ['NAMESPACE',        namespace], 
+#             ['OPCODE_FORMAT',    opcode_format]
+#             ['INCLUDES',         includes],
+#             ['ARGUMENTS',        arguments]]
 # settings is well-formed if:
 # 1. every occurrence in opcode_format is one of: '-', 'I', 'D',
 # 2. no include shows up more than once (this can be fixed by removing duplicate occurrences)
+# 3. len(arguments) is even
 #
 # rules = [rule ...]
 # rules is well-formed if:
@@ -536,6 +552,11 @@ parser = yacc.yacc()
 # TODO: add a check to make sure all rule includes are unique (i.e., there is no index
 # that can match two rules)
 
+def assert_with_error(condition, error):
+    if not condition:
+        print(error)
+        exit(-1)
+
 # ASSUME: tree is a list_complete_item
 def check_cpp_jump_ast(source: list):
     # if this tree is well formed, then it has a well-formed settings.
@@ -565,11 +586,6 @@ def check_cpp_jump_ast(source: list):
 
     # once this gets set to true, it better not be set to true ever again.
     has_settings = False
-
-    def assert_with_error(condition, error):
-        if not condition:
-            print(error)
-            exit(-1)
 
     def lookup_component(component_name):
         # for now, candidates can't be greater than 1. and i check for this.
@@ -614,6 +630,8 @@ def check_cpp_jump_ast(source: list):
 
         # remove all duplicates from the includes
         tree[3][1] = list(dict.fromkeys(tree[3][1]))
+
+        assert_with_error(len(tree[4][1]) % 2 == 0, 'Error: arguments list is odd (there should be always be a datatype followed by an argument')
     
     # the conditions for 'rules' and 'rule' are both checked here
     # makes things simpler.
@@ -684,8 +702,6 @@ def check_cpp_jump_ast(source: list):
     def check_component_statement(tree: list):
         pending_assertions.append([lambda: [x[1] for x in collected_components].count(tree[1]) != 0,
                                    '''Error: invalid component: {}. You must give it an implementation using [COMPONENT]'''.format(tree[1])])
-        pending_assertions.append([lambda: [x[1] for x in collected_components].count(tree[1]) == 1,
-                                   'Error: component: {} was defined more than once.'.format(tree[1])])
     
     def check_component(tree: list):
         pending_assertions.append([lambda: len(tree[2]) == opcode_size,
@@ -767,6 +783,9 @@ class Settings:
         settings_wf_raw = list(filter(lambda x : x[0] == 'SETTINGS', ast))[0]
         self.namespace = settings_wf_raw[1][1]
         self.includes  = settings_wf_raw[3][1]
+
+        arguments_raw  = settings_wf_raw[4][1]
+        self.arguments = list('{} {}'.format(arguments_raw[2 * i],  arguments_raw[2 * i + 1]) for i in range(int(len(arguments_raw) / 2)))
 
         opcode_format = settings_wf_raw[2][1]
         opcode_format.reverse()
@@ -866,8 +885,8 @@ class Component:
         self.name   = component_wf[1]
     
         # curse you python, how dare you make 'format' a keyword
-        forma = component_wf[2]
-        forma.reverse()
+        self.forma = component_wf[2]
+        self.forma.reverse()
 
         # each element in the code array is an anonymous function that takes in the index into the
         # jumptable and produces the line of code if the index matches the assignments of bitvariables.
@@ -881,13 +900,15 @@ class Component:
             #     make sure this is true for all bitvariables
             # if the result is true, return the line of code. else, return 0
 
-            self.code.append(self.generate_verifier(line, forma))
+            self.code.append(self.generate_verifier(line))
 
-    def generate_verifier(self, line, forma):
+    def generate_verifier(self, line):
         # closure for generating an element of self.code
+        # theres honestly no real reason to make this return lambda i just
+        # wanted to have a bit of fun here lol.
 
         def check_bit(index, bitvariable):
-            return get_nth_bit(index, forma.index(bitvariable[0])) == bitvariable[1]
+            return get_nth_bit(index, self.forma.index(bitvariable[0])) == bitvariable[1]
 
         bitvariables       = line[0]
         leading_whitespace = line[2]
@@ -901,6 +922,15 @@ class Component:
             result.append(line(index))
 
         return result
+
+    # returns true if the given opcode matches the name
+    def matches(self, opcode):
+        def bits_match(format_bit, opcode_bit):
+            binary_bits = ['1', '0']
+            return not ((format_bit == '1' and opcode_bit == 0) or
+                        (format_bit == '0' and opcode_bit == 1))
+
+        return all(bits_match(self.forma[i], get_nth_bit(opcode, i)) for i in range(len(self.forma)))
         
 def get_components(ast):
     # turn every element of ast that is a component into a Component object
@@ -930,9 +960,13 @@ def get_matching_rule(rules, i):
     return matching_rules[0]
 
 # Used to find the component with the given name
-def find_component_with_name(name, components):
+def find_component_with_name(name, components, opcode):
     # We know that because this is wf that a component with the given name *does* exist.
-    return next(filter(lambda x : x.name == name, components))
+    possible_components = list(filter(lambda x : x.name == name, components))
+    possible_components = list(filter(lambda x : x.matches(opcode), possible_components))
+    assert_with_error(len(possible_components) != 0, 'No matching component found for opcode {0:0b}'.format(opcode))
+    assert_with_error(len(possible_components) == 1,  'More than one matching component found for opcode {0:0b}'.format(opcode))
+    return possible_components[0]
 
 # given an array of discriminators, returns a C++ expression
 # to extract the full discriminator from the opcode
@@ -1022,8 +1056,8 @@ def translate_and_write(settings, rules, components, output_file_name):
     opcode_type = get_data_type_by_size(settings.opcode_size)
 
     # assemble the arguments required:
-    arguments = [opcode_type + ' opcode']
-    arguments_string = ' '.join(arguments)
+    arguments = [opcode_type + ' opcode'] + settings.arguments
+    arguments_string = ', '.join(arguments)
 
     # first the header file because frankly it's a lot easier
     with open('{}.h'.format(output_file_name), 'w+') as f:
@@ -1033,13 +1067,15 @@ def translate_and_write(settings, rules, components, output_file_name):
 
         # then the includes
         f.write('#include <cstdint>\n')
+        for include in settings.includes:
+            f.write('#include "{}"\n'.format(include))
         f.write('\n')
 
         # the namespace
         f.write('namespace {} {{\n'.format(settings.namespace))
 
         # then we have the typedef so we can use function pointers in a sane way
-        f.write('    typedef void (*instruction)({});\n'.format(opcode_type))
+        f.write('    typedef void (*instruction)({});\n'.format(', '.join(x.split()[0] for x in arguments)))
         f.write('\n')
 
         # now we have the function definitions
@@ -1080,10 +1116,10 @@ def translate_and_write(settings, rules, components, output_file_name):
             for element in preliminary_jumptable[index]:
                 discriminator = element[0]
                 opcode        = element[1]
-                f.write(('        case 0b{0:' + str(len(settings.indices_D)) + 'b}: {{\n').format(discriminator))
+                f.write(('        case 0b{0:0' + str(len(settings.indices_D)) + 'b}: {{\n').format(discriminator))
 
                 for component_name in element[2]:
-                    component = find_component_with_name(component_name, components)
+                    component = find_component_with_name(component_name, components, opcode)
                     code_lines = ['            {}\n'.format(x.strip()) for x in component.produce_code(opcode)]
                     code_lines = beautify_lines_of_code(code_lines)
                     f.write(''.join(code_lines))

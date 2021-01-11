@@ -566,9 +566,27 @@ uint32_t addressing_mode_3_immediate_offset(ARM7TDMI* cpu, uint32_t opcode) {
     uint8_t offset = get_nth_bits(opcode, 0, 4) | (get_nth_bits(opcode, 8, 12) << 4);
 
     if      (!is_pc &&  get_nth_bit(opcode, 23))   return cpu->regs[get_nth_bits(opcode, 16, 20)] + offset;
-    else if (!is_pc && !get_nth_bit(opcode, 23))   return cpu->regs[get_nth_bits(opcode, 16, 20)] - offset;
     else if ( is_pc &&  get_nth_bit(opcode, 23))   return cpu->regs[get_nth_bits(opcode, 16, 20)] + offset + 4;
+    else if (!is_pc && !get_nth_bit(opcode, 23))   return cpu->regs[get_nth_bits(opcode, 16, 20)] - offset;
     else  /*( is_pc && !get_nth_bit(opcode, 23))*/ return cpu->regs[get_nth_bits(opcode, 16, 20)] - offset + 4;
+}
+
+@LOCAL()
+uint32_t addressing_mode_3_immediate_preindexed(ARM7TDMI* cpu, uint32_t opcode) {
+    uint8_t offset = get_nth_bits(opcode, 0, 4) | (get_nth_bits(opcode, 8, 12) << 4);
+    if (get_nth_bit(opcode, 23)) cpu->regs[get_nth_bits(opcode, 16, 20)] += offset;
+    else                         cpu->regs[get_nth_bits(opcode, 16, 20)] -= offset;
+    return cpu->regs[get_nth_bits(opcode, 16, 20)];
+}
+
+
+@LOCAL()
+uint32_t addressing_mode_3_immediate_postindexed(ARM7TDMI* cpu, uint32_t opcode) {
+    uint8_t  offset  = get_nth_bits(opcode, 0, 4) | (get_nth_bits(opcode, 8, 12) << 4);
+    uint32_t address = cpu->regs[get_nth_bits(opcode, 16, 20)];
+    if (get_nth_bit(opcode, 23)) cpu->regs[get_nth_bits(opcode, 16, 20)] += offset;
+    else                         cpu->regs[get_nth_bits(opcode, 16, 20)] -= offset;
+    return address;
 }
 
 @LOCAL()
@@ -583,30 +601,11 @@ uint32_t addressing_mode_3_register_offset(ARM7TDMI* cpu, uint32_t opcode) {
 }
 
 @LOCAL()
-uint32_t addressing_mode_3_immediate_preindexed(ARM7TDMI* cpu, uint32_t opcode) {
-    uint8_t offset = get_nth_bits(opcode, 0, 4) | (get_nth_bits(opcode, 8, 12) << 4);
-    if (get_nth_bit(opcode, 23)) cpu->regs[get_nth_bits(opcode, 16, 20)] += offset;
-    else                         cpu->regs[get_nth_bits(opcode, 16, 20)] -= offset;
-    return cpu->regs[get_nth_bits(opcode, 16, 20)];
-}
-
-
-@LOCAL()
 uint32_t addressing_mode_3_register_preindexed(ARM7TDMI* cpu, uint32_t opcode) {
     uint32_t offset = cpu->regs[get_nth_bits(opcode, 0, 4)];
     if (get_nth_bit(opcode, 23)) cpu->regs[get_nth_bits(opcode, 16, 20)] += offset;
     else                         cpu->regs[get_nth_bits(opcode, 16, 20)] -= offset;
     return cpu->regs[get_nth_bits(opcode, 16, 20)];
-}
-
-
-@LOCAL()
-uint32_t addressing_mode_3_immediate_postindexed(ARM7TDMI* cpu, uint32_t opcode) {
-    uint8_t  offset  = get_nth_bits(opcode, 0, 4) | (get_nth_bits(opcode, 8, 12) << 4);
-    uint32_t address = cpu->regs[get_nth_bits(opcode, 16, 20)];
-    if (get_nth_bit(opcode, 23)) cpu->regs[get_nth_bits(opcode, 16, 20)] += offset;
-    else                         cpu->regs[get_nth_bits(opcode, 16, 20)] -= offset;
-    return address;
 }
 
 @LOCAL()
@@ -1219,4 +1218,5 @@ void run_COND0000111S(uint32_t opcode) {
             else                        addressing_mode_1_register_by_immediate(cpu, opcode);
             RSC(cpu, opcode);
     }
+}
 

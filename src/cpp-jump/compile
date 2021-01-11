@@ -7,5 +7,12 @@ if len(sys.argv) < 3:
     exit(-1)
     
 with open(sys.argv[1], 'r') as f:
-    #                    this part removes the file extension
-    compile(sys.argv[1], sys.argv[2][:sys.argv[2].rfind('.')])
+    output_file_name = sys.argv[2]
+    file_extensions_to_remove = ['.h', '.cpp', '.hpp']
+
+    # remove the file extension
+    for file_extension in file_extensions_to_remove:
+        if output_file_name.endswith(file_extension):
+            output_file_name = output_file_name.split[0:len(output_file_name) - len(file_extension)]
+    
+    compile(sys.argv[1], output_file_name)

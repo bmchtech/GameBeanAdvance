@@ -1,0 +1,187 @@
+[SETTINGS]
+- NAMESPACE: arm
+- OPCODE_FORMAT: IIIIIIIIIIII------------DDDD----
+- INCLUDES: iostream ../util.h ../arm7tdmi.h
+- ARGUMENTS: ARM7TDMI* cpu
+[/SETTINGS]
+
+[RULE B_BL]
+- INCLUDE: ----101-------------------------
+- COMPONENT: B_BL
+[/RULE]
+
+[RULE LDR]
+- INCLUDE: ----01---0-1--------------------
+- COMPONENT: ADDRESSING_MODE_2
+- COMPONENT: LDR
+[/RULE]
+
+[RULE LDRH]
+- INCLUDE: ----000----1------------1011----
+- COMPONENT: ADDRESSING_MODE_3
+- COMPONENT: LDRH
+[/RULE]
+
+[RULE LDRSB]
+- INCLUDE: ----000----1------------1101----
+- COMPONENT: ADDRESSING_MODE_3
+- COMPONENT: LDRSB
+[/RULE]
+
+[RULE LDRSH]
+- INCLUDE: ----000----1------------1111----
+- COMPONENT: ADDRESSING_MODE_3
+- COMPONENT: LDRSH
+[/RULE]
+
+[COMPONENT ADDRESSING_MODE_2]
+- FORMAT:  ----010PUBWL--------------------
+{
+    // NOTE: this is the IMMEDIATE OFFSET part of ADDRESSING_MODE_2
+    // also yes it does look very similar to ADDRESSING_MODE_3 but what can I realistically do,
+    // this was the way the cpu was designed.
+    // actually, this can be made cleaner if i allow components to contain components.... maybe
+    // a task for another day.
+    
+    // pc is required to know if we should add an extra offset of 4 to account for the pipeline
+    bool is_pc = get_nth_bits(opcode, 16, 20) == 15;
+
+    // this is immediate addressing - so we just get the offset straight from the opcode
+    uint32_t offset = get_nth_bits(opcode, 0, 12);
+
+    // U determines if we add or subtract
+    // O determines if we're doing post-indexed addressing or not
+    @IF( P  U) uint32_t address = cpu->regs[get_nth_bits(opcode, 16, 20)] + offset + (is_pc ? 4 : 0);
+    @IF( P !U) uint32_t address = cpu->regs[get_nth_bits(opcode, 16, 20)] - offset + (is_pc ? 4 : 0);
+
+    @IF(!P)    uint32_t address = cpu->regs[get_nth_bits(opcode, 16, 20)];
+    @IF(!P  U) cpu->regs[get_nth_bits(opcode, 16, 20)] += offset + (is_pc ? 4 : 0);
+    @IF(!P !U) cpu->regs[get_nth_bits(opcode, 16, 20)] -= offset + (is_pc ? 4 : 0);
+
+    // if the writeback bit is specified, then do a writeback.
+    @IF( W) cpu->regs[get_nth_bits(opcode, 16, 20)] = address;
+}
+[/COMPONENT]
+
+[COMPONENT ADDRESSING_MODE_2]
+- FORMAT:  ----011PUBWL--------------------
+{
+    uint32_t address = cpu->regs[get_nth_bits(opcode, 16, 20)];
+    uint32_t operand = cpu->regs[get_nth_bits(opcode, 0,  4)];
+    uint32_t shift_immediate = get_nth_bits(opcode, 7, 12);
+
+    uint32_t index = 0;
+    switch (get_nth_bits(opcode, 5, 7)) {
+        case 0b00:
+            index = operand << shift_immediate;
+            break;
+        
+        case 0b01:
+            index = operand >> shift_immediate;
+            break;
+        
+        case 0b10:
+            if (shift_immediate != 0) {
+                if ((operand >> 31) == 1) {
+                    index = (((1 << shift_immediate) - 1) << (32 - shift_immediate)) | (operand >> shift_immediate);
+                } else {
+                    index = operand >> shift_immediate;
+                }
+            }
+            else index = (get_nth_bit(shift_immediate, 31) == 1 ? 0xFFFFFFFF : 0x00000000);
+            break;
+        
+        case 0b11:
+            if (shift_immediate != 0) {
+                uint32_t rotated_off = get_nth_bits(operand, 0,     shift_immediate);  // the value that is rotated off
+                uint32_t rotated_in  = get_nth_bits(operand, shift_immediate, 32);     // the value that stays after the rotation
+                index = rotated_in | (rotated_off << (32 - shift_immediate));
+            }
+            else {
+                uint32_t rotated_off = get_nth_bit(operand, 0);  // the value that is rotated off
+                uint32_t rotated_in  = get_nth_bits(operand, 1, 32);         // the value that stays after the rotation
+
+                index = rotated_in | (rotated_off << 31);
+                cpu->set_flag_C(get_nth_bit(operand, shift_immediate));
+            }
+            break;
+    }
+
+    if (get_nth_bit(opcode, 24)) { // offset addressing or pre-indexed addressing
+        if (get_nth_bit(opcode, 23)) address += index;
+        else                         address -= index;
+
+        if (get_nth_bit(opcode, 21)) { // pre-indexed addressing (writeback)
+            cpu->regs[get_nth_bits(opcode, 16, 20)] = address;
+        }
+    } else {                       // post-indexed addressing
+        if (get_nth_bit(opcode, 23)) cpu->regs[get_nth_bits(opcode, 16, 20)] += index;
+        else                         cpu->regs[get_nth_bits(opcode, 16, 20)] -= index;
+    }
+    
+    if (get_nth_bits(opcode, 16, 20) == 15) { // are we register PC?
+        address += 4;
+    }
+}
+[/COMPONENT]
+
+[COMPONENT ADDRESSING_MODE_3]
+- FORMAT:  ----00OPUIWL--------------------
+{
+    // pc is required to know if we should add an extra offset of 4 to account for the pipeline
+    bool is_pc = get_nth_bits(opcode, 16, 20) == 15;
+
+    // we either get the offset straight from the opcode or from the registers depending on the I bit
+    @IF( I) uint8_t  offset = get_nth_bits(opcode, 0, 4) | (get_nth_bits(opcode, 8, 12) << 4);
+    @IF(!I) uint32_t offset = cpu->regs[get_nth_bits(opcode, 0, 4)];
+
+    // U determines if we add or subtract
+    // P determines if we're doing post-indexed addressing or not
+    @IF( P  U) uint32_t address = cpu->regs[get_nth_bits(opcode, 16, 20)] + offset + (is_pc ? 4 : 0);
+    @IF( P !U) uint32_t address = cpu->regs[get_nth_bits(opcode, 16, 20)] - offset + (is_pc ? 4 : 0);
+
+    @IF(!P)    uint32_t address = cpu->regs[get_nth_bits(opcode, 16, 20)];
+    @IF(!P  U) cpu->regs[get_nth_bits(opcode, 16, 20)] += offset + (is_pc ? 4 : 0);
+    @IF(!P !U) cpu->regs[get_nth_bits(opcode, 16, 20)] -= offset + (is_pc ? 4 : 0);
+
+    // if the writeback bit is specified, then do a writeback.
+    @IF( W) cpu->regs[get_nth_bits(opcode, 16, 20)] = address;
+}
+[/COMPONENT]
+
+[COMPONENT LDR]
+- FORMAT:  ----01---0-1--------------------
+{
+    cpu->regs[get_nth_bits(opcode, 12, 16)] = cpu->memory->read_word(address);
+}
+[/COMPONENT]
+
+[COMPONENT B_BL]
+- FORMAT:  ----101L------------------------
+{
+    @IF(L) *cpu->lr = *cpu->pc;
+    // unintuitive sign extension: http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
+    *cpu->pc += ((((1U << 23) ^ get_nth_bits(opcode, 0, 24)) - (1U << 23)) << 2) + 4;
+}
+[/COMPONENT]
+
+[COMPONENT LDRH]
+- FORMAT:  ----000----1--------------------
+{
+    cpu->regs[get_nth_bits(opcode, 12, 16)] = cpu->memory->read_halfword(address);
+}
+[/COMPONENT]
+
+[COMPONENT LDRSB]
+- FORMAT:  ----000----1------------1101----
+{
+    cpu->regs[get_nth_bits(opcode, 12, 16)] = sign_extend(cpu->memory->read_byte(address), 8);
+}
+[/COMPONENT]
+
+[COMPONENT LDRSH]
+- FORMAT:  ----000----1------------1111----
+{
+    cpu->regs[get_nth_bits(opcode, 12, 16)] =  sign_extend(cpu->memory->read_halfword(address), 16);
+}
+[/COMPONENT]
