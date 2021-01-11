@@ -55,7 +55,7 @@
 [/COMPONENT]
 
 [COMPONENT ADDRESSING_MODE_1]
-- FORMAT:  ----000--------------------0----
+- FORMAT:  ----000------------------SH0----
 {
     uint32_t shift_immediate = get_nth_bits(opcode, 7, 12);
     uint32_t rm              = cpu->regs[get_nth_bits(opcode, 0, 4)];
@@ -63,56 +63,49 @@
     if (get_nth_bits(opcode, 0, 4) == 15) // are we PC?
         rm += 4;
     
-    switch (get_nth_bits(opcode, 5, 7)) {
-        case 0b00: // LSL
-            if (shift_immediate == 0) {
-                cpu->shifter_operand   = rm;
-                cpu->shifter_carry_out = cpu->get_flag_C();
-            } else { // shift_immediate > 0
-                cpu->shifter_operand   = cpu->LSL(rm, shift_immediate);
-                cpu->shifter_carry_out = get_nth_bit(rm, 32 - shift_immediate);
-            }
+    // S being false and H being false indicates a left shift... sort of. there's a special case when
+    // shift_immediate == 0
+    @IF(!S !H) if (shift_immediate == 0) {
+    @IF(!S !H)     cpu->shifter_operand   = rm;
+    @IF(!S !H)     cpu->shifter_carry_out = cpu->get_flag_C();
+    @IF(!S !H) } else { // shift_immediate > 0
+    @IF(!S !H)     cpu->shifter_operand   = cpu->LSL(rm, shift_immediate);
+    @IF(!S !H)     cpu->shifter_carry_out = get_nth_bit(rm, 32 - shift_immediate);
+    @IF(!S !H) }
 
-            break;
+    // S being false and H being true indicates a right shift... also sort of. there's a special case when
+    // shift_immediate == 0
+    @IF(!S  H) if (shift_immediate == 0) {
+    @IF(!S  H)     cpu->shifter_operand   = 0;
+    @IF(!S  H)     cpu->shifter_carry_out = get_nth_bit(rm, 31);
+    @IF(!S  H) } else { // shift_immediate > 0
+    @IF(!S  H)     cpu->shifter_operand   = cpu->LSR(rm, shift_immediate);
+    @IF(!S  H)     cpu->shifter_carry_out = get_nth_bit(rm, shift_immediate - 1);
+    @IF(!S  H) }
 
-        case 0b01: // LSR
-            if (shift_immediate == 0) {
-                cpu->shifter_operand   = 0;
-                cpu->shifter_carry_out = get_nth_bit(rm, 31);
-            } else { // shift_immediate > 0
-                cpu->shifter_operand   = cpu->LSR(rm, shift_immediate);
-                cpu->shifter_carry_out = get_nth_bit(rm, shift_immediate - 1);
-            }
-            
-            break;
+    // S being true and H being false indicates an arithmetic shift.
+    @IF( S !H) if (shift_immediate == 0) {
+    @IF( S !H)     cpu->shifter_operand   = get_nth_bit(rm, 31) ? 0xFFFFFFFF : 0x00000000;
+    @IF( S !H)     cpu->shifter_carry_out = get_nth_bit(rm, 31);
+    @IF( S !H) } else { // shift_immediate > 0
+    @IF( S !H)     cpu->shifter_operand   = cpu->ASR(rm, shift_immediate);
+    @IF( S !H)     cpu->shifter_carry_out = get_nth_bit(rm, shift_immediate - 1);
+    @IF( S !H) }
         
-        case 0b10: // ASR
-            if (shift_immediate == 0) {
-                cpu->shifter_operand   = get_nth_bit(rm, 31) ? 0xFFFFFFFF : 0x00000000;
-                cpu->shifter_carry_out = get_nth_bit(rm, 31);
-            } else { // shift_immediate > 0
-                cpu->shifter_operand   = cpu->ASR(rm, shift_immediate);
-                cpu->shifter_carry_out = get_nth_bit(rm, shift_immediate - 1);
-            }
-            
-            break;
-        
-        case 0b11: // ROR / RRX
-            if (shift_immediate == 0) { // RRX
-                cpu->shifter_operand   = cpu->get_flag_C() << 31 | cpu->LSR(rm, 1);
-                cpu->shifter_carry_out = get_nth_bit(rm, 0); 
-            } else { // shift_immediate > 0, ROR
-                cpu->shifter_operand   = cpu->ROR(rm, shift_immediate);
-                cpu->shifter_carry_out = get_nth_bit(rm, shift_immediate - 1);
-            }
-
-            break;
-    }
+    // S being true and H being true indicates either RO or RRX, depending on if 
+    // shift_immediate is 0
+    @IF( S  H) if (shift_immediate == 0) { // RRX
+    @IF( S  H)     cpu->shifter_operand   = cpu->get_flag_C() << 31 | cpu->LSR(rm, 1);
+    @IF( S  H)     cpu->shifter_carry_out = get_nth_bit(rm, 0); 
+    @IF( S  H) } else { // shift_immediate > 0, ROR
+    @IF( S  H)     cpu->shifter_operand   = cpu->ROR(rm, shift_immediate);
+    @IF( S  H)     cpu->shifter_carry_out = get_nth_bit(rm, shift_immediate - 1);
+    @IF( S  H) }
 }
 [/COMPONENT]
 
 [COMPONENT ADDRESSING_MODE_1]
-- FORMAT:  ----000--------------------1----
+- FORMAT:  ----000------------------SH1----
 {
     uint32_t rm = cpu->regs[get_nth_bits(opcode, 0, 4)];
     uint32_t rs = get_nth_bits(cpu->regs[get_nth_bits(opcode, 8, 12)], 0, 8);
@@ -125,70 +118,63 @@
         cpu->shifter_carry_out = cpu->get_flag_C();
     }
 
-    switch (get_nth_bits(opcode, 5, 7)) {
-        case 0b00: // LSL
-            if        (rs == 0) {
-                cpu->shifter_operand   = rm;
-                cpu->shifter_carry_out = cpu->get_flag_C();
-            } else if (rs < 32) {
-                cpu->shifter_operand   = cpu->LSL(rm, rs);
-                cpu->shifter_carry_out = get_nth_bit(rm, 32 - rs);
-            } else if (rs == 32) {
-                cpu->shifter_operand   = 0;
-                cpu->shifter_carry_out = get_nth_bit(rm, 0);
-            } else if (rs > 32) {
-                cpu->shifter_operand   = 0;
-                cpu->shifter_carry_out = 0;
-            }
+    // There's a lot of exceptions to the rules here, because rs can be
+    // 32 bits long, and that causes some problems. immediate shift had
+    // a limit of 5 bits.
 
-            break;
+    // S being false and H being false indicates a left shift
+    @IF(!S !H) if        (rs == 0) {
+    @IF(!S !H)     cpu->shifter_operand   = rm;
+    @IF(!S !H)     cpu->shifter_carry_out = cpu->get_flag_C();
+    @IF(!S !H) } else if (rs < 32) {
+    @IF(!S !H)     cpu->shifter_operand   = cpu->LSL(rm, rs);
+    @IF(!S !H)     cpu->shifter_carry_out = get_nth_bit(rm, 32 - rs);
+    @IF(!S !H) } else if (rs == 32) {
+    @IF(!S !H)     cpu->shifter_operand   = 0;
+    @IF(!S !H)     cpu->shifter_carry_out = get_nth_bit(rm, 0);
+    @IF(!S !H) } else if (rs > 32) {
+    @IF(!S !H)     cpu->shifter_operand   = 0;
+    @IF(!S !H)     cpu->shifter_carry_out = 0;
+    @IF(!S !H) }
 
-        case 0b01: // LSR
-            if        (rs == 0) {
-                cpu->shifter_operand   = rm;
-                cpu->shifter_carry_out = cpu->get_flag_C();
-            } else if (rs < 32) {
-                cpu->shifter_operand   = cpu->LSR(rm, rs);
-                cpu->shifter_carry_out = get_nth_bit(rm, rs - 1);
-            } else if (rs == 32) {
-                cpu->shifter_operand   = 0;
-                cpu->shifter_carry_out = get_nth_bit(rm, 31);
-            } else if (rs > 32) {
-                cpu->shifter_operand   = 0;
-                cpu->shifter_carry_out = 0;
-            }
-            
-            break;
+    // S being false and H being true indicates a right shift
+    @IF(!S  H) if        (rs == 0) {
+    @IF(!S  H)     cpu->shifter_operand   = rm;
+    @IF(!S  H)     cpu->shifter_carry_out = cpu->get_flag_C();
+    @IF(!S  H) } else if (rs < 32) {
+    @IF(!S  H)     cpu->shifter_operand   = cpu->LSR(rm, rs);
+    @IF(!S  H)     cpu->shifter_carry_out = get_nth_bit(rm, rs - 1);
+    @IF(!S  H) } else if (rs == 32) {
+    @IF(!S  H)     cpu->shifter_operand   = 0;
+    @IF(!S  H)     cpu->shifter_carry_out = get_nth_bit(rm, 31);
+    @IF(!S  H) } else if (rs > 32) {
+    @IF(!S  H)     cpu->shifter_operand   = 0;
+    @IF(!S  H)     cpu->shifter_carry_out = 0;
+    @IF(!S  H) }
         
-        case 0b10: // ASR
-            if        (rs == 0) {
-                cpu->shifter_operand   = rm;
-                cpu->shifter_carry_out = cpu->get_flag_C();
-            } else if (rs < 32) {
-                cpu->shifter_operand   = cpu->ASR(rm, rs);
-                cpu->shifter_carry_out = get_nth_bit(rm, rs - 1);
-            } else { // rs >= 32
-                cpu->shifter_operand   = get_nth_bit(rm, 31) ? 0xFFFFFFFF : 0x00000000;
-                cpu->shifter_carry_out = get_nth_bit(rm, 0);
-            }
-            
-            break;
-        
-        case 0b11: // ROR
-            if        (rs == 0) {
-                cpu->shifter_operand   = rm;
-                cpu->shifter_carry_out = cpu->get_flag_C();
-            } else if ((rs & 0xF) == 0) {
-                cpu->shifter_operand   = rm;
-                cpu->shifter_carry_out = get_nth_bit(rm, 31);
-            } else { // rs & 0xF > 0
-                cpu->shifter_operand   = cpu->ROR(rm, rs & 0xF);
-                cpu->shifter_carry_out = get_nth_bit(rs, rm & 0xF - 1);
-            }
+    // S being true and H being false indicates ASR
+    @IF( S !H) if        (rs == 0) {
+    @IF( S !H)     cpu->shifter_operand   = rm;
+    @IF( S !H)     cpu->shifter_carry_out = cpu->get_flag_C();
+    @IF( S !H) } else if (rs < 32) {
+    @IF( S !H)     cpu->shifter_operand   = cpu->ASR(rm, rs);
+    @IF( S !H)     cpu->shifter_carry_out = get_nth_bit(rm, rs - 1);
+    @IF( S !H) } else { // rs >= 32
+    @IF( S !H)     cpu->shifter_operand   = get_nth_bit(rm, 31) ? 0xFFFFFFFF : 0x00000000;
+    @IF( S !H)     cpu->shifter_carry_out = get_nth_bit(rm, 0);
+    @IF( S !H) }
 
-            break;
-        
-    }
+    // S and H being true indicates ROR
+    @IF( S  H) if        (rs == 0) {
+    @IF( S  H)     cpu->shifter_operand   = rm;
+    @IF( S  H)     cpu->shifter_carry_out = cpu->get_flag_C();
+    @IF( S  H) } else if ((rs & 0xF) == 0) {
+    @IF( S  H)     cpu->shifter_operand   = rm;
+    @IF( S  H)     cpu->shifter_carry_out = get_nth_bit(rm, 31);
+    @IF( S  H) } else { // rs & 0xF > 0
+    @IF( S  H)     cpu->shifter_operand   = cpu->ROR(rm, rs & 0xF);
+    @IF( S  H)     cpu->shifter_carry_out = get_nth_bit(rs, rm & 0xF - 1);
+    @IF( S  H) }
 }
 [/COMPONENT]
 
