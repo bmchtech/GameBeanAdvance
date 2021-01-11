@@ -70,60 +70,51 @@
 [/COMPONENT]
 
 [COMPONENT ADDRESSING_MODE_2]
-- FORMAT:  ----011PUBWL--------------------
+- FORMAT:  ----011PUBWL-------------SH-----
 {
     uint32_t address = cpu->regs[get_nth_bits(opcode, 16, 20)];
     uint32_t operand = cpu->regs[get_nth_bits(opcode, 0,  4)];
     uint32_t shift_immediate = get_nth_bits(opcode, 7, 12);
 
     uint32_t index = 0;
-    switch (get_nth_bits(opcode, 5, 7)) {
-        case 0b00:
-            index = operand << shift_immediate;
-            break;
-        
-        case 0b01:
-            index = operand >> shift_immediate;
-            break;
-        
-        case 0b10:
-            if (shift_immediate != 0) {
-                if ((operand >> 31) == 1) {
-                    index = (((1 << shift_immediate) - 1) << (32 - shift_immediate)) | (operand >> shift_immediate);
-                } else {
-                    index = operand >> shift_immediate;
-                }
-            }
-            else index = (get_nth_bit(shift_immediate, 31) == 1 ? 0xFFFFFFFF : 0x00000000);
-            break;
-        
-        case 0b11:
-            if (shift_immediate != 0) {
-                uint32_t rotated_off = get_nth_bits(operand, 0, shift_immediate);  // the value that is rotated off
-                uint32_t rotated_in  = get_nth_bits(operand, shift_immediate, 32);     // the value that stays after the rotation
-                index = rotated_in | (rotated_off << (32 - shift_immediate));
-            }
-            else {
-                uint32_t rotated_off = get_nth_bit(operand, 0);  // the value that is rotated off
-                uint32_t rotated_in  = get_nth_bits(operand, 1, 32);         // the value that stays after the rotation
 
-                index = rotated_in | (rotated_off << 31);
-                cpu->set_flag_C(get_nth_bit(operand, shift_immediate));
-            }
-            break;
-    }
+    // S being false indicates a shift of some type
+    @IF(!S !H) index = operand << shift_immediate;
+    @IF(!S  H) index = operand >> shift_immediate;
 
-    if (get_nth_bit(opcode, 24)) { // offset addressing or pre-indexed addressing
-        if (get_nth_bit(opcode, 23)) address += index;
-        else                         address -= index;
+    // S being true but H being false indicates an arithmetic shift
+    @IF( S !H) if (shift_immediate != 0) {
+    @IF( S !H)     if ((operand >> 31) == 1) {
+    @IF( S !H)         index = (((1 << shift_immediate) - 1) << (32 - shift_immediate)) | (operand >> shift_immediate);
+    @IF( S !H)     } else {
+    @IF( S !H)         index = operand >> shift_immediate;
+    @IF( S !H)     }
+    @IF( S !H) }
+    @IF( S !H) else index = (get_nth_bit(shift_immediate, 31) == 1 ? 0xFFFFFFFF : 0x00000000);
 
-        if (get_nth_bit(opcode, 21)) { // pre-indexed addressing (writeback)
-            cpu->regs[get_nth_bits(opcode, 16, 20)] = address;
-        }
-    } else {                       // post-indexed addressing
-        if (get_nth_bit(opcode, 23)) cpu->regs[get_nth_bits(opcode, 16, 20)] += index;
-        else                         cpu->regs[get_nth_bits(opcode, 16, 20)] -= index;
-    }
+    // S being true and H being true indicates a rotate right or a rotate right with extend.
+    @IF( S  H) if (shift_immediate != 0) {
+    @IF( S  H)     uint32_t rotated_off = get_nth_bits(operand, 0, shift_immediate);  // the value that is rotated off
+    @IF( S  H)     uint32_t rotated_in  = get_nth_bits(operand, shift_immediate, 32); // the value that stays after the rotation
+    @IF( S  H)     index = rotated_in | (rotated_off << (32 - shift_immediate));
+    @IF( S  H) }
+    @IF( S  H) else {
+    @IF( S  H)     uint32_t rotated_off = get_nth_bit(operand, 0);      // the value that is rotated off
+    @IF( S  H)     uint32_t rotated_in  = get_nth_bits(operand, 1, 32); // the value that stays after the rotation
+
+    @IF( S  H)     index = rotated_in | (rotated_off << 31);
+    @IF( S  H)     cpu->set_flag_C(get_nth_bit(operand, shift_immediate));
+    @IF( S  H) }
+
+     // P bit being set indicates offset addressing or pre-indexed addressing
+    @IF( P  U) address += index;
+    @IF( P !U) address -= index;
+
+    @IF( P  W) cpu->regs[get_nth_bits(opcode, 16, 20)] = address;
+    
+    // P bit being clear indicates post-indexed addressing
+    @IF(!P  U) cpu->regs[get_nth_bits(opcode, 16, 20)] += index;
+    @IF(!P !U) cpu->regs[get_nth_bits(opcode, 16, 20)] -= index;
     
     if (get_nth_bits(opcode, 16, 20) == 15) { // are we register PC?
         address += 4;
