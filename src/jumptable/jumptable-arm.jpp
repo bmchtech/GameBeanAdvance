@@ -16,6 +16,12 @@
 - COMPONENT: LDR
 [/RULE]
 
+[RULE LDRB]
+- INCLUDE: ----01---1-1--------------------
+- COMPONENT: ADDRESSING_MODE_2
+- COMPONENT: LDRB
+[/RULE]
+
 [RULE LDRH]
 - INCLUDE: ----000----1------------1011----
 - COMPONENT: ADDRESSING_MODE_3
@@ -93,7 +99,7 @@
         
         case 0b11:
             if (shift_immediate != 0) {
-                uint32_t rotated_off = get_nth_bits(operand, 0,     shift_immediate);  // the value that is rotated off
+                uint32_t rotated_off = get_nth_bits(operand, 0, shift_immediate);  // the value that is rotated off
                 uint32_t rotated_in  = get_nth_bits(operand, shift_immediate, 32);     // the value that stays after the rotation
                 index = rotated_in | (rotated_off << (32 - shift_immediate));
             }
@@ -149,19 +155,36 @@
 }
 [/COMPONENT]
 
-[COMPONENT LDR]
-- FORMAT:  ----01---0-1--------------------
-{
-    cpu->regs[get_nth_bits(opcode, 12, 16)] = cpu->memory->read_word(address);
-}
-[/COMPONENT]
-
 [COMPONENT B_BL]
 - FORMAT:  ----101L------------------------
 {
     @IF(L) *cpu->lr = *cpu->pc;
     // unintuitive sign extension: http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
     *cpu->pc += ((((1U << 23) ^ get_nth_bits(opcode, 0, 24)) - (1U << 23)) << 2) + 4;
+}
+[/COMPONENT]
+
+[COMPONENT LDR]
+- FORMAT:  ----01---0-1--------------------
+{
+    uint32_t value = cpu->memory->read_word(address & 0xFFFFFFFC);
+    if ((address & 0b11) == 0b01) value = ((value & 0xFF)     << 24) | (value >> 8);
+    if ((address & 0b11) == 0b10) value = ((value & 0xFFFF)   << 16) | (value >> 16);
+    if ((address & 0b11) == 0b11) value = ((value & 0xFFFFFF) << 8)  | (value >> 24);
+
+    uint8_t rd = get_nth_bits(opcode, 12, 16);
+    if (rd == 15) {
+        *cpu->pc = value & 0xFFFFFFFC;
+    } else {
+        cpu->regs[rd] = value;
+    }
+}
+[/COMPONENT]
+
+[COMPONENT LDRB]
+- FORMAT:  ----01---1-1--------------------
+{
+    cpu->regs[get_nth_bits(opcode, 12, 16)] = cpu->memory->read_byte(address);
 }
 [/COMPONENT]
 
