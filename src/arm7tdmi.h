@@ -146,6 +146,45 @@ class ARM7TDMI {
             return (cpsr >> 5) & 1;
         }
 
+        // https://stackoverflow.com/questions/14721275/how-can-i-use-arithmetic-right-shifting-with-an-unsigned-int
+        const inline uint32_t ASR(uint32_t value, uint8_t shift) {
+            if ((value >> 31) == 1) {
+                // breakdown of this formula:
+                // value >> 31                                                         : the most significant bit
+                // (value >> 31) << shift)                                             : the most significant bit, but shifted "shift" times
+                // ((((value >> 31) << shift) - 1)                                     : the most significant bit, but repeated "shift" times
+                // ((((value >> 31) << shift) - 1) << (32 - shift))                    : basically this value is the mask that turns the logical 
+                //                                                                     : shift to an arithmetic shift
+                // ((((value >> 31) << shift) - 1) << (32 - shift)) | (value >> shift) : the arithmetic shift
+                return (((1 << shift) - 1) << (32 - shift)) | (value >> shift);
+            } else {
+                return value >> shift;
+            }
+        }
+
+        const inline uint32_t LSL(uint32_t value, uint8_t shift) {
+            return value << shift;
+        }
+
+        const inline uint32_t LSR(uint32_t value, uint8_t shift) {
+            return value >> shift;
+        }
+
+        const inline uint32_t ROR(uint32_t value, uint8_t shift) {
+            uint32_t rotated_off = get_nth_bits(value, 0,     shift);  // the value that is rotated off
+            uint32_t rotated_in  = get_nth_bits(value, shift, 32);     // the value that stays after the rotation
+            return rotated_in | (rotated_off << (32 - shift));
+        }
+
+        inline uint32_t RRX(ARM7TDMI* cpu, uint32_t value, uint8_t shift) {
+            uint32_t rotated_off = get_nth_bits(value, 0,     shift - 1);  // the value that is rotated off
+            uint32_t rotated_in  = get_nth_bits(value, shift, 32);         // the value that stays after the rotation
+
+            uint32_t result = rotated_in | (rotated_off << (32 - shift)) | (cpu->get_flag_C() << (32 - shift + 1));
+            cpu->set_flag_C(get_nth_bit(value, shift));
+            return result;
+        }
+
     private:
         // determines whether or not this function should execute based on COND (the high 4 bits of the opcode)
         // note that this only applies to ARM instructions.
