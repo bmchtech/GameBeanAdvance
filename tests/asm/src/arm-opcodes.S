@@ -923,55 +923,55 @@ pass_bx_thumb:
 
 			LDR      r2,  [r7, #0x18] @ pos + pos = pos
             LDR      r4,  [r9, #0x14]
-			RSBS     r3,  r2,  r4
+			SUB      r3,  r2,  r4
 			MRS      r12, CPSR
 			MRS      r13, SPSR
 
 			LDR      r2,  [r7, #0x14] @ neg + pos = neg
             LDR      r4,  [r9, #0x14]
-			RSBS     r3,  r2,  r4
+			SUB      r3,  r2,  r4
 			MRS      r12, CPSR
 			MRS      r13, SPSR
 
 			LDR      r2,  [r7, #0x18] @ pos + neg = neg
             LDR      r4,  [r7, #0x14]
-			RSBS     r3,  r2,  r4
+			SUB      r3,  r2,  r4
 			MRS      r12, CPSR
 			MRS      r13, SPSR
 
 			LDR      r2,  [r7, #0x0C] @ neg + neg = pos
             LDR      r4,  [r7, #0x14]
-			RSBS     r3,  r2,  r4
+			SUB      r3,  r2,  r4
 			MRS      r12, CPSR
 			MRS      r13, SPSR
 
 			LDR      r2,  [r7, #0x18] @ pos + pos = neg
             LDR      r4,  [r7, #0x10]
-			RSBS     r3,  r2,  r4
+			SUB      r3,  r2,  r4
 			MRS      r12, CPSR
 			MRS      r13, SPSR
 
 			LDR      r2,  [r7, #0x08] @ neg + pos = pos
             LDR      r4,  [r7, #0x20]
-			RSBS     r3,  r2,  r4
+			SUB      r3,  r2,  r4
 			MRS      r12, CPSR
 			MRS      r13, SPSR
 
 			LDR      r2,  [r7, #0x18] @ pos + neg = pos
             LDR      r4,  [r7, #0x24]
-			RSBS     r3,  r2,  r4
+			SUB      r3,  r2,  r4
 			MRS      r12, CPSR
 			MRS      r13, SPSR
 
 			LDR      r2,  [r7, #0x1C] @ neg + neg = neg
             LDR      r4,  [r7, #0x0C]
-			RSBS     r3,  r2,  r4
+			SUB      r3,  r2,  r4
 			MRS      r12, CPSR
 			MRS      r13, SPSR
 
 			LDR      r2,  [r7, #0x08] @ zero case
             LDR      r4,  [r7, #0x04]
-			RSBS     r3,  r2,  r4
+			SUB      r3,  r2,  r4
 			MRS      r12, CPSR
 			MRS      r13, SPSR
 
@@ -1588,6 +1588,372 @@ stmdb_1_loop:
 
 @ STRH tests
 
+			LDR      r7,  =mem_target_addresses
+			LDR      r8,  =test_values
+
+			LDR      r3,  [r8, #0x14]
+
+			LDR      r2,  [r7, #0x00]
+			STRH     r3,  [r2]
+
+			LDR      r2,  [r7, #0x04]
+			STRH     r3,  [r2]
+
+			LDR      r2,  [r7, #0x08]
+			STRH     r3,  [r2]
+
+			LDR      r2,  [r7, #0x0C]
+			STRH     r3,  [r2]
+
+@ SUB tests [no flag modification]
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+
+			LDR      r2,  [r7, #0x18] @ pos + pos = pos
+            LDR      r4,  [r9, #0x14]
+			SUB      r3,  r4,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x14] @ neg + pos = neg
+            LDR      r4,  [r9, #0x14]
+			SUB      r3,  r4,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x18] @ pos + neg = neg
+            LDR      r4,  [r7, #0x14]
+			SUB      r3,  r4,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x0C] @ neg + neg = pos
+            LDR      r4,  [r7, #0x14]
+			SUB      r3,  r4,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x18] @ pos + pos = neg
+            LDR      r4,  [r7, #0x10]
+			SUB      r3,  r4,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x08] @ neg + pos = pos
+            LDR      r4,  [r7, #0x20]
+			SUB      r3,  r4,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x18] @ pos + neg = pos
+            LDR      r4,  [r7, #0x24]
+			SUB      r3,  r4,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x1C] @ neg + neg = neg
+            LDR      r4,  [r7, #0x0C]
+			SUB      r3,  r4,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x08] @ zero case
+            LDR      r4,  [r7, #0x04]
+			SUB      r3,  r4,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+@ SUB tests [flag modification]
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+
+			LDR      r2,  [r7, #0x18] @ pos + pos = pos
+            LDR      r4,  [r9, #0x14]
+			SUBS     r3,  r4,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x14] @ neg + pos = neg
+            LDR      r4,  [r9, #0x14]
+			SUBS     r3,  r4,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x18] @ pos + neg = neg
+            LDR      r4,  [r7, #0x14]
+			SUBS     r3,  r4,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x0C] @ neg + neg = pos
+            LDR      r4,  [r7, #0x14]
+			SUBS     r3,  r4,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x18] @ pos + pos = neg
+            LDR      r4,  [r7, #0x10]
+			SUBS     r3,  r4,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x08] @ neg + pos = pos
+            LDR      r4,  [r7, #0x20]
+			SUBS     r3,  r4,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x18] @ pos + neg = pos
+            LDR      r4,  [r7, #0x24]
+			SUBS     r3,  r4,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x1C] @ neg + neg = neg
+            LDR      r4,  [r7, #0x0C]
+			SUBS     r3,  r4,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x08] @ zero case
+            LDR      r4,  [r7, #0x04]
+			SUBS     r3,  r4,  r2
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+@ SWP tests
+
+			LDR      r7,  =test_values
+			LDR      r8,  =mem_target_addresses
+			LDR      r9,  =test_values_addendum
+
+			LDR      r3,  [r8, #0x0C]
+			LDR      r4,  [r9, #0x18]
+			LDR      r5,  [r9, #0x04]
+			LDR      r1,  [r7, #0x04]
+			ADD      r4,  r4,  r3
+			ADD      r5,  r5,  r3
+
+			LDR      r2,  [r7, #0x14]
+			STR      r2,  [r3]
+			SWP      r4,  r5, [r3]
+
+			ADD      r3,  r3,  r1
+			ADD      r4,  r4,  r1
+			ADD      r5,  r5,  r1
+
+			LDR      r2,  [r7, #0x14]
+			STR      r2,  [r3]
+			SWP      r4,  r5, [r3]
+
+			ADD      r3,  r3,  r1
+			ADD      r4,  r4,  r1
+			ADD      r5,  r5,  r1
+
+			LDR      r2,  [r7, #0x14]
+			STR      r2,  [r3]
+			SWP      r4,  r5, [r3]
+
+			ADD      r3,  r3,  r1
+			ADD      r4,  r4,  r1
+			ADD      r5,  r5,  r1
+
+			LDR      r2,  [r7, #0x14]
+			STR      r2,  [r3]
+			SWP      r4,  r5, [r3]
+
+@ SWPB tests
+
+			LDR      r7,  =test_values
+			LDR      r8,  =mem_target_addresses
+			LDR      r9,  =test_values_addendum
+
+			LDR      r3,  [r8, #0x0C]
+			LDR      r4,  [r9, #0x18]
+			LDR      r5,  [r9, #0x04]
+			LDR      r1,  [r7, #0x04]
+			ADD      r4,  r4,  r3
+			ADD      r5,  r5,  r3
+
+			LDR      r2,  [r7, #0x14]
+			STR      r2,  [r3]
+			SWPB     r4,  r5, [r3]
+
+			ADD      r3,  r3,  r1
+			ADD      r4,  r4,  r1
+			ADD      r5,  r5,  r1
+
+			LDR      r2,  [r7, #0x14]
+			STR      r2,  [r3]
+			SWPB     r4,  r5, [r3]
+
+			ADD      r3,  r3,  r1
+			ADD      r4,  r4,  r1
+			ADD      r5,  r5,  r1
+
+			LDR      r2,  [r7, #0x14]
+			STR      r2,  [r3]
+			SWPB     r4,  r5, [r3]
+
+			ADD      r3,  r3,  r1
+			ADD      r4,  r4,  r1
+			ADD      r5,  r5,  r1
+
+			LDR      r2,  [r7, #0x14]
+			STR      r2,  [r3]
+			SWPB     r4,  r5, [r3]
+
+@ TEQ tests [flag modification]
+
+			LDR      r7,  =test_values
+
+            LDR      r2,  [r7, #0x18]
+            TEQ      r2,  #0xFA
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+            LDR      r2,  [r7, #0x10]
+            LDR      r3,  [r7, #0x08]
+            TEQ      r2,  r3
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+            LDR      r2,  [r7, #0x18]
+            LDR      r3,  [r7, #0x18]
+            TEQ      r2,  r3
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+@ TST tests [flag modification]
+
+			LDR      r7,  =test_values
+
+            LDR      r2,  [r7, #0x18]
+            TST      r2,  #0xFA
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+            LDR      r2,  [r7, #0x10]
+            LDR      r3,  [r7, #0x08]
+            TST      r2,  r3
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+            LDR      r2,  [r7, #0x18]
+            LDR      r3,  [r7, #0x18]
+            TST      r2,  r3
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+@ UMLAL tests [no flag modification]
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+
+			LDR      r2,  [r7, #0x14]
+			LDR      r3,  [r9, #0x10]
+			LDR      r4,  [r7, #0x18]
+			LDR      r5,  [r9, #0x0C]
+			UMLAL    r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r4,  [r7, #0x04]
+			LDR      r5,  [r9, #0x0C]
+			UMLAL    r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x00]
+			LDR      r3,  [r7, #0x00]
+			LDR      r4,  [r7, #0x00]
+			LDR      r5,  [r7, #0x00]
+			UMLAL    r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+@ UMLAL tests [flag modification]
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+
+			LDR      r2,  [r7, #0x14]
+			LDR      r3,  [r9, #0x10]
+			LDR      r4,  [r7, #0x18]
+			LDR      r5,  [r9, #0x0C]
+			UMLALS   r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r4,  [r7, #0x04]
+			LDR      r5,  [r9, #0x0C]
+			UMLALS   r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x00]
+			LDR      r3,  [r7, #0x00]
+			LDR      r4,  [r7, #0x00]
+			LDR      r5,  [r7, #0x00]
+			UMLALS   r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+@ UMULL tests [no flag modification]
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+
+			LDR      r2,  [r7, #0x14]
+			LDR      r3,  [r9, #0x10]
+			LDR      r4,  [r7, #0x18]
+			LDR      r5,  [r9, #0x0C]
+			UMULL    r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r4,  [r7, #0x04]
+			LDR      r5,  [r9, #0x0C]
+			UMULL    r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x00]
+			LDR      r3,  [r7, #0x00]
+			LDR      r4,  [r7, #0x00]
+			LDR      r5,  [r7, #0x00]
+			UMULL    r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+@ UMULL tests [flag modification]
+
+			LDR      r7,  =test_values
+			LDR      r9,  =test_values_addendum
+
+			LDR      r2,  [r7, #0x14]
+			LDR      r3,  [r9, #0x10]
+			LDR      r4,  [r7, #0x18]
+			LDR      r5,  [r9, #0x0C]
+			UMULLS   r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r4,  [r7, #0x04]
+			LDR      r5,  [r9, #0x0C]
+			UMULLS   r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
+
+			LDR      r2,  [r7, #0x00]
+			LDR      r3,  [r7, #0x00]
+			LDR      r4,  [r7, #0x00]
+			LDR      r5,  [r7, #0x00]
+			UMULLS   r2, r3, r4, r5
+			MRS      r12, CPSR
+			MRS      r13, SPSR
 
 @ make sure we reached the end of the file
 

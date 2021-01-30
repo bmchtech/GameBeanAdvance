@@ -6,7 +6,7 @@ BIN_DIR        := bin
 LOG_DIR        := logs
 
 COMPILER       := arm-none-eabi-gcc
-COMPILER_FLAGS := -mthumb-interwork -specs=gba.specs
+COMPILER_FLAGS := -mthumb-interwork -specs=gba.specs -B /opt/devkitpro/devkitARM/arm-none-eabi/lib/ -lsysbase
 LINKER         := arm-none-eabi-objcopy
 LINKER_FLAGS   := 
 
