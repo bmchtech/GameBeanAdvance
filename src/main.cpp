@@ -17,6 +17,12 @@
     #include <wx/wx.h>
 #endif
 
+#include "gba.h"
+
+// a value of "2" would mean that one pixel on the GBA is 2 pixels given as output.
+#define SCREEN_SCALE_WIDTH  2
+#define SCREEN_SCALE_HEIGHT 2
+
 class GameBeanAdvance : public wxApp {
     public:
         virtual bool OnInit();
@@ -44,7 +50,9 @@ bool GameBeanAdvance::OnInit() {
     return true;
 }
 
-MyFrame::MyFrame() : wxFrame(NULL, wxID_ANY, "GameBeanAdvance") {
+MyFrame::MyFrame() : wxFrame(NULL, wxID_ANY, "GameBeanAdvance", wxDefaultPosition, 
+                             wxSize(SCREEN_SCALE_WIDTH  * SCREEN_RESOLUTION_WIDTH, 
+                                    SCREEN_SCALE_HEIGHT * SCREEN_RESOLUTION_HEIGHT)) {
     wxMenu *menuFile = new wxMenu;
     menuFile->Append(ID_Hello, "&Hello...\tCtrl-H",
                      "Help string shown in status bar for this menu item");
@@ -56,7 +64,7 @@ MyFrame::MyFrame() : wxFrame(NULL, wxID_ANY, "GameBeanAdvance") {
     menuBar->Append(menuFile, "&File");
     menuBar->Append(menuHelp, "&Help");
     SetMenuBar( menuBar );
-    
+
     Bind(wxEVT_MENU, &MyFrame::OnHello, this, ID_Hello);
     Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
     Bind(wxEVT_MENU, &MyFrame::OnExit, this, wxID_EXIT);

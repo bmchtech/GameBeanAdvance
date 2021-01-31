@@ -5,11 +5,14 @@
 #include "arm7tdmi.h"
 #include <string>
 
-#define CART_SIZE         0x1000000
+#define CART_SIZE                0x1000000
 
-#define ROM_ENTRY_POINT   0x000
-#define GAME_TITLE_OFFSET 0x0A0
-#define GAME_TITLE_SIZE   12
+#define ROM_ENTRY_POINT          0x000
+#define GAME_TITLE_OFFSET        0x0A0
+#define GAME_TITLE_SIZE          12
+
+#define SCREEN_RESOLUTION_WIDTH  240
+#define SCREEN_RESOLUTION_HEIGHT 160
 
 class GBA {
 
