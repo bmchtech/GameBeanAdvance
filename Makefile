@@ -1,7 +1,7 @@
 .PHONY: all test clean
 
-CC             = g++
-CFLAGS         = -c -g --std=c++2a
+CFLAGS         = -c -g --std=c++2a `wx-config --cxxflags`
+CXX            = $(shell wx-config --cxx)
 
 SRC_DIR        = src
 OBJ_DIR        = out
@@ -27,43 +27,43 @@ clean:
 # GBA
 
 gba: $(OBJ_DIR)/main.o $(OBJ_DIR)/memory.o $(OBJ_DIR)/util.o $(OBJ_DIR)/jumptable-thumb.o $(OBJ_DIR)/jumptable-arm.o
-	$(CC) -g $(OBJS_GBA) -o gba 
+	$(CXX) -g `wx-config --libs` $(OBJS_GBA) -o gba 
 
-$(OBJ_DIR)/main.o: $(OBJ_DIR)/gba.o
-	$(CC) $(CFLAGS) $(SRC_DIR)/main.cpp -o $(OBJ_DIR)/main.o
+$(OBJ_DIR)/main.o: $(SRC_DIR)/main.cpp $(OBJ_DIR)/gba.o
+	$(CXX) $(CFLAGS) $(SRC_DIR)/main.cpp -o $(OBJ_DIR)/main.o
 
 $(OBJ_DIR)/gba.o: $(SRC_DIR)/gba.cpp $(SRC_DIR)/gba.h $(OBJ_DIR)/memory.o $(OBJ_DIR)/jumptable-thumb.o $(OBJ_DIR)/jumptable-arm.o $(OBJ_DIR)/arm7tdmi.o
-	$(CC) $(CFLAGS) $(SRC_DIR)/gba.cpp -o $(OBJ_DIR)/gba.o
+	$(CXX) $(CFLAGS) $(SRC_DIR)/gba.cpp -o $(OBJ_DIR)/gba.o
 
 $(OBJ_DIR)/memory.o: $(SRC_DIR)/memory.cpp $(OBJ_DIR)/util.o
-	$(CC) $(CFLAGS) $(SRC_DIR)/memory.cpp -o $(OBJ_DIR)/memory.o
+	$(CXX) $(CFLAGS) $(SRC_DIR)/memory.cpp -o $(OBJ_DIR)/memory.o
 
 $(OBJ_DIR)/util.o: $(SRC_DIR)/util.cpp
-	$(CC) $(CFLAGS) $(SRC_DIR)/util.cpp -o $(OBJ_DIR)/util.o
+	$(CXX) $(CFLAGS) $(SRC_DIR)/util.cpp -o $(OBJ_DIR)/util.o
 
 $(OBJ_DIR)/jumptable-thumb.o: $(SRC_DIR)/jumptable/jumptable-thumb-config.cpp $(OBJ_DIR)/util.o $(OBJ_DIR)/memory.o $(SRC_DIR)/jumptable/make-jumptable.py
 	cd $(SRC_DIR)/jumptable && python3 make-jumptable.py jumptable-thumb-config.cpp jumptable-thumb.cpp jumptable-thumb.h 16 8 jumptable_thumb JUMPTABLE_THUMB_H uint16_t instruction_thumb
-	$(CC) $(CFLAGS) $(SRC_DIR)/jumptable/jumptable-thumb.cpp -o $(OBJ_DIR)/jumptable-thumb.o
+	$(CXX) $(CFLAGS) $(SRC_DIR)/jumptable/jumptable-thumb.cpp -o $(OBJ_DIR)/jumptable-thumb.o
 
 $(OBJ_DIR)/jumptable-arm.o: $(SRC_DIR)/jumptable/jumptable-arm.jpp $(OBJ_DIR)/util.o $(OBJ_DIR)/memory.o $(SRC_DIR)/jumptable/make-jumptable.py
 	cd $(SRC_DIR)/jumptable && ../cpp-jump/compile jumptable-arm.jpp ../jumptable/jumptable-arm
-	$(CC) $(CFLAGS) $(SRC_DIR)/jumptable/jumptable-arm.cpp -o $(OBJ_DIR)/jumptable-arm.o
+	$(CXX) $(CFLAGS) $(SRC_DIR)/jumptable/jumptable-arm.cpp -o $(OBJ_DIR)/jumptable-arm.o
 
 $(OBJ_DIR)/arm7tdmi.o: $(SRC_DIR)/arm7tdmi.cpp $(SRC_DIR)/arm7tdmi.h $(OBJ_DIR)/memory.o
-	$(CC) $(CFLAGS) $(SRC_DIR)/arm7tdmi.cpp -o $(OBJ_DIR)/arm7tdmi.o
+	$(CXX) $(CFLAGS) $(SRC_DIR)/arm7tdmi.cpp -o $(OBJ_DIR)/arm7tdmi.o
 
 # Tests
 test: CFLAGS += -D TEST
 
 test: $(OBJ_DIR)/gba.o $(OBJ_DIR)/memory.o $(OBJ_DIR)/catchmain.o $(OBJ_DIR)/expected_output.o $(OBJ_DIR)/cpu_state.o $(OBJ_DIR)/jumptable-arm.o $(OBJ_DIR)/jumptable-thumb.o $(OBJ_DIR)/util.o $(OBJ_DIR)/arm7tdmi.o
-	$(CC) -g --std=c++11 $(TEST_SRC_DIR)/tests.cpp $(OBJS_TEST) -o test
+	$(CXX) -g --std=c++11 $(TEST_SRC_DIR)/tests.cpp $(OBJS_TEST) -o test
 	cd ./tests/asm; make all
 
 $(OBJ_DIR)/catchmain.o:
-	$(CC) -c -g --std=c++11 $(TEST_CATCH_DIR)/catchmain.cpp -o $(OBJ_DIR)/catchmain.o
+	$(CXX) -c -g --std=c++11 $(TEST_CATCH_DIR)/catchmain.cpp -o $(OBJ_DIR)/catchmain.o
 
 $(OBJ_DIR)/expected_output.o: $(OBJ_DIR)/util.o $(TEST_SRC_DIR)/expected_output.cpp
-	$(CC) $(CFLAGS) $(TEST_SRC_DIR)/expected_output.cpp -o $(OBJ_DIR)/expected_output.o 
+	$(CXX) $(CFLAGS) $(TEST_SRC_DIR)/expected_output.cpp -o $(OBJ_DIR)/expected_output.o 
 
 $(OBJ_DIR)/cpu_state.o: $(TEST_SRC_DIR)/cpu_state.cpp $(TEST_SRC_DIR)/cpu_state.h $(OBJ_DIR)/arm7tdmi.o
-	$(CC) $(CFLAGS) $(TEST_SRC_DIR)/cpu_state.cpp -o $(OBJ_DIR)/cpu_state.o
+	$(CXX) $(CFLAGS) $(TEST_SRC_DIR)/cpu_state.cpp -o $(OBJ_DIR)/cpu_state.o
