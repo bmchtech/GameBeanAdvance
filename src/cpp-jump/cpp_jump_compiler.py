@@ -118,7 +118,8 @@ reserved = [
     'FORMAT',
     'OPCODE_FORMAT',
     'INCLUDES',
-    'ARGUMENTS'
+    'ARGUMENTS',
+    'DEFAULT'
 ]
 
 tokens = [
@@ -310,7 +311,8 @@ def p_list_complete_item_group(p):
 def p_complete_item(p):
     '''complete_item : complete_settings
                      | complete_rule
-                     | complete_component'''
+                     | complete_component
+                     | complete_default'''
     p[0] = p[1]
 
 def p_complete_settings(p):
@@ -477,6 +479,16 @@ def p_error(p):
     global error_found
     error_found = True
     print("Error at {}".format(parser.token()))
+
+def p_complete_default(p):
+    'complete_default : default_header code_statement default_footer'
+    p[0] = ['DEFAULT', p[2]]
+
+def p_default_header(p):
+    'default_header : LBRACKET DEFAULT RBRACKET NEWLINE'
+
+def p_default_footer(p):
+    'default_footer : LBRACKET SLASH DEFAULT RBRACKET NEWLINE'
 
 parser = yacc.yacc()
 
@@ -936,7 +948,16 @@ def get_components(ast):
     # turn every element of ast that is a component into a Component object
     return list(map(Component, filter(lambda x : x[0] == 'COMPONENT', ast)))
 
+class Default:
+    def __init__(self, ast):
+        default_wf_raw = list(filter(lambda x : x[0] == 'DEFAULT', ast))[0]
+        self.code = list(map(lambda x : x[1], default_wf_raw[1]))
 
+    def produce_code(self, index):
+        return self.code
+
+def get_default(ast):
+    return Default(ast)
 
 
 
@@ -1025,7 +1046,7 @@ def beautify_lines_of_code(lines_of_code):
     return beautified_lines_of_code
     
 # The function that will actually fill in the jumptable
-def translate_and_write(settings, rules, components, output_file_name):
+def translate_and_write(settings, rules, components, output_file_name, default):
     jumptable_size   = int(math.pow(2, len(settings.indices_I)))
     addressable_size = int(math.pow(2, settings.addressable_bits))
 
@@ -1037,10 +1058,12 @@ def translate_and_write(settings, rules, components, output_file_name):
         #f.write(('void entry_{0:0' + str(settings['ADDRESSABLE_BITS']) + 'b}() {{').format(i))
 
         rule = get_matching_rule(rules, settings.inflate_iteration(i))
+        index, discriminator = settings.map_iteration_to_index_and_discriminator(i)
 
         if not rule is None:
-            index, discriminator = settings.map_iteration_to_index_and_discriminator(i)
             preliminary_jumptable[index].append([discriminator, settings.inflate_iteration(i), rule.components])
+        else:
+            preliminary_jumptable[index].append([discriminator, settings.inflate_iteration(i), [default]])
 
         # rule = get_matching_rule(rules, i)
         # if not rule is None:
@@ -1119,7 +1142,10 @@ def translate_and_write(settings, rules, components, output_file_name):
                 f.write(('        case 0b{0:0' + str(len(settings.indices_D)) + 'b}: {{\n').format(discriminator))
 
                 for component_name in element[2]:
-                    component = find_component_with_name(component_name, components, opcode)
+                    if (component_name != default):
+                        component = find_component_with_name(component_name, components, opcode)
+                    else:
+                        component = component_name
                     code_lines = ['            {}\n'.format(x.strip()) for x in component.produce_code(opcode)]
                     code_lines = beautify_lines_of_code(code_lines)
                     f.write(''.join(code_lines))
@@ -1164,5 +1190,6 @@ def compile(input_file_name, output_file_name):
         settings   = get_settings(ast)
         rules      = get_rules(ast)
         components = get_components(ast)
+        default    = get_default(ast)
 
-        translate_and_write(settings, rules, components, output_file_name)
+        translate_and_write(settings, rules, components, output_file_name, default)

@@ -5,6 +5,12 @@
 - ARGUMENTS: ARM7TDMI* cpu
 [/SETTINGS]
 
+[DEFAULT]
+{
+    error("No implementation for opcode 0x" + to_hex_string(opcode));
+}
+[/DEFAULT]
+
 [RULE ADD_ADC]
 - INCLUDE: ----00-010----------------------
 - EXCLUDE: ------0-----------------1--1----
