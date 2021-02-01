@@ -19,7 +19,6 @@ class MyFrame : public wxFrame {
         void OnAbout(wxCommandEvent& event);
 };
 
-enum
-{
+enum {
     ID_Hello = 1
 };

@@ -120,3 +120,7 @@ $(LOG_DIR)/arm-opcodes.log: $(SRC_DIR)/arm-opcodes.S
 	@rm out.log.bak
 	mv out.log $(LOG_DIR)/arm-opcodes.log
 
+
+red-screen: $(SRC_DIR)/red-screen.S
+	$(COMPILER) $(COMPILER_FLAGS) $(SRC_DIR)/red-screen.S   -o        $(OUT_DIR)/red-screen.out
+	$(LINKER)   $(LINKER_FLAGS)   $(OUT_DIR)/red-screen.out -O binary $(BIN_DIR)/red-screen.gba

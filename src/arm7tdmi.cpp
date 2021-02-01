@@ -27,7 +27,9 @@ ARM7TDMI::~ARM7TDMI() {
 }
 
 void ARM7TDMI::cycle() {
-    execute(fetch());
+    uint32_t opcode = fetch();
+    std::cout << to_hex_string(opcode) << " @ " << to_hex_string(regs[15]) << std::endl;
+    execute(opcode);
 }
 
 uint32_t ARM7TDMI::fetch() {

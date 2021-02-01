@@ -2,8 +2,7 @@
 
 IMPLEMENT_APP(GameBeanAdvance)
 
-bool GameBeanAdvance::OnInit()
-{
+bool GameBeanAdvance::OnInit() {
     // call default behaviour (mandatory)
     if (!wxApp::OnInit())
         return false;
@@ -16,44 +15,36 @@ bool GameBeanAdvance::OnInit()
     frame->SetStatusText(_T("Hello World"));
     frame->Show(TRUE);
     SetTopWindow(frame);
+    
     return true;
 }
 
-int GameBeanAdvance::OnExit()
-{
+int GameBeanAdvance::OnExit() {
     // clean up
     return 0;
 }
 
-int GameBeanAdvance::OnRun()
-{
+int GameBeanAdvance::OnRun() {
     int exitcode = wxApp::OnRun();
     //wxTheClipboard->Flush();
     if (exitcode!=0)
         return exitcode;
 }
 
-void GameBeanAdvance::OnInitCmdLine(wxCmdLineParser& parser)
-{
-    parser.SetDesc (g_cmdLineDesc);
+void GameBeanAdvance::OnInitCmdLine(wxCmdLineParser& parser) {
+    parser.SetDesc(g_cmdLineDesc);
     // must refuse '/' as parameter starter or cannot use "/path" style paths
-    parser.SetSwitchChars (wxT("-"));
+    parser.SetSwitchChars(wxT("-"));
+    
+    gba = new GBA();
 }
 
-bool GameBeanAdvance::OnCmdLineParsed(wxCmdLineParser& parser)
-{
-    silent_mode = parser.Found(wxT("s"));
+bool GameBeanAdvance::OnCmdLineParsed(wxCmdLineParser& parser) {
+    wxString file_name;
 
-    // to get at your unnamed parameters use
-    wxArrayString files;
-    for (int i = 0; i < parser.GetParamCount(); i++)
-    {
-            files.Add(parser.GetParam(i));
+    if (parser.Found(wxT("f"), &file_name)) {
+        gba->run((const char*) file_name.mb_str(wxConvUTF8));
     }
-
-    // and other command line parameters
-
-    // then do what you need with them.
 
     return true;
 }

@@ -29,7 +29,7 @@ clean:
 gba: $(OBJ_DIR)/main.o $(OBJ_DIR)/memory.o $(OBJ_DIR)/util.o $(OBJ_DIR)/jumptable-thumb.o $(OBJ_DIR)/jumptable-arm.o
 	$(CXX) -g `wx-config --libs` $(OBJS_GBA) -o gba 
 
-$(OBJ_DIR)/gamebeanadvance.o: $(SRC_DIR)/gui/gamebeanadvance.cpp
+$(OBJ_DIR)/gamebeanadvance.o: $(SRC_DIR)/gui/gamebeanadvance.* $(OBJ_DIR)/gba.o
 	$(CXX) $(CFLAGS) $(SRC_DIR)/gui/gamebeanadvance.cpp -o $(OBJ_DIR)/gamebeanadvance.o
 
 $(OBJ_DIR)/main.o: $(SRC_DIR)/gui/main.cpp $(OBJ_DIR)/gba.o $(OBJ_DIR)/gamebeanadvance.o

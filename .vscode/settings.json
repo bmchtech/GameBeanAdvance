@@ -72,6 +72,7 @@
         "bitset": "cpp",
         "__memory": "cpp",
         "filesystem": "cpp",
-        "locale": "cpp"
+        "locale": "cpp",
+        "shared_mutex": "cpp"
     }
 }

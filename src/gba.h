@@ -31,6 +31,8 @@ class GBA {
         // maybe this method belongs in an ARM7TDMI class. nobody knows. i don't see the reason for having such a class, so
         // this is staying here for now.
         void cycle();
+
+        bool enabled;
     
     private:
         ARM7TDMI* cpu;

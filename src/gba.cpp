@@ -11,6 +11,9 @@
 #include <vector>
 #include <iostream>
 #include <cstring>
+#include <chrono>
+#include <thread>
+#include <functional>
 
 #include "gba.h"
 #include "memory.h"
@@ -20,8 +23,9 @@
 extern Memory memory;
 
 GBA::GBA() {
-    memory = new Memory();
-    cpu    = new ARM7TDMI(memory);
+    memory  = new Memory();
+    cpu     = new ARM7TDMI(memory);
+    enabled = false;
 
     cpu->set_mode(ARM7TDMI::MODE_SYSTEM);
 }
@@ -31,12 +35,30 @@ GBA::~GBA() {
     delete cpu;
 }
 
+void gba_thread(GBA* gba) {
+    while (gba->enabled) {
+        auto x = std::chrono::steady_clock::now() + std::chrono::milliseconds(1);
+        gba->cycle();
+        std::this_thread::sleep_until(x);
+    }
+}
+
 void GBA::run(std::string rom_name) {
     get_rom_as_bytes(rom_name, memory->rom_1, SIZE_ROM_1);
+
     // extract the game name
     char game_name[GAME_TITLE_SIZE]; 
     for (int i = 0; i < GAME_TITLE_SIZE; i++) {
         game_name[i] = memory->rom_1[GAME_TITLE_OFFSET + i];
     }
     std::cout << game_name << std::endl;
+    *cpu->pc = OFFSET_ROM_1;
+
+    enabled = true;
+    std::thread t(gba_thread, this);
+    t.detach();
+}
+
+void GBA::cycle() {
+    cpu->cycle();
 }

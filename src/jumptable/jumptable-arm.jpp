@@ -504,7 +504,7 @@
 - FORMAT:  ----00010010------------0001----
 {
     cpu->set_bit_T(cpu->regs[get_nth_bits(opcode, 0, 4)] & 0x1);
-    *cpu->pc = cpu->regs[get_nth_bits(opcode, 0, 4)] & 0xFFFFFFFE;
+    *cpu->pc = (cpu->regs[get_nth_bits(opcode, 0, 4)] & 0xFFFFFFFE) + 4;
 }
 [/COMPONENT]
 
