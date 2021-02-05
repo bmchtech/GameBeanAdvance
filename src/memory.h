@@ -62,38 +62,37 @@ class Memory {
         #define OFFSET_SRAM         0xE000000
 
         inline uint8_t read_byte(uint32_t address) {
-            std::cout << "Reading byte from address " << to_hex_string(address) << std::endl;
+            //std::cout << "Reading byte from address " << to_hex_string(address) << std::endl;
             if (address >= SIZE_MAIN_MEMORY) error("Address out of range on read byte (" + to_hex_string(address) + ")");
             return main[address];
         }
 
         inline uint16_t read_halfword(uint32_t address) {
-            std::cout << "Reading halfword from address " << to_hex_string(address) << std::endl;
+            //std::cout << "Reading halfword from address " << to_hex_string(address) << std::endl;
             if (address + 2 >= SIZE_MAIN_MEMORY) error("Address out of range on read halfword (" + to_hex_string(address) + ")");
             return *((uint16_t*) (main + address));
         }
 
         inline uint32_t read_word(uint32_t address) {
-            std::cout << "Reading word from address " << to_hex_string(address) << std::endl;
+            //std::cout << "Reading word from address " << to_hex_string(address) << std::endl;
             if (address + 4 >= SIZE_MAIN_MEMORY) error("Address out of range on read word (" + to_hex_string(address) + ")");
             return *((uint32_t*) (main + address));
         }
 
         inline void write_byte(uint32_t address, uint8_t value) {
-            std::cout << "Writing byte " << to_hex_string(value) << " at address " << to_hex_string(address) << std::endl;
-
+            //std::cout << "Writing byte " << to_hex_string(value) << " at address " << to_hex_string(address) << std::endl;
             if (address >= SIZE_MAIN_MEMORY) error("Address out of range on write byte (" + to_hex_string(address) + ")");
             main[address] = value;
         }
 
         inline void write_halfword(uint32_t address, uint16_t value) {
-            std::cout << "Writing halfword " << to_hex_string(value) << " at address " << to_hex_string(address) << std::endl;
+            // std::cout << "Writing halfword " << to_hex_string(value) << " at address " << to_hex_string(address) << std::endl;
             if (address + 2 >= SIZE_MAIN_MEMORY) error("Address out of range on write halfword (" + to_hex_string(address) + ")");
             *((uint16_t*) (main + address)) = value;
         }
 
         inline void write_word(uint32_t address, uint32_t value) {
-            std::cout << "Writing word " << to_hex_string(value) << " at address " << to_hex_string(address) << std::endl;
+            //std::cout << "Writing word " << to_hex_string(value) << " at address " << to_hex_string(address) << std::endl;
             if (address + 4 >= SIZE_MAIN_MEMORY) error("Address out of range on write word (" + to_hex_string(address) + ")");
             *((uint32_t*) (main + address)) = value;
         }

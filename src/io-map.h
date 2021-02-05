@@ -42,4 +42,4 @@
 #define BLDALPHA   0x4000052    // 2   R/W   Alpha Blending Coefficients
 #define BLDY       0x4000054    // 2   W     Brightness (Fade-In/Out) Coefficient
 
-#endif IO_MAP
+#endif

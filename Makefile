@@ -9,7 +9,7 @@ OBJ_DIR        = out
 TEST_CATCH_DIR = tests/catch
 TEST_SRC_DIR   = tests
 
-OBJS           = $(OBJ_DIR)/catchmain.o $(OBJ_DIR)/cpu_state.o $(OBJ_DIR)/expected_output.o $(OBJ_DIR)/gba.o $(OBJ_DIR)/jumptable-thumb.o $(OBJ_DIR)/jumptable-arm.o $(OBJ_DIR)/main.o $(OBJ_DIR)/memory.o $(OBJ_DIR)/util.o $(OBJ_DIR)/arm7tdmi.o $(OBJ_DIR)/gamebeanadvance.o
+OBJS           = $(OBJ_DIR)/catchmain.o $(OBJ_DIR)/cpu_state.o $(OBJ_DIR)/expected_output.o $(OBJ_DIR)/gba.o $(OBJ_DIR)/jumptable-thumb.o $(OBJ_DIR)/jumptable-arm.o $(OBJ_DIR)/main.o $(OBJ_DIR)/memory.o $(OBJ_DIR)/util.o $(OBJ_DIR)/arm7tdmi.o $(OBJ_DIR)/gamebeanadvance.o $(OBJ_DIR)/ppu.o
 EXE_GBA_OBJ    = $(OBJ_DIR)/main.o
 EXE_TEST_OBJ   = $(OBJ_DIR)/catchmain.o $(OBJ_DIR)/cpu_state.o $(OBJ_DIR)/expected_output.o
 OBJS_TEST      = $(filter-out $(EXE_GBA_OBJ),  $(OBJS))
@@ -26,8 +26,11 @@ clean:
 
 # GBA
 
-gba: $(OBJ_DIR)/main.o $(OBJ_DIR)/memory.o $(OBJ_DIR)/util.o $(OBJ_DIR)/jumptable-thumb.o $(OBJ_DIR)/jumptable-arm.o
+gba: $(OBJ_DIR)/main.o $(OBJ_DIR)/memory.o $(OBJ_DIR)/util.o $(OBJ_DIR)/jumptable-thumb.o $(OBJ_DIR)/jumptable-arm.o $(OBJ_DIR)/ppu.o
 	$(CXX) -g `wx-config --libs` $(OBJS_GBA) -o gba 
+
+$(OBJ_DIR)/ppu.o: $(SRC_DIR)/ppu.* $(OBJ_DIR)/main.o
+	$(CXX) $(CFLAGS) $(SRC_DIR)/ppu.cpp -o $(OBJ_DIR)/ppu.o
 
 $(OBJ_DIR)/gamebeanadvance.o: $(SRC_DIR)/gui/gamebeanadvance.* $(OBJ_DIR)/gba.o
 	$(CXX) $(CFLAGS) $(SRC_DIR)/gui/gamebeanadvance.cpp -o $(OBJ_DIR)/gamebeanadvance.o

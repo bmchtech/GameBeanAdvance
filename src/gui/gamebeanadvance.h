@@ -18,6 +18,7 @@ class GameBeanAdvance : public wxApp {
     private:
         bool silent_mode;
         GBA* gba;
+        MyFrame* frame;
 };
 
 static const wxCmdLineEntryDesc g_cmdLineDesc [] = {

@@ -1,4 +1,5 @@
 #include "gamebeanadvance.h"
+#include "main.h"
 
 IMPLEMENT_APP(GameBeanAdvance)
 
@@ -10,7 +11,6 @@ bool GameBeanAdvance::OnInit() {
     // some application-dependent treatments...
 
     // Show the frame
-    wxFrame *frame = new wxFrame((wxFrame*) NULL, -1, _T("Hello wxWidgets World"));
     frame->CreateStatusBar();
     frame->SetStatusText(_T("Hello World"));
     frame->Show(TRUE);
@@ -36,7 +36,9 @@ void GameBeanAdvance::OnInitCmdLine(wxCmdLineParser& parser) {
     // must refuse '/' as parameter starter or cannot use "/path" style paths
     parser.SetSwitchChars(wxT("-"));
     
-    gba = new GBA();
+    MyFrame* frame = new MyFrame();
+    this->frame = frame;
+    gba = new GBA(frame);
 }
 
 bool GameBeanAdvance::OnCmdLineParsed(wxCmdLineParser& parser) {
