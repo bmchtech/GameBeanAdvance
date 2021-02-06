@@ -41,13 +41,15 @@ void PPU::cycle() {
     uint8_t mode = get_nth_bits(memory->read_byte(DISPCNT), 0, 2);
     switch (mode) {
         case 3:
-            for (int x = 0; x < 240; x++) {
-            for (int y = 0; y < 160; y++) {
-                uint16_t color = memory->read_halfword(OFFSET_VRAM + 2 * (x + y * 240));
-                frame->SetRGB(x, y, get_nth_bits(color, 0,   5),
-                                    get_nth_bits(color, 5,  10),
-                                    get_nth_bits(color, 10, 15));
-            }
+            if (dot == 0) {
+                for (int x = 0; x < 240; x++) {
+                for (int y = 0; y < 160; y++) {
+                    uint16_t color = memory->read_halfword(OFFSET_VRAM + 2 * (x + y * 240));
+                    frame->SetRGB(x, y, get_nth_bits(color,  0,  5) * 255 / 31,
+                                        get_nth_bits(color,  5, 10) * 255 / 31,
+                                        get_nth_bits(color, 10, 15) * 255 / 31);
+                }
+                }
             }
         default:
             // warning("Mode " + std::to_string(mode) + " not supported");

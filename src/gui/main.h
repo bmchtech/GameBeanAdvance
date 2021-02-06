@@ -41,9 +41,12 @@ class MyFrame : public wxFrame {
                 }
 
                 void start() {
-                    wxTimer::Start(60);
+                    wxTimer::Start(1);
                 }
         };
+
+        // deal with this
+        uint8_t* pixels;
 
         RenderTimer* renderTimer;
 };

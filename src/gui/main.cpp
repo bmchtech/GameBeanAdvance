@@ -26,6 +26,8 @@ MyFrame::MyFrame() : wxFrame(NULL, wxID_ANY, "GameBeanAdvance", wxDefaultPositio
     renderTimer = new RenderTimer(this);
     renderTimer->start();
     image = wxImage(SCREEN_RESOLUTION_WIDTH, SCREEN_RESOLUTION_HEIGHT + 20);
+
+    pixels = new uint8_t[240 * 160 * 3];
 }
 
 void MyFrame::OnExit(wxCommandEvent& event) {
@@ -48,6 +50,16 @@ END_EVENT_TABLE()
 void MyFrame::OnPaint(wxPaintEvent& roEvent) {
     wxPaintDC dc(this);
     dc.Clear();
+    dc.SetUserScale(SCREEN_SCALE_WIDTH, SCREEN_SCALE_HEIGHT);
+
+    wxImage image(240, 160);
+    for (int x = 0; x < 240; x++) {
+    for (int y = 0; y < 160; y++) {
+        image.SetRGB(x, y, pixels[((x * 160) + y) * 3 + 0],
+                           pixels[((x * 160) + y) * 3 + 1],
+                           pixels[((x * 160) + y) * 3 + 2]);
+    }
+    }
 
     wxBitmap image_buffer(image, -1);
     dc.DrawBitmap(image_buffer, 0, 0);
@@ -55,5 +67,8 @@ void MyFrame::OnPaint(wxPaintEvent& roEvent) {
 }
 
 void MyFrame::SetRGB(int x, int y, uint8_t r, uint8_t g, uint8_t b) {
-    image.SetRGB(x, y, r, g, b);
+    // std::cout << std::to_string(x) << " , " << std::to_string(y) << std::endl;
+    pixels[((x * 160) + y) * 3 + 0] = r;
+    pixels[((x * 160) + y) * 3 + 1] = g;
+    pixels[((x * 160) + y) * 3 + 2] = b;
 }

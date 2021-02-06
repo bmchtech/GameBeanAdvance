@@ -12,7 +12,6 @@ bool GameBeanAdvance::OnInit() {
 
     // Show the frame
     frame->CreateStatusBar();
-    frame->SetStatusText(_T("Hello World"));
     frame->Show(TRUE);
     SetTopWindow(frame);
     
