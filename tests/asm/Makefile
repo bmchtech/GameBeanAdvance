@@ -124,3 +124,7 @@ $(LOG_DIR)/arm-opcodes.log: $(SRC_DIR)/arm-opcodes.S
 red-screen: $(SRC_DIR)/red-screen.S
 	$(COMPILER) $(COMPILER_FLAGS) $(SRC_DIR)/red-screen.S   -o        $(OUT_DIR)/red-screen.out
 	$(LINKER)   $(LINKER_FLAGS)   $(OUT_DIR)/red-screen.out -O binary $(BIN_DIR)/red-screen.gba
+
+texan-frog: $(SRC_DIR)/texan-frog.S
+	$(COMPILER) $(COMPILER_FLAGS) $(SRC_DIR)/texan-frog.S   -o        $(OUT_DIR)/texan-frog.out
+	$(LINKER)   $(LINKER_FLAGS)   $(OUT_DIR)/texan-frog.out -O binary $(BIN_DIR)/texan-frog.gba
