@@ -1,3 +1,5 @@
+@ https://patater.com/gbaguy/gba/ch4.htm
+
 .arm
 .text
 .global main

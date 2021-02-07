@@ -38,13 +38,29 @@ void PPU::cycle() {
     }
     
     // check the mode and run the appropriate function
-    uint8_t mode = get_nth_bits(memory->read_byte(DISPCNT), 0, 2);
+    uint8_t mode = get_nth_bits(memory->read_byte(DISPCNT), 0, 3);
     switch (mode) {
         case 3:
             if (dot == 0) {
                 for (int x = 0; x < 240; x++) {
                 for (int y = 0; y < 160; y++) {
                     uint16_t color = memory->read_halfword(OFFSET_VRAM + 2 * (x + y * 240));
+                    frame->SetRGB(x, y, get_nth_bits(color,  0,  5) * 255 / 31,
+                                        get_nth_bits(color,  5, 10) * 255 / 31,
+                                        get_nth_bits(color, 10, 15) * 255 / 31);
+                }
+                }
+            }
+        
+        case 4:
+            if (dot == 0) {
+                uint32_t base_frame_address = OFFSET_VRAM + get_nth_bit(memory->read_halfword(DISPCNT), 4) * 0xA000;
+
+                for (int x = 0; x < 240; x++) {
+                for (int y = 0; y < 160; y++) {
+                    uint32_t index = memory->read_byte(base_frame_address + (x + y * 240));
+                    uint16_t color = memory->read_halfword(OFFSET_PALETTE_RAM + index);
+
                     frame->SetRGB(x, y, get_nth_bits(color,  0,  5) * 255 / 31,
                                         get_nth_bits(color,  5, 10) * 255 / 31,
                                         get_nth_bits(color, 10, 15) * 255 / 31);

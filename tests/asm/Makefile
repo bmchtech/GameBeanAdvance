@@ -128,3 +128,7 @@ red-screen: $(SRC_DIR)/red-screen.S
 texan-frog: $(SRC_DIR)/texan-frog.S
 	$(COMPILER) $(COMPILER_FLAGS) $(SRC_DIR)/texan-frog.S   -o        $(OUT_DIR)/texan-frog.out
 	$(LINKER)   $(LINKER_FLAGS)   $(OUT_DIR)/texan-frog.out -O binary $(BIN_DIR)/texan-frog.gba
+
+mode4: $(SRC_DIR)/mode4.S
+	$(COMPILER) $(COMPILER_FLAGS) $(SRC_DIR)/mode4.S   -o        $(OUT_DIR)/mode4.out
+	$(LINKER)   $(LINKER_FLAGS)   $(OUT_DIR)/mode4.out -O binary $(BIN_DIR)/mode4.gba

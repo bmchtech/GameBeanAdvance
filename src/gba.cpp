@@ -38,12 +38,23 @@ GBA::~GBA() {
 
 void gba_thread(GBA* gba) {
     while (gba->enabled) {
-        auto x = std::chrono::steady_clock::now() + std::chrono::milliseconds(1);
-        
-        for (int i = 0; i < 16000; i++)
-            gba->cycle();
+        auto s = std::chrono::steady_clock::now() + std::chrono::milliseconds(1000);
+        uint16_t count = 0;
 
-        std::this_thread::sleep_until(x);
+        while (count < 1000) {
+            auto x = std::chrono::steady_clock::now() + std::chrono::milliseconds(1);
+            
+            for (int i = 0; i < 16000; i++) {
+                count++;
+                gba->cycle();
+            }
+
+            std::this_thread::sleep_until(x);
+        }
+
+        if (std::chrono::steady_clock::now() > s) {
+            warning("Emulator running too slow!");
+        }
     }
 }
 
