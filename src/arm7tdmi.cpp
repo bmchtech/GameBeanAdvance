@@ -28,6 +28,8 @@ ARM7TDMI::~ARM7TDMI() {
 
 void ARM7TDMI::cycle() {
     uint32_t opcode = fetch();
+    std::cout << to_hex_string(opcode) << " @ " << to_hex_string(*pc) << std::endl;
+
     execute(opcode);
 }
 

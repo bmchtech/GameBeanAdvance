@@ -5,9 +5,8 @@
 #include <string.h>
 #include <iostream>
 
-PPU::PPU(Memory* memory, MyFrame* frame) {
+PPU::PPU(Memory* memory) {
     this->memory = memory;
-    this->frame  = frame;
     dot          = 0;
 }
 
@@ -45,9 +44,9 @@ void PPU::cycle() {
                 for (int x = 0; x < 240; x++) {
                 for (int y = 0; y < 160; y++) {
                     uint16_t color = memory->read_halfword(OFFSET_VRAM + 2 * (x + y * 240));
-                    frame->SetRGB(x, y, get_nth_bits(color,  0,  5) * 255 / 31,
-                                        get_nth_bits(color,  5, 10) * 255 / 31,
-                                        get_nth_bits(color, 10, 15) * 255 / 31);
+                    memory->SetRGB(x, y, get_nth_bits(color,  0,  5) * 255 / 31,
+                                         get_nth_bits(color,  5, 10) * 255 / 31,
+                                         get_nth_bits(color, 10, 15) * 255 / 31);
                 }
                 }
             }
@@ -61,9 +60,9 @@ void PPU::cycle() {
                     uint32_t index = memory->read_byte(base_frame_address + (x + y * 240));
                     uint16_t color = memory->read_halfword(OFFSET_PALETTE_RAM + index);
 
-                    frame->SetRGB(x, y, get_nth_bits(color,  0,  5) * 255 / 31,
-                                        get_nth_bits(color,  5, 10) * 255 / 31,
-                                        get_nth_bits(color, 10, 15) * 255 / 31);
+                    memory->SetRGB(x, y, get_nth_bits(color,  0,  5) * 255 / 31,
+                                         get_nth_bits(color,  5, 10) * 255 / 31,
+                                         get_nth_bits(color, 10, 15) * 255 / 31);
                 }
                 }
             }

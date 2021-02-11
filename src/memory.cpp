@@ -17,8 +17,18 @@ Memory::Memory() {
     rom_2        = &main[OFFSET_ROM_2];
     rom_3        = &main[OFFSET_ROM_3];
     sram         = &main[OFFSET_SRAM];
+
+    pixels       = new uint8_t[240 * 160 * 3]();
 }
 
 Memory::~Memory() {
     delete[] main;
+    delete[] pixels;
+}
+
+void Memory::SetRGB(int x, int y, uint8_t r, uint8_t g, uint8_t b) {
+    // std::cout << std::to_string(x) << " , " << std::to_string(y) << std::endl;
+    pixels[((x * 160) + y) * 3 + 0] = r;
+    pixels[((x * 160) + y) * 3 + 1] = g;
+    pixels[((x * 160) + y) * 3 + 2] = b;
 }

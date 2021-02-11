@@ -22,11 +22,10 @@
 
 extern Memory memory;
 
-GBA::GBA(MyFrame* frame) {
-    memory  = new Memory();
-    cpu     = new ARM7TDMI(memory);
-    ppu     = new PPU(memory, frame);
-    enabled = false;
+GBA::GBA(Memory* memory) {
+    cpu          = new ARM7TDMI(memory);
+    ppu          = new PPU(memory);
+    enabled      = false;
 
     cpu->set_mode(ARM7TDMI::MODE_SYSTEM);
 }
@@ -37,6 +36,8 @@ GBA::~GBA() {
 }
 
 void gba_thread(GBA* gba) {
+    uint64_t instruction_count = 0;
+
     while (gba->enabled) {
         auto s = std::chrono::steady_clock::now() + std::chrono::milliseconds(1000);
         uint16_t count = 0;
@@ -47,6 +48,9 @@ void gba_thread(GBA* gba) {
             for (int i = 0; i < 16000; i++) {
                 count++;
                 gba->cycle();
+
+                instruction_count++;
+                std::cout << std::to_string(instruction_count) << std::endl;
             }
 
             std::this_thread::sleep_until(x);

@@ -34,6 +34,9 @@ class Memory {
         uint8_t* rom_3;        // 0xC000000 - 0xDFFFFFF
         uint8_t* sram;         // 0xE000000 - 0xE00FFFF
 
+        // deal with this
+        uint8_t* pixels;
+
         // heres a bunch of constants that summarize the information above
         // unsure if much of the size constants will be used, but ill keep them here for now
         #define SIZE_MAIN_MEMORY    0x10000000
@@ -96,5 +99,7 @@ class Memory {
             if (address + 4 >= SIZE_MAIN_MEMORY) error("Address out of range on write word (" + to_hex_string(address) + ")");
             *((uint32_t*) (main + address)) = value;
         }
+        
+        void SetRGB(int x, int y, uint8_t r, uint8_t g, uint8_t b);
 };
 #endif

@@ -8,16 +8,15 @@
     #include <wx/wx.h>
 #endif
 
+#include "../memory.h"
+
 // a value of "2" would mean that one pixel on the GBA is 2 pixels given as output.
 #define SCREEN_SCALE_WIDTH  2
 #define SCREEN_SCALE_HEIGHT 2
 
 class MyFrame : public wxFrame {
     public:
-        MyFrame();
-        wxImage image;
-
-        void SetRGB(int x, int y, uint8_t r, uint8_t g, uint8_t b);
+        MyFrame(Memory* memory);
 
     private:
         void OnHello(wxCommandEvent& event);
@@ -45,10 +44,8 @@ class MyFrame : public wxFrame {
                 }
         };
 
-        // deal with this
-        uint8_t* pixels;
-
         RenderTimer* renderTimer;
+        Memory* memory;
 };
 
 enum {

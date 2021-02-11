@@ -448,6 +448,7 @@
 {
     uint32_t old_value        = cpu->regs[get_nth_bits(opcode, 12, 16)];
     uint32_t register_operand = cpu->regs[get_nth_bits(opcode, 16, 20)];
+    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4;
     
     @IF( C) uint32_t result   = register_operand + cpu->shifter_operand + cpu->get_flag_C();
     @IF(!C) uint32_t result   = register_operand + cpu->shifter_operand;
@@ -466,7 +467,9 @@
 [COMPONENT AND]
 - FORMAT:  ----00I-000S--------------------
 {
-    uint32_t result = cpu->regs[get_nth_bits(opcode, 16, 20)] & cpu->shifter_operand;
+    uint32_t register_operand = cpu->regs[get_nth_bits(opcode, 16, 20)];
+    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4;
+    uint32_t result = register_operand & cpu->shifter_operand;
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     cpu->cpsr = cpu->spsr;
@@ -480,7 +483,9 @@
 [COMPONENT BIC]
 - FORMAT:  ----00I1110S--------------------
 {
-    uint32_t result = cpu->regs[get_nth_bits(opcode, 16, 20)] & ~cpu->shifter_operand;
+    uint32_t register_operand = cpu->regs[get_nth_bits(opcode, 16, 20)];
+    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4;
+    uint32_t result = register_operand & ~cpu->shifter_operand;
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     cpu->cpsr = cpu->spsr;
@@ -504,7 +509,8 @@
 - FORMAT:  ----00010010------------0001----
 {
     cpu->set_bit_T(cpu->regs[get_nth_bits(opcode, 0, 4)] & 0x1);
-    *cpu->pc = (cpu->regs[get_nth_bits(opcode, 0, 4)] & 0xFFFFFFFE) + 4;
+    *cpu->pc = (cpu->regs[get_nth_bits(opcode, 0, 4)] & 0xFFFFFFFE);
+    std::cout << "BRANCHING TO " << to_hex_string(*cpu->pc) << std::endl;
 }
 [/COMPONENT]
 
@@ -513,6 +519,7 @@
 {
     uint32_t old_value        = cpu->regs[get_nth_bits(opcode, 12, 16)];
     uint32_t register_operand = cpu->regs[get_nth_bits(opcode, 16, 20)];
+    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4;
     uint32_t result           = register_operand + cpu->shifter_operand;
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
@@ -531,6 +538,7 @@
 {
     uint32_t old_value        = cpu->regs[get_nth_bits(opcode, 12, 16)];
     uint32_t register_operand = cpu->regs[get_nth_bits(opcode, 16, 20)];
+    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4;
     uint32_t result           = register_operand + ~cpu->shifter_operand + 1;
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
@@ -547,7 +555,9 @@
 [COMPONENT EOR]
 - FORMAT:  ----00I-001S--------------------
 {
-    uint32_t result = cpu->regs[get_nth_bits(opcode, 16, 20)] ^ cpu->shifter_operand;
+    uint32_t register_operand = cpu->regs[get_nth_bits(opcode, 16, 20)];
+    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4;
+    uint32_t result = register_operand ^ cpu->shifter_operand;
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     cpu->cpsr = cpu->spsr;
@@ -675,7 +685,9 @@
 [COMPONENT ORR]
 - FORMAT:  ----00I1100S--------------------
 {
-    uint32_t result = cpu->regs[get_nth_bits(opcode, 16, 20)] | cpu->shifter_operand;
+    uint32_t register_operand = cpu->regs[get_nth_bits(opcode, 16, 20)];
+    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4;
+    uint32_t result = register_operand| cpu->shifter_operand;
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     cpu->cpsr = cpu->spsr;
@@ -691,6 +703,7 @@
 - FORMAT:  ----00I0C1RS--------------------
 {
     uint32_t register_operand = cpu->regs[get_nth_bits(opcode, 16, 20)];
+    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4;
     @IF( R) uint32_t result   = cpu->shifter_operand - register_operand;
     @IF(!R) uint32_t result   = register_operand - cpu->shifter_operand;
     @IF( C)  result -= ((~cpu->get_flag_C()) & 1);

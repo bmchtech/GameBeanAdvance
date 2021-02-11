@@ -11,7 +11,6 @@ bool GameBeanAdvance::OnInit() {
     // some application-dependent treatments...
 
     // Show the frame
-    frame->CreateStatusBar();
     frame->Show(TRUE);
     SetTopWindow(frame);
     
@@ -35,9 +34,9 @@ void GameBeanAdvance::OnInitCmdLine(wxCmdLineParser& parser) {
     // must refuse '/' as parameter starter or cannot use "/path" style paths
     parser.SetSwitchChars(wxT("-"));
     
-    MyFrame* frame = new MyFrame();
-    this->frame = frame;
-    gba = new GBA(frame);
+    Memory* memory  = new Memory();
+    gba = new GBA(memory);
+    frame = new MyFrame(memory);
 }
 
 bool GameBeanAdvance::OnCmdLineParsed(wxCmdLineParser& parser) {

@@ -116,3 +116,7 @@ TEST_CASE("CPU ARM Mode - VBA Logs (arm-addresing-mode-3) [Requires Functional T
 TEST_CASE("CPU ARM Mode - VBA Logs (arm-opcodes) [Requires Functional THUMB]") {
     test_arm_mode("tests/asm/bin/arm-opcodes.gba", "tests/asm/logs/arm-opcodes.log", 2100, 276);
 }
+
+TEST_CASE("CPU FINALE (☆ superstar saga ☆) [Requires Functional THUMB]") {
+    test_arm_mode("roms/superstarsaga.gba", "tests/asm/logs/superstarsaga.log", 2100, 276);
+}

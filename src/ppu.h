@@ -1,12 +1,7 @@
 #ifndef PPU_H
 #define PPU_H
 
-#ifndef WX_PRECOMP
-       #include <wx/wx.h>
-#endif
-
 #include "memory.h"
-#include "gui/main.h"
 
 class PPU {
     // General information:
@@ -15,12 +10,10 @@ class PPU {
     // - Although the drawing time is only 960 cycles (240*4), the H-Blank flag is "0" for a total of 1006 cycles.
 
     public:
-        PPU(Memory* memory, MyFrame* frame);
+        PPU(Memory* memory);
         ~PPU();
 
         void cycle();
-        
-        MyFrame* frame;
     
     private:
         Memory*   memory;

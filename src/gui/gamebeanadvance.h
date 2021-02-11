@@ -6,6 +6,7 @@
 #endif
 
 #include "../gba.h"
+#include "main.h"
 
 class GameBeanAdvance : public wxApp {
     public:

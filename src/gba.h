@@ -4,12 +4,7 @@
 #include "memory.h"
 #include "arm7tdmi.h"
 #include "ppu.h"
-#include "gui/main.h"
 #include <string>
-
-#ifndef WX_PRECOMP
-       #include <wx/wx.h>
-#endif
 
 #define CART_SIZE                0x1000000
 
@@ -21,7 +16,7 @@ class GBA {
 
     public:
         // Allocates the memory and sets the mode to System.
-        GBA(MyFrame* frame);
+        GBA(Memory* memory);
 
         // Frees the memory - classic destructor.
         ~GBA();
@@ -37,10 +32,9 @@ class GBA {
 
         bool enabled;
 
+    private:
         ARM7TDMI* cpu;
         PPU*      ppu;
-    
-    private:
         Memory*   memory;
 };
 
