@@ -27,12 +27,15 @@ class ARM7TDMI {
         // an explanation of these constants is partially in here as well as cpu-mode.h
 
         static constexpr CpuMode MODE_USER       = {0b10000, 0b1111111111111111, 16 * 0};
-        static constexpr CpuMode MODE_FIQ        = {0b10001, 0b1111111111111111, 16 * 1};
-        static constexpr CpuMode MODE_IRQ        = {0b10010, 0b1001111111111111, 16 * 2};
-        static constexpr CpuMode MODE_SUPERVISOR = {0b10011, 0b1001111111111111, 16 * 3};
-        static constexpr CpuMode MODE_ABORT      = {0b10111, 0b1001111111111111, 16 * 4};
-        static constexpr CpuMode MODE_UNDEFINED  = {0b11011, 0b1001111111111111, 16 * 5};
-        static constexpr CpuMode MODE_SYSTEM     = {0b11111, 0b1000000011111111, 16 * 6};
+        static constexpr CpuMode MODE_SYSTEM     = {0b11111, 0b1111111111111111, 16 * 1};
+        static constexpr CpuMode MODE_SUPERVISOR = {0b10011, 0b1001111111111111, 16 * 2};
+        static constexpr CpuMode MODE_ABORT      = {0b10111, 0b1001111111111111, 16 * 3};
+        static constexpr CpuMode MODE_UNDEFINED  = {0b11011, 0b1001111111111111, 16 * 4};
+        static constexpr CpuMode MODE_IRQ        = {0b10010, 0b1001111111111111, 16 * 5};
+        static constexpr CpuMode MODE_FIQ        = {0b10001, 0b1000000011111111, 16 * 6};
+
+        static const int NUM_MODES = 7;
+        static constexpr CpuMode MODES[NUM_MODES] = {MODE_USER, MODE_FIQ, MODE_IRQ, MODE_SUPERVISOR, MODE_ABORT, MODE_UNDEFINED, MODE_SYSTEM};
 
         // the register array is going to be accessed as such:
         // USER | SYSTEM | SUPERVISOR | ABORT | UNDEFINED | INTERRUPT | FAST INTERRUPT
@@ -70,8 +73,9 @@ class ARM7TDMI {
             int mask = current_mode.REGISTER_UNIQUENESS & new_mode.REGISTER_UNIQUENESS;
 
             for (int i = 0; i < 16; i++) {
-                if (~(mask & 1))
+                if (mask & 1) {
                     register_file[i + new_mode.OFFSET] = register_file[i + current_mode.OFFSET];
+                }
 
                 mask >>= 1;
             }
@@ -79,11 +83,14 @@ class ARM7TDMI {
             current_mode = new_mode;
             cpsr = (cpsr & 0xFFFFFFE0) | new_mode.CPSR_ENCODING;
 
-            regs = register_file + new_mode.OFFSET;
+            regs = &register_file[new_mode.OFFSET];
             pc = &regs[15];
             lr = &regs[14];
             sp = &regs[13];
         }
+
+        // reads the CPSR and figures out what the current mode is. then, it updates it using new_mode.
+        void update_mode();
 
         uint32_t* register_file; // the full file of registers. usually you shouldn't be indexing from here.
         uint32_t* regs;          // the currently used registers in the ARM7TDMI

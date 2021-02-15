@@ -120,6 +120,16 @@
 - COMPONENT: MRS
 [/RULE]
 
+[RULE MSR_IMM]
+- INCLUDE: ----00110-10--------------------
+- COMPONENT: MSR
+[/RULE]
+
+[RULE MSR_REG]
+- INCLUDE: ----00010-10--------------------
+- COMPONENT: MSR
+[/RULE]
+
 [RULE ORR]
 - INCLUDE: ----00-1100---------------------
 - EXCLUDE: ------0-----------------1--1----
@@ -510,7 +520,6 @@
 {
     cpu->set_bit_T(cpu->regs[get_nth_bits(opcode, 0, 4)] & 0x1);
     *cpu->pc = (cpu->regs[get_nth_bits(opcode, 0, 4)] & 0xFFFFFFFE);
-    std::cout << "BRANCHING TO " << to_hex_string(*cpu->pc) << std::endl;
 }
 [/COMPONENT]
 
@@ -679,6 +688,24 @@
 {
     @IF(!R) cpu->regs[get_nth_bits(opcode, 12, 16)] = cpu->cpsr;
     @IF( R) cpu->regs[get_nth_bits(opcode, 12, 16)] = cpu->spsr;
+}
+[/COMPONENT]
+
+[COMPONENT MSR]
+- FORMAT:  ----00I10R10--------------------
+{
+    @IF( I) uint32_t  operand     = cpu->ROR(get_nth_bits(opcode, 0, 8), (get_nth_bits(opcode, 8, 12) * 2));
+    @IF(!I) uint32_t  operand     = cpu->regs[get_nth_bits(opcode, 0, 4)];
+
+    @IF( R) uint32_t* destination = &cpu->spsr;
+    @IF(!R) uint32_t* destination = &cpu->cpsr;
+
+    if (get_nth_bit(opcode, 16)) *destination = (*destination & 0xFFFFFF00) | (operand & 0x000000FF);
+    if (get_nth_bit(opcode, 17)) *destination = (*destination & 0xFFFF00FF) | (operand & 0x0000FF00);
+    if (get_nth_bit(opcode, 18)) *destination = (*destination & 0xFF00FFFF) | (operand & 0x00FF0000);
+    if (get_nth_bit(opcode, 19)) *destination = (*destination & 0x00FFFFFF) | (operand & 0xFF000000);
+
+    cpu->update_mode();
 }
 [/COMPONENT]
 

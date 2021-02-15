@@ -23,6 +23,7 @@
 extern Memory memory;
 
 GBA::GBA(Memory* memory) {
+    this->memory = memory;
     cpu          = new ARM7TDMI(memory);
     ppu          = new PPU(memory);
     enabled      = false;
@@ -50,7 +51,6 @@ void gba_thread(GBA* gba) {
                 gba->cycle();
 
                 instruction_count++;
-                std::cout << std::to_string(instruction_count) << std::endl;
             }
 
             std::this_thread::sleep_until(x);
@@ -66,11 +66,11 @@ void GBA::run(std::string rom_name) {
     get_rom_as_bytes(rom_name, memory->rom_1, SIZE_ROM_1);
 
     // extract the game name
-    char game_name[GAME_TITLE_SIZE]; 
-    for (int i = 0; i < GAME_TITLE_SIZE; i++) {
-        game_name[i] = memory->rom_1[GAME_TITLE_OFFSET + i];
-    }
-    std::cout << game_name << std::endl;
+    // char game_name[GAME_TITLE_SIZE];
+    // for (int i = 0; i < GAME_TITLE_SIZE; i++) {
+    //     game_name[i] = memory->rom_1[GAME_TITLE_OFFSET + i];
+    // }
+    // std::cout << game_name << std::endl;
     *cpu->pc = OFFSET_ROM_1;
 
     enabled = true;

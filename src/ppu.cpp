@@ -50,8 +50,11 @@ void PPU::cycle() {
                 }
                 }
             }
+
+            break;
         
         case 4:
+        case 5:
             if (dot == 0) {
                 uint32_t base_frame_address = OFFSET_VRAM + get_nth_bit(memory->read_halfword(DISPCNT), 4) * 0xA000;
 
@@ -66,6 +69,9 @@ void PPU::cycle() {
                 }
                 }
             }
+
+            break;
+            
         default:
             // warning("Mode " + std::to_string(mode) + " not supported");
             int x = 2; // stop complaining lol

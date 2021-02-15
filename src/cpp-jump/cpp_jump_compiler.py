@@ -696,7 +696,7 @@ def check_cpp_jump_ast(source: list):
                 i_copy = copy(i)
 
                 pending_assertions.append([lambda : not i_copy in indices_DASH,
-                                           'Error: value {} specified at an index which is not marked as insignificant.'.format(tree[1][i])])
+                                           'Error: value {} specified at an index which is marked as insignificant.'.format(tree[1][i])])
     
     def check_exclude_statement(tree: list):
         pending_assertions.append([lambda: len(tree[1]) == opcode_size,
@@ -709,7 +709,7 @@ def check_cpp_jump_ast(source: list):
                 i_copy = copy(i)
 
                 pending_assertions.append([lambda : not i_copy in indices_DASH,
-                                           'Error: value {} specified at an index which is not marked as insignificant.'.format(tree[1][i])])
+                                           'Error: value {} specified at an index which is marked as insignificant.'.format(tree[1][i])])
     
     def check_component_statement(tree: list):
         pending_assertions.append([lambda: [x[1] for x in collected_components].count(tree[1]) != 0,
@@ -728,7 +728,7 @@ def check_cpp_jump_ast(source: list):
                 i_copy = copy(i)
 
                 pending_assertions.append([lambda : not i_copy in indices_DASH,
-                                           'Error: bitvariable specified at an index which is specified as an insignificant bit in the settings.'])
+                                           'Error: bitvariable {} specified at an index which is specified as an insignificant bit in the settings.'.format(tree[2][i_copy])])
 
         collected_components.append(tree)
         for cpp_line in tree[3]:

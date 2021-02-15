@@ -12,14 +12,18 @@ ARM7TDMI::ARM7TDMI(Memory* memory) {
     // 16 registers * 6 CPU modes
     register_file = new uint32_t[16 * 7]();
     regs          = register_file;
-    regs[14]      = 0x03007f00;
+
+    regs[MODE_USER.OFFSET       + 13] = 0x03007f00;
+    regs[MODE_IRQ.OFFSET        + 13] = 0x03007fa0;
+    regs[MODE_SUPERVISOR.OFFSET + 13] = 0x03007fe0;
 
     // the program status register
     cpsr = 0x00000000;
     spsr = 0x00000000;
 
     // the current mode
-    current_mode = MODE_USER;
+    current_mode = ARM7TDMI::MODES[0];
+    set_mode(ARM7TDMI::MODE_USER);
 }
 
 ARM7TDMI::~ARM7TDMI() {
@@ -28,8 +32,6 @@ ARM7TDMI::~ARM7TDMI() {
 
 void ARM7TDMI::cycle() {
     uint32_t opcode = fetch();
-    std::cout << to_hex_string(opcode) << " @ " << to_hex_string(*pc) << std::endl;
-
     execute(opcode);
 }
 
@@ -78,5 +80,14 @@ bool ARM7TDMI::should_execute(int cond) {
         case 0b1100: return !get_flag_Z() &&  (get_flag_N() == get_flag_V()); break;
         case 0b1101: return  get_flag_Z() &&  (get_flag_N() != get_flag_V()); break;
         default:     return false;
+    }
+}
+
+void ARM7TDMI::update_mode() {
+    int mode_bits = get_nth_bits(cpsr, 0, 5);
+    for (int i = 0; i < ARM7TDMI::NUM_MODES; i++) {
+        if (ARM7TDMI::MODES[i].CPSR_ENCODING == mode_bits) {
+            set_mode(ARM7TDMI::MODES[i]);
+        }
     }
 }

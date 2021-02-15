@@ -18,9 +18,10 @@ void check_cpu_state(CpuState expected, CpuState actual, std::string error_messa
         REQUIRE_MESSAGE(expected.regs[i] == actual.regs[i], error_message + " at register #" + std::to_string(i));
     }
 
-    REQUIRE_MESSAGE(expected.type           == actual.type,           error_message);
-    REQUIRE_MESSAGE(expected.opcode         == actual.opcode,         error_message);
-    REQUIRE_MESSAGE(expected.mem_0x03000003 == actual.mem_0x03000003, error_message);
+    REQUIRE_MESSAGE( expected.type           ==  actual.type,           error_message);
+    REQUIRE_MESSAGE( expected.opcode         ==  actual.opcode,         error_message);
+    REQUIRE_MESSAGE((expected.mode & 0x1F)   == (actual.mode & 0x1F),   error_message);
+    REQUIRE_MESSAGE( expected.mem_0x03000003 ==  actual.mem_0x03000003, error_message);
 }
 
 void test_thumb_mode(std::string gba_file, std::string log_file, int num_instructions) {
@@ -58,7 +59,7 @@ void test_thumb_mode(std::string gba_file, std::string log_file, int num_instruc
     delete[] cpu_states;
 }
 
-void test_arm_mode(std::string gba_file, std::string log_file, int num_instructions, int start_instruction) {
+void test_arm_mode(std::string gba_file, std::string log_file, int num_instructions, int start_instruction, bool b_infin_check) {
     Memory* memory = new Memory();
     ARM7TDMI* cpu = new ARM7TDMI(memory);
 
@@ -90,7 +91,7 @@ void test_arm_mode(std::string gba_file, std::string log_file, int num_instructi
     }
 
     // make sure we've reached B infin
-    REQUIRE(cpu->fetch() == 0xEAFFFFFE);
+    if (b_infin_check) REQUIRE(cpu->fetch() == 0xEAFFFFFE);
     
     delete   memory;
     delete   cpu;
@@ -102,21 +103,25 @@ TEST_CASE("CPU THUMB Mode - VBA Logs (thumb-simple)") {
 }
 
 TEST_CASE("CPU ARM Mode - VBA Logs (arm-addresing-mode-1) [Requires Functional THUMB]") {
-    test_arm_mode("tests/asm/bin/arm-addressing-mode-1.gba", "tests/asm/logs/arm-addressing-mode-1.log", 1290, 216);
+    test_arm_mode("tests/asm/bin/arm-addressing-mode-1.gba", "tests/asm/logs/arm-addressing-mode-1.log", 1290, 216, true);
 }
 
 TEST_CASE("CPU ARM Mode - VBA Logs (arm-addresing-mode-2) [Requires Functional THUMB]") {
-    test_arm_mode("tests/asm/bin/arm-addressing-mode-2.gba", "tests/asm/logs/arm-addressing-mode-2.log", 1290, 212);
+    test_arm_mode("tests/asm/bin/arm-addressing-mode-2.gba", "tests/asm/logs/arm-addressing-mode-2.log", 1290, 212, true);
 }
 
 TEST_CASE("CPU ARM Mode - VBA Logs (arm-addresing-mode-3) [Requires Functional THUMB]") {
-    test_arm_mode("tests/asm/bin/arm-addressing-mode-3.gba", "tests/asm/logs/arm-addressing-mode-3.log", 1290, 212);
+    test_arm_mode("tests/asm/bin/arm-addressing-mode-3.gba", "tests/asm/logs/arm-addressing-mode-3.log", 1290, 212, true);
 }
 
 TEST_CASE("CPU ARM Mode - VBA Logs (arm-opcodes) [Requires Functional THUMB]") {
-    test_arm_mode("tests/asm/bin/arm-opcodes.gba", "tests/asm/logs/arm-opcodes.log", 2100, 276);
+    test_arm_mode("tests/asm/bin/arm-opcodes.gba", "tests/asm/logs/arm-opcodes.log", 2100, 276, true);
 }
 
-TEST_CASE("CPU FINALE (☆ superstar saga ☆) [Requires Functional THUMB]") {
-    test_arm_mode("roms/superstarsaga.gba", "tests/asm/logs/superstarsaga.log", 2100, 276);
+TEST_CASE("PPU (Fountain) [Requires Functional CPU]") {
+    test_arm_mode("tests/asm/bin/Fountain.gba", "tests/asm/logs/Fountain.log", 2100, 0, false);
+}
+
+TEST_CASE("CPU FINALE (☆ superstar saga ☆) [Requires Functional ARM and THUMB]") {
+    test_arm_mode("roms/superstarsaga.gba", "tests/asm/logs/superstarsaga.log", 2100, 0, false);
 }

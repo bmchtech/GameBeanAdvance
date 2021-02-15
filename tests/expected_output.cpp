@@ -68,7 +68,11 @@ CpuState* produce_expected_cpu_states(CpuState* cpu_states, std::string file_nam
         if (!(iss >> temp)) {
             error("Couldn't parse expected log file: no opcode found.");
         } else {
-            // garbage
+            ss.str(std::string());
+            ss.clear();
+            ss << std::hex << temp;
+            ss >> a;
+            cpu_states[i].mode = a; 
         }
 
         if (!(iss >> temp)) {

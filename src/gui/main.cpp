@@ -51,6 +51,7 @@ void MyFrame::OnPaint(wxPaintEvent& roEvent) {
     dc.SetUserScale(SCREEN_SCALE_WIDTH, SCREEN_SCALE_HEIGHT);
 
     wxImage image(240, 160);
+
     for (int x = 0; x < 240; x++) {
     for (int y = 0; y < 160; y++) {
         image.SetRGB(x, y, memory->pixels[((x * 160) + y) * 3 + 0],
