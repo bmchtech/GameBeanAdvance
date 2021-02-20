@@ -5,6 +5,8 @@
 #include "cpu-mode.h"
 
 class ARM7TDMI {
+    friend void error(std::string message);
+    
     public:
         // takes in pre-allocated memory, and uses it as its own memory.
         ARM7TDMI(Memory* memory);

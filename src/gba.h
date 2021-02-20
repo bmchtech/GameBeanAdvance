@@ -13,6 +13,7 @@
 #define GAME_TITLE_SIZE          12
 
 class GBA {
+    friend void error(std::string message);
 
     public:
         // Allocates the memory and sets the mode to System.

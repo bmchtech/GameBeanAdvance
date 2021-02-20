@@ -4,6 +4,7 @@
 #include <fstream>
 
 #include "util.h"
+#include "gba.h"
 
 void warning(std::string message) {
     std::cerr << YELLOW << "WARNING: " << RESET << message << std::endl;
@@ -11,7 +12,24 @@ void warning(std::string message) {
 
 void error(std::string message) {
     std::cerr << RED << "ERROR: " << RESET << message << std::endl;
-    exit(EXIT_FAILURE);
+
+    if (logger_gba != NULL) {
+        for (int i = 0; i < GBA::CPU_STATE_LOG_LENGTH; i++) {
+            CpuState cpu_state = logger_gba->cpu->cpu_states[i];
+            std::cout << ((cpu_state.type == ARM) ? "ARM " : "THUMB ");
+            std::cout << to_hex_string(cpu_state.opcode);
+
+            for (int i = 0; i < 16; i++) {
+                std::string register_value = to_hex_string(cpu_state.regs[i]);
+                std::cout << " " << std::string(8 - register_value.length(), '0').append(register_value);
+            }
+
+            std::cout << " " << to_hex_string(cpu_state.mode);
+            std::cout << std::endl;
+        }
+
+        error(message);
+    }
 }
 
 std::string to_hex_string(uint32_t val) {

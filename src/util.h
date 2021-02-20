@@ -4,6 +4,8 @@
 #include <math.h>
 #include <string>
 
+class GBA;
+
 // the color for message output
 #define YELLOW  "\033[33m"
 #define RED     "\033[31m" 
@@ -36,5 +38,8 @@ inline uint32_t sign_extend(uint32_t val, uint8_t num_bits) {
 // reads the ROM as bytes (given the file name). stores the result into out. any data after out_length will be truncated
 // off the ROM.
 void get_rom_as_bytes(std::string rom_name, uint8_t* out, size_t out_length);
+
+// set this to enable gba logging
+GBA* logger_gba;
 
 #endif
