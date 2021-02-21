@@ -72,7 +72,7 @@ void run_00010ABC(uint16_t opcode) {
 }
 
 // add #3 010 001 001
-void run_00011000(uint16_t opcode) {
+void run_0001100A(uint16_t opcode) {
     DEBUG_MESSAGE("Add #3");
 
     int32_t rn = cpu->regs[get_nth_bits(opcode, 3, 6)];
@@ -98,7 +98,7 @@ void run_00011000(uint16_t opcode) {
 }
 
 // sub #3 010 001 001
-void run_00011010(uint16_t opcode) {
+void run_0001101A(uint16_t opcode) {
     DEBUG_MESSAGE("Sub #3");
 
     int32_t rn = cpu->regs[get_nth_bits(opcode, 3, 6)];
@@ -206,7 +206,7 @@ void run_00110ABC(uint16_t opcode) {
     cpu->set_flag_Z((new_rd_value == 0));
 
     // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
-    cpu->set_flag_C(get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31) | 
+    cpu->set_flag_C((get_nth_bit(immediate_value, 31) & get_nth_bit(old_rd_value, 31)) | 
     ((get_nth_bit(immediate_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31))));
 
     bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 31);
@@ -320,7 +320,7 @@ void run_01000001(uint16_t opcode) {
             cpu->set_flag_Z((new_rd_value == 0));
 
             // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
-            cpu->set_flag_C(get_nth_bit(rm_value, 31) & get_nth_bit(old_rd_value, 31) | 
+            cpu->set_flag_C((get_nth_bit(rm_value, 31) & get_nth_bit(old_rd_value, 31)) | 
             ((get_nth_bit(rm_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(new_rd_value, 31))));
 
             bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rm_value, 31);
@@ -414,7 +414,7 @@ void run_01000010(uint16_t opcode) {
             result = cpu->regs[rd] + rm_value;
 
             // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
-            cpu->set_flag_C(get_nth_bit(rm_value, 31) & get_nth_bit(old_rd_value, 31) | 
+            cpu->set_flag_C((get_nth_bit(rm_value, 31) & get_nth_bit(old_rd_value, 31)) | 
             ((get_nth_bit(rm_value, 31) ^ get_nth_bit(old_rd_value, 31)) & ~(get_nth_bit(result, 31))));
 
             bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rm_value, 31);
@@ -746,9 +746,10 @@ void run_11100OFS(uint16_t opcode) {
 
 // long branch with link - high byte
 void run_11110OFS(uint16_t opcode) {
-
     // Sign extend to 32 bits and then left shift 12
     int32_t extended = (int32_t)(get_nth_bits(opcode, 0, 11));
+    if (get_nth_bit(extended, 10)) extended |= 0xFFFFF800;
+
     *cpu->lr = (*cpu->pc + 2) + (extended << 12);
 
 }

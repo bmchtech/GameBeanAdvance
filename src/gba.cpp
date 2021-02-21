@@ -29,6 +29,10 @@ GBA::GBA(Memory* memory) {
     enabled      = false;
 
     cpu->set_mode(ARM7TDMI::MODE_SYSTEM);
+
+#ifndef RELEASE
+    logger_gba = this;
+#endif
 }
 
 GBA::~GBA() {

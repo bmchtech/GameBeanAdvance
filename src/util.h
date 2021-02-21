@@ -40,6 +40,6 @@ inline uint32_t sign_extend(uint32_t val, uint8_t num_bits) {
 void get_rom_as_bytes(std::string rom_name, uint8_t* out, size_t out_length);
 
 // set this to enable gba logging
-GBA* logger_gba;
+extern GBA* logger_gba;
 
 #endif

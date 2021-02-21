@@ -1,3 +1,6 @@
+#ifndef GAMEBEANADVANCE_H
+#define GAMEBEANADVANCE_H
+
 #include <wx/wxprec.h>
 #include <wx/cmdline.h>
 
@@ -32,3 +35,5 @@ static const wxCmdLineEntryDesc g_cmdLineDesc [] = {
 };
 
 DECLARE_APP(GameBeanAdvance)
+
+#endif

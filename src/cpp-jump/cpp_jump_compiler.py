@@ -1193,3 +1193,21 @@ def compile(input_file_name, output_file_name):
         default    = get_default(ast)
 
         translate_and_write(settings, rules, components, output_file_name, default)
+
+
+
+
+
+######################### OTHER USEFUL THINGS YOU CAN DO BESIDES COMPILE ########################
+
+def lookup_opcode(input_file_name, opcode):
+    with open(input_file_name, 'r') as f:
+        ast = parser.parse(f.read() + '\n')
+        if error_found:
+            exit(-1)
+
+        check_cpp_jump_ast(ast)
+
+        # get the important bits from the ast
+        rule = get_matching_rule(get_rules(ast), opcode)
+        print("Matching rule is {}".format(rule.name))

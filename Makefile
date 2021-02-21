@@ -1,5 +1,6 @@
 .PHONY: all test clean
 
+RELEASE = 1
 CFLAGS         = -c -g --std=c++2a
 CXX            = $(shell wx-config --cxx)
 GCC            = g++
@@ -10,9 +11,9 @@ OBJ_DIR        = out
 TEST_CATCH_DIR = tests/catch
 TEST_SRC_DIR   = tests
 
-OBJS           = $(OBJ_DIR)/catchmain.o $(OBJ_DIR)/cpu_state.o $(OBJ_DIR)/expected_output.o $(OBJ_DIR)/gba.o $(OBJ_DIR)/jumptable-thumb.o $(OBJ_DIR)/jumptable-arm.o $(OBJ_DIR)/main.o $(OBJ_DIR)/memory.o $(OBJ_DIR)/util.o $(OBJ_DIR)/arm7tdmi.o $(OBJ_DIR)/gamebeanadvance.o $(OBJ_DIR)/ppu.o
+OBJS           = $(OBJ_DIR)/catchmain.o $(OBJ_DIR)/expected_output.o $(OBJ_DIR)/gba.o $(OBJ_DIR)/jumptable-thumb.o $(OBJ_DIR)/jumptable-arm.o $(OBJ_DIR)/main.o $(OBJ_DIR)/memory.o $(OBJ_DIR)/util.o $(OBJ_DIR)/arm7tdmi.o $(OBJ_DIR)/gamebeanadvance.o $(OBJ_DIR)/ppu.o $(OBJ_DIR)/cpu_state.o
 EXE_GBA_OBJ    = $(OBJ_DIR)/main.o $(OBJ_DIR)/gamebeanadvance.o
-EXE_TEST_OBJ   = $(OBJ_DIR)/catchmain.o $(OBJ_DIR)/cpu_state.o $(OBJ_DIR)/expected_output.o
+EXE_TEST_OBJ   = $(OBJ_DIR)/catchmain.o $(OBJ_DIR)/expected_output.o
 OBJS_TEST      = $(filter-out $(EXE_GBA_OBJ),  $(OBJS))
 OBJS_GBA       = $(filter-out $(EXE_TEST_OBJ), $(OBJS))
 
@@ -27,7 +28,7 @@ clean:
 
 # GBA
 
-gba: $(OBJ_DIR)/main.o $(OBJ_DIR)/memory.o $(OBJ_DIR)/util.o $(OBJ_DIR)/jumptable-thumb.o $(OBJ_DIR)/jumptable-arm.o $(OBJ_DIR)/ppu.o
+gba: $(OBJ_DIR)/main.o $(OBJ_DIR)/memory.o $(OBJ_DIR)/util.o $(OBJ_DIR)/jumptable-thumb.o $(OBJ_DIR)/jumptable-arm.o $(OBJ_DIR)/ppu.o $(OBJ_DIR)/cpu_state.o
 	$(CXX) -g `wx-config --libs` $(OBJS_GBA) -o gba 
 
 $(OBJ_DIR)/ppu.o: $(SRC_DIR)/ppu.*
@@ -39,7 +40,7 @@ $(OBJ_DIR)/gamebeanadvance.o: $(SRC_DIR)/gui/gamebeanadvance.* $(OBJ_DIR)/gba.o
 $(OBJ_DIR)/main.o: $(SRC_DIR)/gui/main.cpp $(OBJ_DIR)/gba.o $(OBJ_DIR)/gamebeanadvance.o
 	$(CXX) $(CFLAGS) -g `wx-config --cxxflags` $(SRC_DIR)/gui/main.cpp -o $(OBJ_DIR)/main.o
 
-$(OBJ_DIR)/gba.o: $(SRC_DIR)/gba.cpp $(SRC_DIR)/gba.h $(OBJ_DIR)/memory.o $(OBJ_DIR)/jumptable-thumb.o $(OBJ_DIR)/jumptable-arm.o $(OBJ_DIR)/arm7tdmi.o
+$(OBJ_DIR)/gba.o: $(SRC_DIR)/gba.cpp $(SRC_DIR)/gba.h $(OBJ_DIR)/memory.o $(OBJ_DIR)/jumptable-thumb.o $(OBJ_DIR)/jumptable-arm.o $(OBJ_DIR)/arm7tdmi.o 
 	$(GCC) $(CFLAGS) $(SRC_DIR)/gba.cpp -o $(OBJ_DIR)/gba.o
 
 $(OBJ_DIR)/memory.o: $(SRC_DIR)/memory.cpp $(OBJ_DIR)/util.o
@@ -69,7 +70,7 @@ test: $(OBJ_DIR)/gba.o $(OBJ_DIR)/memory.o $(OBJ_DIR)/catchmain.o $(OBJ_DIR)/exp
 $(OBJ_DIR)/catchmain.o:
 	$(GCC) -c -g --std=c++11 $(TEST_CATCH_DIR)/catchmain.cpp -o $(OBJ_DIR)/catchmain.o
 
-$(OBJ_DIR)/expected_output.o: $(OBJ_DIR)/util.o $(TEST_SRC_DIR)/expected_output.cpp
+$(OBJ_DIR)/expected_output.o: $(OBJ_DIR)/util.o $(TEST_SRC_DIR)/expected_output.cpp $(OBJ_DIR)/cpu_state.o
 	$(GCC) $(CFLAGS) $(TEST_SRC_DIR)/expected_output.cpp -o $(OBJ_DIR)/expected_output.o 
 
 $(OBJ_DIR)/cpu_state.o: $(TEST_SRC_DIR)/cpu_state.cpp $(TEST_SRC_DIR)/cpu_state.h $(OBJ_DIR)/arm7tdmi.o

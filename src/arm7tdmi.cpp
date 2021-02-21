@@ -4,6 +4,8 @@
 #include "jumptable/jumptable-thumb.h"
 #include "jumptable/jumptable-arm.h"
 
+#include "../tests/cpu_state.h"
+
 #include <iostream>
 
 ARM7TDMI::ARM7TDMI(Memory* memory) {
@@ -32,6 +34,19 @@ ARM7TDMI::~ARM7TDMI() {
 
 void ARM7TDMI::cycle() {
     uint32_t opcode = fetch();
+
+#ifndef RELEASE
+    if (cpu_states_size < CPU_STATE_LOG_LENGTH) {
+        cpu_states[cpu_states_size] = get_cpu_state(this);
+        cpu_states_size++;
+    } else {
+        for (int i = 0; i < CPU_STATE_LOG_LENGTH - 1; i++) {
+            cpu_states[i] = cpu_states[i + 1];
+        }
+        cpu_states[CPU_STATE_LOG_LENGTH - 1] = get_cpu_state(this);
+    }
+#endif
+
     execute(opcode);
 }
 

@@ -14,22 +14,25 @@ void error(std::string message) {
     std::cerr << RED << "ERROR: " << RESET << message << std::endl;
 
     if (logger_gba != NULL) {
-        for (int i = 0; i < GBA::CPU_STATE_LOG_LENGTH; i++) {
+        for (int i = 0; i < CPU_STATE_LOG_LENGTH; i++) {
             CpuState cpu_state = logger_gba->cpu->cpu_states[i];
             std::cout << ((cpu_state.type == ARM) ? "ARM " : "THUMB ");
             std::cout << to_hex_string(cpu_state.opcode);
+            std::cout << " ||";
 
             for (int i = 0; i < 16; i++) {
                 std::string register_value = to_hex_string(cpu_state.regs[i]);
                 std::cout << " " << std::string(8 - register_value.length(), '0').append(register_value);
             }
 
+            std::cout << " ||";
+
             std::cout << " " << to_hex_string(cpu_state.mode);
             std::cout << std::endl;
         }
-
-        error(message);
     }
+
+    exit(-1);
 }
 
 std::string to_hex_string(uint32_t val) {
@@ -69,3 +72,5 @@ void get_rom_as_bytes(std::string rom_name, uint8_t* out, size_t out_length) {
 
     delete[] buffer;
 }
+
+GBA* logger_gba = NULL;

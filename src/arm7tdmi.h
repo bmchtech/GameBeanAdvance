@@ -4,6 +4,8 @@
 #include "memory.h"
 #include "cpu-mode.h"
 
+#include "../tests/cpu_state.h"
+
 class ARM7TDMI {
     friend void error(std::string message);
     
@@ -200,6 +202,15 @@ class ARM7TDMI {
         bool should_execute(int opcode);
 
         CpuMode current_mode;
+
+#ifndef RELEASE
+    public:
+        #define CPU_STATE_LOG_LENGTH 100
+    
+    private:
+        CpuState cpu_states[CPU_STATE_LOG_LENGTH];
+        int cpu_states_size = 0;
+#endif
 };
 
 #endif

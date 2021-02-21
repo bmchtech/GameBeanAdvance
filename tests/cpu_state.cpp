@@ -1,5 +1,6 @@
 #include "cpu_state.h"
 #include "../src/memory.h"
+#include "../src/arm7tdmi.h"
 
 #include <iostream>
 

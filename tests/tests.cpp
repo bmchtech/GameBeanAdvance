@@ -119,7 +119,7 @@ TEST_CASE("CPU ARM Mode - VBA Logs (arm-opcodes) [Requires Functional THUMB]") {
 }
 
 TEST_CASE("PPU (Fountain) [Requires Functional CPU]") {
-    test_arm_mode("tests/asm/bin/Fountain.gba", "tests/asm/logs/Fountain.log", 2100, 0, false);
+    test_arm_mode("tests/asm/bin/Fountain.gba", "tests/asm/logs/Fountain.log", 200000, 0, false);
 }
 
 TEST_CASE("CPU FINALE (☆ superstar saga ☆) [Requires Functional ARM and THUMB]") {
