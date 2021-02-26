@@ -20,6 +20,18 @@ void KeyPanel::OnKeyDown(wxKeyEvent& event) {
     }
 }
 
+void KeyPanel::OnKeyUp(wxKeyEvent& event) {
+    int key_code = event.GetKeyCode();
+
+    for (int i = 0; i < 10; i++) {
+        if (key_code == KEY_MAPPING[i]) {
+            *memory->KEYINPUT |= (1 << i);
+            std::cout << "KEYPRESS RECOGNIZED " << *memory->KEYINPUT << std::endl;
+        }
+    }
+}
+
 BEGIN_EVENT_TABLE(KeyPanel, wxPanel)
     EVT_KEY_DOWN(KeyPanel::OnKeyDown)
+    EVT_KEY_UP  (KeyPanel::OnKeyUp)
 END_EVENT_TABLE()

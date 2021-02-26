@@ -33,23 +33,28 @@ ARM7TDMI::~ARM7TDMI() {
 }
 
 void ARM7TDMI::cycle() {
-    uint32_t opcode = fetch();
+    if (cycles_remaining == 0) {
+        uint32_t opcode = fetch();
 
-#ifndef RELEASE
-    if (cpu_states_size < CPU_STATE_LOG_LENGTH) {
-        cpu_states[cpu_states_size] = get_cpu_state(this);
-        cpu_states_size++;
-    } else {
-        for (int i = 0; i < CPU_STATE_LOG_LENGTH - 1; i++) {
-            cpu_states[i] = cpu_states[i + 1];
+    #ifndef RELEASE
+        if (cpu_states_size < CPU_STATE_LOG_LENGTH) {
+            cpu_states[cpu_states_size] = get_cpu_state(this);
+            cpu_states_size++;
+        } else {
+            for (int i = 0; i < CPU_STATE_LOG_LENGTH - 1; i++) {
+                cpu_states[i] = cpu_states[i + 1];
+            }
+            cpu_states[CPU_STATE_LOG_LENGTH - 1] = get_cpu_state(this);
         }
-        cpu_states[CPU_STATE_LOG_LENGTH - 1] = get_cpu_state(this);
+    #endif
+
+        // std::cout << to_hex_string(opcode) << std::endl;
+
+        execute(opcode);
     }
-#endif
-
-    // std::cout << to_hex_string(opcode) << std::endl;
-
-    execute(opcode);
+    
+    cycles_remaining--;
+    if (cycles_remaining < 0) error("Cycles Remaining dipped below 0.");
 }
 
 uint32_t ARM7TDMI::fetch() {
@@ -70,6 +75,8 @@ void ARM7TDMI::execute(uint32_t opcode) {
     } else {
         if (should_execute((opcode & 0xF0000000) >> 28)) {
             arm::execute_instruction(opcode, this);
+        } else {
+            cycles_remaining = 1;
         }
     }
 }

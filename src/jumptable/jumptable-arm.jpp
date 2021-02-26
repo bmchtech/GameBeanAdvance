@@ -213,6 +213,8 @@
 {
     cpu->shifter_operand   = cpu->ROR(get_nth_bits(opcode, 0, 8), ((get_nth_bits(opcode, 8, 12)) * 2));
     cpu->shifter_carry_out = get_nth_bits(opcode, 8, 12) == 0 ? cpu->get_flag_C() : get_nth_bit(cpu->shifter_operand, 31);
+
+    cpu->cycles_remaining++;
 }
 [/COMPONENT]
 
@@ -240,6 +242,7 @@
     @IF(!S  H) if (shift_immediate == 0) {
     @IF(!S  H)     cpu->shifter_operand   = 0;
     @IF(!S  H)     cpu->shifter_carry_out = get_nth_bit(rm, 31);
+    @IF(!S  H)     cpu->cycles_remaining--;
     @IF(!S  H) } else { // shift_immediate > 0
     @IF(!S  H)     cpu->shifter_operand   = cpu->LSR(rm, shift_immediate);
     @IF(!S  H)     cpu->shifter_carry_out = get_nth_bit(rm, shift_immediate - 1);
@@ -263,6 +266,8 @@
     @IF( S  H)     cpu->shifter_operand   = cpu->ROR(rm, shift_immediate);
     @IF( S  H)     cpu->shifter_carry_out = get_nth_bit(rm, shift_immediate - 1);
     @IF( S  H) }
+
+    cpu->cycles_remaining++;
 }
 [/COMPONENT]
 
@@ -337,6 +342,8 @@
     @IF( S  H)     cpu->shifter_operand   = cpu->ROR(rm, rs & 0xF);
     @IF( S  H)     cpu->shifter_carry_out = get_nth_bit(rs, rm & 0xF - 1);
     @IF( S  H) }
+
+    cpu->cycles_remaining++;
 }
 [/COMPONENT]
 
@@ -449,6 +456,7 @@
 [COMPONENT DATA_WRITEBACK]
 - FORMAT:  ----00I----S--------------------
 {
+    if (get_nth_bits(opcode, 12, 16) == 15) cpu->cycles_remaining += 2;
     cpu->regs[get_nth_bits(opcode, 12, 16)] = result;
 }
 [/COMPONENT]
@@ -512,6 +520,8 @@
     @IF(L) *cpu->lr = *cpu->pc;
     // unintuitive sign extension: http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
     *cpu->pc += ((((1U << 23) ^ get_nth_bits(opcode, 0, 24)) - (1U << 23)) << 2) + 4;
+
+    cpu->cycles_remaining += 3;
 }
 [/COMPONENT]
 
@@ -589,9 +599,12 @@
     uint8_t rd = get_nth_bits(opcode, 12, 16);
     if (rd == 15) {
         *cpu->pc = value & 0xFFFFFFFC;
+        cpu->cycles_remaining += 2;
     } else {
         cpu->regs[rd] = value;
     }
+
+    cpu->cycles_remaining += 3;
 }
 [/COMPONENT]
 
@@ -599,6 +612,8 @@
 - FORMAT:  ----01---1-1--------------------
 {
     cpu->regs[get_nth_bits(opcode, 12, 16)] = cpu->memory->read_byte(address);
+    if (get_nth_bits(opcode, 12, 16) == 15) cpu->cycles_remaining += 2;
+    cpu->cycles_remaining += 3;
 }
 [/COMPONENT]
 
@@ -606,6 +621,8 @@
 - FORMAT:  ----000----1--------------------
 {
     cpu->regs[get_nth_bits(opcode, 12, 16)] = cpu->memory->read_halfword(address);
+    if (get_nth_bits(opcode, 12, 16) == 15) cpu->cycles_remaining += 2;
+    cpu->cycles_remaining += 3;
 }
 [/COMPONENT]
 
@@ -613,6 +630,8 @@
 - FORMAT:  ----000----1------------1101----
 {
     cpu->regs[get_nth_bits(opcode, 12, 16)] = sign_extend(cpu->memory->read_byte(address), 8);
+    if (get_nth_bits(opcode, 12, 16) == 15) cpu->cycles_remaining += 2;
+    cpu->cycles_remaining += 3;
 }
 [/COMPONENT]
 
@@ -620,6 +639,8 @@
 - FORMAT:  ----000----1------------1111----
 {
     cpu->regs[get_nth_bits(opcode, 12, 16)] =  sign_extend(cpu->memory->read_halfword(address), 16);
+    if (get_nth_bits(opcode, 12, 16) == 15) cpu->cycles_remaining += 2;
+    cpu->cycles_remaining += 3;
 }
 [/COMPONENT]
 
@@ -630,6 +651,10 @@
 
     @IF(U)  int mask = 1;
     @IF(!U) int mask = 0x8000; 
+
+    int num_transactions = 0;
+
+    @IF(L) bool pc_loaded = false;
 
     @IF(U)  for (int i = 0;  i <  16; i++) {
     @IF(!U) for (int i = 15; i >= 0;  i--) {
@@ -643,6 +668,10 @@
 
             @IF(!P  U) address += 4;
             @IF(!P !U) address -= 4;
+
+            @IF(L) num_transactions++;
+
+            @IF(L) if (i == 15) pc_loaded = true;
         }
 
         @IF(U)  mask <<= 1; 
@@ -650,6 +679,11 @@
     }
 
     *cpu->pc &= 0xFFFFFFFE;
+
+    @IF(L) cpu->cycles_remaining += num_transactions + 2;
+    @IF(L) if (pc_loaded) cpu->cycles_remaining += 2;
+
+    @IF(!L) cpu->cycles_remaining += num_transactions + 1;
     
     @IF(W) cpu->regs[get_nth_bits(opcode, 16, 20)] = address;
 }
@@ -664,6 +698,14 @@
 
     @IF( S) cpu->set_flag_Z(*result == 0);
     @IF( S) cpu->set_flag_N(*result >> 31);
+    
+    int m = 4;
+    int operand = cpu->regs[get_nth_bits(opcode, 8, 12)];
+    if ((operand & 0xFFFFFF00) == 0x000000000 || (operand | 0x000000FF) == 0xFFFFFFFF) m = 1;
+    if ((operand & 0xFFFF0000) == 0x000000000 || (operand | 0x0000FFFF) == 0xFFFFFFFF) m = 2;
+    if ((operand & 0xFF000000) == 0x000000000 || (operand | 0x00FFFFFF) == 0xFFFFFFFF) m = 3;
+    @IF( A) cpu->cycles_remaining += m + 2;
+    @IF(!A) cpu->cycles_remaining += m + 1;
 }
 [/COMPONENT]
 
@@ -688,6 +730,8 @@
 {
     @IF(!R) cpu->regs[get_nth_bits(opcode, 12, 16)] = cpu->cpsr;
     @IF( R) cpu->regs[get_nth_bits(opcode, 12, 16)] = cpu->spsr;
+
+    cpu->cycles_remaining++;
 }
 [/COMPONENT]
 
@@ -706,6 +750,8 @@
     if (get_nth_bit(opcode, 19)) *destination = (*destination & 0x00FFFFFF) | (operand & 0xFF000000);
 
     cpu->update_mode();
+
+    cpu->cycles_remaining++;
 }
 [/COMPONENT]
 
@@ -775,6 +821,13 @@
     @IF( S)     cpu->set_flag_N(result >> 63);
     @IF( S) }
 
+    int m = 4;
+    int operand = ((((int64_t) cpu->regs[get_nth_bits(opcode, 8, 12)]) ^ mask) - mask);
+    if ((operand & 0xFFFFFF00) == 0x000000000 || (operand | 0x000000FF) == 0xFFFFFFFF) m = 1;
+    if ((operand & 0xFFFF0000) == 0x000000000 || (operand | 0x0000FFFF) == 0xFFFFFFFF) m = 2;
+    if ((operand & 0xFF000000) == 0x000000000 || (operand | 0x00FFFFFF) == 0xFFFFFFFF) m = 3;
+    cpu->cycles_remaining += m + 3;
+    
     break;
 }
 [/COMPONENT]
@@ -807,6 +860,7 @@
     uint32_t result = cpu->regs[get_nth_bits(opcode, 12, 16)];
     if (get_nth_bits(opcode, 12, 16) == 15) result += 4;
     cpu->memory->write_word(address & 0xFFFFFFFC, result);
+    cpu->cycles_remaining += 2;
 }
 [/COMPONENT]
 
@@ -814,6 +868,7 @@
 - FORMAT:  ----01IPU1W0--------------------
 {
     cpu->memory->write_byte(address, cpu->regs[get_nth_bits(opcode, 12, 16)] & 0xFF);
+    cpu->cycles_remaining += 2;
 }
 [/COMPONENT]
 
@@ -821,6 +876,7 @@
 - FORMAT:  ----000PUIW0------------1011----
 {
     cpu->memory->write_halfword(address & ~1, cpu->regs[get_nth_bits(opcode, 12, 16)] & 0xFFFF);
+    cpu->cycles_remaining += 2;
 }
 [/COMPONENT]
 
@@ -835,6 +891,8 @@
     
     cpu->memory->write_word(address & 0xFFFFFFFC, cpu->regs[get_nth_bits(opcode, 0, 4)]);
     cpu->regs[get_nth_bits(opcode, 12, 16)] = value;
+
+    cpu->cycles_remaining += 4;
 }
 [/COMPONENT]
 
@@ -865,6 +923,13 @@
     @IF( S)     cpu->set_flag_Z(result == 0);
     @IF( S)     cpu->set_flag_N(result >> 63);
     @IF( S) }
+
+    int m = 4;
+    int operand = ((uint64_t) cpu->regs[get_nth_bits(opcode, 8, 12)]);
+    if ((operand & 0xFFFFFF00) == 0x000000000 || (operand | 0x000000FF) == 0xFFFFFFFF) m = 1;
+    if ((operand & 0xFFFF0000) == 0x000000000 || (operand | 0x0000FFFF) == 0xFFFFFFFF) m = 2;
+    if ((operand & 0xFF000000) == 0x000000000 || (operand | 0x00FFFFFF) == 0xFFFFFFFF) m = 3;
+    cpu->cycles_remaining += m + 3;
 
     break;
 }

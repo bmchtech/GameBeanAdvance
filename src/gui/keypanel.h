@@ -11,6 +11,7 @@ class KeyPanel: public wxPanel {
     public:
         KeyPanel(wxFrame* parent, Memory* memory);
         void OnKeyDown(wxKeyEvent& event);
+        void OnKeyUp  (wxKeyEvent& event);
         DECLARE_EVENT_TABLE()
 
         static constexpr wxKeyCode KEY_MAPPING[10] = {

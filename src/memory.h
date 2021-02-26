@@ -35,6 +35,7 @@ class Memory {
         uint8_t* sram;         // 0xE000000 - 0xE00FFFF
 
         // deal with this
+        bool has_updated = false;
         uint8_t* pixels;
 
         // heres a bunch of constants that summarize the information above
@@ -110,40 +111,40 @@ class Memory {
 
         inline uint8_t read_byte(uint32_t address) {
             // if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Reading byte from address " << to_hex_string(address) << std::endl;
-            if (address >= SIZE_MAIN_MEMORY) error("Address out of range on read byte (" + to_hex_string(address) + ")");
+            // if (address >= SIZE_MAIN_MEMORY) error("Address out of range on read byte (" + to_hex_string(address) + ")");
             return main[address];
         }
 
         inline uint16_t read_halfword(uint32_t address) {
             // if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Reading halfword from address " << to_hex_string(address) << std::endl;
-            if (address + 2 >= SIZE_MAIN_MEMORY) error("Address out of range on read halfword (" + to_hex_string(address) + ")");
+            // if (address + 2 >= SIZE_MAIN_MEMORY) error("Address out of range on read halfword (" + to_hex_string(address) + ")");
             return *((uint16_t*) (main + address));
         }
 
         inline uint32_t read_word(uint32_t address) {
             // if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Reading word from address " << to_hex_string(address) << std::endl;
-            if (address + 4 >= SIZE_MAIN_MEMORY) error("Address out of range on read word (" + to_hex_string(address) + ")");
+            // if (address + 4 >= SIZE_MAIN_MEMORY) error("Address out of range on read word (" + to_hex_string(address) + ")");
             return *((uint32_t*) (main + address));
         }
 
         inline void write_byte(uint32_t address, uint8_t value) {
-            if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
-            if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Writing byte " << to_hex_string(value) << " at address " << to_hex_string(address) << std::endl;
-            if (address >= SIZE_MAIN_MEMORY) error("Address out of range on write byte (" + to_hex_string(address) + ")");
+            // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
+            // if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Writing byte " << to_hex_string(value) << " at address " << to_hex_string(address) << std::endl;
+            // if (address >= SIZE_MAIN_MEMORY) error("Address out of range on write byte (" + to_hex_string(address) + ")");
             main[address] = value;
         }
 
         inline void write_halfword(uint32_t address, uint16_t value) {
-            if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
-            if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Writing halfword " << to_hex_string(value) << " at address " << to_hex_string(address) << std::endl;
-            if (address + 2 >= SIZE_MAIN_MEMORY) error("Address out of range on write halfword (" + to_hex_string(address) + ")");
+            // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
+            // if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Writing halfword " << to_hex_string(value) << " at address " << to_hex_string(address) << std::endl;
+            // if (address + 2 >= SIZE_MAIN_MEMORY) error("Address out of range on write halfword (" + to_hex_string(address) + ")");
             *((uint16_t*) (main + address)) = value;
         }
 
         inline void write_word(uint32_t address, uint32_t value) {
-            if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
-            if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Writing word " << to_hex_string(value) << " at address " << to_hex_string(address) << std::endl;
-            if (address + 4 >= SIZE_MAIN_MEMORY) error("Address out of range on write word (" + to_hex_string(address) + ")");
+            // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
+            // if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Writing word " << to_hex_string(value) << " at address " << to_hex_string(address) << std::endl;
+            // if (address + 4 >= SIZE_MAIN_MEMORY) error("Address out of range on write word (" + to_hex_string(address) + ")");
             *((uint32_t*) (main + address)) = value;
         }
         

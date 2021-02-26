@@ -196,6 +196,11 @@ class ARM7TDMI {
             return result;
         }
 
+        // when this hits 0, a new instruction is run. each instruction loads a value into here that
+        // specifies how many cycles the instruction takes to execute. each cycle also decrements 
+        // this value.
+        uint8_t cycles_remaining = 0;
+
     private:
         // determines whether or not this function should execute based on COND (the high 4 bits of the opcode)
         // note that this only applies to ARM instructions.
@@ -205,7 +210,7 @@ class ARM7TDMI {
 
 #ifndef RELEASE
     public:
-        #define CPU_STATE_LOG_LENGTH 100
+        #define CPU_STATE_LOG_LENGTH 1
     
     private:
         CpuState cpu_states[CPU_STATE_LOG_LENGTH];

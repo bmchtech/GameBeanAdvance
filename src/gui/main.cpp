@@ -56,6 +56,9 @@ void MyFrame::OnPaint(wxPaintEvent& roEvent) {
     dc.Clear();
     dc.SetUserScale(SCREEN_SCALE_WIDTH, SCREEN_SCALE_HEIGHT);
 
+    if (!memory->has_updated) return;
+    memory->has_updated = false;
+
     wxImage image(240, 160);
 
     for (int x = 0; x < 240; x++) {

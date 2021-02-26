@@ -22,6 +22,22 @@
     #define DEBUG_MESSAGE(message) do {} while(0)
 #endif
 
+// 4770
+// 0c24
+// 42a5
+// d1f6
+// bc70
+// bc08
+// b004
+// 4718
+// 4335
+// d01f
+// 2106
+// 4658
+// f000
+// fd60
+// 4778
+
 @DEFAULT()
 void nop(uint16_t opcode) {
     DEBUG_MESSAGE("NOP");
@@ -49,6 +65,8 @@ void run_0000SABC(uint16_t opcode) {
 
     cpu->set_flag_N(get_nth_bit(cpu->regs[dest], 31));
     cpu->set_flag_Z(cpu->regs[dest] == 0);
+
+    cpu->cycles_remaining += 2;
 }
 
 // arithmetic shift right
@@ -69,6 +87,8 @@ void run_00010ABC(uint16_t opcode) {
 
     cpu->set_flag_N(cpu->regs[rd] >> 31);
     cpu->set_flag_Z(cpu->regs[rd] == 0);
+
+    cpu->cycles_remaining += 2;
 }
 
 // add #3 010 001 001
@@ -95,6 +115,8 @@ void run_0001100A(uint16_t opcode) {
     // then there was an overflow and we set the flag.
     bool matching_signs = get_nth_bit(rn, 31) == get_nth_bit(rm, 31);
     cpu->set_flag_V(matching_signs && (get_nth_bit(rn, 31) ^ cpu->get_flag_N()));
+
+    cpu->cycles_remaining += 1;
 }
 
 // sub #3 010 001 001
@@ -120,6 +142,8 @@ void run_0001101A(uint16_t opcode) {
     // then there was an overflow and we set the flag.
     bool matching_signs = get_nth_bit(rn, 31) == get_nth_bit(cpu->regs[get_nth_bits(opcode, 6, 9)], 31);
     cpu->set_flag_V(!matching_signs && (get_nth_bit(cpu->regs[get_nth_bits(opcode, 6, 9)], 31) == cpu->get_flag_N()));
+
+    cpu->cycles_remaining += 1;
 }
 
 // add #1 
@@ -139,6 +163,8 @@ void run_0001110A(uint16_t opcode) {
 
     bool matching_signs = get_nth_bit(immediate_value, 31) == get_nth_bit(rn_value, 31);
     cpu->set_flag_V(matching_signs && (get_nth_bit(immediate_value, 31) ^ cpu->get_flag_N()));
+
+    cpu->cycles_remaining += 1;
 }
 
 // Subtract #1
@@ -157,6 +183,8 @@ void run_0001111A(uint16_t opcode) {
 
     bool matching_signs = get_nth_bit(rn_value, 31) == get_nth_bit(get_nth_bits(opcode, 6, 9), 31);
     cpu->set_flag_V(!matching_signs && (get_nth_bit(get_nth_bits(opcode, 6, 9), 31) == cpu->get_flag_N()));
+
+    cpu->cycles_remaining += 1;
 }
 
 // move immediate
@@ -168,6 +196,8 @@ void run_00100ABC(uint16_t opcode) {
     // flags
     cpu->set_flag_N(get_nth_bit(immediate_value, 31));
     cpu->set_flag_Z(immediate_value == 0);
+
+    cpu->cycles_remaining += 1;
 }
 
 // compare immediate
@@ -189,6 +219,8 @@ void run_00101ABC(uint16_t opcode) {
 
     bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rn_value, 31);
     cpu->set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
+
+    cpu->cycles_remaining += 1;
 }
 
 // add immediate
@@ -211,6 +243,8 @@ void run_00110ABC(uint16_t opcode) {
 
     bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 31);
     cpu->set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ cpu->get_flag_N()));
+
+    cpu->cycles_remaining += 1;
 }
 
 // subtract immediate
@@ -238,6 +272,8 @@ void run_00111ABC(uint16_t opcode) {
     cpu->set_flag_V(matching_signs && (get_nth_bit(new_rd_value, 31) ^ cpu->get_flag_N()));*/
     bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 31);
     cpu->set_flag_V(!matching_signs && (get_nth_bit(immediate_value, 31) == cpu->get_flag_N()));
+
+    cpu->cycles_remaining += 1;
 }
 
 // ALU operation - AND, EOR, LSL #2, LSR #2
@@ -264,6 +300,8 @@ void run_01000000(uint16_t opcode) {
                 cpu->set_flag_C(false);
                 cpu->regs[rd] = 0;
             }
+
+            cpu->cycles_remaining += 1;
             break;
         case 0b11:
             if ((cpu->regs[rm] & 0xFF) < 32 && (cpu->regs[rm] & 0xFF) != 0) {
@@ -276,11 +314,15 @@ void run_01000000(uint16_t opcode) {
                 cpu->set_flag_C(false);
                 cpu->regs[rd] = 0;
             }
+
+            cpu->cycles_remaining += 1;
             break;
     }
 
     cpu->set_flag_N(cpu->regs[rd] >> 31);
     cpu->set_flag_Z(cpu->regs[rd] == 0);
+
+    cpu->cycles_remaining += 1;
 }
 
 // ALU operation - ASR #2, ADC, SBC, ROR
@@ -305,6 +347,8 @@ void run_01000001(uint16_t opcode) {
                     cpu->regs[rd] = 0x00000000;
                 }
             }
+
+            cpu->cycles_remaining += 1;
             break;
         }
         
@@ -362,9 +406,12 @@ void run_01000001(uint16_t opcode) {
                 uint32_t rotated_in  = get_nth_bits(cpu->regs[rd], cpu->regs[rm] & 0xF, 32); // the value that stays after the rotation
                 cpu->regs[rd] = rotated_in | (rotated_off << (32 - (cpu->regs[rm] & 0xF)));
             }
+
+            cpu->cycles_remaining += 1;
         }
     }
 
+    cpu->cycles_remaining += 1;
     cpu->set_flag_N(cpu->regs[rd] >> 31);
     cpu->set_flag_Z(cpu->regs[rd] == 0);
 }
@@ -423,6 +470,7 @@ void run_01000010(uint16_t opcode) {
         }
     }
 
+    cpu->cycles_remaining += 1;
     cpu->set_flag_N(get_nth_bit(result, 31));
     cpu->set_flag_Z(result == 0);
 }
@@ -447,6 +495,7 @@ void run_01000011(uint16_t opcode) {
             cpu->regs[rd] = ~cpu->regs[rm];
     }
 
+    cpu->cycles_remaining += 1;
     cpu->set_flag_N(get_nth_bit(cpu->regs[rd], 31));
     cpu->set_flag_Z(cpu->regs[rd] == 0);
 }
@@ -457,6 +506,8 @@ void run_01000100(uint16_t opcode) {
     uint8_t rd = get_nth_bits(opcode, 0, 3) | (get_nth_bit(opcode, 7) << 3);
 
     cpu->regs[rd] += cpu->regs[rm];
+
+    cpu->cycles_remaining += 1;
 }
 
 // CMP #4 - high registers
@@ -478,6 +529,8 @@ void run_01000101(uint16_t opcode) {
 
     bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rm_value, 31);
     cpu->set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
+
+    cpu->cycles_remaining += 1;
 }
 
 // MOV #3 - high registers, does not change flags
@@ -494,13 +547,18 @@ void run_01000110(uint16_t opcode) {
     if (rm == 15) {
         cpu->regs[rd] += 2;
     }
+
+    cpu->cycles_remaining += 1;
 }
 
 // branch exchange
 void run_01000111(uint16_t opcode) {
    uint32_t pointer = cpu->regs[get_nth_bits(opcode, 3, 7)];
+   if (get_nth_bits(opcode, 3, 7) == 15) pointer += 2;
    *cpu->pc = pointer & 0xFFFFFFFE; // the PC must be even, so we & with 0xFFFFFFFE.
    cpu->set_bit_T(pointer & 1);
+
+    cpu->cycles_remaining += 3;
 }
 
 // pc-relative load
@@ -509,6 +567,8 @@ void run_01001REG(uint16_t opcode) {
     uint8_t reg = get_nth_bits(opcode, 8,  11);
     uint32_t loc = (get_nth_bits(opcode, 0,  8) << 2) + ((*cpu->pc + 2) & 0xFFFFFFFC);
     cpu->regs[reg] = cpu->memory->read_word(loc);
+
+    cpu->cycles_remaining += 5;
 }
 
 // load with relative offset
@@ -534,6 +594,8 @@ void run_0101LSBR(uint16_t opcode) {
     @IF(!L  S  B) int32_t  value = (uint32_t) sign_extend(cpu->memory->read_byte    (cpu->regs[rm] + cpu->regs[rn]), 8);
 
     cpu->regs[rd] = value;
+
+    cpu->cycles_remaining += 3;
 }
 
 // store sign-extended byte and halfword
@@ -554,6 +616,8 @@ void run_01010SBR(uint16_t opcode) {
     @IF( S !B) cpu->memory->write_byte    (cpu->regs[rm] + cpu->regs[rn], value);
     @IF(!S  B) cpu->memory->write_halfword(cpu->regs[rm] + cpu->regs[rn], value);
     @IF(!S !B) cpu->memory->write_word    (cpu->regs[rm] + cpu->regs[rn], value);
+
+    cpu->cycles_remaining += 2;
 }
 
 // load and store with immediate offset
@@ -572,6 +636,9 @@ void run_011BLOFS(uint16_t opcode) {
     @IF( B !L) cpu->memory->write_byte(cpu->regs[rn] + (immediate_value), cpu->regs[rd] & 0xFF);
     @IF(!B  L) cpu->regs[rd] = cpu->memory->read_word(cpu->regs[rn] + (immediate_value << 2));
     @IF( B  L) cpu->regs[rd] = cpu->memory->read_byte(cpu->regs[rn] + immediate_value);
+
+    cpu->cycles_remaining += 2;
+    @IF( L) cpu->cycles_remaining += 1;
 }
 
 // store halfword
@@ -581,6 +648,8 @@ void run_10000OFS(uint16_t opcode) {
     uint8_t offset = get_nth_bits(opcode, 6, 11);
     
     cpu->memory->write_halfword(cpu->regs[rn] + (offset << 1), cpu->regs[rd]);
+
+    cpu->cycles_remaining += 2;
 }
 
 // load halfword
@@ -590,6 +659,8 @@ void run_10001OFS(uint16_t opcode) {
     uint8_t offset = get_nth_bits(opcode, 6, 11);
     
     cpu->regs[rd] = cpu->memory->read_halfword(cpu->regs[rn] + offset * 2);
+
+    cpu->cycles_remaining += 3;
 }
 
 // sp-relative load and store
@@ -600,6 +671,9 @@ void run_1001LREG(uint16_t opcode) {
     // if L is set, we load. if L is not set, we store.
     @IF(L)  cpu->regs[rd] = cpu->memory->read_word(*cpu->sp + (immediate_value << 2));
     @IF(!L) cpu->memory->write_word(*cpu->sp + (immediate_value << 2), cpu->regs[rd]);
+
+    cpu->cycles_remaining += 2;
+    @IF( L) cpu->cycles_remaining += 1;
 }
 
 // add #5 / #6 - PC and SP relative respectively
@@ -608,6 +682,8 @@ void run_1010SREG(uint16_t opcode) {
     uint8_t immediate_value = opcode & 0xFF;
     @IF(S)  cpu->regs[rd] =   *cpu->sp                    + (immediate_value << 2);
     @IF(!S) cpu->regs[rd] = ((*cpu->pc + 2) & 0xFFFFFFFC) + (immediate_value << 2);
+
+    cpu->cycles_remaining += 3;
 }
 
 // add / subtract offset to stack pointer
@@ -620,6 +696,8 @@ void run_10110000(uint16_t opcode) {
     } else {
         *cpu->sp += offset;
     }
+
+    cpu->cycles_remaining += 1;
 }
 
 // push registers
@@ -633,13 +711,17 @@ void run_1011010R(uint16_t opcode) {
         cpu->memory->write_word(*cpu->sp, *cpu->lr);
     }
 
+    int num_pushed = 0;
     // now loop backwards through the registers
     for (int i = 7; i >= 0; i--) {
         if (get_nth_bit(register_list, i)) {
             *cpu->sp -= 4;
             cpu->memory->write_word(*cpu->sp, cpu->regs[i]);
+            num_pushed++;
         }
     }
+
+    cpu->cycles_remaining += num_pushed + 1;
 }
 
 // pop registers
@@ -647,11 +729,13 @@ void run_1011110R(uint16_t opcode) {
     uint8_t register_list  = opcode & 0xFF;
     bool    is_lr_included = get_nth_bit(opcode, 8);
 
+    int num_pushed = 0;
     // loop forwards through the registers
     for (int i = 0; i < 8; i++) {
         if (get_nth_bit(register_list, i)) {
             cpu->regs[i] = cpu->memory->read_word(*cpu->sp);
             *cpu->sp += 4;
+            num_pushed++;
         }
     }
 
@@ -660,6 +744,8 @@ void run_1011110R(uint16_t opcode) {
         *cpu->pc = cpu->memory->read_word(*cpu->sp);
         *cpu->sp += 4;
     }
+
+    cpu->cycles_remaining += num_pushed + 2;
 }
 
 // multiple load
@@ -671,6 +757,7 @@ void run_11001REG(uint16_t opcode) {
     // should we update rn after the LDMIA?
     // only happens if rn wasn't in register_list.
     bool update_rn         = true;
+    int num_pushed         = 0;
     for (int i = 0; i < 8; i++) {
         if (get_nth_bit(register_list, i)) {
             if (rn == i) {
@@ -679,12 +766,15 @@ void run_11001REG(uint16_t opcode) {
 
             cpu->regs[i] = cpu->memory->read_word(current_address);
             current_address += 4;
+            num_pushed++;
         }
     }
 
     if (update_rn) {
         cpu->regs[rn] = current_address;
     }
+
+    cpu->cycles_remaining += num_pushed + 2;
 }
 
 // multiple store
@@ -693,6 +783,7 @@ void run_11000REG(uint16_t opcode) {
     uint32_t* start_address = cpu->regs + get_nth_bits(opcode, 8, 11);
     uint8_t   register_list = get_nth_bits(opcode, 0, 8);
 
+    int num_pushed          = 0;
     for (int i = 0; i < 8; i++) {
         // should we store this register?
         if (get_nth_bit(register_list, i)) {
@@ -700,8 +791,11 @@ void run_11000REG(uint16_t opcode) {
             // it has to be this way for when we writeback to cpu->regs after the loop
             *start_address += 4;
             cpu->memory->write_word(((*start_address - 4) & 0xFFFFFFFC),  cpu->regs[i]);
+            num_pushed++;
         }
     }
+
+    cpu->cycles_remaining += num_pushed + 1;
 }
 
 // conditional branch
@@ -729,6 +823,8 @@ void run_1101COND(uint16_t opcode) {
     } else {
         DEBUG_MESSAGE("Conditional Branch Not Taken");
     }
+
+    cpu->cycles_remaining += 3;
 }
 
 // software interrupt
@@ -742,6 +838,8 @@ void run_11100OFS(uint16_t opcode) {
 
     int32_t sign_extended = (int32_t) (((int8_t) get_nth_bits(opcode, 0, 11)) << 1);
     *cpu->pc = (*cpu->pc + 2) + sign_extended;
+
+    cpu->cycles_remaining += 3;
 }
 
 // long branch with link - high byte
@@ -752,6 +850,7 @@ void run_11110OFS(uint16_t opcode) {
 
     *cpu->lr = (*cpu->pc + 2) + (extended << 12);
 
+    cpu->cycles_remaining += 3;
 }
 
 // long branch with link - low byte and call to subroutine
@@ -759,4 +858,6 @@ void run_11111OFS(uint16_t opcode) {
     uint32_t next_pc = *(cpu->pc);
     *cpu->pc = (*cpu->lr + (get_nth_bits(opcode, 0, 11) << 1));
     *cpu->lr = (next_pc) | 1;
+
+    cpu->cycles_remaining += 3;
 }

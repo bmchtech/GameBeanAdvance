@@ -21,6 +21,7 @@ void PPU::cycle() {
 
         if (scanline > 227) {
             scanline = 0;
+            memory->has_updated = true;
         }
     }
     *memory->VCOUNT = scanline;
