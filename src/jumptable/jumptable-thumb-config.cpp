@@ -178,7 +178,7 @@ void run_00101ABC(uint16_t opcode) {
     // this uses the same two's complement trick that makes ADD the same as SUB.
     int32_t rn_value     = ~immediate_value + 1; // the trick is implemented here
     int32_t old_rd_value = cpu->regs[get_nth_bits(opcode, 8, 11)];
-
+    
     uint32_t result = old_rd_value + rn_value;
 
     cpu->set_flag_Z(result == 0);

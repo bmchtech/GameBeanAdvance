@@ -169,7 +169,7 @@
 [/RULE]
 
 [RULE STRH]
-- INCLUDE: ----000--1-0------------1011----
+- INCLUDE: ----000----0------------1011----
 - COMPONENT: ADDRESSING_MODE_3
 - COMPONENT: STRH
 [/RULE]
@@ -818,7 +818,7 @@
 [/COMPONENT]
 
 [COMPONENT STRH]
-- FORMAT:  ----000PU1W0------------1011----
+- FORMAT:  ----000PUIW0------------1011----
 {
     cpu->memory->write_halfword(address & ~1, cpu->regs[get_nth_bits(opcode, 12, 16)] & 0xFFFF);
 }

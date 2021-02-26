@@ -4,41 +4,47 @@
 #define SCREEN_RESOLUTION_WIDTH  240
 #define SCREEN_RESOLUTION_HEIGHT 160
 
+#include "keypanel.h"
+
 MyFrame::MyFrame(Memory* memory) : wxFrame(NULL, wxID_ANY, "GameBeanAdvance", wxDefaultPosition, 
                                    wxSize(SCREEN_SCALE_WIDTH  * SCREEN_RESOLUTION_WIDTH, 
-                                          SCREEN_SCALE_HEIGHT * SCREEN_RESOLUTION_HEIGHT + 20)) {
+                                          SCREEN_SCALE_HEIGHT * SCREEN_RESOLUTION_HEIGHT + 20)) {/*
     wxMenu *menuFile = new wxMenu;
     menuFile->Append(ID_Hello, "&Hello...\tCtrl-H",
                      "Help string shown in status bar for this menu item");
     menuFile->AppendSeparator();
     menuFile->Append(wxID_EXIT);
-    wxMenu *menuHelp = new wxMenu;
-    menuHelp->Append(wxID_ABOUT);
     wxMenuBar *menuBar = new wxMenuBar;
     menuBar->Append(menuFile, "&File");
-    menuBar->Append(menuHelp, "&Help");
+
+    wxMenu *menuWindow = new wxMenu;
+    menuBar->Append(menuWindow, "&View");
     SetMenuBar( menuBar );
 
-    Bind(wxEVT_MENU, &MyFrame::OnHello, this, ID_Hello);
-    Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
-    Bind(wxEVT_MENU, &MyFrame::OnExit, this, wxID_EXIT);
+    Bind(wxEVT_MENU, &MyFrame::OnExit, this, wxID_EXIT);*/
+
+    wxMenu* menu_file = new wxMenu;
+    menu_file->Append(ID_Hello, "&Hello! :)", "test");
+    menu_file->AppendSeparator();
+    menu_file->Append(wxID_EXIT, _("Exit"));
+
+    wxMenu* menu_debug = new wxMenu;
+
+    wxMenuBar* menu_bar = new wxMenuBar;
+    menu_bar->Append(menu_file, "&File");
+    menu_bar->Append(menu_debug, "&Debug");
+    
+    SetMenuBar(menu_bar);
 
     renderTimer = new RenderTimer(this);
     renderTimer->start();
     this->memory = memory;
+    
+    this->key_panel = new KeyPanel(this, memory);
 }
 
 void MyFrame::OnExit(wxCommandEvent& event) {
     Close(true);
-}
-
-void MyFrame::OnAbout(wxCommandEvent& event) {
-    wxMessageBox("This is a wxWidgets Hello World example",
-                 "About Hello World", wxOK | wxICON_INFORMATION);
-}
-
-void MyFrame::OnHello(wxCommandEvent& event) {
-    wxLogMessage("Hello world from wxWidgets!");
 }
 
 BEGIN_EVENT_TABLE(MyFrame, wxFrame)
@@ -54,9 +60,13 @@ void MyFrame::OnPaint(wxPaintEvent& roEvent) {
 
     for (int x = 0; x < 240; x++) {
     for (int y = 0; y < 160; y++) {
-        image.SetRGB(x, y, memory->pixels[((x * 160) + y) * 3 + 0],
-                           memory->pixels[((x * 160) + y) * 3 + 1],
-                           memory->pixels[((x * 160) + y) * 3 + 2]);
+        // if (x % 8 == 0 || y % 8 == 0) {
+        //     image.SetRGB(x, y, 255, 0, 0);
+        // } else {
+            image.SetRGB(x, y, memory->pixels[((x * 160) + y) * 3 + 0],
+                               memory->pixels[((x * 160) + y) * 3 + 1],
+                               memory->pixels[((x * 160) + y) * 3 + 2]);
+        // }
     }
     }
 

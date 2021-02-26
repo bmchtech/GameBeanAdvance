@@ -9,6 +9,7 @@
 #endif
 
 #include "../memory.h"
+#include "keypanel.h"
 
 // a value of "2" would mean that one pixel on the GBA is 2 pixels given as output.
 #define SCREEN_SCALE_WIDTH  2
@@ -18,12 +19,10 @@ class MyFrame : public wxFrame {
     public:
         MyFrame(Memory* memory);
 
-    private:
-        void OnHello(wxCommandEvent& event);
-        void OnExit (wxCommandEvent& event);
-        void OnAbout(wxCommandEvent& event);
-        void OnPaint(wxPaintEvent& roEvent);
-        void OnIdle (wxIdleEvent& evt);
+    private: 
+        void OnExit    (wxCommandEvent& event);
+        void OnPaint   (wxPaintEvent&   roEvent);
+        void OnIdle    (wxIdleEvent&    evt);
 
         DECLARE_EVENT_TABLE()
         
@@ -46,6 +45,7 @@ class MyFrame : public wxFrame {
 
         RenderTimer* renderTimer;
         Memory* memory;
+        KeyPanel* key_panel;
 };
 
 enum {

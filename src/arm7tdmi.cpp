@@ -47,6 +47,8 @@ void ARM7TDMI::cycle() {
     }
 #endif
 
+    // std::cout << to_hex_string(opcode) << std::endl;
+
     execute(opcode);
 }
 

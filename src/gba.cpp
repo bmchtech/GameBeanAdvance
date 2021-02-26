@@ -50,7 +50,7 @@ void gba_thread(GBA* gba) {
         while (count < 1000) {
             auto x = std::chrono::steady_clock::now() + std::chrono::milliseconds(1);
             
-            for (int i = 0; i < 16000; i++) {
+            for (int i = 0; i < 16000 / 4; i++) {
                 count++;
                 gba->cycle();
 
@@ -58,10 +58,10 @@ void gba_thread(GBA* gba) {
             }
 
             std::this_thread::sleep_until(x);
-        }
 
-        if (std::chrono::steady_clock::now() > s) {
-            warning("Emulator running too slow!");
+            if (std::chrono::steady_clock::now() > s) {
+                warning("Emulator running too slow!");
+            }
         }
     }
 }
@@ -84,5 +84,9 @@ void GBA::run(std::string rom_name) {
 
 void GBA::cycle() {
     cpu->cycle();
+    cpu->cycle();
+    cpu->cycle();
+    cpu->cycle();
+
     ppu->cycle();
 }
