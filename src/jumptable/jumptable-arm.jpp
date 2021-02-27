@@ -689,26 +689,6 @@
 }
 [/COMPONENT]
 
-[COMPONENT MUL_MLA]
-- FORMAT:  ----000000AS------------1001----
-{
-    uint32_t* result = &cpu->regs[get_nth_bits(opcode, 16, 20)];
-    *result = cpu->regs[get_nth_bits(opcode, 0, 4)] * cpu->regs[get_nth_bits(opcode, 8, 12)];
-    @IF( A) *result += cpu->regs[get_nth_bits(opcode, 12, 16)];
-
-    @IF( S) cpu->set_flag_Z(*result == 0);
-    @IF( S) cpu->set_flag_N(*result >> 31);
-    
-    int m = 4;
-    int operand = cpu->regs[get_nth_bits(opcode, 8, 12)];
-    if ((operand & 0xFFFFFF00) == 0x000000000 || (operand | 0x000000FF) == 0xFFFFFFFF) m = 1;
-    if ((operand & 0xFFFF0000) == 0x000000000 || (operand | 0x0000FFFF) == 0xFFFFFFFF) m = 2;
-    if ((operand & 0xFF000000) == 0x000000000 || (operand | 0x00FFFFFF) == 0xFFFFFFFF) m = 3;
-    @IF( A) cpu->cycles_remaining += m + 2;
-    @IF(!A) cpu->cycles_remaining += m + 1;
-}
-[/COMPONENT]
-
 [COMPONENT MOV_MVN]
 - FORMAT:  ----00I11N1S--------------------
 {
@@ -752,6 +732,26 @@
     cpu->update_mode();
 
     cpu->cycles_remaining++;
+}
+[/COMPONENT]
+
+[COMPONENT MUL_MLA]
+- FORMAT:  ----000000AS------------1001----
+{
+    uint32_t* result = &cpu->regs[get_nth_bits(opcode, 16, 20)];
+    *result = cpu->regs[get_nth_bits(opcode, 0, 4)] * cpu->regs[get_nth_bits(opcode, 8, 12)];
+    @IF( A) *result += cpu->regs[get_nth_bits(opcode, 12, 16)];
+
+    @IF( S) cpu->set_flag_Z(*result == 0);
+    @IF( S) cpu->set_flag_N(*result >> 31);
+    
+    int m = 4;
+    int operand = cpu->regs[get_nth_bits(opcode, 8, 12)];
+    if ((operand & 0xFFFFFF00) == 0x000000000 || (operand | 0x000000FF) == 0xFFFFFFFF) m = 1;
+    if ((operand & 0xFFFF0000) == 0x000000000 || (operand | 0x0000FFFF) == 0xFFFFFFFF) m = 2;
+    if ((operand & 0xFF000000) == 0x000000000 || (operand | 0x00FFFFFF) == 0xFFFFFFFF) m = 3;
+    @IF( A) cpu->cycles_remaining += m + 2;
+    @IF(!A) cpu->cycles_remaining += m + 1;
 }
 [/COMPONENT]
 

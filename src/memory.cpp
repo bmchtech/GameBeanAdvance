@@ -56,6 +56,23 @@ Memory::Memory() {
     BLDALPHA     = (uint16_t*) &main[0x4000052];
     BLDY         = (uint16_t*) &main[0x4000054];
 
+    DMA0SAD      = (uint32_t*) &main[0x40000B0];
+    DMA0DAD      = (uint32_t*) &main[0x40000B4];
+    DMA0CNT_L    = (uint16_t*) &main[0x40000B8];
+    DMA0CNT_H    = (uint16_t*) &main[0x40000BA];
+    DMA1SAD      = (uint32_t*) &main[0x40000BC];
+    DMA1DAD      = (uint32_t*) &main[0x40000C0];
+    DMA1CNT_L    = (uint16_t*) &main[0x40000C4];
+    DMA1CNT_H    = (uint16_t*) &main[0x40000C6];
+    DMA2SAD      = (uint32_t*) &main[0x40000C8];
+    DMA2DAD      = (uint32_t*) &main[0x40000CC];
+    DMA2CNT_L    = (uint16_t*) &main[0x40000D0];
+    DMA2CNT_H    = (uint16_t*) &main[0x40000D2];
+    DMA3SAD      = (uint32_t*) &main[0x40000D4];
+    DMA3DAD      = (uint32_t*) &main[0x40000D8];
+    DMA3CNT_L    = (uint16_t*) &main[0x40000DC];
+    DMA3CNT_H    = (uint16_t*) &main[0x40000DE];
+
     KEYINPUT     = (uint16_t*) &main[0x4000130];
     KEYCNT       = (uint16_t*) &main[0x4000132];
 

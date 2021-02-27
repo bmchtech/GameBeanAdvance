@@ -31,12 +31,30 @@ class GBA {
         // this is staying here for now.
         void cycle();
 
+        // returns true if a DMA transfer occurred this cycle.
+        bool handle_dma();
+
         bool enabled;
 
     private:
         ARM7TDMI* cpu;
         PPU*      ppu;
         Memory*   memory;
+
+        typedef struct DMAChannel {
+            uint32_t* source;
+            uint32_t* dest;
+            uint16_t* cnt_l;
+            uint16_t* cnt_h;
+
+            uint32_t  source_buf;
+            uint32_t  dest_buf;
+            uint16_t  size_buf;
+            bool      enabled;
+        } DMAChannel_t;
+
+        DMAChannel_t dma_channels[4];
+        bool dma_cycle = false;
 };
 
 #endif

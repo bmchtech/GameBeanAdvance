@@ -16,8 +16,10 @@ class PPU {
         void cycle();
     
     private:
-        Memory*   memory;
-        uint16_t  dot; // the horizontal counterpart to scanlines.
+        Memory*  memory;
+        uint16_t dot; // the horizontal counterpart to scanlines.
+
+        void render_background_mode0(uint16_t bgcnt, uint16_t bghofs, uint16_t bgvofs);
 };
 
 #endif

@@ -51,8 +51,12 @@ void ARM7TDMI::cycle() {
         // std::cout << to_hex_string(opcode) << std::endl;
 
         execute(opcode);
+        
+        if (!enable_pc_checking) setup_cycles--;
+        if (setup_cycles == 0) enable_pc_checking = true;
+        if (enable_pc_checking && (*pc & 0xFF000000) != 0x08000000) warning("PC out of ROM! " + to_hex_string(opcode) + " " + to_hex_string(*pc));
     }
-    
+
     cycles_remaining--;
     if (cycles_remaining < 0) error("Cycles Remaining dipped below 0.");
 }

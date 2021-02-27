@@ -215,6 +215,9 @@ class ARM7TDMI {
     private:
         CpuState cpu_states[CPU_STATE_LOG_LENGTH];
         int cpu_states_size = 0;
+
+        bool enable_pc_checking = false;
+        int  setup_cycles = 200000;
 #endif
 };
 
