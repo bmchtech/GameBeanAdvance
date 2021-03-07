@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/emu
+emu.so
+emu.dylib
+emu.dll
+emu.a
+emu.lib
+emu-test-*
+*.exe
+*.o
+*.obj
+*.lst
