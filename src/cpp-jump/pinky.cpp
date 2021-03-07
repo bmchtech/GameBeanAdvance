@@ -1,29 +1,9 @@
-module arm_pinky;
+#include <cstdint>
+#include "iostream"
+#include "pinky.h"
 
-import std.stdio;
-void entry_00(ubyte opcode) {
-    ubyte discriminator = (((opcode >> 0) & 0) << 0) | (((opcode >> 1) & 1) << 0);
-
-    switch (discriminator) {
-        case 0b0: {
-            // yes this is useless code but its filler so
-            int a = 3;
-            
-            int b = 6;
-            int result = a - b;
-            writeln(result);
-            break;
-        }
-        case 0b1: {
-            writeln("No implementation for opcode");
-            break;
-        }
-    default: break;
-    }
-}
-
-void entry_01(ubyte opcode) {
-    ubyte discriminator = (((opcode >> 0) & 0) << 0) | (((opcode >> 1) & 1) << 0);
+void arm_pinky::entry_00(uint8_t opcode) {
+    uint8_t discriminator = (((opcode >> 0) & 0) << 0) | (((opcode >> 1) & 1) << 0);
 
     switch (discriminator) {
         case 0b0: {
@@ -32,19 +12,30 @@ void entry_01(ubyte opcode) {
             
             int b = 6;
             int result = a - b;
-            writeln(result);
+            std::cout << std::to_string(result) << std::endl;
             break;
         }
-        case 0b1: {
-            writeln("No implementation for opcode");
-            break;
-        }
-    default: break;
     }
 }
 
-void entry_10(ubyte opcode) {
-    ubyte discriminator = (((opcode >> 0) & 0) << 0) | (((opcode >> 1) & 1) << 0);
+void arm_pinky::entry_01(uint8_t opcode) {
+    uint8_t discriminator = (((opcode >> 0) & 0) << 0) | (((opcode >> 1) & 1) << 0);
+
+    switch (discriminator) {
+        case 0b0: {
+            // yes this is useless code but its filler so
+            int a = 3;
+            
+            int b = 6;
+            int result = a - b;
+            std::cout << std::to_string(result) << std::endl;
+            break;
+        }
+    }
+}
+
+void arm_pinky::entry_10(uint8_t opcode) {
+    uint8_t discriminator = (((opcode >> 0) & 0) << 0) | (((opcode >> 1) & 1) << 0);
 
     switch (discriminator) {
         case 0b0: {
@@ -52,7 +43,7 @@ void entry_10(ubyte opcode) {
             int a = 5;
             int b = 6;
             int result = a - b;
-            writeln(result);
+            std::cout << std::to_string(result) << std::endl;
             break;
         }
         case 0b1: {
@@ -61,15 +52,14 @@ void entry_10(ubyte opcode) {
             // special comment! :D
             int b = 6;
             int result = a + b;
-            writeln(result);
+            std::cout << std::to_string(result) << std::endl;
             break;
         }
-    default: break;
     }
 }
 
-void entry_11(ubyte opcode) {
-    ubyte discriminator = (((opcode >> 0) & 0) << 0) | (((opcode >> 1) & 1) << 0);
+void arm_pinky::entry_11(uint8_t opcode) {
+    uint8_t discriminator = (((opcode >> 0) & 0) << 0) | (((opcode >> 1) & 1) << 0);
 
     switch (discriminator) {
         case 0b0: {
@@ -77,7 +67,7 @@ void entry_11(ubyte opcode) {
             int a = 5;
             int b = 6;
             int result = a - b;
-            writeln(result);
+            std::cout << std::to_string(result) << std::endl;
             break;
         }
         case 0b1: {
@@ -86,20 +76,19 @@ void entry_11(ubyte opcode) {
             // special comment! :D
             int b = 6;
             int result = a + b;
-            writeln(result);
+            std::cout << std::to_string(result) << std::endl;
             break;
         }
-    default: break;
     }
 }
 
-void execute_instruction(ubyte opcode) {
-    jumptable[(((opcode >> 0) & 0) << 0) | (((opcode >> 2) & 3) << 0)](opcode);
+void arm_pinky::execute_instruction(uint8_t opcode) {
+    arm_pinky::jumptable[(((opcode >> 0) & 0) << 0) | (((opcode >> 2) & 3) << 0)](opcode);
 }
 
-immutable jumptable = [
-    &entry_00,
-    &entry_01,
-    &entry_10,
-    &entry_11,
-];
+arm_pinky::instruction arm_pinky::jumptable[] = {
+    &arm_pinky::entry_00,
+    &arm_pinky::entry_01,
+    &arm_pinky::entry_10,
+    &arm_pinky::entry_11,
+};
