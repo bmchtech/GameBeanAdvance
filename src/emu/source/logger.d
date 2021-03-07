@@ -1,5 +1,4 @@
 module logger;
-
 class Logger {
     this(GBA gba) {
         gba = gba;
