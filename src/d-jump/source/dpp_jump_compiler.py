@@ -354,6 +354,10 @@ def p_list_arguments_group(p):
     'list_arguments : list_arguments IDENTIFIER'
     p[0] = p[1] + [p[2]]
 
+def p_list_arguments_none(p):
+    'list_arguments : '
+    p[0] = []
+
 def p_settings_footer(p):
     'settings_footer : LBRACKET SLASH SETTINGS RBRACKET NEWLINE'
 
@@ -1019,13 +1023,13 @@ def get_expression(discriminators):
 # enough.
 def get_data_type_by_size(data_size):
     if   data_size <= 8:
-        return "uint8_t"
+        return "ubyte"
     elif data_size <= 16:
-        return "uint16_t"
+        return "ushort"
     elif data_size <= 32:
-        return "uint32_t"
+        return "uint"
     elif data_size <= 64:
-        return "uint64_t"
+        return "ulong"
     else:
         print("data size too large (given {} bits)! Maximum supported is 64.".format(data_size))
 
@@ -1083,43 +1087,14 @@ def translate_and_write(settings, rules, components, output_file_name, default):
     arguments_string = ', '.join(arguments)
 
     # first the header file because frankly it's a lot easier
-    with open('{}.h'.format(output_file_name), 'w+') as f:
-        # first the include guard
-        f.write('#pragma once\n')
+    with open('{}'.format(output_file_name), 'w+') as f:
+        # first the module name
+        f.write('module {};\n'.format(settings.namespace))
         f.write('\n')
 
-        # then the includes
-        f.write('#include <cstdint>\n')
-        for include in settings.includes:
-            f.write('#include "{}"\n'.format(include))
-        f.write('\n')
-
-        # the namespace
-        f.write('namespace {} {{\n'.format(settings.namespace))
-
-        # then we have the typedef so we can use function pointers in a sane way
-        f.write('    typedef void (*instruction)({});\n'.format(', '.join(x.split()[0] for x in arguments)))
-        f.write('\n')
-
-        # now we have the function definitions
-        for index in range(jumptable_size):
-            f.write(('    void entry_{0:0' + str(len(settings.indices_I)) + 'b}(' + arguments_string + ');\n').format(index))
-        f.write('\n')
-        f.write('    void execute_instruction({});\n'.format(arguments_string))
-        f.write('\n')
-
-        # and the jumptable itself
-        f.write('    extern instruction jumptable[];\n')
-        f.write('}')
-
-    # now the cpp file:
-    with open('{}.cpp'.format(output_file_name), 'w+') as f:
-        # first we put some includes...
-        f.write('#include <cstdint>\n')
-        for include in settings.includes:
-            f.write('#include "{}"\n'.format(include))
-        f.write('#include "{}.h"\n'.format(output_file_name))
-        f.write('\n')
+        # now the imports
+        for imp in settings.includes:
+            f.write('import {};\n'.format(imp))
 
         for index in range(jumptable_size):
             # NOTE: If the program uses the variable "discriminator", then this will break.
@@ -1131,7 +1106,7 @@ def translate_and_write(settings, rules, components, output_file_name, default):
             
             # welcome to this ugliness:
             # population 0 because as soon as i wrote this line i got the hell out of here
-            f.write(('void ' + settings.namespace + '::entry_{0:0' + str(len(settings.indices_I)) + 'b}(' + arguments_string + ') {{\n').format(index))
+            f.write(('void entry_{0:0' + str(len(settings.indices_I)) + 'b}(' + arguments_string + ') {{\n').format(index))
             f.write('    {} discriminator = {};\n'.format(opcode_type, get_expression(settings.indices_D)))
             f.write('\n')
             f.write('    switch (discriminator) {\n')
@@ -1153,23 +1128,24 @@ def translate_and_write(settings, rules, components, output_file_name, default):
                 f.write('            break;\n')
                 f.write('        }\n')
 
+            f.write('    default: break;\n')
             f.write('    }\n')
             f.write('}\n')
             f.write('\n')
 
         # second to last step: provide an implementation for execute_instruction
         passed_in_arguments_string = ' '.join(arguments_string.split(" ")[1::2])
-        f.write('void {}::execute_instruction({}) {{\n'.format(settings.namespace, arguments_string))
+        f.write('void execute_instruction({}) {{\n'.format(arguments_string))
         indices_expression = get_expression(settings.indices_I)
-        f.write('    {}::jumptable[{}]({});\n'.format(settings.namespace, indices_expression, passed_in_arguments_string))
+        f.write('    jumptable[{}]({});\n'.format(indices_expression, passed_in_arguments_string))
         f.write('}\n')
         f.write('\n')
 
-        # finally to fill in the jumptable addresses
-        f.write('{}::instruction {}::jumptable[] = {{\n'.format(settings.namespace, settings.namespace))
+        # finally to fill in the jumptable
+        f.write('immutable jumptable = [\n')
         for index in range(jumptable_size):
-            f.write(('    &' + settings.namespace + '::entry_{0:0' + str(len(settings.indices_I)) +'b},\n').format(index))
-        f.write('};\n')
+            f.write(('    &entry_{0:0' + str(len(settings.indices_I)) +'b},\n').format(index))
+        f.write('];\n')
 
 
 
