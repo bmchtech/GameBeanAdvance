@@ -1,5 +1,4 @@
-import emu.memory;
-
+import memory;
 class PPU {
     // General information:
     // - Contains 227 scanlines, 160+ is VBLANK. VBLANK is not set on scanline 227.
