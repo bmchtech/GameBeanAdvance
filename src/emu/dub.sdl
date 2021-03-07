@@ -1,0 +1,5 @@
+name "emu"
+description "gamebeanadvance emu"
+authors "bean"
+copyright "Copyright © 2021, bean"
+license "proprietary"
