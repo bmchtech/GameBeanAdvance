@@ -3,12 +3,10 @@ roms/
 gba
 test
 
-src/cpp_jump/__pycache__/
-src/cpp_jump/a.out
-src/cpp_jump/main.cpp
-src/cpp_jump/parser.out
-src/cpp_jump/tests.py
-src/cpp_jump/parsetab.py
+src/d-jump/.dub
+src/d-jump/source/__pycache__
+src/d-jump/parser.out
+src/d-jump/parsetab.py
 
 src/jumptable/jumptable-arm.cpp
 src/jumptable/jumptable-arm.h
