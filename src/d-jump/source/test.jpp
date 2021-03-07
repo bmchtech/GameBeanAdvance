@@ -1,8 +1,15 @@
 [SETTINGS]
 - NAMESPACE: arm_pinky
 - OPCODE_FORMAT: IID-
-- INCLUDES: iostream
+- INCLUDES: std.stdio
+- ARGUMENTS:
 [/SETTINGS]
+
+[DEFAULT]
+{
+    writeln("No implementation for opcode");
+}
+[/DEFAULT]
 
 [RULE RULE0]
 - INCLUDE: --0-
@@ -47,6 +54,6 @@
 [COMPONENT PRINT]
 - FORMAT: ----
 {
-    std::cout << std::to_string(result) << std::endl;
+    writeln(result);
 }
 [/COMPONENT]
