@@ -1,6 +1,5 @@
 module gba;
 
-import core.stdc.stdint; //uint16_t uint32_t 
 public {
     import memory;
     import arm7tdmi;
@@ -21,13 +20,13 @@ public:
     }
 
     struct DMAChannel {
-        uint32_t[] source;
-        uint32_t[] dest;
-        uint16_t[] cnt_l;
-        uint16_t[] cnt_h;
-        uint32_t source_buf;
-        uint32_t dest_buf;
-        uint16_t size_buf;
+        uint[] source;
+        uint[] dest;
+        ushort[] cnt_l;
+        ushort[] cnt_h;
+        uint source_buf;
+        uint dest_buf;
+        ushort size_buf;
         bool enabled;
     }
 

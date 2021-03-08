@@ -6,19 +6,15 @@ import cpu_state;
 enum CPU_STATE_LOG_LENGTH = 1;
 
 class ARM7TDMI {
-    void error(int message) {
-        assert(0);
-    }
-
     // an explanation of these constants is partially in here as well as cpu-mode.h
 
-    enum MODE_USER = CpuMode(0b10000, 0b1111111111111111, 16 * 0);
-    enum MODE_SYSTEM = CpuMode(0b11111, 0b1111111111111111, 16 * 1);
+    enum MODE_USER       = CpuMode(0b10000, 0b1111111111111111, 16 * 0);
+    enum MODE_SYSTEM     = CpuMode(0b11111, 0b1111111111111111, 16 * 1);
     enum MODE_SUPERVISOR = CpuMode(0b10011, 0b1001111111111111, 16 * 2);
-    enum MODE_ABORT = CpuMode(0b10111, 0b1001111111111111, 16 * 3);
-    enum MODE_UNDEFINED = CpuMode(0b11011, 0b1001111111111111, 16 * 4);
-    enum MODE_IRQ = CpuMode(0b10010, 0b1001111111111111, 16 * 5);
-    enum MODE_FIQ = CpuMode(0b10001, 0b1000000011111111, 16 * 6);
+    enum MODE_ABORT      = CpuMode(0b10111, 0b1001111111111111, 16 * 3);
+    enum MODE_UNDEFINED  = CpuMode(0b11011, 0b1001111111111111, 16 * 4);
+    enum MODE_IRQ        = CpuMode(0b10010, 0b1001111111111111, 16 * 5);
+    enum MODE_FIQ        = CpuMode(0b10001, 0b1000000011111111, 16 * 6);
 
     enum NUM_MODES = 7;
     static CpuMode[NUM_MODES] MODES = [
@@ -72,12 +68,11 @@ class ARM7TDMI {
         current_mode = new_mode;
         cpsr = (cpsr & 0xFFFFFFE0) | new_mode.CPSR_ENCODING;
 
-        assert(0);
-        // TODO: fix this
-        // regs = &register_file[new_mode.OFFSET];
-        // pc = &regs[15];
-        // lr = &regs[14];
-        // sp = &regs[13];
+        // assert(0);
+        regs = &register_file[new_mode.OFFSET];
+        pc = &regs[15];
+        lr = &regs[14];
+        sp = &regs[13];
     }
 
     // reads the CPSR and figures out what the current mode is. then, it updates it using new_mode.
@@ -85,81 +80,108 @@ class ARM7TDMI {
         assert(0);
     }
 
-    int[] register_file;
-    int[] regs;
-    int[] pc;
-    int[] lr;
-    int[] sp;
-    int cpsr;
-    int spsr;
-    int shifter_operand;
+    uint[] register_file;
+    uint[] regs;
+
+    uint pc;
+    uint lr;
+    uint sp;
+    
+    uint cpsr;
+    uint spsr;
+    uint shifter_operand;
     bool shifter_carry_out;
 
-    void set_flag_N(bool condition) {
-        assert(0);
+    pragma(inline) void set_flag_N(bool condition) {
+        if (condition) cpsr |= 0x80000000;
+        else           cpsr &= 0x7FFFFFFF;
     }
 
-    void set_flag_Z(bool condition) {
-        assert(0);
+    pragma(inline) void set_flag_Z(bool condition) {
+        if (condition) cpsr |= 0x40000000;
+        else           cpsr &= 0xBFFFFFFF;
     }
 
-    void set_flag_C(bool condition) {
-        assert(0);
+    pragma(inline) void set_flag_C(bool condition) {
+        if (condition) cpsr |= 0x20000000;
+        else           cpsr &= 0xDFFFFFFF;
     }
 
-    void set_flag_V(bool condition) {
-        assert(0);
+    pragma(inline) void set_flag_V(bool condition) {
+        if (condition) cpsr |= 0x10000000;
+        else           cpsr &= 0xEFFFFFFF;
     }
 
-    void set_bit_T(bool condition) {
-        assert(0);
+    pragma(inline) void set_bit_T(bool condition) {
+        if (condition) cpsr |= 0x00000020;
+        else           cpsr &= 0xFFFFFFDF;
     }
 
-    bool get_flag_N() {
-        assert(0);
+    pragma(inline) bool get_flag_N() {
+        return (cpsr >> 31) & 1;
     }
 
-    bool get_flag_Z() {
-        assert(0);
+    pragma(inline) bool get_flag_Z() {
+        return (cpsr >> 30) & 1;
     }
 
-    bool get_flag_C() {
-        assert(0);
+    pragma(inline) bool get_flag_C() {
+        return (cpsr >> 29) & 1;
     }
 
-    bool get_flag_V() {
-        assert(0);
+    pragma(inline) bool get_flag_V() {
+        return (cpsr >> 28) & 1;
     }
 
-    bool get_bit_T() {
-        assert(0);
+    pragma(inline) bool get_bit_T() {
+        return (cpsr >> 5) & 1;
+    }
+    
+    
+    pragma(inline) uint ASR(uint value, ubyte shift) {
+        if ((value >> 31) == 1) {
+            // breakdown of this formula:
+            // value >> 31                                                         : the most significant bit
+            // (value >> 31) << shift)                                             : the most significant bit, but shifted "shift" times
+            // ((((value >> 31) << shift) - 1)                                     : the most significant bit, but repeated "shift" times
+            // ((((value >> 31) << shift) - 1) << (32 - shift))                    : basically this value is the mask that turns the logical 
+            //                                                                     : shift to an arithmetic shift
+            // ((((value >> 31) << shift) - 1) << (32 - shift)) | (value >> shift) : the arithmetic shift
+            return (((1 << shift) - 1) << (32 - shift)) | (value >> shift);
+        } else {
+            return value >> shift;
+        }
     }
 
-    int ASR(int value, int shift) {
-        assert(0);
+    pragma(inline) uint LSL(uint value, ubyte shift) {
+        return value << shift;
     }
 
-    int LSL(int value, int shift) {
-        assert(0);
+    pragma(inline) uint LSR(uint value, ubyte shift) {
+        return value >> shift;
     }
 
-    int LSR(int value, int shift) {
-        assert(0);
+    pragma(inline) uint ROR(uint value, ubyte shift) {
+        uint rotated_off = get_nth_bits(value, 0,     shift);  // the value that is rotated off
+        uint rotated_in  = get_nth_bits(value, shift, 32);     // the value that stays after the rotation
+        return rotated_in | (rotated_off << (32 - shift));
     }
 
-    int ROR(int value, int shift) {
-        assert(0);
+    pragma(inline) uint RRX(ARM7TDMI cpu, uint value, uint shift) {
+        uint rotated_off = get_nth_bits(value, 0,     shift - 1);  // the value that is rotated off
+        uint rotated_in  = get_nth_bits(value, shift, 32);         // the value that stays after the rotation
+
+        uint result = rotated_in | (rotated_off << (32 - shift)) | (cpu.get_flag_C() << (32 - shift + 1));
+        cpu.set_flag_C(get_nth_bit(value, shift));
+        return result;
     }
 
-    int RRX(ARM7TDMI cpu, int value, int shift) {
-        assert(0);
-    }
-
-    int cycles_remaining = 0;
+    uint cycles_remaining = 0;
     CpuMode current_mode;
     CpuState[CPU_STATE_LOG_LENGTH] cpu_states;
+
 private:
-    int cpu_states_size = 0;
+    uint cpu_states_size = 0;
     bool enable_pc_checking = false;
     int setup_cycles = 200000;
 }
