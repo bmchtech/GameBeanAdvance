@@ -1,103 +1,134 @@
 module memory;
 
-import core.stdc.stdint; //uint16_t uint32_t uint8_t 
+import std.stdio;
 
 // for more details on the GBA memory map: https://problemkaputt.de/gbatek.htm#gbamemorymap
 // i'm going to probably have to split this struct into more specific values later,
 // but for now ill just do the ones i can see myself easily using.
 
-class Memory {
-    uint8_t[] main;
-    uint8_t[] bios;
-    uint8_t[] wram_board;
-    uint8_t[] wram_chip;
-    uint8_t[] io_registers;
-    uint8_t[] palette_ram;
-    uint8_t[] vram;
-    uint8_t[] oam;
-    uint8_t[] rom_1;
-    uint8_t[] rom_2;
-    uint8_t[] rom_3;
-    uint8_t[] sram;
+class Memory
+{
+    ubyte[] main;
+    ubyte[] bios;
+    ubyte[] wram_board;
+    ubyte[] wram_chip;
+    ubyte[] io_registers;
+    ubyte[] palette_ram;
+    ubyte[] vram;
+    ubyte[] oam;
+    ubyte[] rom_1;
+    ubyte[] rom_2;
+    ubyte[] rom_3;
+    ubyte[] sram;
+
     bool has_updated = false;
-    uint8_t[] pixels;
-    uint16_t[] DISPCNT;
-    uint16_t[] DISPSTAT;
-    uint16_t[] VCOUNT;
-    uint16_t[] BG0CNT;
-    uint16_t[] BG1CNT;
-    uint16_t[] BG2CNT;
-    uint16_t[] BG3CNT;
-    uint16_t[] BG0HOFS;
-    uint16_t[] BG0VOFS;
-    uint16_t[] BG1HOFS;
-    uint16_t[] BG1VOFS;
-    uint16_t[] BG2HOFS;
-    uint16_t[] BG2VOFS;
-    uint16_t[] BG3HOFS;
-    uint16_t[] BG3VOFS;
-    uint16_t[] BG2PA;
-    uint16_t[] BG2PB;
-    uint16_t[] BG2PC;
-    uint16_t[] BG2PD;
-    uint32_t[] BG2X;
-    uint32_t[] BG2Y;
-    uint16_t[] BG3PA;
-    uint16_t[] BG3PB;
-    uint16_t[] BG3PC;
-    uint16_t[] BG3PD;
-    uint32_t[] BG3X;
-    uint32_t[] BG3Y;
-    uint16_t[] WIN0H;
-    uint16_t[] WIN1H;
-    uint16_t[] WIN0V;
-    uint16_t[] WIN1V;
-    uint16_t[] WININ;
-    uint16_t[] WINOUT;
-    uint16_t[] MOSAIC;
-    uint16_t[] BLDCNT;
-    uint16_t[] BLDALPHA;
-    uint16_t[] BLDY;
-    uint32_t[] DMA0SAD;
-    uint32_t[] DMA0DAD;
-    uint16_t[] DMA0CNT_L;
-    uint16_t[] DMA0CNT_H;
-    uint32_t[] DMA1SAD;
-    uint32_t[] DMA1DAD;
-    uint16_t[] DMA1CNT_L;
-    uint16_t[] DMA1CNT_H;
-    uint32_t[] DMA2SAD;
-    uint32_t[] DMA2DAD;
-    uint16_t[] DMA2CNT_L;
-    uint16_t[] DMA2CNT_H;
-    uint32_t[] DMA3SAD;
-    uint32_t[] DMA3DAD;
-    uint16_t[] DMA3CNT_L;
-    uint16_t[] DMA3CNT_H;
-    uint16_t[] KEYINPUT;
-    uint16_t[] KEYCNT;
-    uint8_t read_byte(uint32_t address) {
-        assert(0);
+
+    ubyte[] pixels;
+
+    //  IO Registers
+    //        NAME           R/W   DESCRIPTION
+    
+    ushort* DISPCNT;    // R/W   LCD Control
+    ushort* DISPSTAT;   // R/W   General LCD Status (STAT,LYC)
+    ushort* VCOUNT;     // R     Vertical Counter (LY)
+    ushort* BG0CNT;     // R/W   BG0 Control
+    ushort* BG1CNT;     // R/W   BG1 Control
+    ushort* BG2CNT;     // R/W   BG2 Control
+    ushort* BG3CNT;     // R/W   BG3 Control
+    ushort* BG0HOFS;    // W     BG0 X-Offset
+    ushort* BG0VOFS;    // W     BG0 Y-Offset
+    ushort* BG1HOFS;    // W     BG1 X-Offset
+    ushort* BG1VOFS;    // W     BG1 Y-Offset
+    ushort* BG2HOFS;    // W     BG2 X-Offset
+    ushort* BG2VOFS;    // W     BG2 Y-Offset
+    ushort* BG3HOFS;    // W     BG3 X-Offset
+    ushort* BG3VOFS;    // W     BG3 Y-Offset
+    ushort* BG2PA;      // W     BG2 Rotation/Scaling Parameter A (dx)
+    ushort* BG2PB;      // W     BG2 Rotation/Scaling Parameter B (dmx)
+    ushort* BG2PC;      // W     BG2 Rotation/Scaling Parameter C (dy)
+    ushort* BG2PD;      // W     BG2 Rotation/Scaling Parameter D (dmy)
+    uint*   BG2X;       // W     BG2 Reference Point X-Coordinate
+    uint*   BG2Y;       // W     BG2 Reference Point Y-Coordinate
+    ushort* BG3PA;      // W     BG3 Rotation/Scaling Parameter A (dx)
+    ushort* BG3PB;      // W     BG3 Rotation/Scaling Parameter B (dmx)
+    ushort* BG3PC;      // W     BG3 Rotation/Scaling Parameter C (dy)
+    ushort* BG3PD;      // W     BG3 Rotation/Scaling Parameter D (dmy)
+    uint*   BG3X;       // W     BG3 Reference Point X-Coordinate
+    uint*   BG3Y;       // W     BG3 Reference Point Y-Coordinate
+    ushort* WIN0H;      // W     Window 0 Horizontal Dimensions
+    ushort* WIN1H;      // W     Window 1 Horizontal Dimensions
+    ushort* WIN0V;      // W     Window 0 Vertical Dimensions
+    ushort* WIN1V;      // W     Window 1 Vertical Dimensions
+    ushort* WININ;      // R/W   Inside of Window 0 and 1
+    ushort* WINOUT;     // R/W   Inside of OBJ Window & Outside of Windows
+    ushort* MOSAIC;     // W     Mosaic Size
+    ushort* BLDCNT;     // R/W   Color Special Effects Selection
+    ushort* BLDALPHA;   // R/W   Alpha Blending Coefficients
+    ushort* BLDY;       // W     Brightness (Fade-In/Out) Coefficient
+
+    uint*   DMA0SAD;    // W     DMA 0 Source Address
+    uint*   DMA0DAD;    // W     DMA 0 Destination Address
+    ushort* DMA0CNT_L;  // W     DMA 0 Word Count
+    ushort* DMA0CNT_H;  // R/W   DMA 0 Control
+    uint*   DMA1SAD;    // W     DMA 1 Source Address
+    uint*   DMA1DAD;    // W     DMA 1 Destination Address
+    ushort* DMA1CNT_L;  // W     DMA 1 Word Count
+    ushort* DMA1CNT_H;  // R/W   DMA 1 Control
+    uint*   DMA2SAD;    // W     DMA 2 Source Address
+    uint*   DMA2DAD;    // W     DMA 2 Destination Address
+    ushort* DMA2CNT_L;  // W     DMA 2 Word Count
+    ushort* DMA2CNT_H;  // R/W   DMA 2 Control
+    uint*   DMA3SAD;    // W     DMA 3 Source Address
+    uint*   DMA3DAD;    // W     DMA 3 Destination Address
+    ushort* DMA3CNT_L;  // W     DMA 3 Word Count
+    ushort* DMA3CNT_H;  // R/W   DMA 3 Control
+
+    ushort* KEYINPUT;   // R     Key Status
+    ushort* KEYCNT;     // R/W   Key Interrupt Control
+
+    ubyte read_byte(uint address)
+    {        
+        // if ((address & 0xFFFF0000) == 0x4000000) writeln("Reading byte from address " ~ to_hex_string(address) ~ "\n");
+        if (address >= SIZE_MAIN_MEMORY) error("Address out of range on read byte (" ~ to_hex_string(address) ~ ")");
+        return main[address];
     }
 
-    uint16_t read_halfword(uint32_t address) {
-        assert(0);
+    ushort read_halfword(uint address)
+    {
+        // if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Reading halfword from address " << to_hex_string(address) << std::endl;
+        if (address + 2 >= SIZE_MAIN_MEMORY) error("Address out of range on read halfword (" ~ to_hex_string(address) ~ ")");
+        return *(cast(ushort*) (main + address));
     }
 
-    uint32_t read_word(uint32_t address) {
-        assert(0);
+    uint read_word(uint address)
+    {
+        // if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Reading word from address " << to_hex_string(address) << std::endl;
+        if (address + 4 >= SIZE_MAIN_MEMORY) error("Address out of range on read word (" ~ to_hex_string(address) ~ ")");
+        return *(cast(uint*) (main + address));
     }
 
-    void write_byte(uint32_t address, uint8_t value) {
-        assert(0);
+    void write_byte(uint address, ubyte value)
+    {
+        // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
+        // if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Writing byte " << to_hex_string(value) << " at address " << to_hex_string(address) << std::endl;
+        if (address >= SIZE_MAIN_MEMORY) error("Address out of range on write byte (" ~ to_hex_string(address) ~ ")");
+        main[address] = value;
     }
 
-    void write_halfword(uint32_t address, uint16_t value) {
-        assert(0);
+    void write_halfword(uint address, ushort value)
+    {
+        // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
+        // if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Writing halfword " << to_hex_string(value) << " at address " << to_hex_string(address) << std::endl;
+        if (address + 2 >= SIZE_MAIN_MEMORY) error("Address out of range on write halfword (" ~ to_hex_string(address) ~ ")");
+        *(cast(ushort*) (main + address)) = value;
     }
 
-    void write_word(uint32_t address, uint32_t value) {
-        assert(0);
+    void write_word(uint address, uint value)
+    {
+        // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
+        // if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Writing word " << to_hex_string(value) << " at address " << to_hex_string(address) << std::endl;
+        if (address + 4 >= SIZE_MAIN_MEMORY) error("Address out of range on write word (" ~ to_hex_string(address) ~ ")");
+        *(cast(uint*) (main + address)) = value;
     }
 
 }
