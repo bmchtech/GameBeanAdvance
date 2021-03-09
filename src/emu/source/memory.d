@@ -213,21 +213,28 @@ class Memory
         // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
         // if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Writing byte " << to_hex_string(value) << " at address " << to_hex_string(address) << std::endl;
         if (address >= SIZE_MAIN_MEMORY) error("Address out of range on write byte (" ~ to_hex_string(address) ~ ")");
-        main[address] = value;
+        // main[address] = value;
+        main[address + 0] = cast(ubyte) ((value >> 0) & 0xff);
     }
 
     void write_halfword(uint address, ushort value) {
         // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
         // if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Writing halfword " << to_hex_string(value) << " at address " << to_hex_string(address) << std::endl;
         if (address + 2 >= SIZE_MAIN_MEMORY) error("Address out of range on write halfword (" ~ to_hex_string(address) ~ ")");
-        *(cast(ushort*) (main[0] + address)) = value;
+        // *(cast(ushort*) (main[0] + address)) = value;
+        main[address + 0] = cast(ubyte) ((value >> 0) & 0xff);
+        main[address + 1] = cast(ubyte) ((value >> 8) & 0xff);
     }
 
     void write_word(uint address, uint value) {
         // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
         // if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Writing word " << to_hex_string(value) << " at address " << to_hex_string(address) << std::endl;
         if (address + 4 >= SIZE_MAIN_MEMORY) error("Address out of range on write word (" ~ to_hex_string(address) ~ ")");
-        *(cast(uint*) (main[0] + address)) = value;
+        // *(cast(uint*) (main[0] + address)) = value;
+        main[address + 0] = cast(ubyte) ((value >> 0) & 0xff);
+        main[address + 1] = cast(ubyte) ((value >> 8) & 0xff);
+        main[address + 2] = cast(ubyte) ((value >> 16) & 0xff);
+        main[address + 3] = cast(ubyte) ((value >> 24) & 0xff);
     }
 
     void SetRGB(uint x, uint y, ubyte r, ubyte g, ubyte b) {
