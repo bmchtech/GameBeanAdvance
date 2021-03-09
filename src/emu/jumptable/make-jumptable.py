@@ -8,7 +8,7 @@ import sys
 # there's a lot of arguments, so here's a description:
 INPUT_FILE_NAME         = sys.argv[1]       # the name of the config file to read from
 OUTPUT_CPP_FILE         = sys.argv[2]       # the name of the cpp file to output
-OUTPUT_HEADER_FILE      = sys.argv[3]       # the name of the header file to output
+OUTPUT_FILE             = sys.argv[3]       # the name of the header file to output
 INSTRUCTION_SIZE        = int(sys.argv[4])  # the size of an instruction in bits (16 for thumb, 32 for arm)
 JUMPTABLE_BIT_WIDTH     = int(sys.argv[5])  # the number of bits used for indexing into the jumptable
 JUMPTABLE_NAME          = sys.argv[6]       # the name of the jumptable that should be put into the cpp and header files
@@ -26,31 +26,13 @@ LOCAL_HEADER            = "@LOCAL("
 LOCAL_INLINE_HEADER     = "@LOCAL_INLINE("
 
 # formatting for the output files
-HEADER_FILE_HEADER      = '''
-#ifndef ''' + JUMPTABLE_INCLUDE_GUARD + '''
-#define ''' + JUMPTABLE_INCLUDE_GUARD + '''\n\n
-#include "../util.h"
-#include "../memory.h"
-#include "../arm7tdmi.h"\n\n'''[1:] # the [1:] is used to remove the beginning \n
+FILE_HEADER      = '''
+import util;
+import memory;
+import arm7tdmi;\n\n'''[1:] # the [1:] is used to remove the beginning \n
 
-HEADER_FILE_FOOTER      = '''
-#endif'''[1:]
-
-CPP_FILE_HEADER         = '''
-#include <iostream>
-
-#include "''' + OUTPUT_HEADER_FILE + '"' + '''\n
-#include "../util.h"
-#include "../memory.h"
-#include "../arm7tdmi.h"
-
-#ifdef DEBUG_MESSAGE
-    #define DEBUG_MESSAGE(message) std::cout << message << std::endl;
-#else
-    #define DEBUG_MESSAGE(message) do {} while(0)
-#endif\n\n'''[1:]
-
-CPP_FILE_FOOTER         = ''''''
+FILE_FOOTER      = '''
+'''[1:]
 
 
 
@@ -242,56 +224,48 @@ for i in range(0, len(lines)):
 
 
 # assemble the file using the jumptable data
-header_file = open(OUTPUT_HEADER_FILE, 'w')
-cpp_file    = open(OUTPUT_CPP_FILE,    'w')
+output_file = open(OUTPUT_FILE, 'w')
 
 # first we write the headers to the files
-header_file.write(HEADER_FILE_HEADER)
-cpp_file.write(CPP_FILE_HEADER)
+output_file.write(FILE_HEADER)
 
 # and now the local functions
 for local_function in local_functions:
-    cpp_file.write(local_function)
+    output_file.write(local_function)
 
 # and now the local inline functions
 for local_inline_function in local_inline_functions:
-    header_file.write(local_inline_function)
+    output_file.write(local_inline_function)
 
 # now we write the body
 for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):
     result_function = jumptable[i]
 
     if result_function != None:
-        function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "(ARM7TDMI* cpu, " +  OPCODE_DATA_TYPE + " opcode)"
-        header_file.write(function_name + ";\n")
-        cpp_file.write(function_name + " {\n")
-        cpp_file.write('\n'.join(result_function))
-        cpp_file.write("\n}\n\n")
+        function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "(ARM7TDMI* cpu, " + OPCODE_DATA_TYPE + " opcode)"
+        output_file.write(function_name + " {\n")
+        output_file.write('\n'.join(result_function))
+        output_file.write("\n}\n\n")
     else:
         function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "(ARM7TDMI* cpu, " + OPCODE_DATA_TYPE + " opcode)"
-        header_file.write(function_name + ";\n")
-        cpp_file.write(function_name + " {\n")
-        cpp_file.write('\n'.join(default_function))
-        cpp_file.write("\n}\n\n")
+        output_file.write(function_name + " {\n")
+        output_file.write('\n'.join(default_function))
+        output_file.write("\n}\n\n")
 
 # and now we must loop again to put the actual jumptable in the header file
-# first we add the typedef and the extern
-header_file.write("\ntypedef void (*" + INSTRUCTION_NAME + ")(ARM7TDMI*, " + OPCODE_DATA_TYPE + ");\n")
-header_file.write("extern " + INSTRUCTION_NAME + " " + JUMPTABLE_NAME + "[];\n")
 
-# then we add the jumptable
+# we add the jumptable
 function_names = list("run_" + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)))
-cpp_file.write("\n" + INSTRUCTION_NAME + " " + JUMPTABLE_NAME + "[] = {")
+output_file.write("immutable jumptable = [")
 for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):
     if i % JUMPTABLE_FORMAT_WIDTH == 0:
-        cpp_file.write("\n    ")
-    cpp_file.write("&" + function_names[i])
+        output_file.write("\n    ")
+    output_file.write("&" + function_names[i])
     if i != pow(2, JUMPTABLE_BIT_WIDTH) - 1:
-        cpp_file.write(", ")
-cpp_file.write("\n};\n\n")    
+        output_file.write(", ")
+output_file.write("\n];\n\n")    
 
 # and now the footers
-header_file.write(HEADER_FILE_FOOTER)
-cpp_file.write(CPP_FILE_FOOTER)
+output_file.write(FILE_FOOTER)
 
 # and fin

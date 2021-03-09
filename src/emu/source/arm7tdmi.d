@@ -77,7 +77,12 @@ class ARM7TDMI {
 
     // reads the CPSR and figures out what the current mode is. then, it updates it using new_mode.
     void update_mode() {
-        assert(0);
+        int mode_bits = get_nth_bits(cpsr, 0, 5);
+        for (int i = 0; i < NUM_MODES; i++) {
+            if (MODES[i].CPSR_ENCODING == mode_bits) {
+                set_mode(MODES[i]);
+            }
+        }
     }
 
     uint[] register_file;

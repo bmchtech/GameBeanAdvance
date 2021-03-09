@@ -13,3 +13,6 @@ emu-test-*
 *.o
 *.obj
 *.lst
+
+/emu/source/jumptable-arm.d
+/emu/source/jumptable-thumb.d

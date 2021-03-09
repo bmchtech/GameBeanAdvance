@@ -7,10 +7,9 @@ module cpu_mode;
 
 struct CpuMode {
     this(const(int) c, const(int) r, const(int) o) {
-
-        CPSR_ENCODING = c;
+        CPSR_ENCODING       = c;
         REGISTER_UNIQUENESS = r;
-        OFFSET = o;
+        OFFSET              = o;
     }
 
     int CPSR_ENCODING;
