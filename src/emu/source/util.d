@@ -33,11 +33,6 @@ uint32_t sign_extend(uint32_t val, uint8_t num_bits) {
     return (val ^ (1 << (num_bits - 1))) - (1 << (num_bits - 1));
 }
 
-// reads the ROM as bytes (given the file name). stores the result into out. any data after out_length will be truncated
-// off the ROM.
-void get_rom_as_bytes(string rom_name, uint8_t[] out_, size_t out_length);
-// set this to enable gba logging
-
 void warning(string message) {
     stderr.writefln("%sWARNING: %s%s", YELLOW, RESET, message);
 }
@@ -85,34 +80,11 @@ pragma(inline) int sign_extend(int val, int num_bits) {
     return (val ^ (1U << (num_bits - 1))) - (1U << (num_bits - 1));
 }
 
-void get_rom_as_bytes(string rom_name, uint8_t[] out_, size_t out_length) {
-    // open file
-    // TODO: implement this
-    assert(0);
-
-    // ifstream infile = new ifstream();
-    // infile.open(rom_name, ios.binary);
-    // // check if file exists
-    // if (!infile.good()) {
-    // }
-
-    // // get length of file
-    // infile.seekg(0, ios.end);
-    // size_t length;
-    // infile.seekg(0, ios.beg);
-    // // read file
-    // char[] buffer = new char[length];
-    // infile.read(buffer, length);
-    // length = infile.gcount();
-    // if (out_length < length) {
-    //     length = out_length;
-    // }
-
-    // for (int i = 0; i < length; i++) {
-    //     out_[i] = buffer[i];
-    // }
-
-    // buffer = null;
+ubyte[] get_rom_as_bytes(string rom_name) {
+	File file = File(rom_name, "r");
+    auto buffer = new ubyte[file.size()];
+    file.rawRead(buffer);
+    return buffer;
 }
 
 GBA* logger_gba = null;
