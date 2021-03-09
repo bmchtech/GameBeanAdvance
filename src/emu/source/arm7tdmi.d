@@ -2,6 +2,11 @@ module arm7tdmi;
 
 import cpu_mode;
 import cpu_state;
+import memory;
+import util;
+
+import jumptable_arm;
+import jumptable_thumb;
 
 enum CPU_STATE_LOG_LENGTH = 1;
 
@@ -21,6 +26,10 @@ class ARM7TDMI {
         MODE_USER, MODE_FIQ, MODE_IRQ, MODE_SUPERVISOR, MODE_ABORT, MODE_UNDEFINED,
         MODE_SYSTEM
     ];
+    
+    this(Memory memory) {
+        this.memory = memory;
+    }
 
     // the register array is going to be accessed as such:
     // USER | SYSTEM | SUPERVISOR | ABORT | UNDEFINED | INTERRUPT | FAST INTERRUPT
@@ -86,11 +95,11 @@ class ARM7TDMI {
     }
 
     uint[] register_file;
-    uint[] regs;
+    uint* regs;
 
-    uint pc;
-    uint lr;
-    uint sp;
+    uint* pc;
+    uint* lr;
+    uint* sp;
     
     uint cpsr;
     uint spsr;
@@ -141,7 +150,61 @@ class ARM7TDMI {
     pragma(inline) bool get_bit_T() {
         return (cpsr >> 5) & 1;
     }
-    
+
+    void cycle() {
+        if (cycles_remaining == 0) {
+            uint opcode = fetch();
+            execute(opcode);
+        }
+    }
+
+    uint fetch() {
+        if (get_bit_T()) { // thumb mode: grab a halfword and return it
+            uint opcode = cast(uint) (*(cast(ushort*)(memory.main[0] + (*pc & 0xFFFFFFFE))));
+            *pc += 2;
+            return opcode;
+        } else {           // arm mode: grab a word and return it
+            uint opcode  = *(cast(uint*)(memory.main[0] + (*pc & 0xFFFFFFFE)));
+            *pc += 4;
+            return opcode;
+        }
+    }
+
+    void execute(uint opcode) {
+        if (get_bit_T()) {
+            jumptable_thumb.jumptable[opcode >> 8](this, cast(ushort)opcode);
+        } else {
+            if (should_execute((opcode & 0xF0000000) >> 28)) {
+                jumptable_arm.execute_instruction(opcode, this);
+            } else {
+                cycles_remaining = 1;
+            }
+        }
+    }
+
+    bool should_execute(int cond) {
+        if (cond == 0b1110) {
+            return true;
+        }
+
+        switch (cond) {
+            case 0b0000: return  get_flag_Z(); 
+            case 0b0001: return !get_flag_Z(); 
+            case 0b0010: return  get_flag_C(); 
+            case 0b0011: return !get_flag_C(); 
+            case 0b0100: return  get_flag_N(); 
+            case 0b0101: return !get_flag_N(); 
+            case 0b0110: return  get_flag_V(); 
+            case 0b0111: return !get_flag_V(); 
+            case 0b1000: return  get_flag_C() && !get_flag_Z(); 
+            case 0b1001: return !get_flag_C() ||  get_flag_Z(); 
+            case 0b1010: return  get_flag_N() ==  get_flag_V(); 
+            case 0b1011: return  get_flag_N() !=  get_flag_V(); 
+            case 0b1100: return !get_flag_Z() &&  (get_flag_N() == get_flag_V()); 
+            case 0b1101: return  get_flag_Z() &&  (get_flag_N() != get_flag_V()); 
+            default:     return false;
+        }
+    }
     
     pragma(inline) uint ASR(uint value, ubyte shift) {
         if ((value >> 31) == 1) {
@@ -180,6 +243,8 @@ class ARM7TDMI {
         cpu.set_flag_C(get_nth_bit(value, shift));
         return result;
     }
+
+    Memory memory;
 
     uint cycles_remaining = 0;
     CpuMode current_mode;

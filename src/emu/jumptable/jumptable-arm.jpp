@@ -1,13 +1,13 @@
 [SETTINGS]
 - NAMESPACE: jumptable_arm
 - OPCODE_FORMAT: IIIIIIIIIIII------------DDDD----
-- INCLUDES: util.d arm7tdmi.d
-- ARGUMENTS: ARM7TDMI* cpu
+- INCLUDES: util arm7tdmi
+- ARGUMENTS: ARM7TDMI cpu
 [/SETTINGS]
 
 [DEFAULT]
 {
-    error("No implementation for opcode 0x" + to_hex_string(opcode));
+    error("No implementation for opcode 0x" ~ to_hex_string(opcode));
 }
 [/DEFAULT]
 
@@ -211,7 +211,7 @@
 [COMPONENT ADDRESSING_MODE_1]
 - FORMAT:  ----001-------------------------
 {
-    cpu.shifter_operand   = cpu.ROR(get_nth_bits(opcode, 0, 8), ((get_nth_bits(opcode, 8, 12)) * 2));
+    cpu.shifter_operand   = cpu.ROR(get_nth_bits(opcode, 0, 8), cast(ubyte) ((get_nth_bits(opcode, 8, 12)) * 2));
     cpu.shifter_carry_out = get_nth_bits(opcode, 8, 12) == 0 ? cpu.get_flag_C() : get_nth_bit(cpu.shifter_operand, 31);
 
     cpu.cycles_remaining++;
@@ -233,7 +233,7 @@
     @IF(!S !H)     cpu.shifter_operand   = rm;
     @IF(!S !H)     cpu.shifter_carry_out = cpu.get_flag_C();
     @IF(!S !H) } else { // shift_immediate > 0
-    @IF(!S !H)     cpu.shifter_operand   = cpu.LSL(rm, shift_immediate);
+    @IF(!S !H)     cpu.shifter_operand   = cpu.LSL(rm, cast(ubyte) shift_immediate);
     @IF(!S !H)     cpu.shifter_carry_out = get_nth_bit(rm, 32 - shift_immediate);
     @IF(!S !H) }
 
@@ -244,7 +244,7 @@
     @IF(!S  H)     cpu.shifter_carry_out = get_nth_bit(rm, 31);
     @IF(!S  H)     cpu.cycles_remaining--;
     @IF(!S  H) } else { // shift_immediate > 0
-    @IF(!S  H)     cpu.shifter_operand   = cpu.LSR(rm, shift_immediate);
+    @IF(!S  H)     cpu.shifter_operand   = cpu.LSR(rm, cast(ubyte) shift_immediate);
     @IF(!S  H)     cpu.shifter_carry_out = get_nth_bit(rm, shift_immediate - 1);
     @IF(!S  H) }
 
@@ -253,7 +253,7 @@
     @IF( S !H)     cpu.shifter_operand   = get_nth_bit(rm, 31) ? 0xFFFFFFFF : 0x00000000;
     @IF( S !H)     cpu.shifter_carry_out = get_nth_bit(rm, 31);
     @IF( S !H) } else { // shift_immediate > 0
-    @IF( S !H)     cpu.shifter_operand   = cpu.ASR(rm, shift_immediate);
+    @IF( S !H)     cpu.shifter_operand   = cpu.ASR(rm, cast(ubyte) shift_immediate);
     @IF( S !H)     cpu.shifter_carry_out = get_nth_bit(rm, shift_immediate - 1);
     @IF( S !H) }
         
@@ -263,9 +263,9 @@
     @IF( S  H)     cpu.shifter_operand   = cpu.get_flag_C() << 31 | cpu.LSR(rm, 1);
     @IF( S  H)     cpu.shifter_carry_out = get_nth_bit(rm, 0); 
     @IF( S  H) } else { // shift_immediate > 0, ROR
-    @IF( S  H)     cpu.shifter_operand   = cpu.ROR(rm, shift_immediate);
+    @IF( S  H)     cpu.shifter_operand   = cpu.ROR(rm, cast(ubyte) shift_immediate);
     @IF( S  H)     cpu.shifter_carry_out = get_nth_bit(rm, shift_immediate - 1);
-    @IF( S  H) }
+    @IF( S  H) } 
 
     cpu.cycles_remaining++;
 }
@@ -294,7 +294,7 @@
     @IF(!S !H)     cpu.shifter_operand   = rm;
     @IF(!S !H)     cpu.shifter_carry_out = cpu.get_flag_C();
     @IF(!S !H) } else if (rs < 32) {
-    @IF(!S !H)     cpu.shifter_operand   = cpu.LSL(rm, rs);
+    @IF(!S !H)     cpu.shifter_operand   = cpu.LSL(rm, cast(ubyte) rs);
     @IF(!S !H)     cpu.shifter_carry_out = get_nth_bit(rm, 32 - rs);
     @IF(!S !H) } else if (rs == 32) {
     @IF(!S !H)     cpu.shifter_operand   = 0;
@@ -309,7 +309,7 @@
     @IF(!S  H)     cpu.shifter_operand   = rm;
     @IF(!S  H)     cpu.shifter_carry_out = cpu.get_flag_C();
     @IF(!S  H) } else if (rs < 32) {
-    @IF(!S  H)     cpu.shifter_operand   = cpu.LSR(rm, rs);
+    @IF(!S  H)     cpu.shifter_operand   = cpu.LSR(rm, cast(ubyte) rs);
     @IF(!S  H)     cpu.shifter_carry_out = get_nth_bit(rm, rs - 1);
     @IF(!S  H) } else if (rs == 32) {
     @IF(!S  H)     cpu.shifter_operand   = 0;
@@ -324,7 +324,7 @@
     @IF( S !H)     cpu.shifter_operand   = rm;
     @IF( S !H)     cpu.shifter_carry_out = cpu.get_flag_C();
     @IF( S !H) } else if (rs < 32) {
-    @IF( S !H)     cpu.shifter_operand   = cpu.ASR(rm, rs);
+    @IF( S !H)     cpu.shifter_operand   = cpu.ASR(rm, cast(ubyte) rs);
     @IF( S !H)     cpu.shifter_carry_out = get_nth_bit(rm, rs - 1);
     @IF( S !H) } else { // rs >= 32
     @IF( S !H)     cpu.shifter_operand   = get_nth_bit(rm, 31) ? 0xFFFFFFFF : 0x00000000;
@@ -339,7 +339,7 @@
     @IF( S  H)     cpu.shifter_operand   = rm;
     @IF( S  H)     cpu.shifter_carry_out = get_nth_bit(rm, 31);
     @IF( S  H) } else { // rs & 0xF > 0
-    @IF( S  H)     cpu.shifter_operand   = cpu.ROR(rm, rs & 0xF);
+    @IF( S  H)     cpu.shifter_operand   = cpu.ROR(rm, cast(ubyte) (rs & 0xF));
     @IF( S  H)     cpu.shifter_carry_out = get_nth_bit(rs, rm & 0xF - 1);
     @IF( S  H) }
 
@@ -436,7 +436,7 @@
     bool is_pc = get_nth_bits(opcode, 16, 20) == 15;
 
     // we either get the offset straight from the opcode or from the registers depending on the I bit
-    @IF( I) ubyte  offset = get_nth_bits(opcode, 0, 4) | (get_nth_bits(opcode, 8, 12) << 4);
+    @IF( I) ubyte  offset = cast(ubyte)(get_nth_bits(opcode, 0, 4) | (get_nth_bits(opcode, 8, 12) << 4));
     @IF(!I) uint offset = cpu.regs[get_nth_bits(opcode, 0, 4)];
 
     // U determines if we add or subtract
@@ -596,7 +596,7 @@
     if ((address & 0b11) == 0b10) value = ((value & 0xFFFF)   << 16) | (value >> 16);
     if ((address & 0b11) == 0b11) value = ((value & 0xFFFFFF) << 8)  | (value >> 24);
 
-    ubyte rd = get_nth_bits(opcode, 12, 16);
+    ubyte rd = cast(ubyte) get_nth_bits(opcode, 12, 16);
     if (rd == 15) {
         *cpu.pc = value & 0xFFFFFFFC;
         cpu.cycles_remaining += 2;
@@ -718,7 +718,7 @@
 [COMPONENT MSR]
 - FORMAT:  ----00I10R10--------------------
 {
-    @IF( I) uint  operand     = cpu.ROR(get_nth_bits(opcode, 0, 8), (get_nth_bits(opcode, 8, 12) * 2));
+    @IF( I) uint  operand     = cpu.ROR(get_nth_bits(opcode, 0, 8), cast(ubyte) (get_nth_bits(opcode, 8, 12) * 2));
     @IF(!I) uint  operand     = cpu.regs[get_nth_bits(opcode, 0, 4)];
 
     @IF( R) uint* destination = &cpu.spsr;
@@ -779,7 +779,7 @@
     if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4;
     @IF( R) uint result   = cpu.shifter_operand - register_operand;
     @IF(!R) uint result   = register_operand - cpu.shifter_operand;
-    @IF( C)  result -= ((~cpu.get_flag_C()) & 1);
+    @IF( C)  result -= ((~(cast(uint)cpu.get_flag_C())) & 1);
 
     cpu.regs[get_nth_bits(opcode, 12, 16)] = result;
     
@@ -803,14 +803,14 @@
 {
     // unintuitive sign extension 
     // http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
-    const uint64_t mask = 1U << (32 - 1);
+    const ulong mask = 1U << (32 - 1);
 
-    uint64_t result = (((cast(int64_t) cpu.regs[get_nth_bits(opcode, 0, 4)])  ^ mask) - mask) * 
-                        (((cast(int64_t) cpu.regs[get_nth_bits(opcode, 8, 12)]) ^ mask) - mask);
+    ulong result = (((cast(long) cpu.regs[get_nth_bits(opcode, 0, 4)])  ^ mask) - mask) * 
+                        (((cast(long) cpu.regs[get_nth_bits(opcode, 8, 12)]) ^ mask) - mask);
     uint* rd_lo = &cpu.regs[get_nth_bits(opcode, 12, 16)];
     uint* rd_hi = &cpu.regs[get_nth_bits(opcode, 16, 20)];
 
-    result += ((cast(uint64_t) *rd_hi) << 32) | (cast(uint64_t) *rd_lo);
+    result += ((cast(ulong) *rd_hi) << 32) | (cast(ulong) *rd_lo);
     *rd_lo = cast(uint) (result & 0xFFFFFFFF);
     *rd_hi = cast(uint) (result >> 32);
     
@@ -822,13 +822,11 @@
     @IF( S) }
 
     int m = 4;
-    int operand = (((cast(int64_t) cpu.regs[get_nth_bits(opcode, 8, 12)]) ^ mask) - mask);
+    int operand = cast(int) (((cast(long) cpu.regs[get_nth_bits(opcode, 8, 12)]) ^ mask) - mask);
     if ((operand & 0xFFFFFF00) == 0x000000000 || (operand | 0x000000FF) == 0xFFFFFFFF) m = 1;
     if ((operand & 0xFFFF0000) == 0x000000000 || (operand | 0x0000FFFF) == 0xFFFFFFFF) m = 2;
     if ((operand & 0xFF000000) == 0x000000000 || (operand | 0x00FFFFFF) == 0xFFFFFFFF) m = 3;
     cpu.cycles_remaining += m + 3;
-    
-    break;
 }
 [/COMPONENT]
 
@@ -837,13 +835,13 @@
 {
     // unintuitive sign extension 
     // http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
-    const uint64_t mask = 1U << (32 - 1);
+    const ulong mask = 1U << (32 - 1);
 
-    uint64_t result = ((((int64_t) cpu.regs[get_nth_bits(opcode, 0, 4)])  ^ mask) - mask) * 
-                      ((((int64_t) cpu.regs[get_nth_bits(opcode, 8, 12)]) ^ mask) - mask);
+    ulong result = (((cast(long) cpu.regs[get_nth_bits(opcode, 0, 4)])  ^ mask) - mask) * 
+                      (((cast(long) cpu.regs[get_nth_bits(opcode, 8, 12)]) ^ mask) - mask);
 
-    cpu.regs[get_nth_bits(opcode, 12, 16)] = (uint) (result & 0xFFFFFFFF);
-    cpu.regs[get_nth_bits(opcode, 16, 20)] = (uint) (result >> 32);
+    cpu.regs[get_nth_bits(opcode, 12, 16)] = cast(uint) (result & 0xFFFFFFFF);
+    cpu.regs[get_nth_bits(opcode, 16, 20)] = cast(uint) (result >> 32);
 
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     cpu.cpsr = cpu.spsr;
@@ -908,14 +906,14 @@
 [COMPONENT UMLAL]
 - FORMAT:  ----0000101S------------1001----
 {
-    uint64_t result = ((uint64_t) cpu.regs[get_nth_bits(opcode, 0, 4)]) * 
-                      ((uint64_t) cpu.regs[get_nth_bits(opcode, 8, 12)]);
+    ulong result = (cast(ulong) cpu.regs[get_nth_bits(opcode, 0, 4)]) * 
+                      (cast(ulong) cpu.regs[get_nth_bits(opcode, 8, 12)]);
     uint* rd_lo = &cpu.regs[get_nth_bits(opcode, 12, 16)];
     uint* rd_hi = &cpu.regs[get_nth_bits(opcode, 16, 20)];
 
-    result += (((uint64_t) *rd_hi) << 32) | ((uint64_t) *rd_lo);
-    *rd_lo = (uint) (result & 0xFFFFFFFF);
-    *rd_hi = (uint) (result >> 32);
+    result += ((cast(ulong) *rd_hi) << 32) | (cast(ulong) *rd_lo);
+    *rd_lo = cast(uint) (result & 0xFFFFFFFF);
+    *rd_hi = cast(uint) (result >> 32);
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     cpu.cpsr = cpu.spsr;
@@ -925,24 +923,22 @@
     @IF( S) }
 
     int m = 4;
-    int operand = ((uint64_t) cpu.regs[get_nth_bits(opcode, 8, 12)]);
+    int operand = (cast(ulong) cpu.regs[get_nth_bits(opcode, 8, 12)]);
     if ((operand & 0xFFFFFF00) == 0x000000000 || (operand | 0x000000FF) == 0xFFFFFFFF) m = 1;
     if ((operand & 0xFFFF0000) == 0x000000000 || (operand | 0x0000FFFF) == 0xFFFFFFFF) m = 2;
     if ((operand & 0xFF000000) == 0x000000000 || (operand | 0x00FFFFFF) == 0xFFFFFFFF) m = 3;
     cpu.cycles_remaining += m + 3;
-
-    break;
 }
 [/COMPONENT]
 
 [COMPONENT UMULL]
 - FORMAT:  ----0000100S------------1001----
 {
-    uint64_t result = ((uint64_t) cpu.regs[get_nth_bits(opcode, 0, 4)]) * 
-                      ((uint64_t) cpu.regs[get_nth_bits(opcode, 8, 12)]);
+    ulong result = (cast(ulong) cpu.regs[get_nth_bits(opcode, 0, 4)]) * 
+                      (cast(ulong) cpu.regs[get_nth_bits(opcode, 8, 12)]);
 
-    cpu.regs[get_nth_bits(opcode, 12, 16)] = (uint) (result & 0xFFFFFFFF);
-    cpu.regs[get_nth_bits(opcode, 16, 20)] = (uint) (result >> 32);
+    cpu.regs[get_nth_bits(opcode, 12, 16)] = cast(uint) (result & 0xFFFFFFFF);
+    cpu.regs[get_nth_bits(opcode, 16, 20)] = cast(uint) (result >> 32);
 
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     cpu.cpsr = cpu.spsr;
