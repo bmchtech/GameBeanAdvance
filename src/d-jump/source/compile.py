@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from dpp_jump_compiler import compile
 from os import sys
 
