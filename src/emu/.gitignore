@@ -14,5 +14,5 @@ emu-test-*
 *.obj
 *.lst
 
-/emu/source/jumptable-arm.d
-/emu/source/jumptable-thumb.d
+jumptable_arm.d
+jumptable_thumb.d
