@@ -16,35 +16,46 @@ enum GAME_TITLE_SIZE = 12;
 class GBA {
 public:
     this(Memory* memory) {
-        assert(0);
+        this.memory  = memory;
+        this.cpu     = new ARM7TDMI(memory);
+        this.cpu     = new PPU(memory);
+        this.enabled = false;
+
+        // TODO: figure out a better way to do logging
     }
 
     struct DMAChannel {
-        uint[] source;
-        uint[] dest;
+        uint[]   source;
+        uint[]   dest;
         ushort[] cnt_l;
         ushort[] cnt_h;
-        uint source_buf;
-        uint dest_buf;
-        ushort size_buf;
-        bool enabled;
-    }
 
-    void error(string message) {
-        assert(0);
+        uint     source_buf;
+        uint     dest_buf;
+        ushort   size_buf;
+        
+        bool     enabled;
     }
-
-    // TODO: run the GBA. probably going to be one of the last things that is actually implemented, since manually cycling
-    // the emulator is a lot easier to test. heck, this method might not even exist, idk. but, it's here for now.
+    
     void run(string rom_name) {
-        assert(0);
+        get_rom_as_bytes(rom_name, memory.rom_1, SIZE_ROM_1);
+        *cpu.pc = OFFSET_ROM_1;
+
+        enabled = true;
+        // std::thread t(gba_thread, this);
+        // t.detach();
     }
 
     // cycles the GBA CPU once, executing one instruction to completion.
     // maybe this method belongs in an ARM7TDMI class. nobody knows. i don't see the reason for having such a class, so
     // this is staying here for now.
     void cycle() {
-        assert(0);
+        cpu.cycle();
+
+        ppu.cycle();
+        ppu.cycle();
+        ppu.cycle();
+        ppu.cycle();
     }
 
     // returns true if a DMA transfer occurred this cycle.
@@ -55,8 +66,8 @@ public:
     bool enabled;
 
     ARM7TDMI* cpu;
-    PPU* ppu;
-    Memory* memory;
+    PPU*      ppu;
+    Memory*   memory;
 
 private:
     alias DMAChannel_t = GBA.DMAChannel;

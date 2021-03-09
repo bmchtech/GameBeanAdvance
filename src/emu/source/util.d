@@ -9,8 +9,8 @@ import std.format;
 import gba;
 
 enum YELLOW = "\033[33m";
-enum RED = "\033[31m";
-enum RESET = "\033[0m";
+enum RED    = "\033[31m";
+enum RESET  = "\033[0m";
 
 // a warning will not terminate the program
 void warning(string message);
