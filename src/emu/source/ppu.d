@@ -1,6 +1,7 @@
 module ppu;
 
 import memory;
+import util;
 
 class PPU {
     // General information:
@@ -9,7 +10,7 @@ class PPU {
     // - Although the drawing time is only 960 cycles (240*4), the H-Blank flag is "0" for a total of 1006 cycles.
 
 public:
-    this(Memory* memory) {
+    this(Memory memory) {
         this.memory = memory;
         dot         = 0;
     }
@@ -47,7 +48,7 @@ public:
         }
 
         // check the mode and run the appropriate function
-        ubyte mode = get_nth_bits(*memory.DISPCNT, 0, 3);
+        ubyte mode = cast(ubyte) get_nth_bits(*memory.DISPCNT, 0, 3);
         // std::cout << to_hex_string(*memory.DISPCNT) << std::endl;
 
         switch (mode) {
@@ -60,22 +61,22 @@ public:
             }
 
             case 3: {
-                ushort color = memory.read_halfword(OFFSET_VRAM + 2 * (dot + scanline * 240));
-                memory.SetRGB(dot, scanline, get_nth_bits(color,  0,  5) * 255 / 31,
-                                            get_nth_bits(color,  5, 10) * 255 / 31,
-                                            get_nth_bits(color, 10, 15) * 255 / 31);
+                ushort color = memory.read_halfword(memory.OFFSET_VRAM + 2 * (dot + scanline * 240));
+                memory.SetRGB(dot, scanline, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),
+                                             cast(ubyte) (get_nth_bits(color,  5, 10) * 255 / 31),
+                                             cast(ubyte) (get_nth_bits(color, 10, 15) * 255 / 31));
 
                 break;
             }
 
             case 4:
             case 5: {
-                uint32_t base_frame_address = OFFSET_VRAM + get_nth_bit(*memory.DISPCNT, 4) * 0xA000;
-                uint32_t index = memory.read_byte(base_frame_address + (dot + scanline * 240));
-                uint16_t color = memory.read_halfword(OFFSET_PALETTE_RAM + index);
-                memory.SetRGB(dot, scanline, get_nth_bits(color,  0,  5) * 255 / 31,
-                                            get_nth_bits(color,  5, 10) * 255 / 31,
-                                            get_nth_bits(color, 10, 15) * 255 / 31);
+                uint   base_frame_address = memory.OFFSET_VRAM + get_nth_bit(*memory.DISPCNT, 4) * 0xA000;
+                uint   index = memory.read_byte(base_frame_address + (dot + scanline * 240));
+                ushort color = memory.read_halfword(memory.OFFSET_PALETTE_RAM + index);
+                memory.SetRGB(dot, scanline, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),
+                                             cast(ubyte) (get_nth_bits(color,  5, 10) * 255 / 31),
+                                             cast(ubyte) (get_nth_bits(color, 10, 15) * 255 / 31));
 
                 break;
             }
@@ -87,15 +88,15 @@ public:
     }
 
 private:
-    Memory* memory;
+    Memory memory;
     ushort dot; // the horizontal counterpart to scanlines.
 
     void render_background_mode0(ushort bgcnt, ushort bghofs, ushort bgvofs) {
-        ushort x            = dot             + bghofs;
-        ushort y            = *memory.VCOUNT + bgvofs;
+        ushort x            = cast(ushort) (dot            + bghofs);
+        ushort y            = cast(ushort) (*memory.VCOUNT + bgvofs);
 
-        uint   tile_base_address   = OFFSET_VRAM + get_nth_bits(bgcnt, 2,  4) * 0x4000;
-        uint   screen_base_address = OFFSET_VRAM + get_nth_bits(bgcnt, 8, 13) * 0x800;
+        uint   tile_base_address   = memory.OFFSET_VRAM + get_nth_bits(bgcnt, 2,  4) * 0x4000;
+        uint   screen_base_address = memory.OFFSET_VRAM + get_nth_bits(bgcnt, 8, 13) * 0x800;
         ushort tile_x       = x & 0b111;
         ushort tile_y       = y & 0b111;
         ushort sc_x         = (x >> 3) & 0x1f;
@@ -117,9 +118,9 @@ private:
         uint32_t screen_base_address = OFFSET_VRAM + get_nth_bits(*memory.BG3CNT, 2, 4) * 0x4000;
         // TODO: bit depth
         uint8_t  index = memory.read_byte(screen_base_address + current_tile * 64 + tile_y * 8 + tile_x);//*/
-        uint color = memory.read_halfword(OFFSET_PALETTE_RAM + index * 2);
-        memory.SetRGB(dot, *memory.VCOUNT, get_nth_bits(color,  0,  5) * 255 / 31,
-                                            get_nth_bits(color,  5, 10) * 255 / 31,
-                                            get_nth_bits(color, 10, 15) * 255 / 31);
+        uint color = memory.read_halfword(memory.OFFSET_PALETTE_RAM + index * 2);
+        memory.SetRGB(dot, *memory.VCOUNT, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),
+                                           cast(ubyte) (get_nth_bits(color,  5, 10) * 255 / 31),
+                                           cast(ubyte) (get_nth_bits(color, 10, 15) * 255 / 31));
     }
 }
