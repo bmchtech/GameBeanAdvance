@@ -3,8 +3,5 @@ description "gamebeanadvance emu"
 authors "bean"
 copyright "Copyright © 2021, bean"
 license "proprietary"
-<<<<<<< HEAD
 dependency "bindbc-sdl" version="~>0.20.0"
-preGenerateCommands 
-=======
->>>>>>> parent of f839fc7... add stub SDL
+preGenerateCommands "echo 'beans'"
