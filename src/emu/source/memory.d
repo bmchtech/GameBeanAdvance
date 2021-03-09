@@ -2,6 +2,8 @@ module memory;
 
 import std.stdio;
 
+import util;
+
 // for more details on the GBA memory map: https://problemkaputt.de/gbatek.htm#gbamemorymap
 // i'm going to probably have to split this struct into more specific values later,
 // but for now ill just do the ones i can see myself easily using.
@@ -24,6 +26,31 @@ class Memory
     bool has_updated = false;
 
     ubyte[] pixels;
+
+    enum SIZE_MAIN_MEMORY      = 0x10000000;
+    enum SIZE_BIOS             = 0x0003FFF - 0x0000000;
+    enum SIZE_WRAM_BOARD       = 0x203FFFF - 0x2000000;
+    enum SIZE_WRAM_CHIP        = 0x3007FFF - 0x3000000;
+    enum SIZE_IO_REGISTERS     = 0x40003FE - 0x4000000;
+    enum SIZE_PALETTE_RAM      = 0x50003FF - 0x5000000;
+    enum SIZE_VRAM             = 0x6017FFF - 0x6000000;
+    enum SIZE_OAM              = 0x70003FF - 0x7000000;
+    enum SIZE_ROM_1            = 0x9FFFFFF - 0x8000000;
+    enum SIZE_ROM_2            = 0xBFFFFFF - 0xA000000;
+    enum SIZE_ROM_3            = 0xDFFFFFF - 0xC000000;
+    enum SIZE_SRAM             = 0xE00FFFF - 0xE000000;
+
+    enum OFFSET_BIOS           = 0x0000000;
+    enum OFFSET_WRAM_BOARD     = 0x2000000;
+    enum OFFSET_WRAM_CHIP      = 0x3000000;
+    enum OFFSET_IO_REGISTERS   = 0x4000000;
+    enum OFFSET_PALETTE_RAM    = 0x5000000;
+    enum OFFSET_VRAM           = 0x6000000;
+    enum OFFSET_OAM            = 0x7000000;
+    enum OFFSET_ROM_1          = 0x8000000;
+    enum OFFSET_ROM_2          = 0xA000000;
+    enum OFFSET_ROM_3          = 0xC000000;
+    enum OFFSET_SRAM           = 0xE000000;
 
     //  IO Registers
     //        NAME           R/W   DESCRIPTION
@@ -86,49 +113,46 @@ class Memory
     ushort* KEYINPUT;   // R     Key Status
     ushort* KEYCNT;     // R/W   Key Interrupt Control
 
-    ubyte read_byte(uint address)
-    {        
+    ubyte read_byte(uint address) {        
         // if ((address & 0xFFFF0000) == 0x4000000) writeln("Reading byte from address " ~ to_hex_string(address) ~ "\n");
         if (address >= SIZE_MAIN_MEMORY) error("Address out of range on read byte (" ~ to_hex_string(address) ~ ")");
         return main[address];
     }
 
-    ushort read_halfword(uint address)
-    {
+    ushort read_halfword(uint address) {
         // if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Reading halfword from address " << to_hex_string(address) << std::endl;
         if (address + 2 >= SIZE_MAIN_MEMORY) error("Address out of range on read halfword (" ~ to_hex_string(address) ~ ")");
-        return *(cast(ushort*) (main + address));
+        return *(cast(ushort*) (main[0] + address));
     }
 
-    uint read_word(uint address)
-    {
+    uint read_word(uint address) {
         // if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Reading word from address " << to_hex_string(address) << std::endl;
         if (address + 4 >= SIZE_MAIN_MEMORY) error("Address out of range on read word (" ~ to_hex_string(address) ~ ")");
-        return *(cast(uint*) (main + address));
+        return *(cast(uint*) (main[0] + address));
     }
 
-    void write_byte(uint address, ubyte value)
-    {
+    void write_byte(uint address, ubyte value) {
         // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
         // if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Writing byte " << to_hex_string(value) << " at address " << to_hex_string(address) << std::endl;
         if (address >= SIZE_MAIN_MEMORY) error("Address out of range on write byte (" ~ to_hex_string(address) ~ ")");
         main[address] = value;
     }
 
-    void write_halfword(uint address, ushort value)
-    {
+    void write_halfword(uint address, ushort value) {
         // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
         // if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Writing halfword " << to_hex_string(value) << " at address " << to_hex_string(address) << std::endl;
         if (address + 2 >= SIZE_MAIN_MEMORY) error("Address out of range on write halfword (" ~ to_hex_string(address) ~ ")");
-        *(cast(ushort*) (main + address)) = value;
+        *(cast(ushort*) (main[0] + address)) = value;
     }
 
-    void write_word(uint address, uint value)
-    {
+    void write_word(uint address, uint value) {
         // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
         // if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Writing word " << to_hex_string(value) << " at address " << to_hex_string(address) << std::endl;
         if (address + 4 >= SIZE_MAIN_MEMORY) error("Address out of range on write word (" ~ to_hex_string(address) ~ ")");
-        *(cast(uint*) (main + address)) = value;
+        *(cast(uint*) (main[0] + address)) = value;
     }
 
+    void SetRGB(uint x, uint y, ubyte r, ubyte g, ubyte b) {
+
+    }
 }

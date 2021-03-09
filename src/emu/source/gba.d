@@ -5,6 +5,7 @@ public {
     import arm7tdmi;
     import ppu;
     import cpu_state;
+    import util;
 }
 
 enum CART_SIZE = 0x1000000;
@@ -15,10 +16,14 @@ enum GAME_TITLE_SIZE = 12;
 
 class GBA {
 public:
-    this(Memory* memory) {
+    ARM7TDMI cpu;
+    PPU      ppu;
+    Memory   memory;
+
+    this(Memory memory) {
         this.memory  = memory;
         this.cpu     = new ARM7TDMI(memory);
-        this.cpu     = new PPU(memory);
+        this.ppu     = new PPU(memory);
         this.enabled = false;
 
         // TODO: figure out a better way to do logging
@@ -38,8 +43,8 @@ public:
     }
     
     void run(string rom_name) {
-        get_rom_as_bytes(rom_name, memory.rom_1, SIZE_ROM_1);
-        *cpu.pc = OFFSET_ROM_1;
+        get_rom_as_bytes(rom_name, memory.rom_1, memory.SIZE_ROM_1);
+        *cpu.pc = memory.OFFSET_ROM_1;
 
         enabled = true;
         // std::thread t(gba_thread, this);
@@ -64,10 +69,6 @@ public:
     }
 
     bool enabled;
-
-    ARM7TDMI* cpu;
-    PPU*      ppu;
-    Memory*   memory;
 
 private:
     alias DMAChannel_t = GBA.DMAChannel;
