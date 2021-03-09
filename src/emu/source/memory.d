@@ -11,17 +11,17 @@ import util;
 class Memory
 {
     ubyte[] main;
-    ubyte[] bios;
-    ubyte[] wram_board;
-    ubyte[] wram_chip;
-    ubyte[] io_registers;
-    ubyte[] palette_ram;
-    ubyte[] vram;
-    ubyte[] oam;
-    ubyte[] rom_1;
-    ubyte[] rom_2;
-    ubyte[] rom_3;
-    ubyte[] sram;
+    ubyte*  bios;
+    ubyte*  wram_board;
+    ubyte*  wram_chip;
+    ubyte*  io_registers;
+    ubyte*  palette_ram;
+    ubyte*  vram;
+    ubyte*  oam;
+    ubyte*  rom_1;
+    ubyte*  rom_2;
+    ubyte*  rom_3;
+    ubyte*  sram;
 
     bool has_updated = false;
 
@@ -112,6 +112,84 @@ class Memory
 
     ushort* KEYINPUT;   // R     Key Status
     ushort* KEYCNT;     // R/W   Key Interrupt Control
+
+    this() {
+        main         = new ubyte[SIZE_MAIN_MEMORY];
+        bios         = &main[OFFSET_BIOS];
+        wram_board   = &main[OFFSET_WRAM_BOARD];
+        wram_chip    = &main[OFFSET_WRAM_CHIP];
+        io_registers = &main[OFFSET_IO_REGISTERS];
+        palette_ram  = &main[OFFSET_PALETTE_RAM];
+        vram         = &main[OFFSET_VRAM];
+        oam          = &main[OFFSET_OAM];
+        rom_1        = &main[OFFSET_ROM_1];
+        rom_2        = &main[OFFSET_ROM_2];
+        rom_3        = &main[OFFSET_ROM_3];
+        sram         = &main[OFFSET_SRAM];
+        
+        DISPCNT      = cast(ushort*) &main[0x4000000];
+        DISPSTAT     = cast(ushort*) &main[0x4000004];
+        VCOUNT       = cast(ushort*) &main[0x4000006];
+        BG0CNT       = cast(ushort*) &main[0x4000008];
+        BG1CNT       = cast(ushort*) &main[0x400000A];
+        BG2CNT       = cast(ushort*) &main[0x400000C];
+        BG3CNT       = cast(ushort*) &main[0x400000E];
+        BG0HOFS      = cast(ushort*) &main[0x4000010];
+        BG0VOFS      = cast(ushort*) &main[0x4000012];
+        BG1HOFS      = cast(ushort*) &main[0x4000014];
+        BG1VOFS      = cast(ushort*) &main[0x4000016];
+        BG2HOFS      = cast(ushort*) &main[0x4000018];
+        BG2VOFS      = cast(ushort*) &main[0x400001A];
+        BG3HOFS      = cast(ushort*) &main[0x400001C];
+        BG3VOFS      = cast(ushort*) &main[0x400001E];
+        BG2PA        = cast(ushort*) &main[0x4000020];
+        BG2PB        = cast(ushort*) &main[0x4000022];
+        BG2PC        = cast(ushort*) &main[0x4000024];
+        BG2PD        = cast(ushort*) &main[0x4000026];
+        BG2X         = cast(uint*)   &main[0x4000028];
+        BG2Y         = cast(uint*)   &main[0x400002C];
+        BG3PA        = cast(ushort*) &main[0x4000030];
+        BG3PB        = cast(ushort*) &main[0x4000032];
+        BG3PC        = cast(ushort*) &main[0x4000034];
+        BG3PD        = cast(ushort*) &main[0x4000036];
+        BG3X         = cast(uint*)   &main[0x4000038];
+        BG3Y         = cast(uint*)   &main[0x400003C];
+        WIN0H        = cast(ushort*) &main[0x4000040];
+        WIN1H        = cast(ushort*) &main[0x4000042];
+        WIN0V        = cast(ushort*) &main[0x4000044];
+        WIN1V        = cast(ushort*) &main[0x4000046];
+        WININ        = cast(ushort*) &main[0x4000048];
+        WINOUT       = cast(ushort*) &main[0x400004A];
+        MOSAIC       = cast(ushort*) &main[0x400004C];
+        BLDCNT       = cast(ushort*) &main[0x4000050];
+        BLDALPHA     = cast(ushort*) &main[0x4000052];
+        BLDY         = cast(ushort*) &main[0x4000054];
+
+        DMA0SAD      = cast(uint*)   &main[0x40000B0];
+        DMA0DAD      = cast(uint*)   &main[0x40000B4];
+        DMA0CNT_L    = cast(ushort*) &main[0x40000B8];
+        DMA0CNT_H    = cast(ushort*) &main[0x40000BA];
+        DMA1SAD      = cast(uint*)   &main[0x40000BC];
+        DMA1DAD      = cast(uint*)   &main[0x40000C0];
+        DMA1CNT_L    = cast(ushort*) &main[0x40000C4];
+        DMA1CNT_H    = cast(ushort*) &main[0x40000C6];
+        DMA2SAD      = cast(uint*)   &main[0x40000C8];
+        DMA2DAD      = cast(uint*)   &main[0x40000CC];
+        DMA2CNT_L    = cast(ushort*) &main[0x40000D0];
+        DMA2CNT_H    = cast(ushort*) &main[0x40000D2];
+        DMA3SAD      = cast(uint*)   &main[0x40000D4];
+        DMA3DAD      = cast(uint*)   &main[0x40000D8];
+        DMA3CNT_L    = cast(ushort*) &main[0x40000DC];
+        DMA3CNT_H    = cast(ushort*) &main[0x40000DE];
+
+        KEYINPUT     = cast(ushort*) &main[0x4000130];
+        KEYCNT       = cast(ushort*) &main[0x4000132];
+
+        // manual overrides: TEMPORARY
+        // TODO: remove when properly implemented
+        *DISPCNT  = 6;
+        write_halfword(0x4000130, 0x03FF);
+    }
 
     ubyte read_byte(uint address) {        
         // if ((address & 0xFFFF0000) == 0x4000000) writeln("Reading byte from address " ~ to_hex_string(address) ~ "\n");
