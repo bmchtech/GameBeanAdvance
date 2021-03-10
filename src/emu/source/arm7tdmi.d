@@ -8,6 +8,9 @@ import util;
 import jumptable_arm;
 import jumptable_thumb;
 
+import std.stdio;
+import std.conv;
+
 enum CPU_STATE_LOG_LENGTH = 1;
 
 class ARM7TDMI {
@@ -28,7 +31,21 @@ class ARM7TDMI {
     ];
     
     this(Memory memory) {
-        this.memory = memory;
+        this.memory        = memory;
+        this.regs          = new uint[16];
+        this.register_file = new uint[16 * 7];
+
+        register_file[MODE_USER.OFFSET       + 13] = 0x03007f00;
+        register_file[MODE_IRQ.OFFSET        + 13] = 0x03007fa0;
+        register_file[MODE_SUPERVISOR.OFFSET + 13] = 0x03007fe0;
+
+        // the program status register
+        cpsr = 0x00000000;
+        spsr = 0x00000000;
+
+        // the current mode
+        current_mode = MODES[0];
+        set_mode(MODE_USER);
     }
 
     // the register array is going to be accessed as such:
@@ -66,6 +83,8 @@ class ARM7TDMI {
     pragma(inline) void set_mode(const CpuMode new_mode) {
         int mask = current_mode.REGISTER_UNIQUENESS & new_mode.REGISTER_UNIQUENESS;
 
+        register_file[current_mode.OFFSET .. current_mode.OFFSET + 16] = regs[0 .. 16];
+
         for (int i = 0; i < 16; i++) {
             if (mask & 1) {
                 register_file[i + new_mode.OFFSET] = register_file[i + current_mode.OFFSET];
@@ -78,7 +97,7 @@ class ARM7TDMI {
         cpsr = (cpsr & 0xFFFFFFE0) | new_mode.CPSR_ENCODING;
 
         // assert(0);
-        regs = &register_file[new_mode.OFFSET];
+        regs[0 .. 16] = register_file[current_mode.OFFSET .. current_mode.OFFSET + 16];
         pc = &regs[15];
         lr = &regs[14];
         sp = &regs[13];
@@ -95,7 +114,7 @@ class ARM7TDMI {
     }
 
     uint[] register_file;
-    uint* regs;
+    uint[] regs;
 
     uint* pc;
     uint* lr;
@@ -160,11 +179,13 @@ class ARM7TDMI {
 
     uint fetch() {
         if (get_bit_T()) { // thumb mode: grab a halfword and return it
-            uint opcode = cast(uint) (*(cast(ushort*)(memory.main[0] + (*pc & 0xFFFFFFFE))));
+            writeln("A");
+            writeln(to!string(*pc));
+            uint opcode = cast(uint) memory.read_halfword(*pc & 0xFFFFFFFE);
             *pc += 2;
             return opcode;
         } else {           // arm mode: grab a word and return it
-            uint opcode  = *(cast(uint*)(memory.main[0] + (*pc & 0xFFFFFFFE)));
+            uint opcode = memory.read_word(*pc & 0xFFFFFFFE);
             *pc += 4;
             return opcode;
         }
