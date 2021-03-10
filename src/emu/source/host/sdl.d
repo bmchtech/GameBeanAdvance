@@ -139,14 +139,14 @@ private:
     enum KEYMAP = [
             SDL_Keycode.SDLK_z : 0, // A
             SDL_Keycode.SDLK_x : 1, // B
-            SDL_Keycode.SDLK_RETURN : 2, // START
-            SDL_Keycode.SDLK_TAB : 3, // SELECT
-            SDL_Keycode.SDLK_LEFT : 4, // LEFT
-            SDL_Keycode.SDLK_UP : 5, // UP
-            SDL_Keycode.SDLK_RIGHT : 6, // RIGHT
+            SDL_Keycode.SDLK_TAB : 2, // SELECT
+            SDL_Keycode.SDLK_RETURN : 3, // START
+            SDL_Keycode.SDLK_RIGHT : 4, // RIGHT
+            SDL_Keycode.SDLK_LEFT : 5, // LEFT
+            SDL_Keycode.SDLK_UP : 6, // UP
             SDL_Keycode.SDLK_DOWN : 7, // DOWN
-            SDL_Keycode.SDLK_a : 8, // L
-            SDL_Keycode.SDLK_s : 9, // R
+            SDL_Keycode.SDLK_s : 8, // R
+            SDL_Keycode.SDLK_a : 9, // L
         ];
 
     void on_input(SDL_Keycode key, bool pressed) {
