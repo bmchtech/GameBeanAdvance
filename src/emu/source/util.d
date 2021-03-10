@@ -16,20 +16,19 @@ enum RESET  = "\033[0m";
 void warning(string message);
 // an error terminates the program and calls exit(EXIT_FAILURE);
 void error(string message);
-// converts uint32_t to hex string
-string to_hex_string(uint32_t val);
+
 // get nth bits from value as so: [start, end)
-uint32_t get_nth_bits(uint32_t val, uint8_t start, uint8_t end) {
+uint32_t get_nth_bits(uint val, ubyte start, ubyte end) {
     return (val >> start) & cast(uint32_t)(core.stdc.math.pow(2, end - start) - 1);
 }
 
 // get nth bit from value
-bool get_nth_bit(uint32_t val, uint8_t n) {
+bool get_nth_bit(uint val, ubyte n) {
     return (val >> n) & 1;
 }
 
 // sign extend the given value
-uint32_t sign_extend(uint32_t val, uint8_t num_bits) {
+uint sign_extend(uint val, ubyte num_bits) {
     return (val ^ (1 << (num_bits - 1))) - (1 << (num_bits - 1));
 }
 

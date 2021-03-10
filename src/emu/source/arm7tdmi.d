@@ -179,8 +179,6 @@ class ARM7TDMI {
 
     uint fetch() {
         if (get_bit_T()) { // thumb mode: grab a halfword and return it
-            writeln("A");
-            writeln(to!string(*pc));
             uint opcode = cast(uint) memory.read_halfword(*pc & 0xFFFFFFFE);
             *pc += 2;
             return opcode;
