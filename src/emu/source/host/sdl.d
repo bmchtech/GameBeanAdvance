@@ -1,10 +1,10 @@
-module renderer;
+module host.sdl;
 import bindbc.sdl;
 import std.stdio;
 import gba;
 import core.time;
 
-class GameBeanSDLRenderer {
+class GameBeanSDLHost {
     this(GBA gba) {
         this.gba = gba;
     }
@@ -79,7 +79,7 @@ class GameBeanSDLRenderer {
         running = false;
     }
 
-    int frameCount;
+    int frame_count;
     GBA gba;
     bool running;
     SDL_Window* window;
@@ -99,20 +99,20 @@ private:
                 exit();
                 break;
             case SDL_KEYDOWN:
-                // this.keys.pump_keydown(event.key.keysym.sym, frameCount);
+                on_input(event.key.keysym.sym, true);
                 if (event.key.keysym.sym == SDL_Keycode.SDLK_ESCAPE) {
                     exit();
                 }
                 break;
             case SDL_KEYUP:
-                // this.keys.pump_keyup(event.key.keysym.sym);
+                on_input(event.key.keysym.sym, false);
                 break;
             default:
                 break;
             }
         }
 
-        frameCount++;
+        frame_count++;
 
         // sync from GBA video buffer
         for (int j = 0; j < GBA_SCREEN_HEIGHT * GBA_SCREEN_SCALE; j++) {
@@ -133,5 +133,9 @@ private:
 
         // render present
         SDL_RenderPresent(renderer);
+    }
+
+    void on_input(SDL_Keycode key, bool pressed) {
+
     }
 }
