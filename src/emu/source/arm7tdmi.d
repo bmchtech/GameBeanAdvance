@@ -174,6 +174,8 @@ class ARM7TDMI {
         if (cycles_remaining == 0) {
             uint opcode = fetch();
             execute(opcode);
+        } else {
+            cycles_remaining--;
         }
     }
 
