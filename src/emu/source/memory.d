@@ -226,6 +226,7 @@ class Memory {
     }
 
     void SetRGB(uint x, uint y, ubyte r, ubyte g, ubyte b) {
+        writefln("SETRGB (%s,%s) = [%s, %s, %s]", x, y, r, g, b);
         video_buffer[x][y] = (r << 24) & (g << 16) & (b << 8) & (0xff);
     }
 }
