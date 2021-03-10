@@ -46,6 +46,8 @@ void warning(string message) {
 // an error terminates the program and calls exit(EXIT_FAILURE);
 void error(string message) {
     stderr.writefln("%sERROR: %s%s", RED, RESET, message);
+
+    assert(0, "terminating due to error");
 }
 
 string to_hex_string(uint val) {
