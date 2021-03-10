@@ -89,7 +89,7 @@ void test_arm_mode(string gba_file, string log_file, int num_instructions, int s
     CpuState[] expected_output = produce_expected_cpu_states(log_file, num_instructions);
     
     ubyte[] rom = get_rom_as_bytes(gba_file);
-    cpu.memory.main[Memory.OFFSET_ROM_1..Memory.OFFSET_ROM_1 + Memory.SIZE_ROM_1] = rom[0..rom.length];
+    cpu.memory.main[Memory.OFFSET_ROM_1..(Memory.OFFSET_ROM_1 + rom.length)] = rom[0..rom.length];
 
     set_cpu_state(cpu, expected_output[0]);
     cpu.set_bit_T(true);
@@ -115,7 +115,7 @@ void test_arm_mode(string gba_file, string log_file, int num_instructions, int s
     }
 
     // make sure we've reached B infin
-    if (b_infin_check) assert(cpu.fetch() == 0xE7FE, "ROM did not reach B infin!");
+    if (b_infin_check) assert(cpu.fetch() == 0xEAFFFFFE, "ROM did not reach B infin!");
 }
 
 
