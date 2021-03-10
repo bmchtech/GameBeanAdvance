@@ -126,8 +126,7 @@ private:
 
         // copy pixel buffer to texture
         auto px_vp = cast(void*) pixels;
-        SDL_UpdateTexture(screen_tex, null, px_vp,
-                GBA_SCREEN_WIDTH * GBA_SCREEN_SCALE * 4);
+        SDL_UpdateTexture(screen_tex, null, px_vp, GBA_SCREEN_WIDTH * GBA_SCREEN_SCALE * 4);
 
         // copy texture to scren
         SDL_RenderCopy(renderer, screen_tex, null, null);

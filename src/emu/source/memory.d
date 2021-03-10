@@ -172,21 +172,24 @@ class Memory {
     }
 
     ubyte read_byte(uint address) {
-        if ((address & 0xFFFF0000) == 0x4000000) writeln("Reading byte from address " ~ to_hex_string(address) ~ "\n");
+        if ((address & 0xFFFF0000) == 0x4000000)
+            writeln("Reading byte from address " ~ to_hex_string(address) ~ "\n");
         if (address >= SIZE_MAIN_MEMORY)
             error("Address out of range on read byte (" ~ to_hex_string(address) ~ ")");
         return main[address];
     }
 
     ushort read_halfword(uint address) {
-        if ((address & 0xFFFF0000) == 0x4000000) writefln("Reading halfword from address " ~ to_hex_string(address));
+        if ((address & 0xFFFF0000) == 0x4000000)
+            writefln("Reading halfword from address " ~ to_hex_string(address));
         if (address + 2 >= SIZE_MAIN_MEMORY)
             error("Address out of range on read halfword (" ~ to_hex_string(address) ~ ")");
         return (cast(ushort) main[address + 0] << 0) | (cast(ushort) main[address + 1] << 8);
     }
 
     uint read_word(uint address) {
-        if ((address & 0xFFFF0000) == 0x4000000) writefln("Reading word from address " ~ to_hex_string(address));
+        if ((address & 0xFFFF0000) == 0x4000000)
+            writefln("Reading word from address " ~ to_hex_string(address));
         if (address + 4 >= SIZE_MAIN_MEMORY)
             error("Address out of range on read word (" ~ to_hex_string(address) ~ ")");
         return (cast(uint) main[address + 0] << 0) | (
@@ -196,7 +199,9 @@ class Memory {
 
     void write_byte(uint address, ubyte value) {
         // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
-        if ((address & 0xFFFF0000) == 0x4000000) writefln("Writing byte " ~ to_hex_string(value) ~ " at address " ~ to_hex_string(address));
+        if ((address & 0xFFFF0000) == 0x4000000)
+            writefln("Writing byte " ~ to_hex_string(value) ~ " at address " ~ to_hex_string(
+                    address));
         if (address >= SIZE_MAIN_MEMORY)
             error("Address out of range on write byte (" ~ to_hex_string(address) ~ ")");
         // main[address] = value;
@@ -205,7 +210,9 @@ class Memory {
 
     void write_halfword(uint address, ushort value) {
         // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
-        if ((address & 0xFFFF0000) == 0x4000000) writefln("Writing halfword " ~ to_hex_string(value) ~ " at address " ~ to_hex_string(address));
+        if ((address & 0xFFFF0000) == 0x4000000)
+            writefln("Writing halfword " ~ to_hex_string(
+                    value) ~ " at address " ~ to_hex_string(address));
         if (address + 2 >= SIZE_MAIN_MEMORY)
             error("Address out of range on write halfword (" ~ to_hex_string(address) ~ ")");
         // *(cast(ushort*) (main[0] + address)) = value;
@@ -215,7 +222,9 @@ class Memory {
 
     void write_word(uint address, uint value) {
         // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
-        if ((address & 0xFFFF0000) == 0x4000000) writefln("Writing word " ~ to_hex_string(value) ~ " at address " ~ to_hex_string(address));
+        if ((address & 0xFFFF0000) == 0x4000000)
+            writefln("Writing word " ~ to_hex_string(value) ~ " at address " ~ to_hex_string(
+                    address));
         if (address + 4 >= SIZE_MAIN_MEMORY)
             error("Address out of range on write word (" ~ to_hex_string(address) ~ ")");
         // *(cast(uint*) (main[0] + address)) = value;
@@ -226,7 +235,8 @@ class Memory {
     }
 
     void SetRGB(uint x, uint y, ubyte r, ubyte g, ubyte b) {
-        writefln("SETRGB (%s,%s) = [%s, %s, %s]", x, y, r, g, b);
-        video_buffer[x][y] = (r << 24) & (g << 16) & (b << 8) & (0xff);
+        auto p = (r << 24) | (g << 16) | (b << 8) | (0xff);
+        // writefln("SETRGB (%s,%s) = [%s, %s, %s] = %00000000x", x, y, r, g, b, p);
+        video_buffer[x][y] = p;
     }
 }
