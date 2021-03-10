@@ -17,6 +17,15 @@ class GameBeanSDLRenderer {
                 SDL_WINDOWPOS_UNDEFINED, GBA_SCREEN_WIDTH * GBA_SCREEN_SCALE,
                 GBA_SCREEN_HEIGHT * GBA_SCREEN_SCALE, SDL_WindowFlags.SDL_WINDOW_SHOWN);
         assert(window != null, "sdl window init failed!");
+
+        renderer = SDL_CreateRenderer(window, -1, SDL_RendererFlags.SDL_RENDERER_PRESENTVSYNC);
+
+        screen_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                SDL_TextureAccess.SDL_TEXTUREACCESS_STREAMING,
+                GBA_SCREEN_WIDTH * GBA_SCREEN_SCALE, GBA_SCREEN_HEIGHT * GBA_SCREEN_SCALE);
+
+        pixels = new uint[][](GBA_SCREEN_WIDTH * GBA_SCREEN_SCALE,
+                GBA_SCREEN_HEIGHT * GBA_SCREEN_SCALE);
     }
 
     void run() {
@@ -41,7 +50,7 @@ class GameBeanSDLRenderer {
             total_time += el;
             auto el_nsecs = el.total!"nsecs";
             writefln("nsecs elapsed: %s", el_nsecs);
-            
+
             clock_cycle += el_nsecs;
             clock_frame += el_nsecs;
 
@@ -56,7 +65,7 @@ class GameBeanSDLRenderer {
 
             // 60Hz frame refresh (mod 267883)
             if (clock_frame > nsec_per_frame) {
-                // frame();
+                frame();
                 writefln("FRAME");
                 clock_frame = 0;
             }
@@ -66,12 +75,16 @@ class GameBeanSDLRenderer {
     void exit() {
         SDL_DestroyWindow(window);
         SDL_Quit();
+        running = false;
     }
 
     int frameCount;
     GBA gba;
     bool running;
     SDL_Window* window;
+    SDL_Renderer* renderer;
+    SDL_Texture* screen_tex;
+    uint[][] pixels;
     enum GBA_SCREEN_WIDTH = 240;
     enum GBA_SCREEN_HEIGHT = 160;
     enum GBA_SCREEN_SCALE = 2;
@@ -86,6 +99,9 @@ private:
                 break;
             case SDL_KEYDOWN:
                 // this.keys.pump_keydown(event.key.keysym.sym, frameCount);
+                if (event.key.keysym.sym == SDL_Keycode.SDLK_ESCAPE) {
+                    exit();
+                }
                 break;
             case SDL_KEYUP:
                 // this.keys.pump_keyup(event.key.keysym.sym);
@@ -97,6 +113,14 @@ private:
 
         frameCount++;
 
-        writefln("%d frames.", frameCount);
+        // copy pixel buffer to texture
+        SDL_UpdateTexture(screen_tex, null, cast(void*) pixels,
+                GBA_SCREEN_WIDTH * GBA_SCREEN_SCALE * 4);
+
+        // copy texture to scren
+        SDL_RenderCopy(renderer, screen_tex, null, null);
+
+        // render present
+        SDL_RenderPresent(renderer);
     }
 }
