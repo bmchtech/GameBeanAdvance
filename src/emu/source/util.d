@@ -46,26 +46,6 @@ void warning(string message) {
 // an error terminates the program and calls exit(EXIT_FAILURE);
 void error(string message) {
     stderr.writefln("%sERROR: %s%s", RED, RESET, message);
-
-    if (logger_gba != null) {
-        for (int i = 0; i < CPU_STATE_LOG_LENGTH; i++) {
-            CpuState cpu_state = logger_gba.cpu.cpu_states[i];
-            writefln(((cpu_state.type == CpuType.ARM) ? "ARM " : "THUMB "));
-            writefln(to_hex_string(cpu_state.opcode));
-            writefln(" ||");
-
-            for (int j = 0; j < 16; j++) {
-                string register_value = to_hex_string(cpu_state.regs[j]);
-                writefln(" %s", (to!string(8 - register_value.length, '0') ~ register_value));
-            }
-
-            write(" ||");
-
-            writefln(" %s", to_hex_string(cpu_state.mode));
-        }
-    }
-
-    core.stdc.stdlib.exit(-1);
 }
 
 string to_hex_string(uint val) {
@@ -93,5 +73,3 @@ ubyte[] get_rom_as_bytes(string rom_name) {
     file.rawRead(buffer);
     return buffer;
 }
-
-GBA* logger_gba = null;
