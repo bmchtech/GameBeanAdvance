@@ -49,7 +49,7 @@ class GameBeanSDLRenderer {
 
             total_time += el;
             auto el_nsecs = el.total!"nsecs";
-            writefln("nsecs elapsed: %s", el_nsecs);
+            // writefln("nsecs elapsed: %s", el_nsecs);
 
             clock_cycle += el_nsecs;
             clock_frame += el_nsecs;
