@@ -170,12 +170,12 @@ unittest {
     test_arm_mode("../../tests/asm/bin/arm-opcodes.gba", "../../tests/asm/logs/arm-opcodes.log", 2100, 276, true);
 }
 
-@("tests-roms-fountain") 
-unittest {
-    test_arm_mode("../../tests/asm/bin/Fountain.gba", "../../tests/asm/logs/Fountain.log", 300000, 0, false);
-}
+// @("tests-roms-fountain") 
+// unittest {
+//     test_arm_mode("../../tests/asm/bin/Fountain.gba", "../../tests/asm/logs/Fountain.log", 300000, 0, false);
+// }
 
-@("tests-roms-superstar-saga") 
-unittest {
-    test_arm_mode("roms/superstarsaga.gba", "../../tests/asm/logs/superstarsaga.log", 2100, 0, false);
-}
+// @("tests-roms-superstar-saga") 
+// unittest {
+//     test_arm_mode("roms/superstarsaga.gba", "../../tests/asm/logs/superstarsaga.log", 2100, 0, false);
+// }
