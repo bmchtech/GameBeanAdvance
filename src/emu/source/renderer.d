@@ -37,7 +37,6 @@ class GameBeanSDLRenderer {
         enum gba_cycle_batch_sz = 1024;
         // 16.6666 ms
         enum nsec_per_frame = 16_666_660;
-        writefln("a: %s, b: %s", nsec_per_gba_cyclebatch, nsec_per_frame);
         auto total_time = nsecs(0);
         auto clock_cycle = 0;
         auto clock_frame = 0;
