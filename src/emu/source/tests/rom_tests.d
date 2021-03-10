@@ -70,6 +70,7 @@ void test_thumb_mode(string gba_file, string log_file, int num_instructions) {
             
             uint opcode = cpu.fetch();
             cpu.execute(opcode);
+            
             check_cpu_state(expected_output[i + 1], get_cpu_state(cpu), "Failed at instruction #" ~ to!string(i) ~ " with opcode 0x" ~ to_hex_string(opcode));
         } else {
             wasPreviousInstructionARM = true;
