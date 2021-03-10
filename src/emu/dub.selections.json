@@ -3,6 +3,7 @@
 	"versions": {
 		"bindbc-loader": "0.3.2",
 		"bindbc-sdl": "0.20.0",
+		"commandr": "0.2.0",
 		"silly": "1.1.1"
 	}
 }
