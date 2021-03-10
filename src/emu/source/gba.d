@@ -42,15 +42,12 @@ public:
         bool     enabled;
     }
     
-    void run(string rom_name) {
+    void load_rom(string rom_name) {
         ubyte[] rom = get_rom_as_bytes(rom_name);
-        cpu.memory.main[Memory.OFFSET_ROM_1..Memory.OFFSET_ROM_1 + Memory.SIZE_ROM_1] = rom[0..rom.length];
+        cpu.memory.main[Memory.OFFSET_ROM_1 .. Memory.OFFSET_ROM_1 + rom.length] = rom[0 .. rom.length];
 
         *cpu.pc = memory.OFFSET_ROM_1;
-
         enabled = true;
-        // std::thread t(gba_thread, this);
-        // t.detach();
     }
 
     // cycles the GBA CPU once, executing one instruction to completion.
