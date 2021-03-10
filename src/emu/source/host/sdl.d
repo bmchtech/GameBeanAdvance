@@ -56,7 +56,8 @@ class GameBeanSDLHost {
             // GBA cycle batching
             if (clock_cycle > nsec_per_gba_cyclebatch) {
                 for (int i = 0; i < gba_cycle_batch_sz; i++) {
-                    util.verbose_log(format("pc: %00000000x (cycle %s)", *gba.cpu.pc, total_cycles + i), 3);
+                    util.verbose_log(format("pc: %00000000x (cycle %s)",
+                            *gba.cpu.pc, total_cycles + i), 3);
                     gba.cycle();
                 }
                 total_cycles += gba_cycle_batch_sz;
@@ -135,7 +136,21 @@ private:
         SDL_RenderPresent(renderer);
     }
 
-    void on_input(SDL_Keycode key, bool pressed) {
+    enum KEYMAP = [
+            SDL_Keycode.SDLK_z : 0, // A
+            SDL_Keycode.SDLK_x : 1, // B
+            SDL_Keycode.SDLK_RETURN : 2, // START
+            SDL_Keycode.SDLK_TAB : 3, // SELECT
+            SDL_Keycode.SDLK_LEFT : 4, // LEFT
+            SDL_Keycode.SDLK_UP : 5, // UP
+            SDL_Keycode.SDLK_RIGHT : 6, // RIGHT
+            SDL_Keycode.SDLK_DOWN : 7, // DOWN
+            SDL_Keycode.SDLK_a : 8, // L
+            SDL_Keycode.SDLK_s : 9, // R
+        ];
 
+    void on_input(SDL_Keycode key, bool pressed) {
+        auto gba_key = KEYMAP[key];
+        gba.memory.set_key(cast(ubyte) gba_key, pressed);
     }
 }
