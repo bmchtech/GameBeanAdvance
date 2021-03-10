@@ -26,7 +26,7 @@ public:
         this.ppu     = new PPU(memory);
         this.enabled = false;
 
-        // TODO: figure out a better way to do logging
+        cpu.set_mode(arm7tdmi.ARM7TDMI.MODE_SYSTEM);
     }
 
     struct DMAChannel {
