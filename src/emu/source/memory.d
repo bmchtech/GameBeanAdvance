@@ -10,22 +10,10 @@ import util;
 
 class Memory
 {
-    ubyte[] main;
-    ubyte*  bios;
-    ubyte*  wram_board;
-    ubyte*  wram_chip;
-    ubyte*  io_registers;
-    ubyte*  palette_ram;
-    ubyte*  vram;
-    ubyte*  oam;
-    ubyte*  rom_1;
-    ubyte*  rom_2;
-    ubyte*  rom_3;
-    ubyte*  sram;
-
     bool has_updated = false;
 
     ubyte[] pixels;
+    ubyte[] main;
 
     enum SIZE_MAIN_MEMORY      = 0x10000000;
     enum SIZE_BIOS             = 0x0003FFF - 0x0000000;
@@ -115,18 +103,7 @@ class Memory
 
     this() {
         main         = new ubyte[SIZE_MAIN_MEMORY];
-        bios         = &main[OFFSET_BIOS];
-        wram_board   = &main[OFFSET_WRAM_BOARD];
-        wram_chip    = &main[OFFSET_WRAM_CHIP];
-        io_registers = &main[OFFSET_IO_REGISTERS];
-        palette_ram  = &main[OFFSET_PALETTE_RAM];
-        vram         = &main[OFFSET_VRAM];
-        oam          = &main[OFFSET_OAM];
-        rom_1        = &main[OFFSET_ROM_1];
-        rom_2        = &main[OFFSET_ROM_2];
-        rom_3        = &main[OFFSET_ROM_3];
-        sram         = &main[OFFSET_SRAM];
-        
+
         DISPCNT      = cast(ushort*) &main[0x4000000];
         DISPSTAT     = cast(ushort*) &main[0x4000004];
         VCOUNT       = cast(ushort*) &main[0x4000006];

@@ -44,7 +44,7 @@ public:
     
     void run(string rom_name) {
         ubyte[] rom = get_rom_as_bytes(rom_name);
-        memory.rom_1[0..0x01000000] = rom[0..rom.length];
+        cpu.memory.main[Memory.OFFSET_ROM_1..Memory.OFFSET_ROM_1 + Memory.SIZE_ROM_1] = rom[0..rom.length];
 
         *cpu.pc = memory.OFFSET_ROM_1;
 
