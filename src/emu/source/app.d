@@ -1,6 +1,6 @@
 import std.stdio;
 import bindbc.sdl;
-import renderer;
+import host.sdl;
 import gba;
 import commandr;
 
@@ -30,7 +30,7 @@ void main(string[] args) {
 	writeln("loaded rom");
 
 	writeln("running sdl2 renderer");
-	auto ren = new GameBeanSDLRenderer(gba);
-	ren.init();
-	ren.run();
+	auto host = new GameBeanSDLHost(gba);
+	host.init();
+	host.run();
 }
