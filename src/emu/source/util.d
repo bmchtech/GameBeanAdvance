@@ -60,7 +60,7 @@ void error(string message) {
     core.stdc.stdlib.exit(-1);
 }
 
-string to_hex_string(uint32_t val) {
+string to_hex_string(uint val) {
     return format("%x", val);
 }
 
