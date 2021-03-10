@@ -12,10 +12,11 @@ import std.stdio;
 import std.algorithm;
 import std.array;
 import std.range;
+import std.format;
 
 void check_cpu_state(CpuState expected, CpuState actual, string error_message) {
     for (int i = 0; i < 16; i++) {
-        assert(expected.regs[i] == actual.regs[i], error_message ~ " at register #" ~ to!string(i));
+        assert(expected.regs[i] == actual.regs[i], format("%s at register #%s", error_message, i));
     }
 
     assert( expected.type           ==  actual.type,           error_message);
