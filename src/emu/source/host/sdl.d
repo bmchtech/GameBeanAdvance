@@ -2,7 +2,8 @@ module host.sdl;
 import bindbc.sdl;
 import std.stdio;
 import gba;
-import core.time;
+import core.time: MonoTime, nsecs;
+import std.conv;
 
 class GameBeanSDLHost {
     this(GBA gba) {
@@ -137,21 +138,23 @@ private:
     }
 
     enum KEYMAP = [
-            SDL_Keycode.SDLK_z : 0, // A
-            SDL_Keycode.SDLK_x : 1, // B
-            SDL_Keycode.SDLK_TAB : 2, // SELECT
-            SDL_Keycode.SDLK_RETURN : 3, // START
-            SDL_Keycode.SDLK_RIGHT : 4, // RIGHT
-            SDL_Keycode.SDLK_LEFT : 5, // LEFT
-            SDL_Keycode.SDLK_UP : 6, // UP
-            SDL_Keycode.SDLK_DOWN : 7, // DOWN
-            SDL_Keycode.SDLK_s : 8, // R
-            SDL_Keycode.SDLK_a : 9, // L
+            SDL_Keycode.SDLK_z : GBAKey.A, // A
+            SDL_Keycode.SDLK_x : GBAKey.B, // B
+            SDL_Keycode.SDLK_TAB : GBAKey.SELECT, // SELECT
+            SDL_Keycode.SDLK_RETURN : GBAKey.START, // START
+            SDL_Keycode.SDLK_RIGHT : GBAKey.RIGHT, // RIGHT
+            SDL_Keycode.SDLK_LEFT : GBAKey.LEFT, // LEFT
+            SDL_Keycode.SDLK_UP : GBAKey.UP, // UP
+            SDL_Keycode.SDLK_DOWN : GBAKey.DOWN, // DOWN
+            SDL_Keycode.SDLK_s
+            : GBAKey.RIGHT, // R
+            SDL_Keycode.SDLK_a : GBAKey.LEFT, // L
         ];
 
     void on_input(SDL_Keycode key, bool pressed) {
-        if (key !in KEYMAP) return;
-        auto gba_key = KEYMAP[key];
+        if (key !in KEYMAP)
+            return;
+        auto gba_key = to!int(KEYMAP[key]);
         gba.memory.set_key(cast(ubyte) gba_key, pressed);
     }
 }

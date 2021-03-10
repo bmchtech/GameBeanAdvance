@@ -14,6 +14,19 @@ enum ROM_ENTRY_POINT = 0x000;
 enum GAME_TITLE_OFFSET = 0x0A0;
 enum GAME_TITLE_SIZE = 12;
 
+enum GBAKey {
+    A = 0,
+    B = 1,
+    SELECT = 2,
+    START = 3,
+    RIGHT = 4,
+    LEFT = 5,
+    UP = 6,
+    DOWN = 7,
+    R = 8,
+    L = 9
+}
+
 class GBA {
 public:
     ARM7TDMI cpu;
