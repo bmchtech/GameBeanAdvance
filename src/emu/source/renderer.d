@@ -56,8 +56,8 @@ class GameBeanSDLRenderer {
             // GBA cycle batching
             if (clock_cycle > nsec_per_gba_cyclebatch) {
                 for (int i = 0; i < gba_cycle_batch_sz; i++) {
-                    gba.cycle();
                     // writefln("pc: %00000000x (cycle %s)", *gba.cpu.pc, total_cycles + i);
+                    gba.cycle();
                 }
                 total_cycles += gba_cycle_batch_sz;
                 // writefln("CYCLE[%s]", gba_cycle_batch_sz);
