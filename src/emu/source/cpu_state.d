@@ -33,7 +33,6 @@ CpuState get_cpu_state(ARM7TDMI cpu) {
 
 void set_cpu_state(ARM7TDMI cpu, CpuState cpu_state) {
     for (int i = 0; i < 16; i++) {
-        import util;
         cpu.regs[i] = cpu_state.regs[i];
     }
 
