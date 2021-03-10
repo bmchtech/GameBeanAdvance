@@ -14,7 +14,7 @@ class Memory {
     ubyte[] pixels;
     ubyte[] main;
     /** video buffer in RGBA8888 */
-    uint[240][160] video_buffer;
+    uint[][] video_buffer;
 
     enum SIZE_MAIN_MEMORY = 0x10000000;
     enum SIZE_BIOS = 0x0003FFF - 0x0000000;
@@ -162,6 +162,8 @@ class Memory {
 
         KEYINPUT = cast(ushort*)&main[0x4000130];
         KEYCNT = cast(ushort*)&main[0x4000132];
+
+        video_buffer = new uint[][](240, 160);
 
         // manual overrides: TEMPORARY
         // TODO: remove when properly implemented
