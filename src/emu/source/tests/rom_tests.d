@@ -44,6 +44,7 @@ CpuState produce_expected_cpu_state(char[] input_string) {
     state.mem_0x03000003 = to!uint(tokens[19], 16);
 
     for (int i = 0; i < 16; i++) state.regs[i] = to!uint(tokens[i + 2], 16);
+    state.regs[15] -= state.type == cpu_state.CpuType.ARM ? 4 : 2;
 
     return state;
 }
@@ -70,7 +71,7 @@ void test_thumb_mode(string gba_file, string log_file, int num_instructions) {
             
             uint opcode = cpu.fetch();
             cpu.execute(opcode);
-            
+
             check_cpu_state(expected_output[i + 1], get_cpu_state(cpu), "Failed at instruction #" ~ to!string(i) ~ " with opcode 0x" ~ to_hex_string(opcode));
         } else {
             wasPreviousInstructionARM = true;
