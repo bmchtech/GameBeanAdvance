@@ -186,8 +186,8 @@ class Memory
         if (address + 4 >= SIZE_MAIN_MEMORY) error("Address out of range on read word (" ~ to_hex_string(address) ~ ")");
         return (cast(uint) main[address + 0] << 0) |
                (cast(uint) main[address + 1] << 8) |
-               (cast(uint) main[address + 2] << 8) |
-               (cast(uint) main[address + 3] << 8);
+               (cast(uint) main[address + 2] << 16) |
+               (cast(uint) main[address + 3] << 24);
     }
 
     void write_byte(uint address, ubyte value) {
