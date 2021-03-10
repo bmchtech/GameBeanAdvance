@@ -23,8 +23,12 @@ class GameBeanSDLRenderer {
         running = true;
         auto lastTicks = MonoTime.currTime();
 
-        auto nsec_per_gba_cycle = (1.seconds / 16_000_000).total!"nsecs";
-        auto nsec_per_frame = (1.seconds / 60).total!"nsecs";
+        // 62.5 nsec per cycle, 64000 nsec per batch (1024)
+        enum nsec_per_gba_cyclebatch = 62;
+        enum gba_cycle_batch_sz = 1024;
+        // 16.6666 ms
+        enum nsec_per_frame = 16_666_660;
+        writefln("a: %s, b: %s", nsec_per_gba_cyclebatch, nsec_per_frame);
         auto total_time = nsecs(0);
         auto clock_cycle = 0;
         auto clock_frame = 0;
@@ -34,20 +38,26 @@ class GameBeanSDLRenderer {
             auto el = ticks - lastTicks;
             lastTicks = ticks;
 
+            total_time += el;
             auto el_nsecs = el.total!"nsecs";
+            writefln("nsecs elapsed: %s", el_nsecs);
             
             clock_cycle += el_nsecs;
             clock_frame += el_nsecs;
 
-            // 16 MHz GBA cycle
-            if (clock_cycle > nsec_per_gba_cycle) {
-                gba.cycle();
+            // GBA cycle batching
+            if (clock_cycle > nsec_per_gba_cyclebatch) {
+                for (int i = 0; i < gba_cycle_batch_sz; i++) {
+                    gba.cycle();
+                }
+                writefln("CYCLE[%s]", gba_cycle_batch_sz);
                 clock_cycle = 0;
             }
 
             // 60Hz frame refresh (mod 267883)
             if (clock_frame > nsec_per_frame) {
-                frame();
+                // frame();
+                writefln("FRAME");
                 clock_frame = 0;
             }
         }
@@ -87,6 +97,6 @@ private:
 
         frameCount++;
 
-        writeln("%d frames.", frameCount);
+        writefln("%d frames.", frameCount);
     }
 }
