@@ -40,6 +40,7 @@ class GameBeanSDLRenderer {
         auto total_time = nsecs(0);
         auto clock_cycle = 0;
         auto clock_frame = 0;
+        auto total_cycles = 0;
 
         while (running) {
             auto ticks = MonoTime.currTime();
@@ -57,7 +58,9 @@ class GameBeanSDLRenderer {
             if (clock_cycle > nsec_per_gba_cyclebatch) {
                 for (int i = 0; i < gba_cycle_batch_sz; i++) {
                     gba.cycle();
+                    writefln("pc: %00000000x (cycle %s)", *gba.cpu.pc, total_cycles + i);
                 }
+                total_cycles += gba_cycle_batch_sz;
                 // writefln("CYCLE[%s]", gba_cycle_batch_sz);
                 clock_cycle = 0;
             }
