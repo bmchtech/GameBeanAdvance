@@ -65,7 +65,7 @@ public:
                 // in mode 3, the dot and scanline (x and y) simply tell us where to read from in VRAM. The colors
                 // are stored directly, so we just read from VRAM and interpret as a 15bit highcolor
                 ushort color = memory.read_halfword(memory.OFFSET_VRAM + 2 * (dot + scanline * 240));
-                memory.SetRGB(dot, scanline, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),
+                memory.set_rgb(dot, scanline, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),
                                              cast(ubyte) (get_nth_bits(color,  5, 10) * 255 / 31),
                                              cast(ubyte) (get_nth_bits(color, 10, 15) * 255 / 31));
 
@@ -83,7 +83,7 @@ public:
 
                 // we grab the color, interpret it as 15bit highcolor and render it.
                 ushort color = memory.read_halfword(memory.OFFSET_PALETTE_RAM + index);
-                memory.SetRGB(dot, scanline, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),
+                memory.set_rgb(dot, scanline, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),
                                              cast(ubyte) (get_nth_bits(color,  5, 10) * 255 / 31),
                                              cast(ubyte) (get_nth_bits(color, 10, 15) * 255 / 31));
 
@@ -157,7 +157,7 @@ private:
 
         // and we grab that pixel from palette ram and interpret it as 15bit highcolor.
         uint color = memory.read_halfword(memory.OFFSET_PALETTE_RAM + index * 2);
-        memory.SetRGB(dot, *memory.VCOUNT, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),
+        memory.set_rgb(dot, *memory.VCOUNT, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),
                                            cast(ubyte) (get_nth_bits(color,  5, 10) * 255 / 31),
                                            cast(ubyte) (get_nth_bits(color, 10, 15) * 255 / 31));
     }
