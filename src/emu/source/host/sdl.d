@@ -48,7 +48,7 @@ class GameBeanSDLHost {
 
             total_time += el;
             auto el_nsecs = el.total!"nsecs";
-            // writefln("nsecs elapsed: %s", el_nsecs);
+            util.verbose_log(format("nsecs elapsed: %s", el_nsecs), 3);
 
             clock_cycle += el_nsecs;
             clock_frame += el_nsecs;
@@ -56,18 +56,18 @@ class GameBeanSDLHost {
             // GBA cycle batching
             if (clock_cycle > nsec_per_gba_cyclebatch) {
                 for (int i = 0; i < gba_cycle_batch_sz; i++) {
-                    // writefln("pc: %00000000x (cycle %s)", *gba.cpu.pc, total_cycles + i);
+                    util.verbose_log(format("pc: %00000000x (cycle %s)", *gba.cpu.pc, total_cycles + i), 3);
                     gba.cycle();
                 }
                 total_cycles += gba_cycle_batch_sz;
-                // writefln("CYCLE[%s]", gba_cycle_batch_sz);
+                util.verbose_log(format("CYCLE[%s]", gba_cycle_batch_sz), 3);
                 clock_cycle = 0;
             }
 
             // 60Hz frame refresh (mod 267883)
             if (clock_frame > nsec_per_frame) {
                 frame();
-                // writefln("FRAME");
+                util.verbose_log(format("FRAME %s", frame_count), 3);
                 clock_frame = 0;
             }
         }

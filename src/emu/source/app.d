@@ -3,6 +3,7 @@ import bindbc.sdl;
 import host.sdl;
 import gba;
 import commandr;
+import util;
 
 void main(string[] args) {
 	auto a = new Program("gamebean-emu", "0.1").summary("GameBean Advance").add(new Flag("v", null,
@@ -10,6 +11,7 @@ void main(string[] args) {
 			new Argument("rompath", "path to rom file")).parse(args);
 
 	auto verbosity = a.occurencesOf("verbose");
+	util.verbosity_level = verbosity;
 	auto rom_path = a.arg("rompath");
 
 	SDLSupport ret = loadSDL();

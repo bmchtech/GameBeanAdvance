@@ -5,17 +5,17 @@ import core.stdc.stdint; //uint32_t uint8_t
 import core.stdc.stdlib; //core.stdc.stdlib.exit 
 import std.stdio;
 import std.conv;
-import std.format;
 import gba;
 
-enum YELLOW = "\033[33m";
-enum RED    = "\033[31m";
-enum RESET  = "\033[0m";
+public {
+    import std.format;
+}
 
-// a warning will not terminate the program
-void warning(string message);
-// an error terminates the program and calls exit(EXIT_FAILURE);
-void error(string message);
+enum YELLOW = "\033[33m";
+enum RED = "\033[31m";
+enum RESET = "\033[0m";
+
+static int verbosity_level = 0;
 
 // get nth bits from value as so: [start, end)
 uint32_t get_nth_bits(uint val, ubyte start, ubyte end) {
@@ -32,10 +32,18 @@ uint sign_extend(uint val, ubyte num_bits) {
     return (val ^ (1 << (num_bits - 1))) - (1 << (num_bits - 1));
 }
 
+void verbose_log(string message, int verbosity = 1) {
+    if (verbosity <= verbosity_level) {
+        writefln(message);
+    }
+}
+
+// a warning will not terminate the program
 void warning(string message) {
     stderr.writefln("%sWARNING: %s%s", YELLOW, RESET, message);
 }
 
+// an error terminates the program and calls exit(EXIT_FAILURE);
 void error(string message) {
     stderr.writefln("%sERROR: %s%s", RED, RESET, message);
 
@@ -80,7 +88,7 @@ pragma(inline) int sign_extend(int val, int num_bits) {
 }
 
 ubyte[] get_rom_as_bytes(string rom_name) {
-	File file = File(rom_name, "r");
+    File file = File(rom_name, "r");
     auto buffer = new ubyte[file.size()];
     file.rawRead(buffer);
     return buffer;
