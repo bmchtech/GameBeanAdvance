@@ -150,6 +150,7 @@ private:
         ];
 
     void on_input(SDL_Keycode key, bool pressed) {
+        if (key !in KEYMAP) return;
         auto gba_key = KEYMAP[key];
         gba.memory.set_key(cast(ubyte) gba_key, pressed);
     }
