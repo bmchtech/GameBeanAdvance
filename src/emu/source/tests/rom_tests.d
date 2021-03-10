@@ -14,15 +14,39 @@ import std.array;
 import std.range;
 import std.format;
 
+void assert_print_cpu_state(bool expression, CpuState expected, CpuState actual, string error_message) {
+    if (!expression) {
+        writeln("EXPECTED CPU STATE:");
+        print_cpu_state(expected);
+
+        writeln("\n");
+
+        writeln("ACTUAL CPU STATE:");
+        print_cpu_state(actual);
+        
+        assert(0, error_message);
+    }
+}
+
+void print_cpu_state(CpuState state) {
+    writeln(format("Opcode: %x", state.opcode));
+
+    for (int i = 0; i < 16; i++)
+        writeln(format("Register %s: %x", i, state.regs[i]));
+    
+    writeln(format("Mode: %x", state.mode));
+    writeln(format("main[0x03000003]: %x", state.mem_0x03000003));
+}
+
 void check_cpu_state(CpuState expected, CpuState actual, string error_message) {
     for (int i = 0; i < 16; i++) {
-        assert(expected.regs[i] == actual.regs[i], format("%s at register #%s", error_message, i));
+        assert_print_cpu_state(expected.regs[i] == actual.regs[i], expected, actual, format("%s at register #%s", error_message, i));
     }
 
-    assert( expected.type           ==  actual.type,           error_message);
-    assert( expected.opcode         ==  actual.opcode,         error_message);
-    assert((expected.mode & 0x1F)   == (actual.mode & 0x1F),   error_message);
-    assert( expected.mem_0x03000003 ==  actual.mem_0x03000003, error_message);
+    assert_print_cpu_state( expected.type           ==  actual.type,           expected, actual, error_message);
+    assert_print_cpu_state( expected.opcode         ==  actual.opcode,         expected, actual, error_message);
+    assert_print_cpu_state((expected.mode & 0x1F)   == (actual.mode & 0x1F),   expected, actual, error_message);
+    assert_print_cpu_state( expected.mem_0x03000003 ==  actual.mem_0x03000003, expected, actual, error_message);
 }
 
 CpuState[] produce_expected_cpu_states(string file_name, uint num_lines) {
