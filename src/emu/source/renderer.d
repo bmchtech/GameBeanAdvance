@@ -24,8 +24,7 @@ class GameBeanSDLRenderer {
                 SDL_TextureAccess.SDL_TEXTUREACCESS_STREAMING,
                 GBA_SCREEN_WIDTH * GBA_SCREEN_SCALE, GBA_SCREEN_HEIGHT * GBA_SCREEN_SCALE);
 
-        pixels = new uint[][](GBA_SCREEN_WIDTH * GBA_SCREEN_SCALE,
-                GBA_SCREEN_HEIGHT * GBA_SCREEN_SCALE);
+        pixels = new uint[GBA_SCREEN_WIDTH * GBA_SCREEN_SCALE * GBA_SCREEN_HEIGHT * GBA_SCREEN_SCALE];
     }
 
     void run() {
@@ -58,7 +57,7 @@ class GameBeanSDLRenderer {
             if (clock_cycle > nsec_per_gba_cyclebatch) {
                 for (int i = 0; i < gba_cycle_batch_sz; i++) {
                     gba.cycle();
-                    writefln("pc: %00000000x (cycle %s)", *gba.cpu.pc, total_cycles + i);
+                    // writefln("pc: %00000000x (cycle %s)", *gba.cpu.pc, total_cycles + i);
                 }
                 total_cycles += gba_cycle_batch_sz;
                 // writefln("CYCLE[%s]", gba_cycle_batch_sz);
@@ -86,7 +85,7 @@ class GameBeanSDLRenderer {
     SDL_Window* window;
     SDL_Renderer* renderer;
     SDL_Texture* screen_tex;
-    uint[][] pixels;
+    uint[] pixels;
     enum GBA_SCREEN_WIDTH = 240;
     enum GBA_SCREEN_HEIGHT = 160;
     enum GBA_SCREEN_SCALE = 2;
@@ -118,12 +117,16 @@ private:
         // sync from GBA video buffer
         for (int j = 0; j < GBA_SCREEN_HEIGHT * GBA_SCREEN_SCALE; j++) {
             for (int i = 0; i < GBA_SCREEN_WIDTH * GBA_SCREEN_SCALE; i++) {
-                pixels[i][j] = gba.memory.video_buffer[i / GBA_SCREEN_SCALE][j / GBA_SCREEN_SCALE];
+                auto p = gba.memory.video_buffer[i / GBA_SCREEN_SCALE][j / GBA_SCREEN_SCALE];
+                pixels[j * (GBA_SCREEN_WIDTH * GBA_SCREEN_SCALE) + i] = p;
             }
         }
 
+        SDL_RenderClear(renderer);
+
         // copy pixel buffer to texture
-        SDL_UpdateTexture(screen_tex, null, cast(void*) pixels,
+        auto px_vp = cast(void*) pixels;
+        SDL_UpdateTexture(screen_tex, null, px_vp,
                 GBA_SCREEN_WIDTH * GBA_SCREEN_SCALE * 4);
 
         // copy texture to scren
