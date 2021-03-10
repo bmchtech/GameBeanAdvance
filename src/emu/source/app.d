@@ -2,8 +2,16 @@ import std.stdio;
 import bindbc.sdl;
 import renderer;
 import gba;
+import commandr;
 
-void main() {
+void main(string[] args) {
+	auto a = new Program("gamebean-emu", "0.1").summary("GameBean Advance").add(new Flag("v", null,
+			"turns on more verbose output").name("verbose").repeating).add(
+			new Argument("rompath", "path to rom file")).parse(args);
+
+	auto verbosity = a.occurencesOf("verbose");
+	auto rom_path = a.arg("rompath");
+
 	SDLSupport ret = loadSDL();
 	if (ret != sdlSupport) {
 		if (ret == SDLSupport.badLibrary) {
@@ -14,11 +22,12 @@ void main() {
 	}
 	writeln("loaded sdl2");
 
-	// TODO: fix GBA loading
 	auto mem = new Memory();
-	writeln("loaded mem");
+	writeln("init mem");
 	GBA gba = new GBA(mem);
-	writeln("loaded gba");
+	writeln("init gba");
+	gba.load_rom(rom_path);
+	writeln("loaded rom");
 
 	writeln("running sdl2 renderer");
 	auto ren = new GameBeanSDLRenderer(gba);
