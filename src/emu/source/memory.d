@@ -177,13 +177,17 @@ class Memory
     ushort read_halfword(uint address) {
         // if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Reading halfword from address " << to_hex_string(address) << std::endl;
         if (address + 2 >= SIZE_MAIN_MEMORY) error("Address out of range on read halfword (" ~ to_hex_string(address) ~ ")");
-        return *(cast(ushort*) (main[0] + address));
+        return (cast(ushort) main[address + 0] << 0) |
+               (cast(ushort) main[address + 1] << 8);
     }
 
     uint read_word(uint address) {
         // if ((address & 0xFFFF0000) == 0x4000000) std::cout << "Reading word from address " << to_hex_string(address) << std::endl;
         if (address + 4 >= SIZE_MAIN_MEMORY) error("Address out of range on read word (" ~ to_hex_string(address) ~ ")");
-        return *(cast(uint*) (main[0] + address));
+        return (cast(uint) main[address + 0] << 0) |
+               (cast(uint) main[address + 1] << 8) |
+               (cast(uint) main[address + 2] << 8) |
+               (cast(uint) main[address + 3] << 8);
     }
 
     void write_byte(uint address, ubyte value) {
