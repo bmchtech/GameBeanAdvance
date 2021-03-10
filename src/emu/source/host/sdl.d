@@ -16,7 +16,7 @@ class GameBeanSDLHost {
         window = SDL_CreateWindow("GameBean Advance", SDL_WINDOWPOS_UNDEFINED,
                 SDL_WINDOWPOS_UNDEFINED, GBA_SCREEN_WIDTH * GBA_SCREEN_SCALE,
                 GBA_SCREEN_HEIGHT * GBA_SCREEN_SCALE, SDL_WindowFlags.SDL_WINDOW_SHOWN);
-        assert(window != null, "sdl window init failed!");
+        assert(window !is null, "sdl window init failed!");
 
         renderer = SDL_CreateRenderer(window, -1, SDL_RendererFlags.SDL_RENDERER_PRESENTVSYNC);
 
