@@ -59,14 +59,14 @@ class GameBeanSDLRenderer {
                 for (int i = 0; i < gba_cycle_batch_sz; i++) {
                     gba.cycle();
                 }
-                writefln("CYCLE[%s]", gba_cycle_batch_sz);
+                // writefln("CYCLE[%s]", gba_cycle_batch_sz);
                 clock_cycle = 0;
             }
 
             // 60Hz frame refresh (mod 267883)
             if (clock_frame > nsec_per_frame) {
                 frame();
-                writefln("FRAME");
+                // writefln("FRAME");
                 clock_frame = 0;
             }
         }
@@ -112,6 +112,13 @@ private:
         }
 
         frameCount++;
+
+        // sync from GBA video buffer
+        for (int j = 0; j < GBA_SCREEN_HEIGHT * GBA_SCREEN_SCALE; j++) {
+            for (int i = 0; i < GBA_SCREEN_WIDTH * GBA_SCREEN_SCALE; i++) {
+                pixels[i][j] = gba.memory.video_buffer[i / GBA_SCREEN_SCALE][j / GBA_SCREEN_SCALE];
+            }
+        }
 
         // copy pixel buffer to texture
         SDL_UpdateTexture(screen_tex, null, cast(void*) pixels,
