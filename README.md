@@ -1,12 +1,39 @@
 # GameBeanAdvance
 WIP Gameboy Advance Emulator written in D. Currently working on the GBA PPU.
 
-# Compiling and Running
-A makefile is provided for running the program. To compile the program, simply type `dub build`. And, to run it, type `./gba [rom_file]`.
+# Usage
+Emulator main project is in `src/emu`.
 
+## Build
+
+### Standard Build
+
+optionally add `-b release` for optimized build.
+```
+dub build
+```
+
+### Profiling Build
+
+build with support for [gperftools_d](https://github.com/prasunanand/gperftools_d). This requires the LDC2 compiler.
+
+```
+dub build -c gperf -b release --compiler=ldc2
+```
+
+## Run
+
+specify path to rom. you can also pass in verbosity flags with `-v`.
+```
+./gamebean-emu [rom]
+```
+
+## Tests
+
+To run the tests, run `dub test`. This will test the ARM CPU by running it through the GBA files located in __/tests/asm/bin/__. If the cpu states after every cycle matches the expected states found in the log files in __/tests/asm/log__, then the tests will pass.
+
+# Status
 It will load the rom file and attempt to run the game. Not many games are functional yet. For example, anything that uses PPU Modes 1, 2, or 3 will not run.
-
-To run the tests, type `dub test`. And, to run the tests, type `./test`. This will test the ARM CPU by running it through the GBA files located in __/tests/asm/bin/__. If the cpu states after every cycle matches the expected states found in the log files in __/tests/asm/log__, then the tests will pass.
 
 # Technical Overview
 ## General Structure
