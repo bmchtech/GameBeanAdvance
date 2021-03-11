@@ -59,7 +59,7 @@ class GameBeanSDLHost {
 
             total_time += el;
             auto el_nsecs = el.total!"nsecs";
-            util.verbose_log(format("nsecs elapsed: %s", el_nsecs), 3);
+            mixin(VERBOSE_LOG!(`3`, `format("nsecs elapsed: %s", el_nsecs)`));
 
             clock_cycle += el_nsecs;
             clock_frame += el_nsecs;
@@ -68,29 +68,29 @@ class GameBeanSDLHost {
             // GBA cycle batching
             if (clock_cycle > nsec_per_gba_cyclebatch) {
                 for (int i = 0; i < gba_cycle_batch_sz; i++) {
-                    util.verbose_log(format("pc: %00000000x (cycle %s)",
-                            *gba.cpu.pc, total_cycles + i), 3);
+                    mixin(VERBOSE_LOG!(`3`, `format("pc: %00000000x (cycle %s)",
+                            *gba.cpu.pc, total_cycles + i)`));
                     gba.cycle();
                 }
                 total_cycles += gba_cycle_batch_sz;
                 cycles_since_last_log += gba_cycle_batch_sz;
-                util.verbose_log(format("CYCLE[%s]", gba_cycle_batch_sz), 3);
+                mixin(VERBOSE_LOG!(`3`, `format("CYCLE[%s]", gba_cycle_batch_sz)`));
                 clock_cycle = 0;
             }
 
             // 60Hz frame refresh (mod 267883)
             if (clock_frame > nsec_per_frame) {
                 frame();
-                util.verbose_log(format("FRAME %s", frame_count), 3);
+                mixin(VERBOSE_LOG!(`3`, `format("FRAME %s", frame_count)`));
                 clock_frame = 0;
             }
 
             if (clock_log > nsec_per_log) {
-                auto cpu_cycles_since_last_log = cycles_since_last_log;
+                immutable auto cpu_cycles_since_last_log = cycles_since_last_log;
                 double avg_speed = (cast(double) cpu_cycles_since_last_log / cast(
                         double) cycles_per_log);
-                util.verbose_log(format("AVG SPEED: [%s/%s] = %s",
-                        cpu_cycles_since_last_log, cycles_per_log, avg_speed), 1);
+                mixin(VERBOSE_LOG!(`1`, `format("AVG SPEED: [%s/%s] = %s",
+                        cpu_cycles_since_last_log, cycles_per_log, avg_speed)`));
                 clock_log = 0;
                 cycles_since_last_log = 0;
             }
