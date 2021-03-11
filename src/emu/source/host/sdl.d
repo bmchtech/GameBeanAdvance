@@ -23,9 +23,11 @@ class GameBeanSDLHost {
 
         screen_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                 SDL_TextureAccess.SDL_TEXTUREACCESS_STREAMING,
-                GBA_SCREEN_WIDTH * screen_scale, GBA_SCREEN_HEIGHT * screen_scale);
+                GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT);
 
-        pixels = new uint[GBA_SCREEN_WIDTH * screen_scale * GBA_SCREEN_HEIGHT * screen_scale];
+        pixels = new uint[GBA_SCREEN_WIDTH* GBA_SCREEN_HEIGHT];
+
+        SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest"); // scale with pixel-perfect interpolation
     }
 
     void run() {
@@ -142,10 +144,10 @@ private:
         frame_count++;
 
         // sync from GBA video buffer
-        for (int j = 0; j < GBA_SCREEN_HEIGHT * screen_scale; j++) {
-            for (int i = 0; i < GBA_SCREEN_WIDTH * screen_scale; i++) {
-                auto p = gba.memory.video_buffer[i / screen_scale][j / screen_scale];
-                pixels[j * (GBA_SCREEN_WIDTH * screen_scale) + i] = p;
+        for (int j = 0; j < GBA_SCREEN_HEIGHT; j++) {
+            for (int i = 0; i < GBA_SCREEN_WIDTH; i++) {
+                auto p = gba.memory.video_buffer[i][j];
+                pixels[j * (GBA_SCREEN_WIDTH) + i] = p;
             }
         }
 
@@ -153,10 +155,11 @@ private:
 
         // copy pixel buffer to texture
         auto px_vp = cast(void*) pixels;
-        SDL_UpdateTexture(screen_tex, null, px_vp, GBA_SCREEN_WIDTH * screen_scale * 4);
+        SDL_UpdateTexture(screen_tex, null, px_vp, GBA_SCREEN_WIDTH * 4);
 
         // copy texture to scren
-        SDL_RenderCopy(renderer, screen_tex, null, null);
+        const SDL_Rect dest = SDL_Rect(0, 0, GBA_SCREEN_WIDTH * screen_scale, GBA_SCREEN_HEIGHT * screen_scale);
+        SDL_RenderCopy(renderer, screen_tex, null, &dest);
 
         // render present
         SDL_RenderPresent(renderer);
