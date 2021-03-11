@@ -5,6 +5,10 @@ import gba;
 import commandr;
 import util;
 
+version (gperf) {
+	import gperftools_d.profiler;
+}
+
 void main(string[] args) {
 	auto a = new Program("gamebean-emu", "0.1").summary("GameBean Advance").add(new Flag("v", null,
 			"turns on more verbose output").name("verbose").repeating).add(
@@ -34,5 +38,16 @@ void main(string[] args) {
 	writeln("running sdl2 renderer");
 	auto host = new GameBeanSDLHost(gba);
 	host.init();
+
+	version (gperf) {
+		writeln("---- STARTED PROFILER ----");
+		ProfilerStart();
+	}
+
 	host.run();
+
+	version (gperf) {
+		ProfilerStop();
+		writeln("---- ENDED PROFILER ----");
+	}
 }
