@@ -8,15 +8,16 @@ It will load the rom file and attempt to run the game. Not many games are functi
 
 To run the tests, type `dub test`. And, to run the tests, type `./test`. This will test the ARM CPU by running it through the GBA files located in __/tests/asm/bin/__. If the cpu states after every cycle matches the expected states found in the log files in __/tests/asm/log__, then the tests will pass.
 
-# General Structure
+# Technical Overview
+## General Structure
 The GBA is comprised of three main modules. The CPU, the PPU, and the Sound Controller. The PPU is similar to a GPU. These three modules do not know about each others existence - they communicate with each other by writing and reading from GBA memory. To help with this, there is a memory module that provides <write/read>_<byte/halfword/word> functions. All three main modules share the same memory class, and their communication with each other is limitted to reading and writing from/to GBA memory. This sounds a bit clunky, but that's how the actual GBA works. Currently, the cpu implementation can be found in __/src/arm7tdmi.d__, and hte ppu implementation can be found in __/src/ppu.d__. There is no sound controller yet. You can find memory in __/src/memory.d__. Finally, there is one more general file that ties everything together - __/src/gba.h__. This file simply loads the ROMs, cycles the three main modules, and handles any DMA requests. 
 
-# The Jumptable
+## The Jumptable
 The ARM7TDMI CPU has two modes - ARM and THUMB. Each mode has a different instruction set, and thus needs a different jumptable to decode the instruction. This section will explain how the THUMB and ARM jumptables work.
 
 The thumb jumptable has a size of 2<sup>8</sup>, while the arm jumptable has a size of 2<sup>12</sup>. This is because you need 8/16 bits to decode a THUMB instruction, and 12/32 bits to decode an ARM one. As you can imagine, manually formatting the jumptable by putting the appropraite function into each index takes a lot of work, so there's two python scripts that help automate this.
 
-## The Jumptable - Thumb Mode
+### The Jumptable - Thumb Mode
 The THUMB jumptable is found in __/src/jumptable/jumptable-thumb-config.cpp__. there is also a file called __/src/jumptable/make_jumptable.py__ which generates the jumptable files. Here's how the notation in __jumptable-thumb-config.cpp__ works:
 
 All functions are titled run_<some binary value>. the binary value specifies where in the jumptable the function belongs. if the binary value contains letters as bits (let's call them bit-variables), then those bits can be either 0 or 1, and the jumptable is updated accordingly. Examples:
@@ -28,7 +29,7 @@ If you begin a line with @IF(<insert bit-variable here>), then the line is only 
 
 In order to generate the Thumb jumptable, run `python3 make-jumptable.py jumptable-thumb-config.cpp jumptable-thumb.cpp jumptable-thumb.h 16 8 jumptable_thumb JUMPTABLE_THUMB_H uint16_t instruction_thumb`. This turns the __jumptable-thumb-config.cpp__ file into a cpp and h file. As migration continues, the script will output a D file instead. For more details, check __/src/jumptable/jumptable-thumb.cpp__.
 
-## The Jumptable - Arm Mode
+### The Jumptable - Arm Mode
 For ARM, we use a more powerful script located in __/d-jump/source__. To generate the Arm jumptable, run `d-jump/source/compile <input_file_name> <output_file_name>`. An example of how to use the outputted D file is located in `d-jump/source/app.d`. Essentially, the outputted D file will contain an `execute_instruction` function that can be used to, well, execute an instruction. There's extensive documentation in
 
 ## D Jump - Why was it created?
@@ -64,7 +65,7 @@ Aside from the unit tests that test each specific instruction individually, ther
 ## The PPU
 The PPU is a simple module (for now). And honestly, it requires a lot of refactoring. If you look into the __src/memory.d__ file, you'll notice that there's a lot of registers defined. These registers are accessible by all 3 main modules, and are primarily used by the PPU to claculate what exactly to draw. The PPU implementation is very subject to change, so this section will be updated later.
 
-## Relevant Resources
+# Relevant Resources
 ARM Technical Reference Manual: https://static.docs.arm.com/ddi0029/g/DDI0029.pdf
 
 ARM Architectural Reference Manual: https://cs.nyu.edu/courses/spring18/CSCI-GA.2130-001/ARM/arm_arm.pdf
