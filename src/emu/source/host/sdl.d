@@ -103,7 +103,7 @@ class GameBeanSDLHost {
                 cycles_since_last_log = 0;
             }
 
-            Thread.sleep(0.msecs);
+            // Thread.sleep(0.msecs);
         }
     }
 
