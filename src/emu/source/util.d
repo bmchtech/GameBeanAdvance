@@ -33,7 +33,7 @@ uint sign_extend(uint val, ubyte num_bits) {
 }
 
 template VERBOSE_LOG(string Level, string Content) {
-        enum VERBOSE_LOG = `if (` ~ Level ~ ` <= verbosity_level)
+    enum VERBOSE_LOG = `if (` ~ Level ~ ` <= verbosity_level)
          writefln(` ~ Content ~ `);
     `;
 }
@@ -74,4 +74,26 @@ ubyte[] get_rom_as_bytes(string rom_name) {
     auto buffer = new ubyte[file.size()];
     file.rawRead(buffer);
     return buffer;
+}
+
+class NSStopwatch {
+    import core.time;
+
+    this() {
+        last_ticks = MonoTime.currTime();
+    }
+
+    long update() {
+        auto ticks = MonoTime.currTime();
+        auto elapsed_dur = ticks - last_ticks;
+        long elapsed = elapsed_dur.total!"nsecs";
+        last_ticks = ticks;
+
+        total_time += elapsed;
+
+        return elapsed;
+    }
+
+    MonoTimeImpl!(ClockType.normal) last_ticks;
+    long total_time = 0;
 }
