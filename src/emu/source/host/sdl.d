@@ -7,8 +7,9 @@ import std.conv;
 import core.thread.osthread: Thread;
 
 class GameBeanSDLHost {
-    this(GBA gba) {
+    this(GBA gba, int screen_scale) {
         this.gba = gba;
+        this.screen_scale = screen_scale;
     }
 
     void init() {
@@ -16,17 +17,17 @@ class GameBeanSDLHost {
             assert(0, "sdl init failed");
 
         window = SDL_CreateWindow("GameBean Advance", SDL_WINDOWPOS_UNDEFINED,
-                SDL_WINDOWPOS_UNDEFINED, GBA_SCREEN_WIDTH * GBA_SCREEN_SCALE,
-                GBA_SCREEN_HEIGHT * GBA_SCREEN_SCALE, SDL_WindowFlags.SDL_WINDOW_SHOWN);
+                SDL_WINDOWPOS_UNDEFINED, GBA_SCREEN_WIDTH * screen_scale,
+                GBA_SCREEN_HEIGHT * screen_scale, SDL_WindowFlags.SDL_WINDOW_SHOWN);
         assert(window !is null, "sdl window init failed!");
 
         renderer = SDL_CreateRenderer(window, -1, SDL_RendererFlags.SDL_RENDERER_PRESENTVSYNC);
 
         screen_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                 SDL_TextureAccess.SDL_TEXTUREACCESS_STREAMING,
-                GBA_SCREEN_WIDTH * GBA_SCREEN_SCALE, GBA_SCREEN_HEIGHT * GBA_SCREEN_SCALE);
+                GBA_SCREEN_WIDTH * screen_scale, GBA_SCREEN_HEIGHT * screen_scale);
 
-        pixels = new uint[GBA_SCREEN_WIDTH * GBA_SCREEN_SCALE * GBA_SCREEN_HEIGHT * GBA_SCREEN_SCALE];
+        pixels = new uint[GBA_SCREEN_WIDTH * screen_scale * GBA_SCREEN_HEIGHT * screen_scale];
     }
 
     void run() {
@@ -121,7 +122,7 @@ class GameBeanSDLHost {
     uint[] pixels;
     enum GBA_SCREEN_WIDTH = 240;
     enum GBA_SCREEN_HEIGHT = 160;
-    enum GBA_SCREEN_SCALE = 2;
+    int screen_scale;
 
 private:
     void frame() {
@@ -148,10 +149,10 @@ private:
         frame_count++;
 
         // sync from GBA video buffer
-        for (int j = 0; j < GBA_SCREEN_HEIGHT * GBA_SCREEN_SCALE; j++) {
-            for (int i = 0; i < GBA_SCREEN_WIDTH * GBA_SCREEN_SCALE; i++) {
-                auto p = gba.memory.video_buffer[i / GBA_SCREEN_SCALE][j / GBA_SCREEN_SCALE];
-                pixels[j * (GBA_SCREEN_WIDTH * GBA_SCREEN_SCALE) + i] = p;
+        for (int j = 0; j < GBA_SCREEN_HEIGHT * screen_scale; j++) {
+            for (int i = 0; i < GBA_SCREEN_WIDTH * screen_scale; i++) {
+                auto p = gba.memory.video_buffer[i / screen_scale][j / screen_scale];
+                pixels[j * (GBA_SCREEN_WIDTH * screen_scale) + i] = p;
             }
         }
 
@@ -159,7 +160,7 @@ private:
 
         // copy pixel buffer to texture
         auto px_vp = cast(void*) pixels;
-        SDL_UpdateTexture(screen_tex, null, px_vp, GBA_SCREEN_WIDTH * GBA_SCREEN_SCALE * 4);
+        SDL_UpdateTexture(screen_tex, null, px_vp, GBA_SCREEN_WIDTH * screen_scale * 4);
 
         // copy texture to scren
         SDL_RenderCopy(renderer, screen_tex, null, null);
