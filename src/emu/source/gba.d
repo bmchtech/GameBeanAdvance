@@ -55,10 +55,10 @@ public:
     // this is staying here for now.
     void cycle() {
         cpu.cycle();
+        cpu.cycle();
+        cpu.cycle();
+        cpu.cycle();
 
-        ppu.cycle();
-        ppu.cycle();
-        ppu.cycle();
         ppu.cycle();
     }
 
