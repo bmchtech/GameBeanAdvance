@@ -1,8 +1,6 @@
 module util;
 
 import core.stdc.math; //core.stdc.math.pow 
-import core.stdc.stdint; //uint32_t uint8_t 
-import core.stdc.stdlib; //core.stdc.stdlib.exit 
 import std.stdio;
 import std.conv;
 import gba;
@@ -18,8 +16,8 @@ enum RESET = "\033[0m";
 static int verbosity_level = 0;
 
 // get nth bits from value as so: [start, end)
-uint32_t get_nth_bits(uint val, ubyte start, ubyte end) {
-    return (val >> start) & cast(uint32_t)(core.stdc.math.pow(2, end - start) - 1);
+pragma(inline) uint get_nth_bits(uint val, ubyte start, ubyte end) {
+    return (val >> start) & cast(uint)(core.stdc.math.pow(2, end - start) - 1);
 }
 
 // get nth bit from value
