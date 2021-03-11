@@ -38,6 +38,8 @@ class GameBeanSDLHost {
         enum nsec_per_cycle = 1_000_000_000 / cast(double) cycles_per_second;
         // 62.5 nsec per cycle: this is nsec per batch
         enum nsec_per_gba_cyclebatch = nsec_per_cycle * gba_cycle_batch_sz;
+        // enum nsec_per_gba_cyclebatch = 1; // unlock speed
+        // enum nsec_per_gba_cyclebatch = 120000; // medium locking
 
         // 16.6666 ms
         enum nsec_per_frame = 16_666_660;
@@ -53,7 +55,7 @@ class GameBeanSDLHost {
         long clock_log = 0;
         ulong cycles_since_last_log = 0;
         
-        writefln("single: %s, cb: %s, ", nsec_per_cycle, nsec_per_gba_cyclebatch);
+        writefln("ns for single: %s, ns for batch: %s, ", nsec_per_cycle, nsec_per_gba_cyclebatch);
 
         while (running) {
             auto ticks = MonoTime.currTime();
@@ -88,7 +90,7 @@ class GameBeanSDLHost {
                 clock_frame = 0;
             }
 
-            writefln("NSEC: %s  |  %s OF %s", total_time.total!"nsecs", clock_log, nsec_per_log);
+            // writefln("NSEC: %s  |  %s OF %s", total_time.total!"nsecs", clock_log, nsec_per_log);
             if (clock_log > nsec_per_log) {
                 immutable auto cpu_cycles_since_last_log = cycles_since_last_log;
                 double avg_speed = (cast(double) cpu_cycles_since_last_log / cast(
