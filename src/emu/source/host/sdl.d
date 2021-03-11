@@ -32,14 +32,22 @@ class GameBeanSDLHost {
         auto lastTicks = MonoTime.currTime();
 
         // 62.5 nsec per cycle, 64000 nsec per batch (1024)
-        enum nsec_per_gba_cyclebatch = 62;
+        enum nsec_per_gba_cyclebatch = 15625;
         enum gba_cycle_batch_sz = 1024;
+
         // 16.6666 ms
         enum nsec_per_frame = 16_666_660;
         auto total_time = nsecs(0);
         auto clock_cycle = 0;
         auto clock_frame = 0;
         auto total_cycles = 0;
+
+        // 2 seconds
+        enum sec_per_log = 2;
+        enum nsec_per_log = sec_per_log * 1_000_000_000;
+        enum cycles_per_log = nsec_per_gba_cyclebatch * gba_cycle_batch_sz * sec_per_log;
+        auto clock_log = 0;
+        auto cycles_since_last_log = 0;
 
         while (running) {
             auto ticks = MonoTime.currTime();
@@ -52,6 +60,7 @@ class GameBeanSDLHost {
 
             clock_cycle += el_nsecs;
             clock_frame += el_nsecs;
+            clock_log   += el_nsecs;
 
             // GBA cycle batching
             if (clock_cycle > nsec_per_gba_cyclebatch) {
@@ -61,6 +70,7 @@ class GameBeanSDLHost {
                     gba.cycle();
                 }
                 total_cycles += gba_cycle_batch_sz;
+                cycles_since_last_log += gba_cycle_batch_sz;
                 util.verbose_log(format("CYCLE[%s]", gba_cycle_batch_sz), 3);
                 clock_cycle = 0;
             }
@@ -70,6 +80,13 @@ class GameBeanSDLHost {
                 frame();
                 util.verbose_log(format("FRAME %s", frame_count), 3);
                 clock_frame = 0;
+            }
+
+            if (clock_log > nsec_per_log) {
+                double avg_speed = (cast(double)cycles_since_last_log / cast(double)cycles_per_log);
+                util.verbose_log(format("AVG SPEED: %s", avg_speed), 1);
+                clock_log = 0;
+                cycles_since_last_log = 0;
             }
         }
     }
