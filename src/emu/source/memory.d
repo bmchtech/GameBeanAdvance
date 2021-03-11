@@ -173,7 +173,8 @@ class Memory {
 
     ubyte read_byte(uint address) {
         if ((address & 0xFFFF0000) == 0x4000000)
-            util.verbose_log(format("Reading byte from address %s", to_hex_string(address)), 2);
+            mixin(VERBOSE_LOG!(`2`,
+                    `format("Reading byte from address %s", to_hex_string(address))`));
         if (address >= SIZE_MAIN_MEMORY)
             error(format("Address out of range on read byte %s", to_hex_string(address) ~ ")"));
         return main[address];
@@ -181,7 +182,8 @@ class Memory {
 
     ushort read_halfword(uint address) {
         if ((address & 0xFFFF0000) == 0x4000000)
-            util.verbose_log(format("Reading halfword from address %s", to_hex_string(address)), 2);
+            mixin(VERBOSE_LOG!(`2`,
+                    `format("Reading halfword from address %s", to_hex_string(address))`));
         if (address + 2 >= SIZE_MAIN_MEMORY)
             error(format("Address out of range on read halfword %s", to_hex_string(address) ~ ")"));
         return (cast(ushort) main[address + 0] << 0) | (cast(ushort) main[address + 1] << 8);
@@ -189,7 +191,8 @@ class Memory {
 
     uint read_word(uint address) {
         if ((address & 0xFFFF0000) == 0x4000000)
-            util.verbose_log(format("Reading word from address %s", to_hex_string(address)), 2);
+            mixin(VERBOSE_LOG!(`2`,
+                    `format("Reading word from address %s", to_hex_string(address))`));
         if (address + 4 >= SIZE_MAIN_MEMORY)
             error(format("Address out of range on read word %s", to_hex_string(address) ~ ")"));
         return (cast(uint) main[address + 0] << 0) | (
@@ -200,8 +203,8 @@ class Memory {
     void write_byte(uint address, ubyte value) {
         // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
         if ((address & 0xFFFF0000) == 0x4000000)
-            util.verbose_log(format("Writing byte %s to address %s",
-                    to_hex_string(value), to_hex_string(address)), 2);
+            mixin(VERBOSE_LOG!(`2`, `format("Writing byte %s to address %s",
+                    to_hex_string(value), to_hex_string(address))`));
         if (address >= SIZE_MAIN_MEMORY)
             error(format("Address out of range on write byte %s", to_hex_string(address) ~ ")"));
         // main[address] = value;
@@ -211,8 +214,8 @@ class Memory {
     void write_halfword(uint address, ushort value) {
         // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
         if ((address & 0xFFFF0000) == 0x4000000)
-            util.verbose_log(format("Writing halfword %s to address %s",
-                    to_hex_string(value), to_hex_string(address)), 2);
+            mixin(VERBOSE_LOG!(`2`, `format("Writing halfword %s to address %s",
+                    to_hex_string(value), to_hex_string(address))`));
         if (address + 2 >= SIZE_MAIN_MEMORY)
             error(format("Address out of range on write halfword %s", to_hex_string(address) ~ ")"));
         // *(cast(ushort*) (main[0] + address)) = value;
@@ -223,8 +226,8 @@ class Memory {
     void write_word(uint address, uint value) {
         // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
         if ((address & 0xFFFF0000) == 0x4000000)
-            util.verbose_log(format("Writing word %s to address %s",
-                    to_hex_string(value), to_hex_string(address)), 2);
+            mixin(VERBOSE_LOG!(`2`, `format("Writing word %s to address %s",
+                    to_hex_string(value), to_hex_string(address))`));
         if (address + 4 >= SIZE_MAIN_MEMORY)
             error(format("Address out of range on write word %s", to_hex_string(address) ~ ")"));
         // *(cast(uint*) (main[0] + address)) = value;
@@ -236,13 +239,14 @@ class Memory {
 
     void set_rgb(uint x, uint y, ubyte r, ubyte g, ubyte b) {
         auto p = (r << 24) | (g << 16) | (b << 8) | (0xff);
-        util.verbose_log(format("SETRGB (%s,%s) = [%s, %s, %s] = %00000000x", x, y, r, g, b, p), 2);
+        mixin(VERBOSE_LOG!(`2`,
+                `format("SETRGB (%s,%s) = [%s, %s, %s] = %00000000x", x, y, r, g, b, p)`));
         video_buffer[x][y] = p;
     }
 
     void set_key(ubyte code, bool pressed) {
         assert(code >= 0 && code < 10, "invalid gba key code");
-        util.verbose_log(format("KEY (%s) = %s", code, pressed));
+        mixin(VERBOSE_LOG!(`2`, `format("KEY (%s) = %s", code, pressed)`));
 
         if (pressed) {
             *KEYINPUT &= ~(0b1 << code);
