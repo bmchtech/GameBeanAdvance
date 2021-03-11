@@ -173,25 +173,25 @@ class Memory {
 
     ubyte read_byte(uint address) {
         if ((address & 0xFFFF0000) == 0x4000000)
-            util.verbose_log("Reading byte from address " ~ to_hex_string(address) ~ "\n");
+            util.verbose_log(format("Reading byte from address %s", to_hex_string(address)), 2);
         if (address >= SIZE_MAIN_MEMORY)
-            error("Address out of range on read byte (" ~ to_hex_string(address) ~ ")");
+            error(format("Address out of range on read byte %s", to_hex_string(address) ~ ")"));
         return main[address];
     }
 
     ushort read_halfword(uint address) {
         if ((address & 0xFFFF0000) == 0x4000000)
-            util.verbose_log("Reading halfword from address " ~ to_hex_string(address), 2);
+            util.verbose_log(format("Reading halfword from address %s", to_hex_string(address)), 2);
         if (address + 2 >= SIZE_MAIN_MEMORY)
-            error("Address out of range on read halfword (" ~ to_hex_string(address) ~ ")");
+            error(format("Address out of range on read halfword %s", to_hex_string(address) ~ ")"));
         return (cast(ushort) main[address + 0] << 0) | (cast(ushort) main[address + 1] << 8);
     }
 
     uint read_word(uint address) {
         if ((address & 0xFFFF0000) == 0x4000000)
-            util.verbose_log(format("Reading word from address " ~ to_hex_string(address)), 2);
+            util.verbose_log(format("Reading word from address %s", to_hex_string(address)), 2);
         if (address + 4 >= SIZE_MAIN_MEMORY)
-            error("Address out of range on read word (" ~ to_hex_string(address) ~ ")");
+            error(format("Address out of range on read word %s", to_hex_string(address) ~ ")"));
         return (cast(uint) main[address + 0] << 0) | (
                 cast(uint) main[address + 1] << 8) | (cast(
                 uint) main[address + 2] << 16) | (cast(uint) main[address + 3] << 24);
@@ -200,10 +200,10 @@ class Memory {
     void write_byte(uint address, ubyte value) {
         // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
         if ((address & 0xFFFF0000) == 0x4000000)
-            util.verbose_log(format("Writing byte " ~ to_hex_string(
-                    value) ~ " at address " ~ to_hex_string(address)), 2);
+            util.verbose_log(format("Writing byte %s to address %s",
+                    to_hex_string(value), to_hex_string(address)), 2);
         if (address >= SIZE_MAIN_MEMORY)
-            error("Address out of range on write byte (" ~ to_hex_string(address) ~ ")");
+            error(format("Address out of range on write byte %s", to_hex_string(address) ~ ")"));
         // main[address] = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
     }
@@ -211,10 +211,10 @@ class Memory {
     void write_halfword(uint address, ushort value) {
         // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
         if ((address & 0xFFFF0000) == 0x4000000)
-            util.verbose_log(format("Writing halfword " ~ to_hex_string(
-                    value) ~ " at address " ~ to_hex_string(address)), 2);
+            util.verbose_log(format("Writing halfword %s to address %s",
+                    to_hex_string(value), to_hex_string(address)), 2);
         if (address + 2 >= SIZE_MAIN_MEMORY)
-            error("Address out of range on write halfword (" ~ to_hex_string(address) ~ ")");
+            error(format("Address out of range on write halfword %s", to_hex_string(address) ~ ")"));
         // *(cast(ushort*) (main[0] + address)) = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
         main[address + 1] = cast(ubyte)((value >> 8) & 0xff);
@@ -223,10 +223,10 @@ class Memory {
     void write_word(uint address, uint value) {
         // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
         if ((address & 0xFFFF0000) == 0x4000000)
-            util.verbose_log(format("Writing word " ~ to_hex_string(
-                    value) ~ " at address " ~ to_hex_string(address)), 2);
+            util.verbose_log(format("Writing word %s to address %s",
+                    to_hex_string(value), to_hex_string(address)), 2);
         if (address + 4 >= SIZE_MAIN_MEMORY)
-            error("Address out of range on write word (" ~ to_hex_string(address) ~ ")");
+            error(format("Address out of range on write word %s", to_hex_string(address) ~ ")"));
         // *(cast(uint*) (main[0] + address)) = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
         main[address + 1] = cast(ubyte)((value >> 8) & 0xff);
