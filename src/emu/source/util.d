@@ -32,10 +32,10 @@ uint sign_extend(uint val, ubyte num_bits) {
     return (val ^ (1 << (num_bits - 1))) - (1 << (num_bits - 1));
 }
 
-void verbose_log(string message, int verbosity = 1) {
-    if (verbosity <= verbosity_level) {
-        writefln(message);
-    }
+template VERBOSE_LOG(string Level, string Content) {
+        enum VERBOSE_LOG = `if (` ~ Level ~ ` <= verbosity_level)
+         writefln(` ~ Content ~ `);
+    `;
 }
 
 // a warning will not terminate the program
