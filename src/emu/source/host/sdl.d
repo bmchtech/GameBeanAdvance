@@ -2,7 +2,7 @@ module host.sdl;
 import bindbc.sdl;
 import std.stdio;
 import gba;
-import core.time: MonoTime, nsecs;
+import core.time : MonoTime, nsecs;
 import std.conv;
 
 class GameBeanSDLHost {
@@ -32,9 +32,11 @@ class GameBeanSDLHost {
         running = true;
         auto lastTicks = MonoTime.currTime();
 
-        // 62.5 nsec per cycle, 64000 nsec per batch (1024)
-        enum nsec_per_gba_cyclebatch = 15625;
+        // each cycle() does 4 cpu cycles
+        enum cycles_per_second = 16_000_000 / 4;
         enum gba_cycle_batch_sz = 1024;
+        // 62.5 nsec per cycle: this is nsec per batch
+        enum nsec_per_gba_cyclebatch = cycles_per_second / gba_cycle_batch_sz;
 
         // 16.6666 ms
         enum nsec_per_frame = 16_666_660;
@@ -48,7 +50,7 @@ class GameBeanSDLHost {
         enum nsec_per_log = sec_per_log * 1_000_000_000;
         enum cycles_per_log = nsec_per_gba_cyclebatch * gba_cycle_batch_sz * sec_per_log;
         auto clock_log = 0;
-        auto cycles_since_last_log = 0;
+        ulong cycles_since_last_log = 0;
 
         while (running) {
             auto ticks = MonoTime.currTime();
@@ -61,7 +63,7 @@ class GameBeanSDLHost {
 
             clock_cycle += el_nsecs;
             clock_frame += el_nsecs;
-            clock_log   += el_nsecs;
+            clock_log += el_nsecs;
 
             // GBA cycle batching
             if (clock_cycle > nsec_per_gba_cyclebatch) {
@@ -84,8 +86,11 @@ class GameBeanSDLHost {
             }
 
             if (clock_log > nsec_per_log) {
-                double avg_speed = (cast(double)cycles_since_last_log / cast(double)cycles_per_log);
-                util.verbose_log(format("AVG SPEED: %s", avg_speed), 1);
+                auto cpu_cycles_since_last_log = cycles_since_last_log;
+                double avg_speed = (cast(double) cpu_cycles_since_last_log / cast(
+                        double) cycles_per_log);
+                util.verbose_log(format("AVG SPEED: [%s/%s] = %s",
+                        cpu_cycles_since_last_log, cycles_per_log, avg_speed), 1);
                 clock_log = 0;
                 cycles_since_last_log = 0;
             }
