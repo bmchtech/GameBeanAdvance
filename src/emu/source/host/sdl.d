@@ -2,9 +2,7 @@ module host.sdl;
 import bindbc.sdl;
 import std.stdio;
 import gba;
-import core.time : MonoTime, nsecs, msecs;
 import std.conv;
-import core.thread.osthread: Thread;
 
 class GameBeanSDLHost {
     this(GBA gba, int screen_scale) {
@@ -32,7 +30,6 @@ class GameBeanSDLHost {
 
     void run() {
         running = true;
-        auto lastTicks = MonoTime.currTime();
 
         // each cycle() does 4 cpu cycles
         enum cycles_per_second = 16_000_000 / 4;
@@ -45,35 +42,31 @@ class GameBeanSDLHost {
 
         // 16.6666 ms
         enum nsec_per_frame = 16_666_660;
-        auto total_time = nsecs(0);
-        long clock_cycle = 0;
-        long clock_frame = 0;
+
+        auto stopwatch = new NSStopwatch();
+        long clockfor_cycle = 0;
+        long clockfor_frame = 0;
         auto total_cycles = 0;
 
         // 2 seconds
         enum sec_per_log = 2;
         enum nsec_per_log = sec_per_log * 1_000_000_000;
         enum cycles_per_log = cycles_per_second * sec_per_log;
-        long clock_log = 0;
+        long clockfor_log = 0;
         ulong cycles_since_last_log = 0;
 
         writefln("ns for single: %s, ns for batch: %s, ", nsec_per_cycle, nsec_per_gba_cyclebatch);
 
         while (running) {
-            auto ticks = MonoTime.currTime();
-            auto el = ticks - lastTicks;
-            lastTicks = ticks;
+            long elapsed = stopwatch.update();
+            mixin(VERBOSE_LOG!(`3`, `format("elapsed: %s ns", elapsed)`));
 
-            total_time += el;
-            auto el_nsecs = el.total!"nsecs";
-            mixin(VERBOSE_LOG!(`3`, `format("nsecs elapsed: %s", el_nsecs)`));
-
-            clock_cycle += el_nsecs;
-            clock_frame += el_nsecs;
-            clock_log += el_nsecs;
+            clockfor_cycle += elapsed;
+            clockfor_frame += elapsed;
+            clockfor_log += elapsed;
 
             // GBA cycle batching
-            if (clock_cycle > nsec_per_gba_cyclebatch) {
+            if (clockfor_cycle > nsec_per_gba_cyclebatch) {
                 for (int i = 0; i < gba_cycle_batch_sz; i++) {
                     mixin(VERBOSE_LOG!(`3`, `format("pc: %00000000x (cycle %s)",
                             *gba.cpu.pc, total_cycles + i)`));
@@ -82,24 +75,24 @@ class GameBeanSDLHost {
                 total_cycles += gba_cycle_batch_sz;
                 cycles_since_last_log += gba_cycle_batch_sz;
                 mixin(VERBOSE_LOG!(`3`, `format("CYCLE[%s]", gba_cycle_batch_sz)`));
-                clock_cycle = 0;
+                clockfor_cycle = 0;
             }
 
             // 60Hz frame refresh (mod 267883)
-            if (clock_frame > nsec_per_frame) {
+            if (clockfor_frame > nsec_per_frame) {
                 frame();
                 mixin(VERBOSE_LOG!(`3`, `format("FRAME %s", frame_count)`));
-                clock_frame = 0;
+                clockfor_frame = 0;
             }
 
-            // writefln("NSEC: %s  |  %s OF %s", total_time.total!"nsecs", clock_log, nsec_per_log);
-            if (clock_log > nsec_per_log) {
+            // writefln("NSEC: %s  |  %s OF %s", total_time.total!"nsecs", clockfor_log, nsec_per_log);
+            if (clockfor_log > nsec_per_log) {
                 immutable auto cpu_cycles_since_last_log = cycles_since_last_log;
                 double avg_speed = (cast(double) cpu_cycles_since_last_log / cast(
                         double) cycles_per_log);
                 mixin(VERBOSE_LOG!(`1`, `format("AVG SPEED: [%s/%s] = %s",
                         cpu_cycles_since_last_log, cycles_per_log, avg_speed)`));
-                clock_log = 0;
+                clockfor_log = 0;
                 cycles_since_last_log = 0;
             }
 
