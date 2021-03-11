@@ -2,8 +2,9 @@ module host.sdl;
 import bindbc.sdl;
 import std.stdio;
 import gba;
-import core.time : MonoTime, nsecs;
+import core.time : MonoTime, nsecs, msecs;
 import std.conv;
+import core.thread.osthread: Thread;
 
 class GameBeanSDLHost {
     this(GBA gba) {
@@ -37,9 +38,9 @@ class GameBeanSDLHost {
         enum gba_cycle_batch_sz = 1024;
         enum nsec_per_cycle = 1_000_000_000 / cast(double) cycles_per_second;
         // 62.5 nsec per cycle: this is nsec per batch
-        enum nsec_per_gba_cyclebatch = nsec_per_cycle * gba_cycle_batch_sz;
-        // enum nsec_per_gba_cyclebatch = 1; // unlock speed
-        // enum nsec_per_gba_cyclebatch = 120000; // medium locking
+        // enum nsec_per_gba_cyclebatch = nsec_per_cycle * gba_cycle_batch_sz;
+        enum nsec_per_gba_cyclebatch = 1; // unlock speed
+        // enum nsec_per_gba_cyclebatch = 50_000; // medium locking
 
         // 16.6666 ms
         enum nsec_per_frame = 16_666_660;
@@ -54,7 +55,7 @@ class GameBeanSDLHost {
         enum cycles_per_log = cycles_per_second * sec_per_log;
         long clock_log = 0;
         ulong cycles_since_last_log = 0;
-        
+
         writefln("ns for single: %s, ns for batch: %s, ", nsec_per_cycle, nsec_per_gba_cyclebatch);
 
         while (running) {
@@ -100,6 +101,8 @@ class GameBeanSDLHost {
                 clock_log = 0;
                 cycles_since_last_log = 0;
             }
+
+            Thread.sleep(0.msecs);
         }
     }
 
