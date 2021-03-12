@@ -42,7 +42,7 @@ class Memory {
     enum OFFSET_SRAM = 0xE000000;
 
     //  IO Registers
-    //        NAME           R/W   DESCRIPTION
+    //        NAME         R/W   DESCRIPTION
 
     ushort* DISPCNT;    // R/W   LCD Control
     ushort* DISPSTAT;   // R/W   General LCD Status (STAT,LYC)
