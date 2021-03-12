@@ -15,7 +15,7 @@ public:
         dot         = 0;
     }
 
-    void cycle() {
+    void update_dot_and_scanline() {
         // get current scanline
         ushort scanline = *memory.VCOUNT;
 
@@ -41,6 +41,10 @@ public:
         if ((dot == 1006 - 960 && !in_hblank) || (dot == 0 && in_hblank)) { // should we toggle hblank?
             *memory.DISPSTAT ^= 2;
         }
+    }
+    
+    void cycle() {
+        update_dot_and_scanline();
         
         // if we are hblank or vblank then we do not draw anything
         if (dot >= 240 || scanline >= 160) {
