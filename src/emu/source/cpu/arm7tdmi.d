@@ -1,7 +1,7 @@
-module arm7tdmi;
+module cpu.arm7tdmi;
 
-import cpu_mode;
-import cpu_state;
+import cpu.mode;
+import cpu.state;
 import memory;
 import util;
 

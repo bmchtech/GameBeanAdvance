@@ -1,7 +1,7 @@
 [SETTINGS]
 - NAMESPACE: jumptable_arm
 - OPCODE_FORMAT: IIIIIIIIIIII------------DDDD----
-- INCLUDES: util arm7tdmi
+- INCLUDES: util cpu
 - ARGUMENTS: ARM7TDMI cpu
 [/SETTINGS]
 

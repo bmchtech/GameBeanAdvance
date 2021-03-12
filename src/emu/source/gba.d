@@ -2,9 +2,8 @@ module gba;
 
 public {
     import memory;
-    import arm7tdmi;
     import ppu;
-    import cpu_state;
+    import cpu;
     import util;
 }
 
@@ -39,7 +38,7 @@ public:
         this.ppu     = new PPU(memory);
         this.enabled = false;
 
-        cpu.set_mode(arm7tdmi.ARM7TDMI.MODE_SYSTEM);
+        cpu.set_mode(ARM7TDMI.MODE_SYSTEM);
     }
 
     struct DMAChannel {

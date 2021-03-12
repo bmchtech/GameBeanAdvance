@@ -1,6 +1,6 @@
 import util.d
 import memory.d
-import arm7tdmi.d"
+import cpu.d"
 
 void run_00000000(ARM7TDMI* cpu, uint16_t opcode);
 void run_00000000(ARM7TDMI* cpu, uint16_t opcode) {
