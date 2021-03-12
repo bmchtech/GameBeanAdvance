@@ -2,6 +2,7 @@ module ppu;
 
 import memory;
 import util;
+import background;
 
 class PPU {
     // General information:
@@ -13,6 +14,8 @@ public:
     this(Memory memory) {
         this.memory = memory;
         dot         = 0;
+
+        background_init(memory);
     }
 
     void update_dot_and_scanline() {
@@ -42,11 +45,12 @@ public:
             *memory.DISPSTAT ^= 2;
         }
     }
-    
+
     void cycle() {
         update_dot_and_scanline();
         
         // if we are hblank or vblank then we do not draw anything
+        ushort scanline = *memory.VCOUNT;
         if (dot >= 240 || scanline >= 160) {
             return;
         }
@@ -58,10 +62,10 @@ public:
         switch (mode) {
             case 0: {
                 // DISPCNT bits 8-11 tell us which backgrounds should be rendered.
-                if (get_nth_bit(*memory.DISPCNT,  8)) render_background_mode0(*memory.BG0CNT, *memory.BG0HOFS, *memory.BG0VOFS);
-                if (get_nth_bit(*memory.DISPCNT,  9)) render_background_mode0(*memory.BG1CNT, *memory.BG1HOFS, *memory.BG1VOFS);
-                if (get_nth_bit(*memory.DISPCNT, 10)) render_background_mode0(*memory.BG2CNT, *memory.BG2HOFS, *memory.BG2VOFS);
-                if (get_nth_bit(*memory.DISPCNT, 11)) render_background_mode0(*memory.BG3CNT, *memory.BG3HOFS, *memory.BG3VOFS);
+                render_background_mode0(background_0);
+                render_background_mode0(background_1);
+                render_background_mode0(background_2);
+                render_background_mode0(background_3);
                 break;
             }
 
@@ -104,17 +108,20 @@ private:
     Memory memory;
     ushort dot; // the horizontal counterpart to scanlines.
 
-    void render_background_mode0(ushort bgcnt, ushort bghofs, ushort bgvofs) {
+    void render_background_mode0(Background background) {
+        // do we even render?
+        if (!get_nth_bit(*memory.DISPCNT, background.enabled_bit)) return;
+
         // dot and VCOUNT are normally x and y respectively. we add bghofs and bgvofs which are
         // registers used for scrolling. this allows the CPU to scroll x and y.
-        ushort x            = cast(ushort) (dot            + bghofs);
-        ushort y            = cast(ushort) (*memory.VCOUNT + bgvofs);
+        ushort x            = cast(ushort) (dot            + *background.x_offset);
+        ushort y            = cast(ushort) (*memory.VCOUNT + *background.y_offset);
 
         // the tile base address is where we will find out tilemap.
-        uint   tile_base_address   = memory.OFFSET_VRAM + get_nth_bits(bgcnt, 2,  4) * 0x4000;
+        uint   tile_base_address   = memory.OFFSET_VRAM + get_nth_bits(*background.control, 2,  4) * 0x4000;
 
         // the screen base address is where we will find the indices that point to the tilemap.
-        uint   screen_base_address = memory.OFFSET_VRAM + get_nth_bits(bgcnt, 8, 13) * 0x800;
+        uint   screen_base_address = memory.OFFSET_VRAM + get_nth_bits(*background.control, 8, 13) * 0x800;
 
         // x and y point to somewhere within the 240x180 screen. tiles are 8x8. we can figure out
         // which tile we are looking at by getting the high five bits (sc_x and sc_y), and we can
