@@ -55,17 +55,19 @@ public:
             return;
         }
 
+
+        // only begin rendering if we are on the first cycle
+        if (dot != 0) return;
+
         // check the mode and run the appropriate function
         ubyte mode = cast(ubyte) get_nth_bits(*memory.DISPCNT, 0, 3);
-        // std::cout << to_hex_string(*memory.DISPCNT) << std::endl;
-
         switch (mode) {
             case 0: {
                 // DISPCNT bits 8-11 tell us which backgrounds should be rendered.
-                render_background_mode0(background_0);
-                render_background_mode0(background_1);
-                render_background_mode0(background_2);
-                render_background_mode0(background_3);
+                render_background_mode0(background_0, scanline);
+                render_background_mode0(background_1, scanline);
+                render_background_mode0(background_2, scanline);
+                render_background_mode0(background_3, scanline);
                 break;
             }
 
@@ -74,8 +76,8 @@ public:
                 // are stored directly, so we just read from VRAM and interpret as a 15bit highcolor
                 ushort color = memory.read_halfword(memory.OFFSET_VRAM + 2 * (dot + scanline * 240));
                 memory.set_rgb(dot, scanline, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),
-                                             cast(ubyte) (get_nth_bits(color,  5, 10) * 255 / 31),
-                                             cast(ubyte) (get_nth_bits(color, 10, 15) * 255 / 31));
+                                              cast(ubyte) (get_nth_bits(color,  5, 10) * 255 / 31),
+                                              cast(ubyte) (get_nth_bits(color, 10, 15) * 255 / 31));
 
                 break;
             }
@@ -92,8 +94,8 @@ public:
                 // we grab the color, interpret it as 15bit highcolor and render it.
                 ushort color = memory.read_halfword(memory.OFFSET_PALETTE_RAM + index);
                 memory.set_rgb(dot, scanline, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),
-                                             cast(ubyte) (get_nth_bits(color,  5, 10) * 255 / 31),
-                                             cast(ubyte) (get_nth_bits(color, 10, 15) * 255 / 31));
+                                              cast(ubyte) (get_nth_bits(color,  5, 10) * 255 / 31),
+                                              cast(ubyte) (get_nth_bits(color, 10, 15) * 255 / 31));
 
                 break;
             }
@@ -108,68 +110,68 @@ private:
     Memory memory;
     ushort dot; // the horizontal counterpart to scanlines.
 
-    void render_background_mode0(Background background) {
+    void render_background_mode0(Background background, int scanline) {
         // do we even render?
         if (!get_nth_bit(*memory.DISPCNT, background.enabled_bit)) return;
 
-        // dot and VCOUNT are normally x and y respectively. we add bghofs and bgvofs which are
-        // registers used for scrolling. this allows the CPU to scroll x and y.
-        ushort x            = cast(ushort) (dot            + *background.x_offset);
-        ushort y            = cast(ushort) (*memory.VCOUNT + *background.y_offset);
+        for (ushort x_ofs = 0; x_ofs < 240; x_ofs++) {
+            ushort x = cast(ushort) (dot      + *background.x_offset + x_ofs);
+            ushort y = cast(ushort) (scanline + *background.y_offset);
 
-        // the tile base address is where we will find out tilemap.
-        uint   tile_base_address   = memory.OFFSET_VRAM + get_nth_bits(*background.control, 2,  4) * 0x4000;
+            // the tile base address is where we will find out tilemap.
+            uint tile_base_address   = memory.OFFSET_VRAM + get_nth_bits(*background.control, 2,  4) * 0x4000;
 
-        // the screen base address is where we will find the indices that point to the tilemap.
-        uint   screen_base_address = memory.OFFSET_VRAM + get_nth_bits(*background.control, 8, 13) * 0x800;
+            // the screen base address is where we will find the indices that point to the tilemap.
+            uint screen_base_address = memory.OFFSET_VRAM + get_nth_bits(*background.control, 8, 13) * 0x800;
 
-        // x and y point to somewhere within the 240x180 screen. tiles are 8x8. we can figure out
-        // which tile we are looking at by getting the high five bits (sc_x and sc_y), and we can
-        // figure out the offset we are at within the tile by grabbing the low 3 bits (tile_x and
-        // tile_y).
-        ushort sc_x         = (x >> 3) & 0x1f;
-        ushort sc_y         = (y >> 3) & 0x1f;
-        ushort tile_x       = x & 0b111;
-        ushort tile_y       = y & 0b111;
+            // x and y point to somewhere within the 240x180 screen. tiles are 8x8. we can figure out
+            // which tile we are looking at by getting the high five bits (sc_x and sc_y), and we can
+            // figure out the offset we are at within the tile by grabbing the low 3 bits (tile_x and
+            // tile_y).
+            ushort sc_x   = (x >> 3) & 0x1f;
+            ushort sc_y   = (y >> 3) & 0x1f;
+            ushort tile_x = x & 0b111;
+            ushort tile_y = y & 0b111;
 
-        // TODO: the following line of code assumes screen size is 3
-        // the PPU can have up to 4 screens. graphically, the screens are laid out like this:
-        // -----------------------------------------------------------
-        // |                            |                            |
-        // |                            |                            |
-        // |          SCREEN 0          |         SCREEN 1           |
-        // |          +0x0000           |         +0x0800            |
-        // |                            |                            |
-        // |                            |                            |
-        // -----------------------------------------------------------
-        // |                            |                            |
-        // |                            |                            |
-        // |          SCREEN 2          |         SCREEN 3           |
-        // |          +0x1000           |         +0x1800            |
-        // |                            |                            |
-        // |                            |                            |
-        // -----------------------------------------------------------
-        //
-        // in order to read from the right place in memory, we need to know what screen we are at.
-        // since each screen is 32x32 tiles (256x256 pixels), we can get the screen by taking the
-        // 9th bits in x and y and combining them together.
+            // TODO: the following line of code assumes screen size is 3
+            // the PPU can have up to 4 screens. graphically, the screens are laid out like this:
+            // -----------------------------------------------------------
+            // |                            |                            |
+            // |                            |                            |
+            // |          SCREEN 0          |         SCREEN 1           |
+            // |          +0x0000           |         +0x0800            |
+            // |                            |                            |
+            // |                            |                            |
+            // -----------------------------------------------------------
+            // |                            |                            |
+            // |                            |                            |
+            // |          SCREEN 2          |         SCREEN 3           |
+            // |          +0x1000           |         +0x1800            |
+            // |                            |                            |
+            // |                            |                            |
+            // -----------------------------------------------------------
+            //
+            // in order to read from the right place in memory, we need to know what screen we are at.
+            // since each screen is 32x32 tiles (256x256 pixels), we can get the screen by taking the
+            // 9th bits in x and y and combining them together.
 
-        ubyte  screen       = ((x >> 8) & 1) + (((y >> 8) & 1) << 1);
-        // std::cout << std::to_string(screen) << std::endl;
-        screen_base_address  += screen * 0x800;
+            ubyte  screen       = ((x >> 8) & 1) + (((y >> 8) & 1) << 1);
+            // std::cout << std::to_string(screen) << std::endl;
+            screen_base_address  += screen * 0x800;
 
-        // we use sc_x and sc_y from earlier to get the current tile. each tile is a halfword, so we
-        // multiply (sc_x + (sc_y * 32)) by 2.
-        ushort current_tile = memory.read_halfword(screen_base_address + (sc_x + (sc_y * 32)) * 2);
+            // we use sc_x and sc_y from earlier to get the current tile. each tile is a halfword, so we
+            // multiply (sc_x + (sc_y * 32)) by 2.
+            ushort current_tile = memory.read_halfword(screen_base_address + (sc_x + (sc_y * 32)) * 2);
 
-        // only the upper 9 bits of current_tile are relevant. we use these to get the index into the palette ram
-        // for the particular pixel are are interested in (determined by tile_x and tile_y).
-        ubyte  index        = memory.read_byte(tile_base_address + ((current_tile & 0x1ff) * 64) + tile_y * 8 + tile_x);
+            // only the upper 9 bits of current_tile are relevant. we use these to get the index into the palette ram
+            // for the particular pixel are are interested in (determined by tile_x and tile_y).
+            ubyte  index        = memory.read_byte(tile_base_address + ((current_tile & 0x1ff) * 64) + tile_y * 8 + tile_x);
 
-        // and we grab that pixel from palette ram and interpret it as 15bit highcolor.
-        uint color = memory.read_halfword(memory.OFFSET_PALETTE_RAM + index * 2);
-        memory.set_rgb(dot, *memory.VCOUNT, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),
-                                           cast(ubyte) (get_nth_bits(color,  5, 10) * 255 / 31),
-                                           cast(ubyte) (get_nth_bits(color, 10, 15) * 255 / 31));
+            // and we grab that pixel from palette ram and interpret it as 15bit highcolor.
+            uint color = memory.read_halfword(memory.OFFSET_PALETTE_RAM + index * 2);
+            memory.set_rgb(dot + x_ofs, *memory.VCOUNT, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),
+                                                        cast(ubyte) (get_nth_bits(color,  5, 10) * 255 / 31),
+                                                        cast(ubyte) (get_nth_bits(color, 10, 15) * 255 / 31));
+        }
     }
 }
