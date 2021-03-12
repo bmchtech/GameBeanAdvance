@@ -38,7 +38,7 @@ public:
         this.ppu     = new PPU(memory);
         this.enabled = false;
 
-        cpu.set_mode(ARM7TDMI.MODE_SYSTEM);
+        cpu.set_mode(arm7tdmi.ARM7TDMI.MODE_SYSTEM);
     }
 
     struct DMAChannel {
