@@ -29,7 +29,7 @@ LOCAL_INLINE_HEADER     = "@LOCAL_INLINE("
 FILE_HEADER      = '''
 import util;
 import memory;
-import arm7tdmi;\n\n'''[1:] # the [1:] is used to remove the beginning \n
+import cpu;\n\n'''[1:] # the [1:] is used to remove the beginning \n
 
 FILE_FOOTER      = '''
 '''[1:]
