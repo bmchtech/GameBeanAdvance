@@ -1,11 +1,6 @@
 module rom_tests;
 
-import cpu_state;
-import arm7tdmi;
-import memory;
 import gba;
-import util;
-import cpu_state;
 
 import std.conv;
 import std.stdio;
@@ -63,13 +58,13 @@ CpuState produce_expected_cpu_state(char[] input_string) {
     CpuState state;
     string[] tokens = to!string(input_string).split();
 
-    state.type           = tokens[0] == "ARM" ? cpu_state.CpuType.ARM : cpu_state.CpuType.THUMB;
+    state.type           = tokens[0] == "ARM" ? CpuType.ARM : CpuType.THUMB;
     state.opcode         = to!uint(tokens[1][2..$],  16);
     state.mode           = to!uint(tokens[18], 16);
     state.mem_0x03000003 = to!uint(tokens[19], 16);
 
     for (int i = 0; i < 16; i++) state.regs[i] = to!uint(tokens[i + 2], 16);
-    state.regs[15] -= state.type == cpu_state.CpuType.ARM ? 4 : 2;
+    state.regs[15] -= state.type == CpuType.ARM ? 4 : 2;
 
     return state;
 }
@@ -88,7 +83,7 @@ void test_thumb_mode(string gba_file, string log_file, int num_instructions) {
 
     bool wasPreviousInstructionARM = true; // if so, we reset the CPU's state
     for (int i = 0; i < num_instructions - 1; i++) {
-        if (expected_output[i].type == cpu_state.CpuType.THUMB) {
+        if (expected_output[i].type == CpuType.THUMB) {
             if (wasPreviousInstructionARM) {
                 cpu.set_bit_T(true);
                 set_cpu_state(cpu, expected_output[i]);
@@ -130,7 +125,7 @@ void test_arm_mode(string gba_file, string log_file, int num_instructions, int s
 
         if (i < start_instruction) cpu.set_bit_T(true);
 
-        if (i > start_instruction || expected_output[i].type == cpu_state.CpuType.THUMB) {
+        if (i > start_instruction || expected_output[i].type == CpuType.THUMB) {
             uint opcode = cpu.fetch();
             cpu.execute(opcode);
             check_cpu_state(expected_output[i + 1], get_cpu_state(cpu), "Failed at instruction #" ~ to!string(i) ~ " with opcode 0x" ~ to_hex_string(opcode));
