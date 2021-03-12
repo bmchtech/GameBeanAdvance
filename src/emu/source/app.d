@@ -13,7 +13,7 @@ version (gperf) {
 void main(string[] args) {
 	auto a = new Program("gamebean-emu", "0.1").summary("GameBean Advance")
 			.add(new Flag("v", "verbose", "turns on more verbose output").repeating)
-			.add(new Option("s", "scale", "render scale"))
+			.add(new Option("s", "scale", "render scale").optional.defaultValue("1"))
 			.add(new Argument("rompath", "path to rom file")).parse(args);
 
 	util.verbosity_level = a.occurencesOf("verbose");
