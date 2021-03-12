@@ -68,6 +68,7 @@ public:
                 render_background_mode0(background_1, scanline);
                 render_background_mode0(background_2, scanline);
                 render_background_mode0(background_3, scanline);
+                render_sprites(scanline);
                 break;
             }
 
@@ -172,6 +173,81 @@ private:
             memory.set_rgb(dot + x_ofs, *memory.VCOUNT, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),
                                                         cast(ubyte) (get_nth_bits(color,  5, 10) * 255 / 31),
                                                         cast(ubyte) (get_nth_bits(color, 10, 15) * 255 / 31));
+        }
+    }
+
+    // sprite_sizes[size][shape] = (width, height)
+    const static ubyte[2][4][3] sprite_sizes = [
+        [
+            [8,  8],
+            [16, 16],
+            [32, 32],
+            [64, 64]
+        ],
+
+        [
+            [16, 8],
+            [32, 8],
+            [32, 16],
+            [64, 32]
+        ],
+
+        [
+            [ 8, 16],
+            [ 8, 32],
+            [16, 32],
+            [32, 64]
+        ]
+    ];
+
+    void render_sprites(ushort scanline) {
+        for (int sprite = 0; sprite < 128; sprite++) {
+            // collect info that we need to figure out if this sprite is rendered or not.
+            ushort attribute_0 = memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 0);
+
+            // first of all is this sprite even enabled
+            if (get_nth_bits(attribute_0, 8, 9) == 0b01) return;
+
+            // yes? ok get attribute 1 and check if this sprite is rendered
+            ushort attribute_1 = memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 2);
+
+            ubyte size   = cast(ubyte) get_nth_bits(attribute_1, 14, 16);
+            ubyte shape  = cast(ubyte) get_nth_bits(attribute_0, 14, 16);
+
+            ubyte y      = cast(ubyte) get_nth_bits(attribute_1,  0,  8);
+            ubyte height = sprite_sizes[size][shape][1];
+
+            // is this sprite rendered or not in this scanline
+            if (scanline < y || scanline >= y + height) return;
+
+            // collect the rest of the information we need for rendering
+            ushort attribute_2 = memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 4);
+
+            ubyte x      = cast(ubyte) get_nth_bits(attribute_0,  0,  8);
+            ubyte width  = sprite_sizes[size][shape][0];
+
+            ushort tile_number = cast(ushort) get_nth_bits(attribute_2, 0, 10);
+
+            // colors / palettes
+            if (get_nth_bit(attribute_0, 13)) { // 16 / 16
+                // ubyte palette = get_nth_bits(attribute_2, 12, 16);
+            } else { // 256 / 1
+                for (ubyte draw_x = x; draw_x < x + width; draw_x++) {
+                    // TODO: REPEATED CODE
+
+                    uint tile_base_address = memory.OFFSET_VRAM; // probably wrong lol
+
+                    // only the upper 9 bits of current_tile are relevant. we use these to get the index into the palette ram
+                    // for the particular pixel are are interested in (determined by tile_x and tile_y).
+                    ubyte index = memory.read_byte(tile_base_address + ((tile_number & 0x1ff) * 64) + (scanline - y) * 8 + (draw_x - x));
+
+                    // and we grab that pixel from palette ram and interpret it as 15bit highcolor.
+                    uint color = memory.read_halfword(memory.OFFSET_PALETTE_RAM + index * 2);
+                    memory.set_rgb(dot + draw_x, *memory.VCOUNT, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),
+                                                                 cast(ubyte) (get_nth_bits(color,  5, 10) * 255 / 31),
+                                                                 cast(ubyte) (get_nth_bits(color, 10, 15) * 255 / 31));
+                }
+            }
         }
     }
 }
