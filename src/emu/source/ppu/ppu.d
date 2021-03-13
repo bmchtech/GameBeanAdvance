@@ -75,10 +75,8 @@ public:
             case 3: {
                 // in mode 3, the dot and scanline (x and y) simply tell us where to read from in VRAM. The colors
                 // are stored directly, so we just read from VRAM and interpret as a 15bit highcolor
-                ushort color = memory.read_halfword(memory.OFFSET_VRAM + 2 * (dot + scanline * 240));
-                memory.set_rgb(dot, scanline, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),
-                                              cast(ubyte) (get_nth_bits(color,  5, 10) * 255 / 31),
-                                              cast(ubyte) (get_nth_bits(color, 10, 15) * 255 / 31));
+                for (uint x = 0; x < 240; x++) 
+                    draw_pixel(memory.OFFSET_VRAM, x + scanline * 240, x, scanline);
 
                 break;
             }
@@ -87,16 +85,14 @@ public:
             case 5: {
                 // modes 4 and 5 are a step up from mode 3. the address of where the colors are stored can
                 // be found using DISPCNT.
-                uint   base_frame_address = memory.OFFSET_VRAM + get_nth_bit(*memory.DISPCNT, 4) * 0xA000;
+                uint base_frame_address = memory.OFFSET_VRAM + get_nth_bit(*memory.DISPCNT, 4) * 0xA000;
 
-                // the index in palette ram that we need to look into is then found in the base frame.
-                uint   index = memory.read_byte(base_frame_address + (dot + scanline * 240));
 
-                // we grab the color, interpret it as 15bit highcolor and render it.
-                ushort color = memory.read_halfword(memory.OFFSET_PALETTE_RAM + index);
-                memory.set_rgb(dot, scanline, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),
-                                              cast(ubyte) (get_nth_bits(color,  5, 10) * 255 / 31),
-                                              cast(ubyte) (get_nth_bits(color, 10, 15) * 255 / 31));
+                for (uint x = 0; x < 240; x++) {
+                    // the index in palette ram that we need to look into is then found in the base frame.
+                    uint index = memory.read_byte(base_frame_address + (x + scanline * 240));
+                    draw_pixel(memory.OFFSET_PALETTE_RAM, index, x, scanline);
+                }
 
                 break;
             }
@@ -170,9 +166,7 @@ private:
 
             // and we grab that pixel from palette ram and interpret it as 15bit highcolor.
             uint color = memory.read_halfword(memory.OFFSET_PALETTE_RAM + index * 2);
-            memory.set_rgb(dot + x_ofs, *memory.VCOUNT, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),
-                                                        cast(ubyte) (get_nth_bits(color,  5, 10) * 255 / 31),
-                                                        cast(ubyte) (get_nth_bits(color, 10, 15) * 255 / 31));
+            maybe_draw_pixel(memory.OFFSET_PALETTE_RAM, index, x_ofs, scanline);
         }
     }
 
@@ -245,8 +239,6 @@ private:
                                                                        ((scanline - y) % 8) * 4 +
                                                                        ((draw_x   - x) % 8) / 2);
 
-                    import std.stdio;
-                    writefln("%x", attribute_2);
                     // and we grab two pixels from palette ram and interpret them as 15bit highcolor.
                     maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index & 0xF, draw_x,     scanline);
                     maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index >> 4,  draw_x + 1, scanline);
@@ -256,8 +248,12 @@ private:
     }
 
     void maybe_draw_pixel(uint palette_offset, uint palette_index, uint x, uint y) {
-        if (palette_index == 0) return;
+        if (palette_index != 0) {
+            draw_pixel(palette_offset, palette_index, x, y);
+        }
+    }
 
+    void draw_pixel(uint palette_offset, uint palette_index, uint x, uint y) {
         uint color = memory.read_halfword(palette_offset + palette_index * 2);
         memory.set_rgb(x, y, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),
                              cast(ubyte) (get_nth_bits(color,  5, 10) * 255 / 31),
