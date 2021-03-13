@@ -214,7 +214,7 @@ private:
             ubyte size   = cast(ubyte) get_nth_bits(attribute_1, 14, 16);
             ubyte shape  = cast(ubyte) get_nth_bits(attribute_0, 14, 16);
 
-            byte y       = cast(byte) get_nth_bits(attribute_1,  0,  8);
+            byte y       = cast(byte) get_nth_bits(attribute_0,  0,  8);
             ubyte height = sprite_sizes[shape][size][1];
 
             // is this sprite rendered or not in this scanline
@@ -223,7 +223,7 @@ private:
             // collect the rest of the information we need for rendering
             ushort attribute_2 = memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 4);
 
-            int x        = sign_extend(cast(ubyte) get_nth_bits(attribute_0,  0,  9), 9);
+            int x        = sign_extend(cast(ubyte) get_nth_bits(attribute_1,  0,  9), 9);
             ubyte width  = sprite_sizes[size][shape][0];
 
             ushort tile_number = cast(ushort) get_nth_bits(attribute_2, 0, 10);
@@ -246,17 +246,19 @@ private:
                                                                        ((draw_x   - x) % 8) / 2);
 
                     // and we grab two pixels from palette ram and interpret them as 15bit highcolor.
-                    uint color_l = memory.read_halfword(memory.OFFSET_PALETTE_RAM + 0x200 + (index & 0xF));
-                    uint color_h = memory.read_halfword(memory.OFFSET_PALETTE_RAM + 0x200 + (index >> 4));
-
-                    memory.set_rgb(dot + draw_x,     *memory.VCOUNT, cast(ubyte) (get_nth_bits(color_l,  0,  5) * 255 / 31),
-                                                                     cast(ubyte) (get_nth_bits(color_l,  5, 10) * 255 / 31),
-                                                                     cast(ubyte) (get_nth_bits(color_l, 10, 15) * 255 / 31));
-                    memory.set_rgb(dot + draw_x + 1, *memory.VCOUNT, cast(ubyte) (get_nth_bits(color_h,  0,  5) * 255 / 31),
-                                                                     cast(ubyte) (get_nth_bits(color_h,  5, 10) * 255 / 31),
-                                                                     cast(ubyte) (get_nth_bits(color_h, 10, 15) * 255 / 31));
+                    maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index & 0xF, draw_x,     scanline);
+                    maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index >> 4,  draw_x + 1, scanline);
                 }
             }
         }
+    }
+
+    void maybe_draw_pixel(uint palette_offset, uint palette_index, uint x, uint y) {
+        if (palette_index == 0) return;
+
+        uint color = memory.read_halfword(palette_offset + palette_index);
+        memory.set_rgb(x, y, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),
+                             cast(ubyte) (get_nth_bits(color,  5, 10) * 255 / 31),
+                             cast(ubyte) (get_nth_bits(color, 10, 15) * 255 / 31));
     }
 }
