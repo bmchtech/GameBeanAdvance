@@ -245,6 +245,8 @@ private:
                                                                        ((scanline - y) % 8) * 4 +
                                                                        ((draw_x   - x) % 8) / 2);
 
+                    import std.stdio;
+                    writefln("%x", attribute_2);
                     // and we grab two pixels from palette ram and interpret them as 15bit highcolor.
                     maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index & 0xF, draw_x,     scanline);
                     maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index >> 4,  draw_x + 1, scanline);
@@ -256,7 +258,7 @@ private:
     void maybe_draw_pixel(uint palette_offset, uint palette_index, uint x, uint y) {
         if (palette_index == 0) return;
 
-        uint color = memory.read_halfword(palette_offset + palette_index);
+        uint color = memory.read_halfword(palette_offset + palette_index * 2);
         memory.set_rgb(x, y, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),
                              cast(ubyte) (get_nth_bits(color,  5, 10) * 255 / 31),
                              cast(ubyte) (get_nth_bits(color, 10, 15) * 255 / 31));
