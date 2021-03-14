@@ -223,9 +223,24 @@ private:
             ushort tile_number = cast(ushort) get_nth_bits(attribute_2, 0, 10);
             tile_number       += (width / 8) * ((scanline - y) / 8);
 
+            import std.stdio;
+            writefln("%x", tile_number);
             // colors / palettes
             if (get_nth_bit(attribute_0, 13)) { // 256 / 1
                 // ubyte palette = get_nth_bits(attribute_2, 12, 16);
+                for (int draw_x = x; draw_x < x + width; draw_x++) {
+                    uint tile_base_address = memory.OFFSET_VRAM + 0x10000; // probably wrong lol
+
+                    uint shifted_tile_number = tile_number + ((draw_x - x) / 8);
+                    // only the upper 9 bits of current_tile are relevant. we use these to get the index into the palette ram
+                    // for the particular pixel we are interested in (determined by tile_x and tile_y).
+                    ubyte index = memory.read_byte(tile_base_address + ((shifted_tile_number & 0x1ff) * 64) + 
+                                                                       ((scanline - y) % 8) * 8 +
+                                                                       ((draw_x   - x) % 8));
+
+                    // and we grab the pixel from palette ram and interpret it as 15bit highcolor.
+                    maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index, draw_x, scanline);
+                }
             } else { // 16 / 16
                 for (int draw_x = x; draw_x < x + width; draw_x += 2) {
                     // TODO: REPEATED CODE
@@ -234,7 +249,7 @@ private:
 
                     uint shifted_tile_number = tile_number + ((draw_x - x) / 8);
                     // only the upper 9 bits of current_tile are relevant. we use these to get the index into the palette ram
-                    // for the particular pixel are are interested in (determined by tile_x and tile_y).
+                    // for the particular pixel we are interested in (determined by tile_x and tile_y).
                     ubyte index = memory.read_byte(tile_base_address + ((shifted_tile_number & 0x1ff) * 32) + 
                                                                        ((scanline - y) % 8) * 4 +
                                                                        ((draw_x   - x) % 8) / 2);
