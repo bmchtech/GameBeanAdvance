@@ -24,7 +24,7 @@ public:
 
         // update dot and scanline
         dot++;
-        if (dot > 960) { // 960 = 240 * 4 = screen_width * cycles_per_pixel
+        if (dot > 307) { // 960 = 240 * 4 = screen_width * cycles_per_pixel
             dot = 0;
             scanline++;
 
@@ -223,8 +223,6 @@ private:
             ushort tile_number = cast(ushort) get_nth_bits(attribute_2, 0, 10);
             tile_number       += (width / 8) * ((scanline - y) / 8);
 
-            import std.stdio;
-            writefln("%x", tile_number);
             // colors / palettes
             if (get_nth_bit(attribute_0, 13)) { // 256 / 1
                 // ubyte palette = get_nth_bits(attribute_2, 12, 16);
