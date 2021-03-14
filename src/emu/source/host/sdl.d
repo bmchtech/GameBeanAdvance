@@ -38,8 +38,8 @@ class GameBeanSDLHost {
         enum gba_cycle_batch_sz = 1024;
         enum nsec_per_cycle = 1_000_000_000 / cast(double) cycles_per_second;
         // 62.5 nsec per cycle: this is nsec per batch
-        // enum nsec_per_gba_cyclebatch = nsec_per_cycle * gba_cycle_batch_sz;
-        enum nsec_per_gba_cyclebatch = 1; // unlock speed
+        enum nsec_per_gba_cyclebatch = nsec_per_cycle * gba_cycle_batch_sz;
+        // enum nsec_per_gba_cyclebatch = 1; // unlock speed
         // enum nsec_per_gba_cyclebatch = 50_000; // medium locking
 
         // 16.6666 ms
@@ -77,7 +77,7 @@ class GameBeanSDLHost {
                 total_cycles += gba_cycle_batch_sz;
                 cycles_since_last_log += gba_cycle_batch_sz;
                 mixin(VERBOSE_LOG!(`3`, `format("CYCLE[%s]", gba_cycle_batch_sz)`));
-                clockfor_cycle = 0;
+                clockfor_cycle -= nsec_per_gba_cyclebatch;
             }
 
             // 60Hz frame refresh (mod 267883)
