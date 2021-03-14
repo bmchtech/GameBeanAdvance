@@ -1,0 +1,59 @@
+[SETTINGS]
+- NAMESPACE: arm_pinky
+- OPCODE_FORMAT: IID-
+- INCLUDES: std.stdio
+- ARGUMENTS:
+[/SETTINGS]
+
+[DEFAULT]
+{
+    writeln("No implementation for opcode");
+}
+[/DEFAULT]
+
+[RULE RULE0]
+- INCLUDE: --0-
+- COMPONENT: ADDRESSING_MODE_1
+- COMPONENT: SUB
+- COMPONENT: PRINT
+[/RULE]
+
+[RULE RULE1]
+- INCLUDE: 1-1-
+- COMPONENT: ADDRESSING_MODE_1
+- COMPONENT: ADD
+- COMPONENT: PRINT
+[/RULE]
+
+[COMPONENT ADDRESSING_MODE_1]
+- FORMAT: ABC-
+{
+    // yes this is useless code but its filler so
+    @IF(!A) int a = 3;
+    @IF( A) int a = 5;
+    @IF( C) // special comment! :D
+
+    int b = 6;
+}
+[/COMPONENT]
+
+[COMPONENT ADD]
+- FORMAT: --1-
+{
+    int result = a + b;
+}
+[/COMPONENT]
+
+[COMPONENT SUB]
+- FORMAT: --0-
+{
+    int result = a - b;
+}
+[/COMPONENT]
+
+[COMPONENT PRINT]
+- FORMAT: ----
+{
+    writeln(result);
+}
+[/COMPONENT]

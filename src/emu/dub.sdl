@@ -1,0 +1,27 @@
+name "gamebean-emu"
+description "gamebeanadvance emu"
+authors "bean"
+copyright "Copyright © 2021, bean"
+license "proprietary"
+targetType "executable"
+
+dependency "commandr" version="~>0.2.0"
+dependency "bindbc-sdl" version="~>0.20.0"
+
+sourceFiles "jumptable/jumptable_arm.d" "jumptable/jumptable_thumb.d"
+importPaths "./jumptable" "./source"
+preGenerateCommands "bash ./generate_jumptables.sh"
+
+configuration "default" {
+    versions "default"
+}
+
+configuration "gperf" {
+    dependency "gperftools_d" version="~>0.1.0"
+    versions "gperf"
+}
+
+configuration "unittest" {
+    # test runner
+    dependency "silly" version="~>1.1.1"
+}

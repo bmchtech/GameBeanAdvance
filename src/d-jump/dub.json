@@ -1,0 +1,9 @@
+{
+	"authors": [
+		"Zayd Qumsieh"
+	],
+	"copyright": "Copyright © 2021, Zayd Qumsieh",
+	"description": "A minimal D application.",
+	"license": "proprietary",
+	"name": "d-jump"
+}
