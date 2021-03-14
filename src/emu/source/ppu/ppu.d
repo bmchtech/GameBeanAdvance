@@ -166,7 +166,7 @@ private:
 
             // and we grab that pixel from palette ram and interpret it as 15bit highcolor.
             uint color = memory.read_halfword(memory.OFFSET_PALETTE_RAM + index * 2);
-            maybe_draw_pixel(memory.OFFSET_PALETTE_RAM, index, x_ofs, scanline);
+            draw_pixel(memory.OFFSET_PALETTE_RAM, index, x_ofs, scanline);
         }
     }
 
