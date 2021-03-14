@@ -6,6 +6,10 @@ Emulator main project is in `src/emu`.
 
 ## Build
 
+### Requirements
++ Dlang + DUB
++ PyPy3 (and `ply` package)
+
 ### Standard Build
 
 optionally add `-b release` for optimized build.
