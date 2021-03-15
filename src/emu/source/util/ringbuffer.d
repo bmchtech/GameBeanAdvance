@@ -6,7 +6,7 @@ class RingBuffer(T) {
 
     this(int size) {
         current_index = 0;
-        buffer[size];
+        buffer = new T[size];
     }
 
     void add(T element) {
@@ -15,7 +15,7 @@ class RingBuffer(T) {
     }
 
     T[] get() {
-        T[buffer.length] return_buffer;
+        T[] return_buffer = new T[buffer.length];
 
         for (int i = 0; i < buffer.length; i++) {
             return_buffer[i] = buffer[(i + current_index) % buffer.length];
