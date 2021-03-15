@@ -1,3 +1,5 @@
+![icon](media/icon.png)
+
 # GameBeanAdvance
 WIP Gameboy Advance Emulator written in D. Currently working on the GBA PPU.
 
