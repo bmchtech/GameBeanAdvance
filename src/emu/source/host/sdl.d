@@ -1,8 +1,10 @@
 module host.sdl;
 import bindbc.sdl;
 import std.stdio;
-import gba;
 import std.conv;
+
+import gba;
+import cputrace;
 
 class GameBeanSDLHost {
     this(GBA gba, int screen_scale) {
@@ -73,6 +75,10 @@ class GameBeanSDLHost {
                     mixin(VERBOSE_LOG!(`3`, `format("pc: %00000000x (cycle %s)",
                             *gba.cpu.pc, total_cycles + i)`));
                     gba.cycle();
+
+                    if (cpu_tracing_enabled) {
+                        trace.capture();
+                    }
                 }
                 total_cycles += gba_cycle_batch_sz;
                 cycles_since_last_log += gba_cycle_batch_sz;
@@ -118,6 +124,14 @@ class GameBeanSDLHost {
     enum GBA_SCREEN_WIDTH = 240;
     enum GBA_SCREEN_HEIGHT = 160;
     int screen_scale;
+
+    bool cpu_tracing_enabled = false;
+    CpuTrace trace;
+
+    void enable_cpu_tracing(int trace_length) {
+        cpu_tracing_enabled = true;
+        trace = new CpuTrace(gba.cpu, trace_length);
+    }
 
 private:
     void frame() {

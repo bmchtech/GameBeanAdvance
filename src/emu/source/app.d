@@ -14,7 +14,8 @@ void main(string[] args) {
 	auto a = new Program("gamebean-emu", "0.1").summary("GameBean Advance")
 			.add(new Flag("v", "verbose", "turns on more verbose output").repeating)
 			.add(new Option("s", "scale", "render scale").optional.defaultValue("1"))
-			.add(new Argument("rompath", "path to rom file")).parse(args);
+			.add(new Argument("rompath", "path to rom file"))
+			.add(new Option("t", "cputrace", "display cpu trace on crash").optional.defaultValue("0")).parse(args);
 
 	util.verbosity_level = a.occurencesOf("verbose");
 
@@ -38,6 +39,11 @@ void main(string[] args) {
 	writeln("running sdl2 renderer");
 	auto host = new GameBeanSDLHost(gba, to!int(a.option("scale")));
 	host.init();
+
+	int cpu_trace_length = to!int(a.option("scale"));
+	if (cpu_trace_length != 0) {
+		host.enable_cpu_tracing(cpu_trace_length);
+	}
 
 	version (gperf) {
 		writeln("---- STARTED PROFILER ----");
