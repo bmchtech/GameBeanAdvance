@@ -26,7 +26,9 @@ class CpuTrace {
             write(format("%x | ", trace[i].opcode));
 
             for (int j = 0; j < 16; j++)
-                write(format("%x ", j, trace[i].regs[j]));
+                write(format("%x ", trace[i].regs[j]));
+
+            writeln();
         }
     }
 }

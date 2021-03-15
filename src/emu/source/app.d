@@ -40,7 +40,7 @@ void main(string[] args) {
 	auto host = new GameBeanSDLHost(gba, to!int(a.option("scale")));
 	host.init();
 
-	int cpu_trace_length = to!int(a.option("scale"));
+	int cpu_trace_length = to!int(a.option("cputrace"));
 	if (cpu_trace_length != 0) {
 		host.enable_cpu_tracing(cpu_trace_length);
 	}
@@ -56,4 +56,6 @@ void main(string[] args) {
 		ProfilerStop();
 		writeln("---- ENDED PROFILER ----");
 	}
+
+	scope(failure) host.print_trace();
 }
