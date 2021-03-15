@@ -175,7 +175,7 @@ class Memory {
         if ((address & 0xFFFF0000) == 0x4000000)
             mixin(VERBOSE_LOG!(`2`,
                     `format("Reading byte from address %s", to_hex_string(address))`));
-        if (address >= SIZE_MAIN_MEMORY)
+        if (cast(ulong)address >= SIZE_MAIN_MEMORY)
             error(format("Address out of range on read byte %s", to_hex_string(address) ~ ")"));
         return main[address];
     }
@@ -184,7 +184,7 @@ class Memory {
         if ((address & 0xFFFF0000) == 0x4000000)
             mixin(VERBOSE_LOG!(`2`,
                     `format("Reading halfword from address %s", to_hex_string(address))`));
-        if (address + 2 >= SIZE_MAIN_MEMORY)
+        if (cast(ulong)address + 2 >= SIZE_MAIN_MEMORY)
             error(format("Address out of range on read halfword %s", to_hex_string(address) ~ ")"));
         return (cast(ushort) main[address + 0] << 0) | (cast(ushort) main[address + 1] << 8);
     }
@@ -193,7 +193,7 @@ class Memory {
         if ((address & 0xFFFF0000) == 0x4000000)
             mixin(VERBOSE_LOG!(`2`,
                     `format("Reading word from address %s", to_hex_string(address))`));
-        if (address + 4 >= SIZE_MAIN_MEMORY)
+        if (cast(ulong)address + 4 >= SIZE_MAIN_MEMORY)
             error(format("Address out of range on read word %s", to_hex_string(address) ~ ")"));
         return (cast(uint) main[address + 0] << 0) | (
                 cast(uint) main[address + 1] << 8) | (cast(
@@ -205,7 +205,7 @@ class Memory {
         if ((address & 0xFFFF0000) == 0x4000000)
             mixin(VERBOSE_LOG!(`2`, `format("Writing byte %s to address %s",
                     to_hex_string(value), to_hex_string(address))`));
-        if (address >= SIZE_MAIN_MEMORY)
+        if (cast(ulong)address >= SIZE_MAIN_MEMORY)
             error(format("Address out of range on write byte %s", to_hex_string(address) ~ ")"));
         // main[address] = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
@@ -216,9 +216,10 @@ class Memory {
         if ((address & 0xFFFF0000) == 0x4000000)
             mixin(VERBOSE_LOG!(`2`, `format("Writing halfword %s to address %s",
                     to_hex_string(value), to_hex_string(address))`));
-        if (address + 2 >= SIZE_MAIN_MEMORY)
+        if (cast(ulong)address + 2 >= SIZE_MAIN_MEMORY)
             error(format("Address out of range on write halfword %s", to_hex_string(address) ~ ")"));
         // *(cast(ushort*) (main[0] + address)) = value;
+        writeln(address);
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
         main[address + 1] = cast(ubyte)((value >> 8) & 0xff);
     }
@@ -228,7 +229,7 @@ class Memory {
         if ((address & 0xFFFF0000) == 0x4000000)
             mixin(VERBOSE_LOG!(`2`, `format("Writing word %s to address %s",
                     to_hex_string(value), to_hex_string(address))`));
-        if (address + 4 >= SIZE_MAIN_MEMORY)
+        if (cast(ulong)address + 4 >= SIZE_MAIN_MEMORY)
             error(format("Address out of range on write word %s", to_hex_string(address) ~ ")"));
         // *(cast(uint*) (main[0] + address)) = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
