@@ -12,6 +12,8 @@ class RingBuffer(T) {
     void add(T element) {
         buffer[current_index] = element;
         current_index++;
+
+        if (current_index >= buffer.length) current_index = 0;
     }
 
     T[] get() {

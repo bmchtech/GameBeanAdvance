@@ -133,6 +133,11 @@ class GameBeanSDLHost {
         trace = new CpuTrace(gba.cpu, trace_length);
     }
 
+    void print_trace() {
+        if (cpu_tracing_enabled)
+            trace.print_trace();
+    }
+
 private:
     void frame() {
         SDL_Event event;

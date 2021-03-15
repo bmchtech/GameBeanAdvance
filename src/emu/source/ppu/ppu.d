@@ -195,33 +195,43 @@ private:
     ];
 
     void render_sprites(ushort scanline) {
+        // Very useful guide for attributes! https://problemkaputt.de/gbatek.htm#lcdobjoamattributes
         for (int sprite = 0; sprite < 128; sprite++) {
-            // collect info that we need to figure out if this sprite is rendered or not.
+            // first of all, we need to figure out if we render this sprite in the first place.
+            // so, we collect a bunch of info that'll help us figure that out.
             ushort attribute_0 = memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 0);
 
-            // first of all is this sprite even enabled
+            // is this sprite even enabled
             if (get_nth_bits(attribute_0, 8, 9) == 0b10) return;
 
-            // yes? ok get attribute 1 and check if this sprite is rendered
+            // it is enabled? great. now, we need to check which if the sprite appears in the
+            // current scanline. for that, we need attribute 1.
             ushort attribute_1 = memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 2);
 
+            // get the size and shape of the sprite so we know its height
             ubyte size   = cast(ubyte) get_nth_bits(attribute_1, 14, 16);
             ubyte shape  = cast(ubyte) get_nth_bits(attribute_0, 14, 16);
 
+            // get y and height from attribute_0 and the sprite_sizezs lookup table.
             byte y       = cast(byte) get_nth_bits(attribute_0,  0,  8);
             ubyte height = sprite_sizes[shape][size][1];
 
             // is this sprite rendered or not in this scanline
             if (scanline < y || scanline >= y + height) return;
 
-            // collect the rest of the information we need for rendering
+            // now we need to get attribute 2, as well as the x position and the sprite width.
             ushort attribute_2 = memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 4);
 
             int x        = sign_extend(cast(ubyte) get_nth_bits(attribute_1,  0,  9), 9);
             ubyte width  = sprite_sizes[size][shape][0];
 
-            ushort tile_number = cast(ushort) get_nth_bits(attribute_2, 0, 10);
-            tile_number       += (width / 8) * ((scanline - y) / 8);
+            // base_tile_number is going to be the tile number of the left-most tile that makes
+            // up the sprite in the current scanline. to calculate this, we first get the topleft 
+            // tile. then, we add (width / 8) * ((scanline - y) / 8). note that (scanline - y) / 8
+            // tells us the current tile row we are rendering, and (width / 8) is the width of the
+            // sprite in tiles.
+            ushort base_tile_number = cast(ushort) get_nth_bits(attribute_2, 0, 10);
+            base_tile_number       += (width / 8) * ((scanline - y) / 8);
 
             // colors / palettes
             if (get_nth_bit(attribute_0, 13)) { // 256 / 1
@@ -229,7 +239,7 @@ private:
                 for (int draw_x = x; draw_x < x + width; draw_x++) {
                     uint tile_base_address = memory.OFFSET_VRAM + 0x10000; // probably wrong lol
 
-                    uint shifted_tile_number = tile_number + ((draw_x - x) / 8);
+                    uint shifted_tile_number = base_tile_number + ((draw_x - x) / 8);
                     // only the upper 9 bits of current_tile are relevant. we use these to get the index into the palette ram
                     // for the particular pixel we are interested in (determined by tile_x and tile_y).
                     ubyte index = memory.read_byte(tile_base_address + ((shifted_tile_number & 0x1ff) * 64) + 
@@ -243,11 +253,18 @@ private:
                 for (int draw_x = x; draw_x < x + width; draw_x += 2) {
                     // TODO: REPEATED CODE
 
+                    // tile_base_address is just the base address of the tiles for sprites
                     uint tile_base_address = memory.OFFSET_VRAM + 0x10000; // probably wrong lol
 
+                    // shifted_tile_number tells us the exact tile we will be rendering. note that (draw_x - x)/ 8
+                    // tells us the current tile column we are rendering.
                     uint shifted_tile_number = tile_number + ((draw_x - x) / 8);
+
                     // only the upper 9 bits of current_tile are relevant. we use these to get the index into the palette ram
-                    // for the particular pixel we are interested in (determined by tile_x and tile_y).
+                    // for the particular pixel we are interested in (determined by tile_x and tile_y). we multiply
+                    // shifted_tile_number by 32 because each tile is 32 bytes long. (scanline - y) % 8 and (draw_x - x) % 8
+                    // are the current pixel x y offsets within the tile. since each pixel is half of a byte, we multiply
+                    // the x y offsets by (8 / 2) and (1 / 2) respectively.
                     ubyte index = memory.read_byte(tile_base_address + ((shifted_tile_number & 0x1ff) * 32) + 
                                                                        ((scanline - y) % 8) * 4 +
                                                                        ((draw_x   - x) % 8) / 2);
