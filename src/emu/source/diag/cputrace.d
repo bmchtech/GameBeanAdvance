@@ -1,14 +1,18 @@
 module cputrace;
 
-import cpu;
+import std.stdio;
+import std.format;
 
-class CpuTrace() {
-    ARM7TDMI   cpu;
-    RingBuffer ringbuffer;
+import cpu;
+import ringbuffer;
+
+class CpuTrace {
+    ARM7TDMI cpu;
+    RingBuffer!CpuState ringbuffer;
 
     this(ARM7TDMI cpu, int length) {
         this.cpu        = cpu;
-        this.ringbuffer = RingBuffer!CpuState(length);
+        this.ringbuffer = new RingBuffer!CpuState(length);
     }
 
     void capture() {
@@ -18,11 +22,11 @@ class CpuTrace() {
     void print_trace() {
         CpuState[] trace = ringbuffer.get();
         for (int i = 0; i < trace.length; i++) {
-            write(format("%x | ", state.mode));
-            write(format("%x | ", state.opcode));
+            write(format("%x | ", trace[i].mode));
+            write(format("%x | ", trace[i].opcode));
 
-            for (int i = 0; i < 16; i++)
-                write(format("%x ", i, state.regs[i]));
+            for (int j = 0; j < 16; j++)
+                write(format("%x ", j, trace[i].regs[j]));
         }
     }
 }
