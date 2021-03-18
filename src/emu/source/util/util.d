@@ -3,7 +3,9 @@ module util;
 import core.stdc.math; //core.stdc.math.pow 
 import std.stdio;
 import std.conv;
+
 import gba;
+import logger;
 
 public {
     import std.format;
@@ -43,6 +45,10 @@ void warning(string message) {
 
 // an error terminates the program and calls exit(EXIT_FAILURE);
 void error(string message) {
+    if (Logger.instance) {
+        Logger.instance.print();
+    }
+
     stderr.writefln("%sERROR: %s%s", RED, RESET, message);
 
     assert(0, "terminating due to error");
