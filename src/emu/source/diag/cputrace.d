@@ -22,12 +22,12 @@ class CpuTrace {
     void print_trace() {
         CpuState[] trace = ringbuffer.get();
         for (int i = 0; i < trace.length; i++) {
-            write(format("%x | ", trace[i].mode));
-            write(format("%x | ", trace[i].opcode));
+            write(format("%08x | ", trace[i].opcode));
 
             for (int j = 0; j < 16; j++)
-                write(format("%x ", trace[i].regs[j]));
+                write(format("%08x ", trace[i].regs[j]));
 
+            write(format(" | %08x", trace[i].mode));
             writeln();
         }
     }

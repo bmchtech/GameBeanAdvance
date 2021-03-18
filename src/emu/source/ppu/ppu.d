@@ -258,7 +258,7 @@ private:
 
                     // shifted_tile_number tells us the exact tile we will be rendering. note that (draw_x - x)/ 8
                     // tells us the current tile column we are rendering.
-                    uint shifted_tile_number = tile_number + ((draw_x - x) / 8);
+                    uint shifted_tile_number = base_tile_number + ((draw_x - x) / 8);
 
                     // only the upper 9 bits of current_tile are relevant. we use these to get the index into the palette ram
                     // for the particular pixel we are interested in (determined by tile_x and tile_y). we multiply
