@@ -207,6 +207,7 @@ class Memory {
                     to_hex_string(value), to_hex_string(address))`));
         if (cast(ulong)address >= SIZE_MAIN_MEMORY)
             error(format("Address out of range on write byte %s", to_hex_string(address) ~ ")"));
+        if (address == 0x03000086) warning("ACCESS.");
         // main[address] = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
     }
@@ -218,8 +219,8 @@ class Memory {
                     to_hex_string(value), to_hex_string(address))`));
         if (cast(ulong)address + 2 >= SIZE_MAIN_MEMORY)
             error(format("Address out of range on write halfword %s", to_hex_string(address) ~ ")"));
+        if (address == 0x03000086) warning("ACCESS.");
         // *(cast(ushort*) (main[0] + address)) = value;
-        writeln(address);
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
         main[address + 1] = cast(ubyte)((value >> 8) & 0xff);
     }
@@ -231,6 +232,7 @@ class Memory {
                     to_hex_string(value), to_hex_string(address))`));
         if (cast(ulong)address + 4 >= SIZE_MAIN_MEMORY)
             error(format("Address out of range on write word %s", to_hex_string(address) ~ ")"));
+        if (address == 0x03000086) warning("ACCESS.");
         // *(cast(uint*) (main[0] + address)) = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
         main[address + 1] = cast(ubyte)((value >> 8) & 0xff);

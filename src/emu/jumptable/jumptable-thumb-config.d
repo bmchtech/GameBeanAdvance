@@ -25,7 +25,6 @@ void nop(ushort opcode) {
 void run_0000SABC(ushort opcode) {
     @IF(S)  //DEBUG_MESSAGE("Logical Shift Right");
     @IF(!S) //DEBUG_MESSAGE("Logical Shift Left");
-
     ubyte source = cast(ubyte) get_nth_bits(opcode, 3,  6);
     ubyte dest   = cast(ubyte) get_nth_bits(opcode, 0,  3);
     ubyte shift  = cast(ubyte) get_nth_bits(opcode, 6,  11);
@@ -49,14 +48,14 @@ void run_0000SABC(ushort opcode) {
 
 // arithmetic shift right
 void run_00010ABC(ushort opcode) {
-    ubyte rm    = cast(ubyte) get_nth_bits(opcode, 3,  6);
-    ubyte rd    = cast(ubyte) get_nth_bits(opcode, 0,  3);
-    ubyte shift = cast(ubyte) get_nth_bits(opcode, 6,  11);
+    ubyte rm    = cast(ubyte) get_nth_bits(opcode, 3,  6);  // 0
+    ubyte rd    = cast(ubyte) get_nth_bits(opcode, 0,  3);  // 1
+    ubyte shift = cast(ubyte) get_nth_bits(opcode, 6,  11); // 31 
 
     if (shift == 0) {
         cpu.set_flag_C(cpu.regs[rm] >> 31);
         if ((cpu.regs[rm] >> 31) == 0) cpu.regs[rd] = 0x00000000;
-        else                              cpu.regs[rd] = 0xFFFFFFFF;
+        else                           cpu.regs[rd] = 0xFFFFFFFF;
     } else {
         cpu.set_flag_C(get_nth_bit(cpu.regs[rm], shift - 1));
         // arithmetic shift requires us to cast to signed int first, then back to unsigned to store in registers.
@@ -642,6 +641,7 @@ void run_10000OFS(ushort opcode) {
 }
 
 // load halfword
+10000 00000 101 001
 void run_10001OFS(ushort opcode) {
     ubyte rn     = cast(ubyte) get_nth_bits(opcode, 3, 6);
     ubyte rd     = cast(ubyte) get_nth_bits(opcode, 0, 3);
