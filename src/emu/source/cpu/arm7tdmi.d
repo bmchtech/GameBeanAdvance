@@ -4,6 +4,7 @@ import cpu.mode;
 import cpu.state;
 import memory;
 import util;
+import logger;
 
 import jumptable_arm;
 import jumptable_thumb;
@@ -172,6 +173,8 @@ class ARM7TDMI {
 
     void cycle() {
         if (cycles_remaining == 0) {
+            Logger.instance.capture_cpu();
+
             uint opcode = fetch();
             execute(opcode);
         } else {

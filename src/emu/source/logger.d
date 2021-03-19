@@ -21,6 +21,10 @@ class Logger {
         writeln("HEY!");
         cpu_trace.print_trace();
     }
+    
+    void capture_cpu() {
+        cpu_trace.capture();
+    }
 
 private:
     this(CpuTrace cpu_trace) {

@@ -77,10 +77,6 @@ class GameBeanSDLHost {
                     mixin(VERBOSE_LOG!(`3`, `format("pc: %00000000x (cycle %s)",
                             *gba.cpu.pc, total_cycles + i)`));
                     gba.cycle();
-
-                    if (cpu_tracing_enabled) {
-                        trace.capture();
-                    }
                 }
                 total_cycles += gba_cycle_batch_sz;
                 cycles_since_last_log += gba_cycle_batch_sz;
