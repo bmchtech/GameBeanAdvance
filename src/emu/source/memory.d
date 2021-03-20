@@ -202,24 +202,22 @@ class Memory {
 
     void write_byte(uint address, ubyte value) {
         // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
-        if ((address & 0xFFFF0000) == 0x4000000)
-            mixin(VERBOSE_LOG!(`2`, `format("Writing byte %s to address %s",
-                    to_hex_string(value), to_hex_string(address))`));
+        // if ((address & 0xFFFF0000) == 0x6000000)
+        //     mixin(VERBOSE_LOG!(`2`, `format("Writing byte %s to address %s",
+        //             to_hex_string(value), to_hex_string(address))`));
         if (cast(ulong)address >= SIZE_MAIN_MEMORY)
             error(format("Address out of range on write byte %s", to_hex_string(address) ~ ")"));
-        if (address == 0x03000086) warning("ACCESS.");
         // main[address] = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
     }
 
     void write_halfword(uint address, ushort value) {
         // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
-        if ((address & 0xFFFF0000) == 0x4000000)
-            mixin(VERBOSE_LOG!(`2`, `format("Writing halfword %s to address %s",
-                    to_hex_string(value), to_hex_string(address))`));
+        // if ((address & 0xFFFF0000) == 0x6000000)
+        //     mixin(VERBOSE_LOG!(`2`, `format("Writing halfword %s to address %s",
+        //             to_hex_string(value), to_hex_string(address))`));
         if (cast(ulong)address + 2 >= SIZE_MAIN_MEMORY)
             error(format("Address out of range on write halfword %s", to_hex_string(address) ~ ")"));
-        if (address == 0x03000086) warning("ACCESS.");
         // *(cast(ushort*) (main[0] + address)) = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
         main[address + 1] = cast(ubyte)((value >> 8) & 0xff);
@@ -227,12 +225,11 @@ class Memory {
 
     void write_word(uint address, uint value) {
         // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
-        if ((address & 0xFFFF0000) == 0x4000000)
-            mixin(VERBOSE_LOG!(`2`, `format("Writing word %s to address %s",
-                    to_hex_string(value), to_hex_string(address))`));
+        // if ((address & 0xFFFF0000) == 0x6000000)
+        //     mixin(VERBOSE_LOG!(`2`, `format("Writing word %s to address %s",
+        //             to_hex_string(value), to_hex_string(address))`));
         if (cast(ulong)address + 4 >= SIZE_MAIN_MEMORY)
             error(format("Address out of range on write word %s", to_hex_string(address) ~ ")"));
-        if (address == 0x03000086) warning("ACCESS.");
         // *(cast(uint*) (main[0] + address)) = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
         main[address + 1] = cast(ubyte)((value >> 8) & 0xff);
@@ -242,7 +239,7 @@ class Memory {
 
     void set_rgb(uint x, uint y, ubyte r, ubyte g, ubyte b) {
         auto p = (r << 24) | (g << 16) | (b << 8) | (0xff);
-        mixin(VERBOSE_LOG!(`2`,
+        mixin(VERBOSE_LOG!(`4`,
                 `format("SETRGB (%s,%s) = [%s, %s, %s] = %00000000x", x, y, r, g, b, p)`));
         video_buffer[x][y] = p;
     }
