@@ -46,7 +46,7 @@ class ARM7TDMI {
 
         // the current mode
         current_mode = MODES[0];
-        set_mode(MODE_USER);
+        regs[0 .. 16] = register_file[MODE_USER.OFFSET .. MODE_USER.OFFSET + 16];
     }
 
     // the register array is going to be accessed as such:
