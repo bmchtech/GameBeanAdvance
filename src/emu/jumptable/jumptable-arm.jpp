@@ -174,6 +174,11 @@
 - COMPONENT: STRH
 [/RULE]
 
+[RULE SWI]
+- INCLUDE: ----1111------------------------
+- COMPONENT: SWI
+[/RULE]
+
 [RULE SWP]
 - INCLUDE: ----00010000------------1001----
 - COMPONENT: SWP
@@ -472,7 +477,7 @@
     @IF(!C) uint result   = register_operand + cpu.shifter_operand;
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-    @IF( S)     cpu.cpsr = cpu.spsr;
+    @IF( S)     *cpu.cpsr = *cpu.spsr;
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
@@ -490,7 +495,7 @@
     uint result = register_operand & cpu.shifter_operand;
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-    @IF( S)     cpu.cpsr = cpu.spsr;
+    @IF( S)     *cpu.cpsr = *cpu.spsr;
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
@@ -506,7 +511,7 @@
     uint result = register_operand & ~cpu.shifter_operand;
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-    @IF( S)     cpu.cpsr = cpu.spsr;
+    @IF( S)     *cpu.cpsr = *cpu.spsr;
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
@@ -542,7 +547,7 @@
     uint result           = register_operand + cpu.shifter_operand;
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-    @IF( S)     cpu.cpsr = cpu.spsr;
+    @IF( S)     *cpu.cpsr = *cpu.spsr;
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
@@ -561,7 +566,7 @@
     uint result           = register_operand + ~cpu.shifter_operand + 1;
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-    @IF( S)     cpu.cpsr = cpu.spsr;
+    @IF( S)     *cpu.cpsr = *cpu.spsr;
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
@@ -579,7 +584,7 @@
     uint result = register_operand ^ cpu.shifter_operand;
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-    @IF( S)     cpu.cpsr = cpu.spsr;
+    @IF( S)     *cpu.cpsr = *cpu.spsr;
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
@@ -696,7 +701,7 @@
     @IF(!N) uint result =  cpu.shifter_operand;
 
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-    @IF( S)     cpu.cpsr = cpu.spsr;
+    @IF( S)     *cpu.cpsr = *cpu.spsr;
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
@@ -708,8 +713,8 @@
 [COMPONENT MRS]
 - FORMAT:  ----00010R00------------0000----
 {
-    @IF(!R) cpu.regs[get_nth_bits(opcode, 12, 16)] = cpu.cpsr;
-    @IF( R) cpu.regs[get_nth_bits(opcode, 12, 16)] = cpu.spsr;
+    @IF(!R) cpu.regs[get_nth_bits(opcode, 12, 16)] = *cpu.cpsr;
+    @IF( R) cpu.regs[get_nth_bits(opcode, 12, 16)] = *cpu.spsr;
 
     cpu.cycles_remaining++;
 }
@@ -721,8 +726,8 @@
     @IF( I) uint  operand     = cpu.ROR(get_nth_bits(opcode, 0, 8), cast(ubyte) (get_nth_bits(opcode, 8, 12) * 2));
     @IF(!I) uint  operand     = cpu.regs[get_nth_bits(opcode, 0, 4)];
 
-    @IF( R) uint* destination = &cpu.spsr;
-    @IF(!R) uint* destination = &cpu.cpsr;
+    @IF( R) uint* destination = cpu.spsr;
+    @IF(!R) uint* destination = cpu.cpsr;
 
     if (get_nth_bit(opcode, 16)) *destination = (*destination & 0xFFFFFF00) | (operand & 0x000000FF);
     if (get_nth_bit(opcode, 17)) *destination = (*destination & 0xFFFF00FF) | (operand & 0x0000FF00);
@@ -763,7 +768,7 @@
     uint result = register_operand| cpu.shifter_operand;
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-    @IF( S)     cpu.cpsr = cpu.spsr;
+    @IF( S)     *cpu.cpsr = *cpu.spsr;
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
@@ -784,7 +789,7 @@
     cpu.regs[get_nth_bits(opcode, 12, 16)] = result;
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-    @IF( S)     cpu.cpsr = cpu.spsr;
+    @IF( S)     *cpu.cpsr = *cpu.spsr;
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
@@ -815,7 +820,7 @@
     *rd_hi = cast(uint) (result >> 32);
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-    @IF( S)     cpu.cpsr = cpu.spsr;
+    @IF( S)     *cpu.cpsr = *cpu.spsr;
     @IF( S) } else {
     @IF( S)     cpu.set_flag_Z(result == 0);
     @IF( S)     cpu.set_flag_N(result >> 63);
@@ -844,7 +849,7 @@
     cpu.regs[get_nth_bits(opcode, 16, 20)] = cast(uint) (result >> 32);
 
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-    @IF( S)     cpu.cpsr = cpu.spsr;
+    @IF( S)     *cpu.cpsr = *cpu.spsr;
     @IF( S) } else {
     @IF( S)     cpu.set_flag_Z(result == 0);
     @IF( S)     cpu.set_flag_N(result >> 63);
@@ -878,8 +883,20 @@
 }
 [/COMPONENT]
 
+[COMPONENT SWI]
+- FORMAT:  ----1111------------------------
+{
+    // cpu.register_file[ARM7TDMI.MODE_SUPERVISOR + 14] = *pc;
+    // cpu.register_file[ARM7TDMI.MODE_SUPERVISOR + 17] = *cpsr;
+    // cpu.set_bit_T(false);
+    // TODO: DISABLE NORMAL INTERRUPTS.
+
+    cpu.bios_call(get_nth_bits(opcode, 16, 20));
+}
+[/COMPONENT]
+
 [COMPONENT SWP]
-- FORMAT: ----00010000------------1001----
+- FORMAT:  ----00010000------------1001----
 {
     uint address = cpu.regs[get_nth_bits(opcode, 16, 20)];
     uint value   = cpu.memory.read_word(address & 0xFFFFFFFC);
@@ -916,7 +933,7 @@
     *rd_hi = cast(uint) (result >> 32);
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-    @IF( S)     cpu.cpsr = cpu.spsr;
+    @IF( S)     *cpu.cpsr = *cpu.spsr;
     @IF( S) } else {
     @IF( S)     cpu.set_flag_Z(result == 0);
     @IF( S)     cpu.set_flag_N(result >> 63);
@@ -941,7 +958,7 @@
     cpu.regs[get_nth_bits(opcode, 16, 20)] = cast(uint) (result >> 32);
 
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
-    @IF( S)     cpu.cpsr = cpu.spsr;
+    @IF( S)     *cpu.cpsr = *cpu.spsr;
     @IF( S) } else {
     @IF( S)     cpu.set_flag_Z(result == 0);
     @IF( S)     cpu.set_flag_N(result >> 63);
