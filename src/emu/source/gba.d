@@ -34,7 +34,7 @@ public:
 
     this(Memory memory) {
         this.memory  = memory;
-        this.cpu     = new ARM7TDMI(memory);
+        this.cpu     = new ARM7TDMI(memory, &bios_call);
         this.ppu     = new PPU(memory);
         this.enabled = false;
 
@@ -59,7 +59,7 @@ public:
         cpu.memory.main[Memory.OFFSET_ROM_1 .. Memory.OFFSET_ROM_1 + rom.length] = rom[0 .. rom.length];
 
         *cpu.pc = memory.OFFSET_ROM_1;
-        enabled = true;
+        enabled = true; 
     }
 
     // cycles the GBA CPU once, executing one instruction to completion.
@@ -77,6 +77,25 @@ public:
     // returns true if a DMA transfer occurred this cycle.
     bool handle_dma() {
         assert(0);
+    }
+
+    void bios_call(int bios_function) {
+        switch (bios_function) {
+            case 0x06: { // Division
+                int numerator   = cast(int) cpu.regs[0];
+                int denominator = cast(int) cpu.regs[1];
+
+                cpu.regs[3] = cpu.regs[0] / cpu.regs[1];
+                cpu.regs[0] = cast(uint) numerator / denominator;
+                cpu.regs[1] = cast(uint) numerator % denominator; // TEST PLEASE
+
+                cpu.cycles_remaining += 5;
+                break;
+            }
+
+            default: 
+                warning(format("Invalid BIOS Call: %x", bios_function));
+        }
     }
 
     bool enabled;

@@ -71,7 +71,7 @@ CpuState produce_expected_cpu_state(char[] input_string) {
 
 void test_thumb_mode(string gba_file, string log_file, int num_instructions) {
     Memory   memory = new Memory();
-    ARM7TDMI cpu    = new ARM7TDMI(memory);
+    ARM7TDMI cpu    = new ARM7TDMI(memory, null);
 
     CpuState[] expected_output = produce_expected_cpu_states(log_file, num_instructions);
     
@@ -104,7 +104,7 @@ void test_thumb_mode(string gba_file, string log_file, int num_instructions) {
 
 void test_arm_mode(string gba_file, string log_file, int num_instructions, int start_instruction, bool b_infin_check) {
     Memory   memory = new Memory();
-    ARM7TDMI cpu    = new ARM7TDMI(memory);
+    ARM7TDMI cpu    = new ARM7TDMI(memory, null);
 
     CpuState[] expected_output = produce_expected_cpu_states(log_file, num_instructions);
     
@@ -120,7 +120,7 @@ void test_arm_mode(string gba_file, string log_file, int num_instructions, int s
         // busywork as far as these tests are concerned, and make it harder to unit test the emulator).
         if (i == start_instruction) {
             cpu.set_bit_T(false);
-            cpu.cpsr = (cpu.cpsr & 0x00FFFFFFFF) | 0x60000000; // theres a bit of arm instructions that edit the CPSR that we skip, so let's manually set it.
+            *cpu.cpsr = (*cpu.cpsr & 0x00FFFFFFFF) | 0x60000000; // theres a bit of arm instructions that edit the CPSR that we skip, so let's manually set it.
         }
 
         if (i < start_instruction) cpu.set_bit_T(true);
