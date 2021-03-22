@@ -33,6 +33,7 @@ class ARM7TDMI {
     
     this(Memory memory, void delegate(int) bios_call) {
         this.memory        = memory;
+        this.bios_call     = bios_call;
         this.regs          = new uint[18];
         this.register_file = new uint[18 * 7];
 
