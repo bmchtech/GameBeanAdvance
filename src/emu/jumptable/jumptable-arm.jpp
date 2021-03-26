@@ -76,30 +76,35 @@
 - INCLUDE: ----01---0-1--------------------
 - COMPONENT: ADDRESSING_MODE_2
 - COMPONENT: LDR
+- COMPONENT: ADDR_WRITEBACK
 [/RULE]
 
 [RULE LDRB]
 - INCLUDE: ----01---1-1--------------------
 - COMPONENT: ADDRESSING_MODE_2
 - COMPONENT: LDRB
+- COMPONENT: ADDR_WRITEBACK
 [/RULE]
 
 [RULE LDRH]
 - INCLUDE: ----000----1------------1011----
 - COMPONENT: ADDRESSING_MODE_3
 - COMPONENT: LDRH
+- COMPONENT: ADDR_WRITEBACK
 [/RULE]
 
 [RULE LDRSB]
 - INCLUDE: ----000----1------------1101----
 - COMPONENT: ADDRESSING_MODE_3
 - COMPONENT: LDRSB
+- COMPONENT: ADDR_WRITEBACK
 [/RULE]
 
 [RULE LDRSH]
 - INCLUDE: ----000----1------------1111----
 - COMPONENT: ADDRESSING_MODE_3
 - COMPONENT: LDRSH
+- COMPONENT: ADDR_WRITEBACK
 [/RULE]
 
 [RULE MUL_MLA]
@@ -160,18 +165,21 @@
 - INCLUDE: ----01---0-0--------------------
 - COMPONENT: ADDRESSING_MODE_2
 - COMPONENT: STR
+- COMPONENT: ADDR_WRITEBACK
 [/RULE]
 
 [RULE STRB]
 - INCLUDE: ----01---1-0--------------------
 - COMPONENT: ADDRESSING_MODE_2
 - COMPONENT: STRB
+- COMPONENT: ADDR_WRITEBACK
 [/RULE]
 
 [RULE STRH]
 - INCLUDE: ----000----0------------1011----
 - COMPONENT: ADDRESSING_MODE_3
 - COMPONENT: STRH
+- COMPONENT: ADDR_WRITEBACK
 [/RULE]
 
 [RULE SWI]
@@ -220,6 +228,8 @@
     cpu.shifter_carry_out = get_nth_bits(opcode, 8, 12) == 0 ? cpu.get_flag_C() : get_nth_bit(cpu.shifter_operand, 31);
 
     cpu.cycles_remaining++;
+
+    int pc_additional_shift_amount = 0;
 }
 [/COMPONENT]
 
@@ -262,7 +272,7 @@
     @IF( S !H)     cpu.shifter_carry_out = get_nth_bit(rm, shift_immediate - 1);
     @IF( S !H) }
         
-    // S being true and H being true indicates either RO or RRX, depending on if 
+    // S being true and H being true indicates either ROR or RRX, depending on if 
     // shift_immediate is 0
     @IF( S  H) if (shift_immediate == 0) { // RRX
     @IF( S  H)     cpu.shifter_operand   = cpu.get_flag_C() << 31 | cpu.LSR(rm, 1);
@@ -273,6 +283,8 @@
     @IF( S  H) } 
 
     cpu.cycles_remaining++;
+
+    int pc_additional_shift_amount = 0;
 }
 [/COMPONENT]
 
@@ -282,12 +294,22 @@
     uint rm = cpu.regs[get_nth_bits(opcode, 0, 4)];
     uint rs = get_nth_bits(cpu.regs[get_nth_bits(opcode, 8, 12)], 0, 8);
     
+    int pc_additional_shift_amount;
     if (get_nth_bits(opcode, 4, 12) == 0) { 
         if (get_nth_bits(opcode, 0, 4) == 15) // are we PC?
             rm += 4;
-
         cpu.shifter_operand   = rm;
         cpu.shifter_carry_out = cpu.get_flag_C();
+    } else {
+        if (get_nth_bits(opcode,  0,  4) == 15) // are we PC?
+            rm += 8;
+        if (get_nth_bits(opcode,  8, 12) == 15) // are we PC?
+            rs += 8;
+
+        if (get_nth_bits(opcode, 16, 20) == 15)
+            pc_additional_shift_amount = 4;
+        else
+            pc_additional_shift_amount = 0;
     }
 
     // There's a lot of exceptions to the rules here, because rs can be
@@ -340,12 +362,12 @@
     @IF( S  H) if        (rs == 0) {
     @IF( S  H)     cpu.shifter_operand   = rm;
     @IF( S  H)     cpu.shifter_carry_out = cpu.get_flag_C();
-    @IF( S  H) } else if ((rs & 0xF) == 0) {
+    @IF( S  H) } else if ((rs & 0x1F) == 0) {
     @IF( S  H)     cpu.shifter_operand   = rm;
     @IF( S  H)     cpu.shifter_carry_out = get_nth_bit(rm, 31);
-    @IF( S  H) } else { // rs & 0xF > 0
-    @IF( S  H)     cpu.shifter_operand   = cpu.ROR(rm, cast(ubyte) (rs & 0xF));
-    @IF( S  H)     cpu.shifter_carry_out = get_nth_bit(rs, rm & 0xF - 1);
+    @IF( S  H) } else { // rs & 0x1F > 0
+    @IF( S  H)     cpu.shifter_operand   = cpu.ROR(rm, cast(ubyte) (rs & 0x1F));
+    @IF( S  H)     cpu.shifter_carry_out = get_nth_bit(rm, (rs & 0x1F) - 1);
     @IF( S  H) }
 
     cpu.cycles_remaining++;
@@ -360,6 +382,8 @@
     // this was the way the cpu was designed.
     // actually, this can be made cleaner if i allow components to contain components.... maybe
     // a task for another day.
+    uint addr_writeback;
+    bool should_writeback = false;
     
     // pc is required to know if we should add an extra offset of 4 to account for the pipeline
     bool is_pc = get_nth_bits(opcode, 16, 20) == 15;
@@ -368,25 +392,35 @@
     uint offset = get_nth_bits(opcode, 0, 12);
 
     // U determines if we add or subtract
-    // O determines if we're doing post-indexed addressing or not
+    // P determines if we're doing post-indexed addressing or not
     @IF( P  U) uint address = cpu.regs[get_nth_bits(opcode, 16, 20)] + offset + (is_pc ? 4 : 0);
     @IF( P !U) uint address = cpu.regs[get_nth_bits(opcode, 16, 20)] - offset + (is_pc ? 4 : 0);
+    // @IF( P  W) cpu.regs[get_nth_bits(opcode, 16, 20)] = address;
 
-    @IF(!P)    uint address = cpu.regs[get_nth_bits(opcode, 16, 20)];
-    @IF(!P  U) cpu.regs[get_nth_bits(opcode, 16, 20)] += offset + (is_pc ? 4 : 0);
-    @IF(!P !U) cpu.regs[get_nth_bits(opcode, 16, 20)] -= offset + (is_pc ? 4 : 0);
+    @IF(!P   ) uint address = cpu.regs[get_nth_bits(opcode, 16, 20)];
+    @IF(!P  U) addr_writeback = cpu.regs[get_nth_bits(opcode, 16, 20)] + offset + (is_pc ? 4 : 0);
+    @IF(!P !U) addr_writeback = cpu.regs[get_nth_bits(opcode, 16, 20)] - offset + (is_pc ? 4 : 0);
+    @IF(!P   ) should_writeback = true;
 
     // if the writeback bit is specified, then do a writeback.
-    @IF( W) cpu.regs[get_nth_bits(opcode, 16, 20)] = address;
+    @IF( W !L) addr_writeback   = address;
+    @IF( W !L) should_writeback = true;
+    @IF( W  L) cpu.regs[get_nth_bits(opcode, 16, 20)] = addr_writeback;
+
+    @IF(!P !L) addr_writeback   = address;
+    @IF(!P !L) should_writeback = true;
+    @IF(!P  L) cpu.regs[get_nth_bits(opcode, 16, 20)] = addr_writeback;
 }
 [/COMPONENT]
 
 [COMPONENT ADDRESSING_MODE_2]
 - FORMAT:  ----011PUBWL-------------SH-----
-{
+{ 
     uint address = cpu.regs[get_nth_bits(opcode, 16, 20)];
     uint operand = cpu.regs[get_nth_bits(opcode, 0,  4)];
     uint shift_immediate = get_nth_bits(opcode, 7, 12);
+    uint addr_writeback;
+    bool should_writeback = false;
 
     uint index = 0;
 
@@ -421,15 +455,27 @@
      // P bit being set indicates offset addressing or pre-indexed addressing
     @IF( P  U) address += index;
     @IF( P !U) address -= index;
+    // @IF( P  W) cpu.regs[get_nth_bits(opcode, 16, 20)] = address;
 
-    @IF( P  W) cpu.regs[get_nth_bits(opcode, 16, 20)] = address;
+    @IF( P  W) addr_writeback   = address;
+    @IF( P  W) should_writeback = true;
     
     // P bit being clear indicates post-indexed addressing
-    @IF(!P  U) cpu.regs[get_nth_bits(opcode, 16, 20)] += index;
-    @IF(!P !U) cpu.regs[get_nth_bits(opcode, 16, 20)] -= index;
+    @IF(!P  U) addr_writeback   = cpu.regs[get_nth_bits(opcode, 16, 20)] + index;
+    @IF(!P !U) addr_writeback   = cpu.regs[get_nth_bits(opcode, 16, 20)] - index;
+    @IF(!P   ) should_writeback = true;
+
+    @IF( W !L) addr_writeback   = address;
+    @IF( W !L) should_writeback = true;
+    @IF( W  L) cpu.regs[get_nth_bits(opcode, 16, 20)] = addr_writeback;
+
+    @IF(!P !L) addr_writeback   = address;
+    @IF(!P !L) should_writeback = true;
+    @IF(!P  L) cpu.regs[get_nth_bits(opcode, 16, 20)] = addr_writeback;
     
     if (get_nth_bits(opcode, 16, 20) == 15) { // are we register PC?
         address += 4;
+        warning(format("%x", opcode));
     }
 }
 [/COMPONENT]
@@ -439,22 +485,35 @@
 {
     // pc is required to know if we should add an extra offset of 4 to account for the pipeline
     bool is_pc = get_nth_bits(opcode, 16, 20) == 15;
+    uint addr_writeback;
+    bool should_writeback = false;
 
     // we either get the offset straight from the opcode or from the registers depending on the I bit
-    @IF( I) ubyte  offset = cast(ubyte)(get_nth_bits(opcode, 0, 4) | (get_nth_bits(opcode, 8, 12) << 4));
-    @IF(!I) uint offset = cpu.regs[get_nth_bits(opcode, 0, 4)];
+    @IF( I) ubyte offset = cast(ubyte)(get_nth_bits(opcode, 0, 4) | (get_nth_bits(opcode, 8, 12) << 4));
+    @IF(!I) uint  offset = cpu.regs[get_nth_bits(opcode, 0, 4)];
 
     // U determines if we add or subtract
     // P determines if we're doing post-indexed addressing or not
     @IF( P  U) uint address = cpu.regs[get_nth_bits(opcode, 16, 20)] + offset + (is_pc ? 4 : 0);
     @IF( P !U) uint address = cpu.regs[get_nth_bits(opcode, 16, 20)] - offset + (is_pc ? 4 : 0);
+    // @IF( P  W) cpu.regs[get_nth_bits(opcode, 16, 20)] = address;
 
-    @IF(!P)    uint address = cpu.regs[get_nth_bits(opcode, 16, 20)];
-    @IF(!P  U) cpu.regs[get_nth_bits(opcode, 16, 20)] += offset + (is_pc ? 4 : 0);
-    @IF(!P !U) cpu.regs[get_nth_bits(opcode, 16, 20)] -= offset + (is_pc ? 4 : 0);
+    @IF(!P   ) uint address = cpu.regs[get_nth_bits(opcode, 16, 20)];
+    @IF(!P  U) addr_writeback = cpu.regs[get_nth_bits(opcode, 16, 20)] + offset + (is_pc ? 4 : 0);
+    @IF(!P !U) addr_writeback = cpu.regs[get_nth_bits(opcode, 16, 20)] - offset + (is_pc ? 4 : 0);
+    @IF(!P   ) should_writeback = true;
 
     // if the writeback bit is specified, then do a writeback.
-    @IF( W) cpu.regs[get_nth_bits(opcode, 16, 20)] = address;
+    @IF( W !L) addr_writeback   = address;
+    @IF( W !L) should_writeback = true;
+    @IF( W  L) cpu.regs[get_nth_bits(opcode, 16, 20)] = addr_writeback;
+}
+[/COMPONENT]
+
+[COMPONENT ADDR_WRITEBACK]
+- FORMAT:  -------PUBWL-------------SH-----
+{
+    if (should_writeback) cpu.regs[get_nth_bits(opcode, 16, 20)] = addr_writeback; 
 }
 [/COMPONENT]
 
@@ -471,13 +530,14 @@
 {
     uint old_value        = cpu.regs[get_nth_bits(opcode, 12, 16)];
     uint register_operand = cpu.regs[get_nth_bits(opcode, 16, 20)];
-    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4;
+    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4 + pc_additional_shift_amount;
     
     @IF( C) uint result   = register_operand + cpu.shifter_operand + cpu.get_flag_C();
     @IF(!C) uint result   = register_operand + cpu.shifter_operand;
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
+    @IF( S)     cpu.update_mode();
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
@@ -491,14 +551,16 @@
 - FORMAT:  ----00I-000S--------------------
 {
     uint register_operand = cpu.regs[get_nth_bits(opcode, 16, 20)];
-    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4;
+    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4 + pc_additional_shift_amount;
     uint result = register_operand & cpu.shifter_operand;
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
+    @IF( S)     cpu.update_mode();
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
+    @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out);
     @IF( S) }
 }
 [/COMPONENT]
@@ -507,14 +569,16 @@
 - FORMAT:  ----00I1110S--------------------
 {
     uint register_operand = cpu.regs[get_nth_bits(opcode, 16, 20)];
-    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4;
+    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4 + pc_additional_shift_amount;
     uint result = register_operand & ~cpu.shifter_operand;
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
+    @IF( S)     cpu.update_mode();
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
+    @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out);
     @IF( S) }
 }
 [/COMPONENT]
@@ -543,11 +607,12 @@
 {
     uint old_value        = cpu.regs[get_nth_bits(opcode, 12, 16)];
     uint register_operand = cpu.regs[get_nth_bits(opcode, 16, 20)];
-    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4;
+    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4 + pc_additional_shift_amount;
     uint result           = register_operand + cpu.shifter_operand;
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
+    @IF( S)     cpu.update_mode();
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
@@ -562,17 +627,20 @@
 {
     uint old_value        = cpu.regs[get_nth_bits(opcode, 12, 16)];
     uint register_operand = cpu.regs[get_nth_bits(opcode, 16, 20)];
-    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4;
+    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4 + pc_additional_shift_amount;
     uint result           = register_operand + ~cpu.shifter_operand + 1;
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
+    @IF( S)     cpu.update_mode();
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
     @IF( S)     cpu.set_flag_V(((register_operand >> 31) ^ (cpu.shifter_operand >> 31)) && ((register_operand >> 31) ^ (result >> 31)));
     @IF( S)     cpu.set_flag_C(register_operand >= cpu.shifter_operand);
     @IF( S) }
+
+    warning(format("CMP: %x %x, %x %x", register_operand, cpu.shifter_operand, opcode, *cpu.pc));
 }
 [/COMPONENT]
 
@@ -580,11 +648,12 @@
 - FORMAT:  ----00I-001S--------------------
 {
     uint register_operand = cpu.regs[get_nth_bits(opcode, 16, 20)];
-    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4;
+    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4 + pc_additional_shift_amount;
     uint result = register_operand ^ cpu.shifter_operand;
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
+    @IF( S)     cpu.update_mode();
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
@@ -702,11 +771,14 @@
 
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
+    @IF( S)     cpu.update_mode();
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
     @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out);
     @IF( S) }
+
+    @IF( N) warning(format("MOV/MVN: %x %x", opcode, *cpu.pc));
 }
 [/COMPONENT]
 
@@ -735,7 +807,6 @@
     if (get_nth_bit(opcode, 19)) *destination = (*destination & 0x00FFFFFF) | (operand & 0xFF000000);
 
     cpu.update_mode();
-
     cpu.cycles_remaining++;
 }
 [/COMPONENT]
@@ -764,11 +835,12 @@
 - FORMAT:  ----00I1100S--------------------
 {
     uint register_operand = cpu.regs[get_nth_bits(opcode, 16, 20)];
-    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4;
+    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4 + pc_additional_shift_amount;
     uint result = register_operand| cpu.shifter_operand;
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
+    @IF( S)     cpu.update_mode();
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
@@ -781,7 +853,7 @@
 - FORMAT:  ----00I0C1RS--------------------
 {
     uint register_operand = cpu.regs[get_nth_bits(opcode, 16, 20)];
-    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4;
+    if (get_nth_bits(opcode, 16, 20) == 15) register_operand += 4 + pc_additional_shift_amount;
     @IF( R) uint result   = cpu.shifter_operand - register_operand;
     @IF(!R) uint result   = register_operand - cpu.shifter_operand;
     @IF( C)  result -= ((~(cast(uint)cpu.get_flag_C())) & 1);
@@ -790,15 +862,22 @@
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
+    @IF( S)     cpu.update_mode();    
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
-
-    @IF( S  R)  cpu.set_flag_C((cpu.shifter_operand >= register_operand));
-    @IF( S  R)  cpu.set_flag_V(((register_operand >> 31) ^ (cpu.shifter_operand >> 31)) && ((register_operand >> 31) == (result >> 31)));
-    @IF( S !R)  cpu.set_flag_C((cpu.shifter_operand <= register_operand));
-    @IF( S !R)  cpu.set_flag_V(((cpu.shifter_operand >> 31) ^ (register_operand >> 31)) && ((cpu.shifter_operand >> 31) == (result >> 31)));
     
+
+    @IF( S  R !C)  cpu.set_flag_C((cpu.shifter_operand >= register_operand));
+    @IF( S  R !C)  cpu.set_flag_V(((register_operand >> 31) ^ (cpu.shifter_operand >> 31)) && ((register_operand >> 31) == (result >> 31)));
+    @IF( S !R !C)  cpu.set_flag_C((cpu.shifter_operand <= register_operand));
+    @IF( S !R !C)  cpu.set_flag_V(((cpu.shifter_operand >> 31) ^ (register_operand >> 31)) && ((cpu.shifter_operand >> 31) == (result >> 31)));
+    
+    @IF( S  R  C)  cpu.set_flag_C((cpu.shifter_operand >= register_operand + ((~(cast(uint)cpu.get_flag_C())) & 1)));
+    @IF( S  R  C)  cpu.set_flag_V(((register_operand >> 31) ^ (cpu.shifter_operand >> 31)) && ((register_operand >> 31) == (result >> 31)));
+    @IF( S !R  C)  cpu.set_flag_C((cpu.shifter_operand + ((~(cast(uint)cpu.get_flag_C())) & 1) <= register_operand));
+    @IF( S !R  C)  cpu.set_flag_V(((cpu.shifter_operand >> 31) ^ (register_operand >> 31)) && ((cpu.shifter_operand >> 31) == (result >> 31)));
+
     @IF( S) }
 }
 [/COMPONENT]
@@ -821,6 +900,7 @@
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
+    @IF( S)     cpu.update_mode();
     @IF( S) } else {
     @IF( S)     cpu.set_flag_Z(result == 0);
     @IF( S)     cpu.set_flag_N(result >> 63);
@@ -850,6 +930,7 @@
 
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
+    @IF( S)     cpu.update_mode();
     @IF( S) } else {
     @IF( S)     cpu.set_flag_Z(result == 0);
     @IF( S)     cpu.set_flag_N(result >> 63);
@@ -860,8 +941,9 @@
 [COMPONENT STR]
 - FORMAT:  ----01IPU0W0--------------------
 {
+    if (opcode == 0xE5A00004) warning(format("WOOOOOOOOOOOOOOOOOO %x", opcode));
     uint result = cpu.regs[get_nth_bits(opcode, 12, 16)];
-    if (get_nth_bits(opcode, 12, 16) == 15) result += 4;
+    if (get_nth_bits(opcode, 12, 16) == 15) result += 8;
     cpu.memory.write_word(address & 0xFFFFFFFC, result);
     cpu.cycles_remaining += 2;
 }
@@ -870,7 +952,9 @@
 [COMPONENT STRB]
 - FORMAT:  ----01IPU1W0--------------------
 {
-    cpu.memory.write_byte(address, cpu.regs[get_nth_bits(opcode, 12, 16)] & 0xFF);
+    uint result = cpu.regs[get_nth_bits(opcode, 12, 16)];
+    if (get_nth_bits(opcode, 12, 16) == 15) result += 8;
+    cpu.memory.write_byte(address, result & 0xFF);
     cpu.cycles_remaining += 2;
 }
 [/COMPONENT]
@@ -934,6 +1018,7 @@
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
+    @IF( S)     cpu.update_mode();
     @IF( S) } else {
     @IF( S)     cpu.set_flag_Z(result == 0);
     @IF( S)     cpu.set_flag_N(result >> 63);
@@ -959,6 +1044,7 @@
 
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
+    @IF( S)     cpu.update_mode();
     @IF( S) } else {
     @IF( S)     cpu.set_flag_Z(result == 0);
     @IF( S)     cpu.set_flag_N(result >> 63);
