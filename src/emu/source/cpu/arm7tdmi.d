@@ -18,12 +18,12 @@ class ARM7TDMI {
     // an explanation of these constants is partially in here as well as cpu-mode.h
 
     enum MODE_USER       = CpuMode(0b10000, 0b011111111111111111, 18 * 0);
-    enum MODE_SYSTEM     = CpuMode(0b11111, 0b011111111111111111, 18 * 1);
-    enum MODE_SUPERVISOR = CpuMode(0b10011, 0b011001111111111111, 18 * 2);
-    enum MODE_ABORT      = CpuMode(0b10111, 0b011001111111111111, 18 * 3);
-    enum MODE_UNDEFINED  = CpuMode(0b11011, 0b011001111111111111, 18 * 4);
-    enum MODE_IRQ        = CpuMode(0b10010, 0b011001111111111111, 18 * 5);
-    enum MODE_FIQ        = CpuMode(0b10001, 0b011000000011111111, 18 * 6);
+    enum MODE_SYSTEM     = CpuMode(0b11111, 0b011111111111111111, 18 * 0);
+    enum MODE_SUPERVISOR = CpuMode(0b10011, 0b011001111111111111, 18 * 1);
+    enum MODE_ABORT      = CpuMode(0b10111, 0b011001111111111111, 18 * 2);
+    enum MODE_UNDEFINED  = CpuMode(0b11011, 0b011001111111111111, 18 * 3);
+    enum MODE_IRQ        = CpuMode(0b10010, 0b011001111111111111, 18 * 4);
+    enum MODE_FIQ        = CpuMode(0b10001, 0b011000000011111111, 18 * 5);
 
     enum NUM_MODES = 7;
     static CpuMode[NUM_MODES] MODES = [
@@ -35,7 +35,7 @@ class ARM7TDMI {
         this.memory        = memory;
         this.bios_call     = bios_call;
         this.regs          = new uint[18];
-        this.register_file = new uint[18 * 7];
+        this.register_file = new uint[18 * 6];
 
         register_file[MODE_USER.OFFSET       + 13] = 0x03007f00;
         register_file[MODE_IRQ.OFFSET        + 13] = 0x03007fa0;
@@ -90,29 +90,36 @@ class ARM7TDMI {
     // sets the CPU mode. can be one of: MODE_USER, MODE_FIQ, MODE_IRQ, MODE_SUPERVISOR, MODE_ABORT, MODE_UNDEFINED, or MODE_SYSTEM.
     // these modes are ARM7TDMI modes that dictate how the cpu runs.
     pragma(inline) void set_mode(const CpuMode new_mode) {
-        int mask = current_mode.REGISTER_UNIQUENESS & new_mode.REGISTER_UNIQUENESS;
+        uint mask;
 
-        register_file[current_mode.OFFSET .. current_mode.OFFSET + 18] = regs[0 .. 18];
-
+        mask = current_mode.REGISTER_UNIQUENESS;
+        // writeback
         for (int i = 0; i < 18; i++) {
             if (mask & 1) {
-                register_file[i + new_mode.OFFSET] = register_file[i + current_mode.OFFSET];
+                register_file[MODE_USER   .OFFSET + i] = regs[i];
+            } else {
+                register_file[current_mode.OFFSET + i] = regs[i];
             }
 
             mask >>= 1;
         }
 
-        bool old_bit_T = get_bit_T();
-        current_mode = new_mode;
-        set_bit_T(old_bit_T);
+        mask = new_mode.REGISTER_UNIQUENESS;
+        for (int i = 0; i < 18; i++) {
+            if (mask & 1) {
+                regs[i] = register_file[MODE_USER   .OFFSET + i];
+            } else {
+                regs[i] = register_file[current_mode.OFFSET + i];
+            }
 
-        // assert(0);
-        regs[0 .. 18] = register_file[current_mode.OFFSET .. current_mode.OFFSET + 18];
-        pc   = &regs[15];
-        lr   = &regs[14];
-        sp   = &regs[13];
-        cpsr = &regs[16];
-        spsr = &regs[17];
+            mask >>= 1;
+        }
+
+        // bool old_bit_T = get_bit_T();
+        // set_bit_T(old_bit_T);
+
+        *cpsr = (*cpsr & 0xFFFFFFE0) | new_mode.CPSR_ENCODING;
+        current_mode = new_mode;
     }
 
     // reads the CPSR and figures out what the current mode is. then, it updates it using new_mode.
@@ -236,7 +243,7 @@ class ARM7TDMI {
             case 0b1010: return  get_flag_N() ==  get_flag_V(); 
             case 0b1011: return  get_flag_N() !=  get_flag_V(); 
             case 0b1100: return !get_flag_Z() &&  (get_flag_N() == get_flag_V()); 
-            case 0b1101: return  get_flag_Z() &&  (get_flag_N() != get_flag_V()); 
+            case 0b1101: return  get_flag_Z() ||  (get_flag_N() != get_flag_V()); 
             default:     return false;
         }
     }

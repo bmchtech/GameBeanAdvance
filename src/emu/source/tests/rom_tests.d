@@ -140,15 +140,15 @@ void test_arm_mode(string gba_file, string log_file, int num_instructions, int s
 
 
 
-@("tests-thumb") 
-unittest {
-    test_thumb_mode("../../tests/asm/bin/thumb-simple.gba", "../../tests/asm/logs/thumb-simple.log", 3666);
-}
+// @("tests-thumb") 
+// unittest {
+//     test_thumb_mode("../../tests/asm/bin/thumb-simple.gba", "../../tests/asm/logs/thumb-simple.log", 3666);
+// }
 
-@("tests-arm-addressing-mode-1") 
-unittest {
-    test_arm_mode("../../tests/asm/bin/arm-addressing-mode-1.gba", "../../tests/asm/logs/arm-addressing-mode-1.log", 1290, 216, true);
-}
+// @("tests-arm-addressing-mode-1") 
+// unittest {
+//     test_arm_mode("../../tests/asm/bin/arm-addressing-mode-1.gba", "../../tests/asm/logs/arm-addressing-mode-1.log", 1290, 216, true);
+// }
 
 @("tests-arm-addressing-mode-2") 
 unittest {
@@ -160,10 +160,10 @@ unittest {
     test_arm_mode("../../tests/asm/bin/arm-addressing-mode-3.gba", "../../tests/asm/logs/arm-addressing-mode-3.log", 1290, 212, true);
 }
 
-@("tests-arm-opcodes") 
-unittest {
-    test_arm_mode("../../tests/asm/bin/arm-opcodes.gba", "../../tests/asm/logs/arm-opcodes.log", 2100, 276, true);
-}
+// @("tests-arm-opcodes") 
+// unittest {
+//     test_arm_mode("../../tests/asm/bin/arm-opcodes.gba", "../../tests/asm/logs/arm-opcodes.log", 2100, 276, true);
+// }
 
 // @("tests-roms-fountain") 
 // unittest {

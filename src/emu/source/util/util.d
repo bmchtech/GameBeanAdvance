@@ -48,7 +48,6 @@ void error(string message) {
     if (Logger.instance) {
         Logger.instance.print();
     }
-
     stderr.writefln("%sERROR: %s%s", RED, RESET, message);
 
     assert(0, "terminating due to error");
