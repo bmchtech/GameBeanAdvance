@@ -16,30 +16,30 @@ class Memory {
     /** video buffer in RGBA8888 */
     uint[][] video_buffer;
 
-    enum SIZE_MAIN_MEMORY = 0x10000000;
-    enum SIZE_BIOS = 0x0003FFF - 0x0000000;
-    enum SIZE_WRAM_BOARD = 0x203FFFF - 0x2000000;
-    enum SIZE_WRAM_CHIP = 0x3007FFF - 0x3000000;
-    enum SIZE_IO_REGISTERS = 0x40003FE - 0x4000000;
-    enum SIZE_PALETTE_RAM = 0x50003FF - 0x5000000;
-    enum SIZE_VRAM = 0x6017FFF - 0x6000000;
-    enum SIZE_OAM = 0x70003FF - 0x7000000;
-    enum SIZE_ROM_1 = 0x9FFFFFF - 0x8000000;
-    enum SIZE_ROM_2 = 0xBFFFFFF - 0xA000000;
-    enum SIZE_ROM_3 = 0xDFFFFFF - 0xC000000;
-    enum SIZE_SRAM = 0xE00FFFF - 0xE000000;
+    enum SIZE_MAIN_MEMORY    = 0x10000000;
+    enum SIZE_BIOS           = 0x0003FFF - 0x0000000;
+    enum SIZE_WRAM_BOARD     = 0x203FFFF - 0x2000000;
+    enum SIZE_WRAM_CHIP      = 0x3007FFF - 0x3000000;
+    enum SIZE_IO_REGISTERS   = 0x40003FE - 0x4000000;
+    enum SIZE_PALETTE_RAM    = 0x50003FF - 0x5000000;
+    enum SIZE_VRAM           = 0x6017FFF - 0x6000000;
+    enum SIZE_OAM            = 0x70003FF - 0x7000000;
+    enum SIZE_ROM_1          = 0x9FFFFFF - 0x8000000;
+    enum SIZE_ROM_2          = 0xBFFFFFF - 0xA000000;
+    enum SIZE_ROM_3          = 0xDFFFFFF - 0xC000000;
+    enum SIZE_SRAM           = 0xE00FFFF - 0xE000000;
 
-    enum OFFSET_BIOS = 0x0000000;
-    enum OFFSET_WRAM_BOARD = 0x2000000;
-    enum OFFSET_WRAM_CHIP = 0x3000000;
+    enum OFFSET_BIOS         = 0x0000000;
+    enum OFFSET_WRAM_BOARD   = 0x2000000;
+    enum OFFSET_WRAM_CHIP    = 0x3000000;
     enum OFFSET_IO_REGISTERS = 0x4000000;
-    enum OFFSET_PALETTE_RAM = 0x5000000;
-    enum OFFSET_VRAM = 0x6000000;
-    enum OFFSET_OAM = 0x7000000;
-    enum OFFSET_ROM_1 = 0x8000000;
-    enum OFFSET_ROM_2 = 0xA000000;
-    enum OFFSET_ROM_3 = 0xC000000;
-    enum OFFSET_SRAM = 0xE000000;
+    enum OFFSET_PALETTE_RAM  = 0x5000000;
+    enum OFFSET_VRAM         = 0x6000000;
+    enum OFFSET_OAM          = 0x7000000;
+    enum OFFSET_ROM_1        = 0x8000000;
+    enum OFFSET_ROM_2        = 0xA000000;
+    enum OFFSET_ROM_3        = 0xC000000;
+    enum OFFSET_SRAM         = 0xE000000;
 
     //  IO Registers
     //        NAME         R/W   DESCRIPTION
@@ -243,6 +243,24 @@ class Memory {
 
     void write_byte(uint address, ubyte value) {
         address = calculate_mirrors(address);
+
+        if (((address & 0x0F00_0000) >> 24) == 0x7) return; // we ignore write bytes to OAM.
+
+        if (((address & 0x0F00_0000) >> 24) == 0x5) {
+            // writes to palette as byte are treated as halfword. look, i don't make the rules, nintendo did.
+            // (so like, writing 0x3 to palette[0x10] would write 0x3 to palette[0x10] and palette[0x11])
+            write_halfword(address, ((cast(ushort) value) << 8) | (cast(ushort) value));
+        }
+
+        if (((address & 0x0F00_0000) >> 24) == 0x6) {
+            if (get_nth_bits(*DISPCNT, 0, 3) <= 2) {
+                return; // we ignore write bytes to VRAM when we're not in a BITMAP MODE.
+            } else {
+                // again, writes to VRAM as byte are treated as halfword. (scroll up a few lines for explanation)
+                write_halfword(address, ((cast(ushort) value) << 8) | (cast(ushort) value));
+            }
+        }
+
 
         // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
         // if ((address & 0xFFFF0000) == 0x6000000)
