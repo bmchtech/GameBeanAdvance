@@ -403,13 +403,10 @@
     @IF(!P   ) should_writeback = true;
 
     // if the writeback bit is specified, then do a writeback.
-    @IF( W !L) addr_writeback   = address;
-    @IF( W !L) should_writeback = true;
-    @IF( W  L) cpu.regs[get_nth_bits(opcode, 16, 20)] = addr_writeback;
-
-    @IF(!P !L) addr_writeback   = address;
-    @IF(!P !L) should_writeback = true;
-    @IF(!P  L) cpu.regs[get_nth_bits(opcode, 16, 20)] = addr_writeback;
+    @IF( W) addr_writeback   = address;
+    @IF( W) should_writeback = true;
+    
+    @IF( L) if (get_nth_bits(opcode, 16, 20) == get_nth_bits(opcode, 12, 16)) should_writeback = false;
 }
 [/COMPONENT]
 
@@ -445,10 +442,11 @@
     @IF( S  H)     index = rotated_in | (rotated_off << (32 - shift_immediate));
     @IF( S  H) }
     @IF( S  H) else {
-    @IF( S  H)     uint rotated_off = get_nth_bit(operand, 0);      // the value that is rotated off
+    @IF( S  H)     uint rotated_off = get_nth_bit(cpu.get_flag_C(), 0);      // the value that is rotated off
     @IF( S  H)     uint rotated_in  = get_nth_bits(operand, 1, 32); // the value that stays after the rotation
 
     @IF( S  H)     index = rotated_in | (rotated_off << 31);
+    @IF( S  H)     warning(format("RRX: %x %x %x %x %x", index, operand, shift_immediate, cpu.get_flag_C(), opcode));
     @IF( S  H)     cpu.set_flag_C(get_nth_bit(operand, shift_immediate));
     @IF( S  H) }
 
@@ -464,19 +462,15 @@
     @IF(!P  U) addr_writeback   = cpu.regs[get_nth_bits(opcode, 16, 20)] + index;
     @IF(!P !U) addr_writeback   = cpu.regs[get_nth_bits(opcode, 16, 20)] - index;
     @IF(!P   ) should_writeback = true;
-
-    @IF( W !L) addr_writeback   = address;
-    @IF( W !L) should_writeback = true;
-    @IF( W  L) cpu.regs[get_nth_bits(opcode, 16, 20)] = addr_writeback;
-
-    @IF(!P !L) addr_writeback   = address;
-    @IF(!P !L) should_writeback = true;
-    @IF(!P  L) cpu.regs[get_nth_bits(opcode, 16, 20)] = addr_writeback;
     
     if (get_nth_bits(opcode, 16, 20) == 15) { // are we register PC?
         address += 4;
         warning(format("%x", opcode));
     }
+
+    warning(format("%x WRIT3EBACK %x", addr_writeback, opcode));
+
+    @IF( L) if (get_nth_bits(opcode, 16, 20) == get_nth_bits(opcode, 12, 16)) should_writeback = false;
 }
 [/COMPONENT]
 
@@ -504,9 +498,10 @@
     @IF(!P   ) should_writeback = true;
 
     // if the writeback bit is specified, then do a writeback.
-    @IF( W !L) addr_writeback   = address;
-    @IF( W !L) should_writeback = true;
-    @IF( W  L) cpu.regs[get_nth_bits(opcode, 16, 20)] = addr_writeback;
+    @IF( W) addr_writeback   = address;
+    @IF( W) should_writeback = true;
+
+    @IF( L) if (get_nth_bits(opcode, 16, 20) == get_nth_bits(opcode, 12, 16)) should_writeback = false;
 }
 [/COMPONENT]
 
@@ -694,7 +689,10 @@
 [COMPONENT LDRH]
 - FORMAT:  ----000----1--------------------
 {
-    cpu.regs[get_nth_bits(opcode, 12, 16)] = cpu.memory.read_halfword(address);
+    uint value = cpu.memory.read_halfword(address & 0xFFFFFFFE);
+    if ((address & 0b11) == 0b01) value = ((value & 0xFF) << 24) | (value >> 8);
+
+    cpu.regs[get_nth_bits(opcode, 12, 16)] = value;
     if (get_nth_bits(opcode, 12, 16) == 15) cpu.cycles_remaining += 2;
     cpu.cycles_remaining += 3;
 }
@@ -712,7 +710,14 @@
 [COMPONENT LDRSH]
 - FORMAT:  ----000----1------------1111----
 {
-    cpu.regs[get_nth_bits(opcode, 12, 16)] =  sign_extend(cpu.memory.read_halfword(address), 16);
+    uint value = cpu.memory.read_halfword(address & 0xFFFFFFFE);
+    if (address & 1) { 
+        value = sign_extend(value >> 8, 8);
+    } else {
+        value = sign_extend(value, 16);
+    }
+
+    cpu.regs[get_nth_bits(opcode, 12, 16)] = value;
     if (get_nth_bits(opcode, 12, 16) == 15) cpu.cycles_remaining += 2;
     cpu.cycles_remaining += 3;
 }

@@ -171,65 +171,112 @@ class Memory {
         write_halfword(0x4000130, 0x03FF);
     }
 
+    pragma(inline) uint mirror_to(uint original_address, uint mirror_location, uint mirror_size) {
+        // modulo is oddly a lot slower. so we do this instead.
+
+        while (original_address >= mirror_location + mirror_size) {
+            original_address -= mirror_size;
+        }
+
+        while (original_address < mirror_location) {
+            original_address += mirror_size;
+        }
+
+        return original_address;
+    }
+
+    pragma(inline) uint calculate_mirrors(uint address) {
+        switch ((address & 0x0F00_0000) >> 24) { // which area in memory are we indexing from?
+            case 0x2: return mirror_to(address, OFFSET_WRAM_BOARD,  0x40000);
+            case 0x3: return mirror_to(address, OFFSET_WRAM_CHIP,   0x8000);
+            case 0x5: return mirror_to(address, OFFSET_PALETTE_RAM, 0x400);
+            case 0x6: return mirror_to(address, OFFSET_VRAM,        get_nth_bits(*DISPCNT, 0, 3) <= 2 ? 0x8000 : 0x20000);
+            case 0x7: return mirror_to(address, OFFSET_OAM,         0x400);
+            case 0xA: return mirror_to(address, OFFSET_ROM_1,       0x02000000);
+            case 0xB: return mirror_to(address, OFFSET_ROM_1,       0x02000000);
+            case 0xC: return mirror_to(address, OFFSET_ROM_1,       0x02000000);
+            case 0xD: return mirror_to(address, OFFSET_ROM_1,       0x02000000);
+            default:  return address;
+        }
+    }
+
     ubyte read_byte(uint address) {
+        address = calculate_mirrors(address);
+
         if ((address & 0xFFFF0000) == 0x4000000)
             mixin(VERBOSE_LOG!(`2`,
                     `format("Reading byte from address %s", to_hex_string(address))`));
-        if (cast(ulong)address >= SIZE_MAIN_MEMORY)
-            error(format("Address out of range on read byte %s", to_hex_string(address) ~ ")"));
+        if (cast(ulong)address >= SIZE_MAIN_MEMORY) {
+            warning(format("Address out of range on read byte %s", to_hex_string(address) ~ ")"));
+            return 0;
+        }
         return main[address];
     }
 
     ushort read_halfword(uint address) {
+        address = calculate_mirrors(address);
+
         if ((address & 0xFFFF0000) == 0x4000000)
             mixin(VERBOSE_LOG!(`2`,
                     `format("Reading halfword from address %s", to_hex_string(address))`));
-        if (cast(ulong)address + 2 >= SIZE_MAIN_MEMORY)
-            error(format("Address out of range on read halfword %s", to_hex_string(address) ~ ")"));
+        if (cast(ulong)address + 2 >= SIZE_MAIN_MEMORY) {
+            warning(format("Address out of range on read halfword %s", to_hex_string(address) ~ ")"));
+            return 0;
+        }
         return (cast(ushort) main[address + 0] << 0) | (cast(ushort) main[address + 1] << 8);
     }
 
     uint read_word(uint address) {
+        address = calculate_mirrors(address);
+
         if ((address & 0xFFFF0000) == 0x4000000)
             mixin(VERBOSE_LOG!(`2`,
                     `format("Reading word from address %s", to_hex_string(address))`));
-        if (cast(ulong)address + 4 >= SIZE_MAIN_MEMORY)
-            error(format("Address out of range on read word %s", to_hex_string(address) ~ ")"));
+        if (cast(ulong)address + 4 >= SIZE_MAIN_MEMORY) {
+            warning(format("Address out of range on read word %s", to_hex_string(address) ~ ")"));
+            return 0;
+        }
         return (cast(uint) main[address + 0] << 0) | (
                 cast(uint) main[address + 1] << 8) | (cast(
                 uint) main[address + 2] << 16) | (cast(uint) main[address + 3] << 24);
     }
 
     void write_byte(uint address, ubyte value) {
+        address = calculate_mirrors(address);
+
         // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
         // if ((address & 0xFFFF0000) == 0x6000000)
         //     mixin(VERBOSE_LOG!(`2`, `format("Writing byte %s to address %s",
         //             to_hex_string(value), to_hex_string(address))`));
         if (cast(ulong)address >= SIZE_MAIN_MEMORY)
-            error(format("Address out of range on write byte %s", to_hex_string(address) ~ ")"));
+            warning(format("Address out of range on write byte %s", to_hex_string(address) ~ ")"));
         // main[address] = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
     }
 
     void write_halfword(uint address, ushort value) {
+        address = calculate_mirrors(address);
+
         // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
         // if ((address & 0xFFFF0000) == 0x6000000)
         //     mixin(VERBOSE_LOG!(`2`, `format("Writing halfword %s to address %s",
         //             to_hex_string(value), to_hex_string(address))`));
         if (cast(ulong)address + 2 >= SIZE_MAIN_MEMORY)
-            error(format("Address out of range on write halfword %s", to_hex_string(address) ~ ")"));
+            warning(format("Address out of range on write halfword %s", to_hex_string(address) ~ ")"));
         // *(cast(ushort*) (main[0] + address)) = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
         main[address + 1] = cast(ubyte)((value >> 8) & 0xff);
     }
 
     void write_word(uint address, uint value) {
+        address = calculate_mirrors(address);
+
         // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
         // if ((address & 0xFFFF0000) == 0x6000000)
         //     mixin(VERBOSE_LOG!(`2`, `format("Writing word %s to address %s",
         //             to_hex_string(value), to_hex_string(address))`));
         if (cast(ulong)address + 4 >= SIZE_MAIN_MEMORY)
-            error(format("Address out of range on write word %s", to_hex_string(address) ~ ")"));
+            warning(format("Address out of range on write word %s", to_hex_string(address) ~ ")"));
         // *(cast(uint*) (main[0] + address)) = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
         main[address + 1] = cast(ubyte)((value >> 8) & 0xff);
