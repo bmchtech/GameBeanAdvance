@@ -667,6 +667,7 @@ void run_1001LREG(ushort opcode) {
 
 // add #5 / #6 - PC and SP relative respectively
 void run_1010SREG(ushort opcode) {
+    warning(format("THUMB ADD: %x %x", opcode, cpu.regs[0]));
     ubyte rd = cast(ubyte) (get_nth_bits(opcode, 8, 11));
     ubyte immediate_value = cast(ubyte) (opcode & 0xFF);
     @IF(S)  cpu.regs[rd] =   *cpu.sp                    + (immediate_value << 2);
