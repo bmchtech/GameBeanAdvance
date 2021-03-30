@@ -190,8 +190,15 @@ class Memory {
             case 0x2: return mirror_to(address, OFFSET_WRAM_BOARD,  0x40000);
             case 0x3: return mirror_to(address, OFFSET_WRAM_CHIP,   0x8000);
             case 0x5: return mirror_to(address, OFFSET_PALETTE_RAM, 0x400);
-            // case 0x6: return mirror_to(address, OFFSET_VRAM,        (get_nth_bits(*DISPCNT, 0, 3) <= 2) ? 0x8000 : 0x20000);
-            case 0x6: return mirror_to(address, OFFSET_VRAM,        0x20000);
+            case 0x6: 
+                if (get_nth_bits(*DISPCNT, 0, 3) <= 2) {
+                    if (address & 0x00FF0000) return mirror_to(address, OFFSET_VRAM + 0x10000, 0x8000);
+                } else {
+                    return mirror_to(address, OFFSET_VRAM, 0x20000);
+                }
+
+                return address;
+
             case 0x7: return mirror_to(address, OFFSET_OAM,         0x400);
             case 0xA: return mirror_to(address, OFFSET_ROM_1,       0x02000000);
             case 0xB: return mirror_to(address, OFFSET_ROM_1,       0x02000000);
