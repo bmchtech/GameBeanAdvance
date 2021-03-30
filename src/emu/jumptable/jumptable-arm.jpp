@@ -67,9 +67,9 @@
 - COMPONENT: DATA_WRITEBACK
 [/RULE]
 
-[RULE LDM1_STM1]
-- INCLUDE: ----100--0----------------------
-- COMPONENT: LDM1_STM1
+[RULE LDM_STM]
+- INCLUDE: ----100-------------------------
+- COMPONENT: LDM_STM
 [/RULE]
 
 [RULE LDR]
@@ -723,27 +723,51 @@
 }
 [/COMPONENT]
 
-[COMPONENT LDM1_STM1]
-- FORMAT:  ----100PU0WL--------------------
+[COMPONENT LDM_STM]
+- FORMAT:  ----100PUSWL--------------------
 {
+    // this if statement emulates unpredictable ARM7TDMI behavior
+    if (get_nth_bits(opcode, 0, 16) == 0) {
+        *cpu.pc += 8; // skip the next instruction
+        cpu.regs[get_nth_bits(opcode, 16, 20)] += 4 * 16;
+        warning(format("Here. %x", *cpu.pc));
+        return;
+    }
+
     uint address = cpu.regs[get_nth_bits(opcode, 16, 20)];
 
-    @IF(U)  int mask = 1;
+    @IF( U) int mask = 1;
     @IF(!U) int mask = 0x8000; 
 
     int num_transactions = 0;
 
-    @IF(L) bool pc_loaded = false;
+    @IF( L) bool pc_loaded   = false;
 
-    @IF(U)  for (int i = 0;  i <  16; i++) {
+    @IF( S) bool pc_included = get_nth_bit(opcode, 15);
+
+    @IF( U) for (int i = 0;  i <  16; i++) {
     @IF(!U) for (int i = 15; i >= 0;  i--) {
 
         if (opcode & mask) {
             @IF( P  U) address += 4;
             @IF( P !U) address -= 4;
 
-            @IF( L) cpu.regs[i] = cpu.memory.read_word(address);
-            @IF(!L) cpu.memory.write_word(address, cpu.regs[i]);
+            @IF(!S  L) cpu.regs[i] = cpu.memory.read_word(address);
+
+            @IF(!S !L) if (i == 15) {
+            @IF(!S !L)     cpu.memory.write_word(address, cpu.regs[15] + 8);
+            @IF(!S !L) } else {
+            @IF(!S !L)     cpu.memory.write_word(address, cpu.regs[i]);
+            @IF(!S !L) }
+
+            @IF( S  L) if (pc_included) cpu.regs         [i]                        = cpu.memory.read_word(address);
+            @IF( S  L) else             cpu.register_file[cpu.MODE_USER.OFFSET + i] = cpu.memory.read_word(address);
+
+            @IF( S !L) if (i == 15) {
+            @IF( S !L)     cpu.memory.write_word(address, cpu.register_file[cpu.MODE_USER.OFFSET + 15] + 8);
+            @IF( S !L) } else {
+            @IF( S !L)     cpu.memory.write_word(address, cpu.register_file[cpu.MODE_USER.OFFSET + i]);
+            @IF( S !L) }
 
             @IF(!P  U) address += 4;
             @IF(!P !U) address -= 4;
@@ -759,12 +783,14 @@
 
     *cpu.pc &= 0xFFFFFFFE;
 
-    @IF(L) cpu.cycles_remaining += num_transactions + 2;
-    @IF(L) if (pc_loaded) cpu.cycles_remaining += 2;
+    @IF( L  S) if (pc_loaded) *cpu.cpsr = *cpu.spsr;
+
+    @IF( L) cpu.cycles_remaining += num_transactions + 2;
+    @IF( L) if (pc_loaded) cpu.cycles_remaining += 2;
 
     @IF(!L) cpu.cycles_remaining += num_transactions + 1;
     
-    @IF(W) cpu.regs[get_nth_bits(opcode, 16, 20)] = address;
+    @IF( W) cpu.regs[get_nth_bits(opcode, 16, 20)] = address;
 }
 [/COMPONENT]
 
