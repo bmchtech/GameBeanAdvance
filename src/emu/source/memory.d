@@ -262,7 +262,8 @@ class Memory {
 
         if (((address & 0x0F00_0000) >> 24) == 0x6) {
             if (get_nth_bits(*DISPCNT, 0, 3) <= 2) {
-                return; // we ignore write bytes to VRAM when we're not in a BITMAP MODE.
+                if (get_nth_bit(address, 16) && !get_nth_bits(address, 14, 16)) // if address > 0x0601_4000
+                    return; // we ignore write bytes to VRAM OBJ data when we're not in a BITMAP MODE.
             } else {
                 // again, writes to VRAM as byte are treated as halfword. (scroll up a few lines for explanation)
                 write_halfword(address, ((cast(ushort) value) << 8) | (cast(ushort) value));
@@ -278,6 +279,7 @@ class Memory {
             warning(format("Address out of range on write byte %s", to_hex_string(address) ~ ")"));
         // main[address] = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
+        // if ((address & 0xFFFF0000) == 0x7000000) writefln("Wrote byte %02x to %x", value, address);
     }
 
     void write_halfword(uint address, ushort value) {
@@ -292,6 +294,7 @@ class Memory {
         // *(cast(ushort*) (main[0] + address)) = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
         main[address + 1] = cast(ubyte)((value >> 8) & 0xff);
+        // if ((address & 0xFFFF0000) == 0x7000000) writefln("Wrote halfword %04x to %x", value, address);
     }
 
     void write_word(uint address, uint value) {
@@ -308,6 +311,7 @@ class Memory {
         main[address + 1] = cast(ubyte)((value >> 8) & 0xff);
         main[address + 2] = cast(ubyte)((value >> 16) & 0xff);
         main[address + 3] = cast(ubyte)((value >> 24) & 0xff);
+        // if ((address & 0xFFFF0000) == 0x7000000) writefln("Wrote word %08x to %x", value, address);
     }
 
     void set_rgb(uint x, uint y, ubyte r, ubyte g, ubyte b) {

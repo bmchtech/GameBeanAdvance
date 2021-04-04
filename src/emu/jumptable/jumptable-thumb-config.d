@@ -18,7 +18,7 @@
 
 @DEFAULT()
 void nop(ushort opcode) {
-    //DEBUG_MESSAGE("NOP");
+    error(format("No implementation for opcode %x", opcode));
 }
 
 // logical shift left/right
@@ -100,11 +100,11 @@ void run_0001100A(ushort opcode) {
 void run_0001101A(ushort opcode) {
     //DEBUG_MESSAGE("Sub #3");
 
-    int rn = cpu.regs[get_nth_bits(opcode, 3, 6)];
-    int rm = ~cpu.regs[get_nth_bits(opcode, 6, 9)] + 1;
+    uint rn = cpu.regs[get_nth_bits(opcode, 3, 6)];
+    uint rm = ~cpu.regs[get_nth_bits(opcode, 6, 9)] + 1;
     
     cpu.regs[get_nth_bits(opcode, 0, 3)] = rn + rm;
-    int rd = cpu.regs[get_nth_bits(opcode, 0, 3)];
+    uint rd = cpu.regs[get_nth_bits(opcode, 0, 3)];
 
     cpu.set_flag_N(get_nth_bit(rd, 31));
     cpu.set_flag_Z(rd == 0);
@@ -194,8 +194,8 @@ void run_00101ABC(ushort opcode) {
     // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
     cpu.set_flag_C(!(immediate_value > cast(uint)old_rd_value));
 
-    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rn_value, 31);
-    cpu.set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
+    bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 31);
+    cpu.set_flag_V(!matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
 
     cpu.cycles_remaining += 1;
 }
@@ -377,13 +377,13 @@ void run_01000001(ushort opcode) {
             if ((cpu.regs[rm] & 0xFF) == 0) 
                 break;
 
-            if ((cpu.regs[rm] & 0xF) == 0) {
+            if ((cpu.regs[rm] & 0x1F) == 0) {
                 cpu.set_flag_C(get_nth_bit(cpu.regs[rd], 31));
             } else {
-                cpu.set_flag_C(get_nth_bit(cpu.regs[rd], (cpu.regs[rm] & 0xF) - 1));
-                uint rotated_off = get_nth_bits(cpu.regs[rd], 0, cpu.regs[rm] & 0xF);  // the value that is rotated off
-                uint rotated_in  = get_nth_bits(cpu.regs[rd], cpu.regs[rm] & 0xF, 32); // the value that stays after the rotation
-                cpu.regs[rd] = rotated_in | (rotated_off << (32 - (cpu.regs[rm] & 0xF)));
+                cpu.set_flag_C(get_nth_bit(cpu.regs[rd], (cpu.regs[rm] & 0x1F) - 1));
+                uint rotated_off = get_nth_bits(cpu.regs[rd], 0, cpu.regs[rm] & 0x1F);  // the value that is rotated off
+                uint rotated_in  = get_nth_bits(cpu.regs[rd], cpu.regs[rm] & 0x1F, 32); // the value that stays after the rotation
+                cpu.regs[rd] = rotated_in | (rotated_off << (32 - (cpu.regs[rm] & 0x1F)));
             }
 
             cpu.cycles_remaining += 1;
@@ -421,18 +421,20 @@ void run_01000010(ushort opcode) {
             break;
 
         case 0b10: {
+            // warning(format("%x %x", cpu.regs[rm], cpu.regs[rd]));
             // CMP, which is basically a subtraction but the result isn't stored.
             // again, this uses the same two's complement trick that makes ADD the same as SUB.
-            int rm_value     = ~cpu.regs[rm] + 1; // the trick is implemented here
-            int old_rd_value = cpu.regs[rd];
+            uint rm_value     = ~cpu.regs[rm] + 1; // the trick is implemented here
+            uint old_rd_value = cpu.regs[rd];
 
             result = cpu.regs[rd] + rm_value;
 
             // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
             cpu.set_flag_C(!(cpu.regs[rm] > cpu.regs[rd]));
 
-            bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rm_value, 31);
-            cpu.set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
+            bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(cpu.regs[rm], 31);
+            cpu.set_flag_V(!matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
+
             break;
         }
         
@@ -495,6 +497,8 @@ void run_01000100(ushort opcode) {
 
     cpu.regs[rd] += cpu.regs[rm];
 
+    if (rd == 15 && (cpu.regs[rd] & 1)) cpu.regs[15]++;
+     
     cpu.cycles_remaining += 1;
 }
 
@@ -575,11 +579,22 @@ void run_0101LSBR(ushort opcode) {
     ubyte rm = cast(ubyte) get_nth_bits(opcode, 6, 9);
     ubyte rn = cast(ubyte) get_nth_bits(opcode, 3, 6);
     ubyte rd = cast(ubyte) get_nth_bits(opcode, 0, 3);
-    @IF( L  S  B) int  value = cast(uint) sign_extend(cpu.memory.read_halfword(cpu.regs[rm] + cpu.regs[rn]), 16);
-    @IF( L  S !B) uint     value = cast(uint)            (cpu.memory.read_byte    (cpu.regs[rm] + cpu.regs[rn]));
-    @IF( L !S  B) uint     value = cast(uint)            (cpu.memory.read_halfword(cpu.regs[rm] + cpu.regs[rn]));
-    @IF( L !S !B) uint     value = cast(uint)            (cpu.memory.read_word    (cpu.regs[rm] + cpu.regs[rn]));
-    @IF(!L  S  B) int  value = cast(uint) sign_extend(cpu.memory.read_byte    (cpu.regs[rm] + cpu.regs[rn]), 8);
+    uint address = cpu.regs[rm] + cpu.regs[rn];
+
+    @IF( L  S  B) int  value = cast(uint)            (cpu.memory.read_halfword(address & 0xFFFFFFFE));
+    @IF( L  S !B) uint value = cast(uint)            (cpu.memory.read_byte    (address));
+    @IF( L !S  B) uint value = cast(uint)            (cpu.memory.read_halfword(address & 0xFFFFFFFE));
+    @IF( L !S !B) uint value = cast(uint)            (cpu.memory.read_word    (address & 0xFFFFFFFC));
+    @IF(!L  S  B) int  value = cast(uint) sign_extend(cpu.memory.read_byte    (address),               8);
+
+    @IF( L !S !B) if ((address & 0b11) == 0b01) value = ((value & 0xFF)     << 24) | (value >> 8);
+    @IF( L !S !B) if ((address & 0b11) == 0b10) value = ((value & 0xFFFF)   << 16) | (value >> 16);
+    @IF( L !S !B) if ((address & 0b11) == 0b11) value = ((value & 0xFFFFFF) << 8)  | (value >> 24);
+    
+    @IF( L !S  B) if ((address & 0b1 ) == 0b1 ) value = ((value & 0xFF)     << 24) | (value >> 8);
+
+    @IF( L  S  B) if ((address & 0b1 ) == 0b1 ) value = ((value & 0xFF)     << 24) | (value >> 8);
+    @IF( L  S  B) value = sign_extend(value & 0xFFFF, 16);
 
     cpu.regs[rd] = value;
 
@@ -641,7 +656,6 @@ void run_10000OFS(ushort opcode) {
 }
 
 // load halfword
-10000 00000 101 001
 void run_10001OFS(ushort opcode) {
     ubyte rn     = cast(ubyte) get_nth_bits(opcode, 3, 6);
     ubyte rd     = cast(ubyte) get_nth_bits(opcode, 0, 3);
@@ -667,7 +681,6 @@ void run_1001LREG(ushort opcode) {
 
 // add #5 / #6 - PC and SP relative respectively
 void run_1010SREG(ushort opcode) {
-    warning(format("THUMB ADD: %x %x", opcode, cpu.regs[0]));
     ubyte rd = cast(ubyte) (get_nth_bits(opcode, 8, 11));
     ubyte immediate_value = cast(ubyte) (opcode & 0xFF);
     @IF(S)  cpu.regs[rd] =   *cpu.sp                    + (immediate_value << 2);
@@ -692,6 +705,7 @@ void run_10110000(ushort opcode) {
 
 // push registers
 void run_1011010R(ushort opcode) {
+    // warning(format("%x", *cpu.sp));
     ubyte register_list  = cast(ubyte) (opcode & 0xFF);
     bool    is_lr_included = get_nth_bit(opcode, 8);
 
@@ -731,7 +745,7 @@ void run_1011110R(ushort opcode) {
 
     // now deal with the linkage register (LR) and set it to the PC if it exists.
     if (is_lr_included) {
-        *cpu.pc = cpu.memory.read_word(*cpu.sp);
+        *cpu.pc = cpu.memory.read_word(*cpu.sp) & 0xFFFFFFFE;
         *cpu.sp += 4;
     }
 
@@ -793,20 +807,20 @@ void run_11000REG(ushort opcode) {
 void run_1101COND(ushort opcode) {
     // this may look daunting, but it's just the different possibilities for COND.
     // each COND has a different if expression we need to consider.
-    @IF(!C !O !N !D) if (cpu.get_flag_Z()) {
+    @IF(!C !O !N !D) if ( cpu.get_flag_Z()) {
     @IF(!C !O !N  D) if (!cpu.get_flag_Z()) {
-    @IF(!C !O  N !D) if (cpu.get_flag_C()) {
+    @IF(!C !O  N !D) if ( cpu.get_flag_C()) {
     @IF(!C !O  N  D) if (!cpu.get_flag_C()) {
-    @IF(!C  O !N !D) if (cpu.get_flag_N()) {
+    @IF(!C  O !N !D) if ( cpu.get_flag_N()) {
     @IF(!C  O !N  D) if (!cpu.get_flag_N()) {
-    @IF(!C  O  N !D) if (cpu.get_flag_V()) {
+    @IF(!C  O  N !D) if ( cpu.get_flag_V()) {
     @IF(!C  O  N  D) if (!cpu.get_flag_V()) {
-    @IF( C !O !N !D) if (cpu.get_flag_C() && !cpu.get_flag_Z()) {
-    @IF( C !O !N  D) if (!cpu.get_flag_C() || cpu.get_flag_Z()) {
-    @IF( C !O  N !D) if (cpu.get_flag_N() == cpu.get_flag_V()) {
-    @IF( C !O  N  D) if (cpu.get_flag_N() ^ cpu.get_flag_V()) {
+    @IF( C !O !N !D) if ( cpu.get_flag_C() && !cpu.get_flag_Z()) {
+    @IF( C !O !N  D) if (!cpu.get_flag_C() ||  cpu.get_flag_Z()) {
+    @IF( C !O  N !D) if ( cpu.get_flag_N() ==  cpu.get_flag_V()) {
+    @IF( C !O  N  D) if ( cpu.get_flag_N() ^   cpu.get_flag_V()) {
     @IF( C  O !N !D) if (!cpu.get_flag_Z() && (cpu.get_flag_N() == cpu.get_flag_V())) {
-    @IF( C  O !N  D) if (cpu.get_flag_Z() || (cpu.get_flag_N() ^ cpu.get_flag_V())) {
+    @IF( C  O !N  D) if ( cpu.get_flag_Z() || (cpu.get_flag_N() ^  cpu.get_flag_V())) {
     @IF( C  O  N !D) if (true) { // the compiler will optimize this so it's fine
         //DEBUG_MESSAGE("Conditional Branch Taken");
         *cpu.pc += (cast(byte)(opcode & 0xFF)) * 2 + 2;
@@ -826,7 +840,7 @@ void run_11011111(ushort opcode) {
 void run_11100OFS(ushort opcode) {
     //DEBUG_MESSAGE("Unconditional Branch");
 
-    int sign_extended = cast(int) ((cast(byte) get_nth_bits(opcode, 0, 11)) << 1);
+    int sign_extended = sign_extend(get_nth_bits(opcode, 0, 11) << 1, 12);
     *cpu.pc = (*cpu.pc + 2) + sign_extended;
 
     cpu.cycles_remaining += 3;
