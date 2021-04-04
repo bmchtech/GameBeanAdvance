@@ -194,6 +194,16 @@ class ARM7TDMI {
             Logger.instance.capture_cpu();
 
             uint opcode = fetch();
+
+            // write(format("%04x | ", opcode));
+            
+            // for (int j = 0; j < 16; j++)
+            //     write(format("%08x ", regs[j]));
+
+            // writeln();
+
+            // if (*pc == 0x0800_1bfe) readln;
+
             execute(opcode);
         } else {
             cycles_remaining--;
