@@ -69,7 +69,7 @@ public:
                 render_background_mode0(background_2, scanline);
                 render_background_mode0(background_3, scanline);
                 render_sprites(scanline);
-                test_render_sprites();
+                // test_render_sprites();
                 break;
             }
 
@@ -218,8 +218,7 @@ private:
             ushort attribute_0 = memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 0);
 
             // is this sprite even enabled
-            if (get_nth_bits(attribute_0, 8, 9) == 0b10) return;
-
+            if (get_nth_bits(attribute_0, 8, 10) == 0b10) continue;
             // it is enabled? great. now, we need to check which if the sprite appears in the
             // current scanline. for that, we need attribute 1.
             ushort attribute_1 = memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 2);
@@ -233,7 +232,7 @@ private:
             ubyte height = sprite_sizes[shape][size][1];
 
             // is this sprite rendered or not in this scanline
-            if (scanline < y || scanline >= y + height) return;
+            if (scanline < y || scanline >= y + height) continue;
 
             // now we need to get attribute 2, as well as the x position and the sprite width.
             ushort attribute_2 = memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 4);
@@ -248,7 +247,6 @@ private:
             // sprite in tiles.
             ushort base_tile_number = cast(ushort) get_nth_bits(attribute_2, 0, 10);
 
-            import std.stdio;
             // colors / palettes
             if (get_nth_bit(attribute_0, 13)) { // 256 / 1
                 base_tile_number += (width / 8) * ((scanline - y) / 8) * 2;
@@ -268,7 +266,6 @@ private:
                 }
             } else { // 16 / 16
                 base_tile_number += (width / 8) * ((scanline - y) / 8);
-                // writefln("DRAW_0: %x", attribute_0);
                 // writefln("DRAW_1: %x", attribute_1);
                 // writefln("DRAW_2: %x", attribute_2);
                 for (int draw_x = x; draw_x < x + width; draw_x += 2) {
@@ -336,6 +333,8 @@ private:
 
     void draw_pixel(uint palette_offset, uint palette_index, uint x, uint y) {
         uint color = memory.read_halfword(palette_offset + palette_index * 2);
+        if (x >= 240 || y >= 180) return;
+
         memory.set_rgb(x, y, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),
                              cast(ubyte) (get_nth_bits(color,  5, 10) * 255 / 31),
                              cast(ubyte) (get_nth_bits(color, 10, 15) * 255 / 31));
