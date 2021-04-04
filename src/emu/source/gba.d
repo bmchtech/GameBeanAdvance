@@ -94,7 +94,7 @@ public:
             }
 
             default: 
-                warning(format("Invalid BIOS Call: %x", bios_function));
+                error(format("Invalid BIOS Call: %x", bios_function));
         }
     }
 

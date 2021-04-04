@@ -7,7 +7,7 @@
 
 [DEFAULT]
 {
-    error("No implementation for opcode 0x" ~ to_hex_string(opcode));
+    error(format("No implementation for opcode 0x" ~ to_hex_string(opcode)));
 }
 [/DEFAULT]
 
@@ -355,11 +355,11 @@
     @IF( S !H)     cpu.shifter_carry_out = get_nth_bit(rm, rs - 1);
     @IF( S !H) } else { // rs >= 32
     @IF( S !H)     cpu.shifter_operand   = get_nth_bit(rm, 31) ? 0xFFFFFFFF : 0x00000000;
-    @IF( S !H)     cpu.shifter_carry_out = get_nth_bit(rm, 0);
+    @IF( S !H)     cpu.shifter_carry_out = get_nth_bit(rm, 31);
     @IF( S !H) }
 
     // S and H being true indicates ROR
-    @IF( S  H) if        (rs == 0) {
+    @IF( S  H) if        ((rs & 0xFF) == 0) {
     @IF( S  H)     cpu.shifter_operand   = rm;
     @IF( S  H)     cpu.shifter_carry_out = cpu.get_flag_C();
     @IF( S  H) } else if ((rs & 0x1F) == 0) {
@@ -446,7 +446,6 @@
     @IF( S  H)     uint rotated_in  = get_nth_bits(operand, 1, 32); // the value that stays after the rotation
 
     @IF( S  H)     index = rotated_in | (rotated_off << 31);
-    @IF( S  H)     warning(format("RRX: %x %x %x %x %x", index, operand, shift_immediate, cpu.get_flag_C(), opcode));
     @IF( S  H)     cpu.set_flag_C(get_nth_bit(operand, shift_immediate));
     @IF( S  H) }
 
@@ -465,10 +464,7 @@
     
     if (get_nth_bits(opcode, 16, 20) == 15) { // are we register PC?
         address += 4;
-        warning(format("%x", opcode));
     }
-
-    warning(format("%x WRIT3EBACK %x", addr_writeback, opcode));
 
     @IF( L) if (get_nth_bits(opcode, 16, 20) == get_nth_bits(opcode, 12, 16)) should_writeback = false;
 }
@@ -529,14 +525,15 @@
     
     @IF( C) uint result   = register_operand + cpu.shifter_operand + cpu.get_flag_C();
     @IF(!C) uint result   = register_operand + cpu.shifter_operand;
-    
+
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
     @IF( S)     cpu.update_mode();
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
-    @IF( S)     cpu.set_flag_C(((register_operand >> 31) || (cpu.shifter_operand >> 31)) && !(result >> 31));
+    @IF( S !C)  cpu.set_flag_C((cast(ulong) register_operand + cast(ulong) cpu.shifter_operand)                    >= 0x1_0000_0000);
+    @IF( S  C)  cpu.set_flag_C((cast(ulong) register_operand + cast(ulong) cpu.shifter_operand + cpu.get_flag_C()) >= 0x1_0000_0000);
     @IF( S)     cpu.set_flag_V(((register_operand >> 31) == (cpu.shifter_operand >> 31)) && ((register_operand >> 31) ^ (result >> 31)));
     @IF( S) }
 }
@@ -612,7 +609,7 @@
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
     @IF( S)     cpu.set_flag_V(((register_operand >> 31) == (cpu.shifter_operand >> 31)) && ((register_operand >> 31) ^ (result >> 31)));
-    @IF( S)     cpu.set_flag_C(((register_operand >> 31) || (cpu.shifter_operand >> 31)) && !(result >> 31));
+    @IF( S)     cpu.set_flag_C((cast(ulong) register_operand + cast(ulong) cpu.shifter_operand) > 0x1_0000_0000);
     @IF( S) }
 }
 [/COMPONENT]
@@ -635,7 +632,7 @@
     @IF( S)     cpu.set_flag_C(register_operand >= cpu.shifter_operand);
     @IF( S) }
 
-    warning(format("CMP: %x %x, %x %x", register_operand, cpu.shifter_operand, opcode, *cpu.pc));
+    // warning(format("CMP: %x %x, %x %x", register_operand, cpu.shifter_operand, opcode, *cpu.pc));
 }
 [/COMPONENT]
 
@@ -730,7 +727,6 @@
     if (get_nth_bits(opcode, 0, 16) == 0) {
         *cpu.pc += 8; // skip the next instruction
         cpu.regs[get_nth_bits(opcode, 16, 20)] += 4 * 16;
-        warning(format("Here. %x", *cpu.pc));
         return;
     }
 
@@ -808,8 +804,6 @@
     @IF( S)     cpu.set_flag_Z(result == 0);
     @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out);
     @IF( S) }
-
-    @IF( N) warning(format("MOV/MVN: %x %x", opcode, *cpu.pc));
 }
 [/COMPONENT]
 
@@ -898,17 +892,16 @@
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
     
-
     @IF( S  R !C)  cpu.set_flag_C((cpu.shifter_operand >= register_operand));
     @IF( S  R !C)  cpu.set_flag_V(((register_operand >> 31) ^ (cpu.shifter_operand >> 31)) && ((register_operand >> 31) == (result >> 31)));
     @IF( S !R !C)  cpu.set_flag_C((cpu.shifter_operand <= register_operand));
     @IF( S !R !C)  cpu.set_flag_V(((cpu.shifter_operand >> 31) ^ (register_operand >> 31)) && ((cpu.shifter_operand >> 31) == (result >> 31)));
     
-    @IF( S  R  C)  cpu.set_flag_C((cpu.shifter_operand >= register_operand + ((~(cast(uint)cpu.get_flag_C())) & 1)));
+    @IF( S  R  C)  cpu.set_flag_C((cpu.shifter_operand >= cast(ulong) register_operand + cast(ulong) ((~(cast(uint)cpu.get_flag_C())) & 1)));
     @IF( S  R  C)  cpu.set_flag_V(((register_operand >> 31) ^ (cpu.shifter_operand >> 31)) && ((register_operand >> 31) == (result >> 31)));
-    @IF( S !R  C)  cpu.set_flag_C((cpu.shifter_operand + ((~(cast(uint)cpu.get_flag_C())) & 1) <= register_operand));
+    @IF( S !R  C)  cpu.set_flag_C((cast(ulong) cpu.shifter_operand + cast(ulong) ((~(cast(uint)cpu.get_flag_C())) & 1) <= register_operand));
     @IF( S !R  C)  cpu.set_flag_V(((cpu.shifter_operand >> 31) ^ (register_operand >> 31)) && ((cpu.shifter_operand >> 31) == (result >> 31)));
-
+    
     @IF( S) }
 }
 [/COMPONENT]
@@ -972,7 +965,6 @@
 [COMPONENT STR]
 - FORMAT:  ----01IPU0W0--------------------
 {
-    if (opcode == 0xE5A00004) warning(format("WOOOOOOOOOOOOOOOOOO %x", opcode));
     uint result = cpu.regs[get_nth_bits(opcode, 12, 16)];
     if (get_nth_bits(opcode, 12, 16) == 15) result += 8;
     cpu.memory.write_word(address & 0xFFFFFFFC, result);
