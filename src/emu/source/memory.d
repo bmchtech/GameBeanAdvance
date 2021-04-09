@@ -279,7 +279,9 @@ class Memory {
             warning(format("Address out of range on write byte %s", to_hex_string(address) ~ ")"));
         // main[address] = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
-        // if ((address & 0xFFFF0000) == 0x7000000) writefln("Wrote byte %02x to %x", value, address);
+        if ((address & 0xFFFFFF00) == 0x4000000) writefln("Wrote byte %02x to %x", value, address);
+        // if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote byte %02x to %x", value, address);
+        // writefln("Wrote byte %08x to %x", value, address);
     }
 
     void write_halfword(uint address, ushort value) {
@@ -294,7 +296,9 @@ class Memory {
         // *(cast(ushort*) (main[0] + address)) = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
         main[address + 1] = cast(ubyte)((value >> 8) & 0xff);
-        // if ((address & 0xFFFF0000) == 0x7000000) writefln("Wrote halfword %04x to %x", value, address);
+        if ((address & 0xFFFFFF00) == 0x4000000) writefln("Wrote halfword %04x to %x", value, address);
+        // if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote halfword %04x to %x", value, address);
+        // writefln("Wrote halfword %08x to %x", value, address);
     }
 
     void write_word(uint address, uint value) {
@@ -311,7 +315,9 @@ class Memory {
         main[address + 1] = cast(ubyte)((value >> 8) & 0xff);
         main[address + 2] = cast(ubyte)((value >> 16) & 0xff);
         main[address + 3] = cast(ubyte)((value >> 24) & 0xff);
-        // if ((address & 0xFFFF0000) == 0x7000000) writefln("Wrote word %08x to %x", value, address);
+        if ((address & 0xFFFFFF00) == 0x4000000) writefln("Wrote word %08x to %x", value, address);
+        // if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote word %08x to %x", value, address);
+        // writefln("Wrote word %08x to %x", value, address);
     }
 
     void set_rgb(uint x, uint y, ubyte r, ubyte g, ubyte b) {

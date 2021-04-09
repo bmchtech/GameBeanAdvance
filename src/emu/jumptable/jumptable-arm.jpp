@@ -632,6 +632,7 @@
     @IF( S)     cpu.set_flag_C(register_operand >= cpu.shifter_operand);
     @IF( S) }
 
+    // warning(format("Comparing %x with %x", register_operand, cpu.shifter_operand));
     // warning(format("CMP: %x %x, %x %x", register_operand, cpu.shifter_operand, opcode, *cpu.pc));
 }
 [/COMPONENT]
