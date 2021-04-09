@@ -23,5 +23,5 @@ configuration "gperf" {
 
 configuration "unittest" {
     # test runner
-    dependency "silly" version="~>1.1.1"
+    # dependency "silly" version="~>1.1.1"
 }
