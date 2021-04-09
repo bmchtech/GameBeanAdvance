@@ -51,7 +51,7 @@ public:
                 dma_channels[i].dest_buf   = *dma_channels[i].dest;
                 dma_channels[i].source_buf = *dma_channels[i].source;
                 dma_channels[i].size_buf   = *dma_channels[i].cnt_l & 0x0FFFFFFF;
-                writefln("Enabling DMA Channel %x: Transfering %x words from %x to %x", i, dma_channels[i].size_buf, dma_channels[i].source_buf, dma_channels[i].dest_buf);
+                // writefln("Enabling DMA Channel %x: Transfering %x words from %x to %x", i, dma_channels[i].size_buf, dma_channels[i].source_buf, dma_channels[i].dest_buf);
 
                 if (i == 3) dma_channels[i].size_buf &= 0x07FFFFFF;
                 dma_channels[i].enabled = true;
@@ -116,7 +116,7 @@ public:
 
         // did we finish dma?
         if (dma_channels[current_channel].size_buf == 0) {
-            writefln("DMA Channel %x Finished", current_channel);
+            // writefln("DMA Channel %x Finished", current_channel);
             // do we repeat dma?
             if (get_nth_bit(*dma_channels[current_channel].cnt_h, 9)) {
                 if (get_nth_bits(*dma_channels[current_channel].cnt_h, 5, 6) == 0b11) {
