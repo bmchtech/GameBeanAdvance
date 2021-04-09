@@ -99,6 +99,15 @@ class Memory {
     ushort* DMA3CNT_L;  // W     DMA 3 Word Count
     ushort* DMA3CNT_H;  // R/W   DMA 3 Control
 
+    ushort* TM0CNT_L;   // R/W   Timer 0 Counter/Reload
+    ushort* TM0CNT_H;   // R/W   Timer 0 Control
+    ushort* TM1CNT_L;   // R/W   Timer 1 Counter/Reload
+    ushort* TM1CNT_H;   // R/W   Timer 1 Control
+    ushort* TM2CNT_L;   // R/W   Timer 2 Counter/Reload
+    ushort* TM2CNT_H;   // R/W   Timer 2 Control
+    ushort* TM3CNT_L;   // R/W   Timer 3 Counter/Reload
+    ushort* TM3CNT_H;   // R/W   Timer 3 Control
+
     ushort* KEYINPUT;   // R     Key Status
     ushort* KEYCNT;     // R/W   Key Interrupt Control
 
@@ -159,6 +168,15 @@ class Memory {
         DMA3DAD      = cast(uint*  ) &main[0x40000D8];
         DMA3CNT_L    = cast(ushort*) &main[0x40000DC];
         DMA3CNT_H    = cast(ushort*) &main[0x40000DE];
+
+        TM0CNT_L     = cast(ushort*) &main[0x4000100];
+        TM0CNT_H     = cast(ushort*) &main[0x4000102];
+        TM1CNT_L     = cast(ushort*) &main[0x4000104];
+        TM1CNT_H     = cast(ushort*) &main[0x4000106];
+        TM2CNT_L     = cast(ushort*) &main[0x4000108];
+        TM2CNT_H     = cast(ushort*) &main[0x400010A];
+        TM3CNT_L     = cast(ushort*) &main[0x400010C];
+        TM3CNT_H     = cast(ushort*) &main[0x400010E];
 
         KEYINPUT     = cast(ushort*) &main[0x4000130];
         KEYCNT       = cast(ushort*) &main[0x4000132];
@@ -279,7 +297,7 @@ class Memory {
             warning(format("Address out of range on write byte %s", to_hex_string(address) ~ ")"));
         // main[address] = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
-        if ((address & 0xFFFFFF00) == 0x4000000) writefln("Wrote byte %02x to %x", value, address);
+        if ((address & 0xFFFFF000) == 0x4000000 && address >= 0x4000100) writefln("Wrote byte %02x to %x", value, address);
         // if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote byte %02x to %x", value, address);
         // writefln("Wrote byte %08x to %x", value, address);
     }
@@ -296,7 +314,7 @@ class Memory {
         // *(cast(ushort*) (main[0] + address)) = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
         main[address + 1] = cast(ubyte)((value >> 8) & 0xff);
-        if ((address & 0xFFFFFF00) == 0x4000000) writefln("Wrote halfword %04x to %x", value, address);
+        if ((address & 0xFFFFF000) == 0x4000000 && address >= 0x4000100) writefln("Wrote halfword %04x to %x", value, address);
         // if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote halfword %04x to %x", value, address);
         // writefln("Wrote halfword %08x to %x", value, address);
     }
@@ -315,7 +333,7 @@ class Memory {
         main[address + 1] = cast(ubyte)((value >> 8) & 0xff);
         main[address + 2] = cast(ubyte)((value >> 16) & 0xff);
         main[address + 3] = cast(ubyte)((value >> 24) & 0xff);
-        if ((address & 0xFFFFFF00) == 0x4000000) writefln("Wrote word %08x to %x", value, address);
+        if ((address & 0xFFFFF000) == 0x4000000 && address >= 0x4000100) writefln("Wrote word %08x to %x", value, address);
         // if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote word %08x to %x", value, address);
         // writefln("Wrote word %08x to %x", value, address);
     }
