@@ -61,6 +61,7 @@ public:
 
         // check the mode and run the appropriate function
         ubyte mode = cast(ubyte) get_nth_bits(*memory.DISPCNT, 0, 3);
+
         switch (mode) {
             case 0: {
                 // DISPCNT bits 8-11 tell us which backgrounds should be rendered.
@@ -69,7 +70,7 @@ public:
                 render_background_mode0(background_2, scanline);
                 render_background_mode0(background_3, scanline);
                 render_sprites(scanline);
-                test_render_sprites();
+                // test_render_sprites();
                 break;
             }
 

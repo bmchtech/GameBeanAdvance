@@ -6,6 +6,7 @@ public {
     import cpu;
     import util;
     import dma;
+    import timers;
 }
 
 enum CART_SIZE = 0x1000000;
@@ -29,16 +30,18 @@ enum GBAKey {
 
 class GBA {
 public:
-    ARM7TDMI   cpu;
-    PPU        ppu;
-    Memory     memory;
-    DMAManager dma_manager;
+    ARM7TDMI     cpu;
+    PPU          ppu;
+    Memory       memory;
+    DMAManager   dma_manager;
+    TimerManager timers;
 
     this(Memory memory) {
         this.memory      = memory;
         this.cpu         = new ARM7TDMI(memory, &bios_call);
         this.ppu         = new PPU(memory);
         this.dma_manager = new DMAManager(memory);
+        this.timers      = new TimerManager(memory);
 
         this.enabled = false;
 
@@ -68,6 +71,7 @@ public:
     void maybe_cycle_cpu() {
         if (!dma_manager.handle_dma()) {
             cpu.cycle();
+            timers.cycle();
         }
     }
 
