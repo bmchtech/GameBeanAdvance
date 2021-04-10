@@ -193,9 +193,14 @@ class ARM7TDMI {
         if (cycles_remaining == 0) {
             Logger.instance.capture_cpu();
 
+            if ((*pc & 0x0F00_0000) != 0x0800_0000) {
+                error("PC out of range!");
+            }
+
             uint opcode = fetch();
 
-            // write(format("%04x | ", opcode));
+
+            // write(format("%08x | %x", opcode, get_bit_T()));
             
             // for (int j = 0; j < 16; j++)
             //     write(format("%08x ", regs[j]));

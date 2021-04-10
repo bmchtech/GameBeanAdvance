@@ -55,10 +55,7 @@ public:
         *cpu.pc = memory.OFFSET_ROM_1;
         enabled = true; 
     }
-
-    // cycles the GBA CPU once, executing one instruction to completion.
-    // maybe this method belongs in an ARM7TDMI class. nobody knows. i don't see the reason for having such a class, so
-    // this is staying here for now.
+ 
     void cycle() {
         maybe_cycle_cpu();
         maybe_cycle_cpu();
@@ -77,6 +74,40 @@ public:
 
     void bios_call(int bios_function) {
         switch (bios_function) {
+            case 0x01: { // Register RAM Reset
+                // note entry 7 is special so it isnt included
+                uint[7] ram_clear_offsets = [
+                    memory.OFFSET_WRAM_BOARD,
+                    memory.OFFSET_WRAM_CHIP,
+                    memory.OFFSET_PALETTE_RAM,
+                    memory.OFFSET_VRAM,
+                    memory.OFFSET_OAM,
+                    0x4000120, // TODO: replace with the actual registers once theyre implemented
+                    0x4000060
+                ];
+
+                uint[7] ram_clear_sizes = [
+                    memory.SIZE_WRAM_BOARD,
+                    memory.SIZE_WRAM_CHIP - 0x200,
+                    memory.SIZE_PALETTE_RAM,
+                    memory.SIZE_VRAM,
+                    memory.SIZE_OAM,
+                    0x2C,
+                    0x48
+                ];
+
+                for (int i = 0; i < 7; i++)
+                    if (get_nth_bit(cpu.regs[0], i)) cpu.memory.main[ram_clear_offsets[i] .. (ram_clear_offsets[i] + ram_clear_sizes[i])] = 0;
+                
+                if (get_nth_bit(cpu.regs[0], 8)) {
+                    cpu.memory.main[0x0400_0000 .. 0x400_0060] = 0;
+                    cpu.memory.main[0x0400_00B0 .. 0x400_0100] = 0;
+                    cpu.memory.main[0x0400_0120 .. 0x400_0808] = 0;
+                }
+
+                break;
+            }
+
             case 0x06: { // Division
                 int numerator   = cast(int) cpu.regs[0];
                 int denominator = cast(int) cpu.regs[1];
