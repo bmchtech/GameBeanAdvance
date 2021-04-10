@@ -833,7 +833,7 @@ void run_1101COND(ushort opcode) {
 
 // software interrupt
 void run_11011111(ushort opcode) {
-
+    cpu.bios_call(opcode & 0xFF);
 }
 
 // unconditional branch

@@ -48,7 +48,10 @@ public:
         // if any of the channels wants to start dma, then copy its data over to the buffers.
         for (int i = 0; i < 4; i++) {
             if (!dma_channels[i].enabled && get_nth_bit(*dma_channels[i].cnt_h, 15)) {
-                dma_channels[i].dest_buf   = *dma_channels[i].dest;
+                if (get_nth_bits(*dma_channels[i].cnt_h, 5, 7) == 0b11) {
+                    dma_channels[i].dest_buf   = *dma_channels[i].dest;
+                }
+
                 dma_channels[i].source_buf = *dma_channels[i].source;
                 dma_channels[i].size_buf   = *dma_channels[i].cnt_l & 0x0FFFFFFF;
                 // writefln("Enabling DMA Channel %x: Transfering %x words from %x to %x", i, dma_channels[i].size_buf, dma_channels[i].source_buf, dma_channels[i].dest_buf);

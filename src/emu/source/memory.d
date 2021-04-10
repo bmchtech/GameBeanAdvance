@@ -233,7 +233,7 @@ class Memory {
             mixin(VERBOSE_LOG!(`2`,
                     `format("Reading byte from address %s", to_hex_string(address))`));
         if (cast(ulong)address >= SIZE_MAIN_MEMORY) {
-            warning(format("Address out of range on read byte %s", to_hex_string(address) ~ ")"));
+            error(format("Address out of range on read byte %s", to_hex_string(address) ~ ")"));
             return 0;
         }
         return main[address];
@@ -246,7 +246,7 @@ class Memory {
             mixin(VERBOSE_LOG!(`2`,
                     `format("Reading halfword from address %s", to_hex_string(address))`));
         if (cast(ulong)address + 2 >= SIZE_MAIN_MEMORY) {
-            warning(format("Address out of range on read halfword %s", to_hex_string(address) ~ ")"));
+            error(format("Address out of range on read halfword %s", to_hex_string(address) ~ ")"));
             return 0;
         }
         return (cast(ushort) main[address + 0] << 0) | (cast(ushort) main[address + 1] << 8);
@@ -259,7 +259,7 @@ class Memory {
             mixin(VERBOSE_LOG!(`2`,
                     `format("Reading word from address %s", to_hex_string(address))`));
         if (cast(ulong)address + 4 >= SIZE_MAIN_MEMORY) {
-            warning(format("Address out of range on read word %s", to_hex_string(address) ~ ")"));
+            error(format("Address out of range on read word %s", to_hex_string(address) ~ ")"));
             return 0;
         }
         return (cast(uint) main[address + 0] << 0) | (
@@ -294,11 +294,11 @@ class Memory {
         //     mixin(VERBOSE_LOG!(`2`, `format("Writing byte %s to address %s",
         //             to_hex_string(value), to_hex_string(address))`));
         if (cast(ulong)address >= SIZE_MAIN_MEMORY)
-            warning(format("Address out of range on write byte %s", to_hex_string(address) ~ ")"));
+            error(format("Address out of range on write byte %s", to_hex_string(address) ~ ")"));
         // main[address] = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
-        if ((address & 0xFFFFF000) == 0x4000000 && address >= 0x4000100) writefln("Wrote byte %02x to %x", value, address);
-        // if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote byte %02x to %x", value, address);
+        if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote byte %02x to %x", value, address);
+        if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote byte %02x to %x", value, address);
         // writefln("Wrote byte %08x to %x", value, address);
     }
 
@@ -310,12 +310,12 @@ class Memory {
         //     mixin(VERBOSE_LOG!(`2`, `format("Writing halfword %s to address %s",
         //             to_hex_string(value), to_hex_string(address))`));
         if (cast(ulong)address + 2 >= SIZE_MAIN_MEMORY)
-            warning(format("Address out of range on write halfword %s", to_hex_string(address) ~ ")"));
+            error(format("Address out of range on write halfword %s", to_hex_string(address) ~ ")"));
         // *(cast(ushort*) (main[0] + address)) = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
         main[address + 1] = cast(ubyte)((value >> 8) & 0xff);
-        if ((address & 0xFFFFF000) == 0x4000000 && address >= 0x4000100) writefln("Wrote halfword %04x to %x", value, address);
-        // if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote halfword %04x to %x", value, address);
+        if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote halfword %04x to %x", value, address);
+        if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote halfword %04x to %x", value, address);
         // writefln("Wrote halfword %08x to %x", value, address);
     }
 
@@ -327,14 +327,14 @@ class Memory {
         //     mixin(VERBOSE_LOG!(`2`, `format("Writing word %s to address %s",
         //             to_hex_string(value), to_hex_string(address))`));
         if (cast(ulong)address + 4 >= SIZE_MAIN_MEMORY)
-            warning(format("Address out of range on write word %s", to_hex_string(address) ~ ")"));
+            error(format("Address out of range on write word %s", to_hex_string(address) ~ ")"));
         // *(cast(uint*) (main[0] + address)) = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
         main[address + 1] = cast(ubyte)((value >> 8) & 0xff);
         main[address + 2] = cast(ubyte)((value >> 16) & 0xff);
         main[address + 3] = cast(ubyte)((value >> 24) & 0xff);
-        if ((address & 0xFFFFF000) == 0x4000000 && address >= 0x4000100) writefln("Wrote word %08x to %x", value, address);
-        // if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote word %08x to %x", value, address);
+        if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote word %08x to %x", value, address);
+        if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote word %08x to %x", value, address);
         // writefln("Wrote word %08x to %x", value, address);
     }
 
