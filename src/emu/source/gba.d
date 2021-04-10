@@ -120,6 +120,50 @@ public:
                 break;
             }
 
+            case 0x0B: { // CpuSet
+                uint source_address = cpu.regs[0];
+                uint dest_address   = cpu.regs[1];
+                uint length         = get_nth_bits(cpu.regs[2], 0, 21);
+                bool is_fill        = get_nth_bit (cpu.regs[2], 24); // if false, this is a copy
+                bool is_halfword    = get_nth_bit (cpu.regs[2], 26); // if false, we're transferring words
+
+                for (int i = 0; i < length; i++) {
+                    if (is_halfword) {
+                        memory.write_halfword(dest_address, memory.read_halfword(source_address));
+                        dest_address += 2;
+                    } else {
+                        memory.write_word    (dest_address, memory.read_halfword(source_address));
+                        dest_address += 2;
+                    }
+
+                    if (!is_fill) {
+                        source_address += 2;
+                    }
+                }
+
+                break;
+            }
+
+            case 0x0C: { // CpuFastSet
+                uint source_address = cpu.regs[0];
+                uint dest_address   = cpu.regs[1];
+                uint length         = get_nth_bits(cpu.regs[2], 0, 21);
+                bool is_fill        = get_nth_bit (cpu.regs[2], 24); // if false, this is a copy
+
+                if ((length & 0b111) != 0) length = (length & 0xFFFFFFF8) + 1; // round up if not a multiple of 8
+
+                for (int i = 0; i < length; i++) {
+                    memory.write_word    (dest_address, memory.read_halfword(source_address));
+                    dest_address += 2;
+
+                    if (!is_fill) {
+                        source_address += 2;
+                    }
+                }
+
+                break;
+            }
+
             default: 
                 error(format("Invalid BIOS Call: %x", bios_function));
         }
