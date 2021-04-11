@@ -111,6 +111,10 @@ class Memory {
     ushort* KEYINPUT;   // R     Key Status
     ushort* KEYCNT;     // R/W   Key Interrupt Control
 
+    ushort* IE;         // R/W   Interrupt Enable Register
+    ushort* IF;         // R/W   Interrupt Request Flags / IRQ Acknowledge
+    ushort* IME;        // R/W   Interrupt Master Enable Register
+
     this() {
         main = new ubyte[SIZE_MAIN_MEMORY];
 
@@ -180,6 +184,10 @@ class Memory {
 
         KEYINPUT     = cast(ushort*) &main[0x4000130];
         KEYCNT       = cast(ushort*) &main[0x4000132];
+
+        IE           = cast(ushort*) &main[0x4000200];
+        IF           = cast(ushort*) &main[0x4000202];
+        IME          = cast(ushort*) &main[0x4000208];
 
         video_buffer = new uint[][](240, 160);
 
@@ -297,8 +305,8 @@ class Memory {
             error(format("Address out of range on write byte %s", to_hex_string(address) ~ ")"));
         // main[address] = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
-        if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote byte %02x to %x", value, address);
-        if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote byte %02x to %x", value, address);
+        // if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote byte %02x to %x", value, address);
+        // if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote byte %02x to %x", value, address);
         // writefln("Wrote byte %08x to %x", value, address);
     }
 
@@ -314,8 +322,8 @@ class Memory {
         // *(cast(ushort*) (main[0] + address)) = value;
         main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
         main[address + 1] = cast(ubyte)((value >> 8) & 0xff);
-        if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote halfword %04x to %x", value, address);
-        if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote halfword %04x to %x", value, address);
+        // if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote halfword %04x to %x", value, address);
+        // if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote halfword %04x to %x", value, address);
         // writefln("Wrote halfword %08x to %x", value, address);
     }
 
@@ -333,8 +341,8 @@ class Memory {
         main[address + 1] = cast(ubyte)((value >> 8) & 0xff);
         main[address + 2] = cast(ubyte)((value >> 16) & 0xff);
         main[address + 3] = cast(ubyte)((value >> 24) & 0xff);
-        if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote word %08x to %x", value, address);
-        if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote word %08x to %x", value, address);
+        // if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote word %08x to %x", value, address);
+        // if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote word %08x to %x", value, address);
         // writefln("Wrote word %08x to %x", value, address);
     }
 
