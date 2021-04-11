@@ -153,7 +153,7 @@ public:
                 if ((length & 0b111) != 0) length = (length & 0xFFFFFFF8) + 1; // round up if not a multiple of 8
 
                 for (int i = 0; i < length; i++) {
-                    memory.write_word    (dest_address, memory.read_halfword(source_address));
+                    memory.write_word(dest_address, memory.read_halfword(source_address));
                     dest_address += 2;
 
                     if (!is_fill) {

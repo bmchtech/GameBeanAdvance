@@ -15,21 +15,14 @@ import std.conv;
 enum CPU_STATE_LOG_LENGTH = 1;
 
 class ARM7TDMI {
-    // an explanation of these constants is partially in here as well as cpu-mode.h
 
-    enum MODE_USER       = CpuMode(0b10000, 0b011111111111111111, 18 * 0);
-    enum MODE_SYSTEM     = CpuMode(0b11111, 0b011111111111111111, 18 * 0);
-    enum MODE_SUPERVISOR = CpuMode(0b10011, 0b011001111111111111, 18 * 1);
-    enum MODE_ABORT      = CpuMode(0b10111, 0b011001111111111111, 18 * 2);
-    enum MODE_UNDEFINED  = CpuMode(0b11011, 0b011001111111111111, 18 * 3);
-    enum MODE_IRQ        = CpuMode(0b10010, 0b011001111111111111, 18 * 4);
-    enum MODE_FIQ        = CpuMode(0b10001, 0b011000000011111111, 18 * 5);
+    Memory memory;
 
-    enum NUM_MODES = 7;
-    static CpuMode[NUM_MODES] MODES = [
-        MODE_USER, MODE_FIQ, MODE_IRQ, MODE_SUPERVISOR, MODE_ABORT, MODE_UNDEFINED,
-        MODE_SYSTEM
-    ];
+    uint cycles_remaining = 0;
+    CpuMode current_mode;
+    CpuState[CPU_STATE_LOG_LENGTH] cpu_states;
+
+    void delegate(int) bios_call;
     
     this(Memory memory, void delegate(int) bios_call) {
         this.memory        = memory;
@@ -53,6 +46,15 @@ class ARM7TDMI {
         sp   = &regs[13];
         cpsr = &regs[16];
         spsr = &regs[17];
+
+        // set up memory for interrupt handler
+        memory.write_word(0x018, 0xEA000028);
+        memory.write_word(0x128, 0xE92D500F);
+        memory.write_word(0x12C, 0xE3A00301);
+        memory.write_word(0x130, 0xE28FE000);
+        memory.write_word(0x134, 0xE510F004);
+        memory.write_word(0x138, 0xE8BD500F);
+        memory.write_word(0x13C, 0xE25EF004);
     }
 
     // the register array is going to be accessed as such:
@@ -193,9 +195,9 @@ class ARM7TDMI {
         if (cycles_remaining == 0) {
             Logger.instance.capture_cpu();
 
-            if ((*pc & 0x0F00_0000) != 0x0800_0000) {
-                error("PC out of range!");
-            }
+            // if ((*pc & 0x0F00_0000) != 0x0800_0000) {
+            //     error("PC out of range!");
+            // }
 
             uint opcode = fetch();
 
@@ -301,13 +303,52 @@ class ARM7TDMI {
         return result;
     }
 
-    Memory memory;
 
-    uint cycles_remaining = 0;
-    CpuMode current_mode;
-    CpuState[CPU_STATE_LOG_LENGTH] cpu_states;
+    // set up the possible interrupts
+    enum INTERRUPT {
+        LCD_VBLANK           = 1,
+        LCD_HBLANK           = 2,
+        LCD_VCOUNTER_MATCH   = 4,
+        TIMER_0_OVERFLOW     = 8,
+        TIMER_1_OVERFLOW     = 16,
+        TIMER_2_OVERFLOW     = 32,
+        TIMER_3_OVERFLOW     = 64,
+        SERIAL_COMMUNICATION = 128,
+        DMA_0                = 256,
+        DMA_1                = 512,
+        DMA_2                = 1024,
+        DMA_3                = 2048,
+        KEYPAD               = 4096,
+        GAMEPAK              = 8192
+    }
 
-    void delegate(int) bios_call;
+    // interrupt_code must be one-hot
+    void interrupt(uint interrupt_code) {
+        if (*memory.IME & 0x1) return; // if interrupts are disabled, ignore.
+        // TODO: wtf is the IF register?
+
+        // is this specific interrupt enabled
+        if (*memory.IE & interrupt_code) {
+            set_mode(MODE_IRQ);
+            *pc = 0x18;
+        }
+    }
+
+    // an explanation of these constants is partially in here as well as cpu-mode.h
+
+    enum MODE_USER       = CpuMode(0b10000, 0b011111111111111111, 18 * 0);
+    enum MODE_SYSTEM     = CpuMode(0b11111, 0b011111111111111111, 18 * 0);
+    enum MODE_SUPERVISOR = CpuMode(0b10011, 0b011001111111111111, 18 * 1);
+    enum MODE_ABORT      = CpuMode(0b10111, 0b011001111111111111, 18 * 2);
+    enum MODE_UNDEFINED  = CpuMode(0b11011, 0b011001111111111111, 18 * 3);
+    enum MODE_IRQ        = CpuMode(0b10010, 0b011001111111111111, 18 * 4);
+    enum MODE_FIQ        = CpuMode(0b10001, 0b011000000011111111, 18 * 5);
+
+    enum NUM_MODES = 7;
+    static CpuMode[NUM_MODES] MODES = [
+        MODE_USER, MODE_FIQ, MODE_IRQ, MODE_SUPERVISOR, MODE_ABORT, MODE_UNDEFINED,
+        MODE_SYSTEM
+    ];
 
 private:
     uint cpu_states_size = 0;
