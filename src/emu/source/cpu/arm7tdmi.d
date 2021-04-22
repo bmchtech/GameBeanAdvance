@@ -111,7 +111,7 @@ class ARM7TDMI {
             if (mask & 1) {
                 regs[i] = register_file[MODE_USER   .OFFSET + i];
             } else {
-                regs[i] = register_file[current_mode.OFFSET + i];
+                regs[i] = register_file[new_mode.OFFSET + i];
             }
 
             mask >>= 1;
@@ -192,6 +192,9 @@ class ARM7TDMI {
     }
 
     void cycle() {
+        if (halted) return;
+
+        cycles_remaining = 0;
         if (cycles_remaining == 0) {
             Logger.instance.capture_cpu();
 
@@ -202,14 +205,14 @@ class ARM7TDMI {
             uint opcode = fetch();
 
 
-            // write(format("%08x | %x", opcode, get_bit_T()));
+            // write(format("%08x |", opcode));
             
             // for (int j = 0; j < 16; j++)
             //     write(format("%08x ", regs[j]));
 
             // writeln();
 
-            // if (*pc == 0x0800_1bfe) readln;
+            if (*pc == 0x0800_1bfe) readln;
 
             execute(opcode);
         } else {
@@ -324,11 +327,19 @@ class ARM7TDMI {
 
     // interrupt_code must be one-hot
     void interrupt(uint interrupt_code) {
-        if (*memory.IME & 0x1) return; // if interrupts are disabled, ignore.
-        // TODO: wtf is the IF register?
+        // interrupts not allowed if the cpu itself has interrupts disabled.
+        if (get_nth_bit(*cpsr, 7)) return;
 
+        if (!(*memory.IME & 0x1)) return; // if interrupts are disabled globally, ignore.
+        
         // is this specific interrupt enabled
         if (*memory.IE & interrupt_code) {
+            *cpsr |= (1 << 7); // disable interrupts for the time being...
+
+            *memory.IF |= interrupt_code;
+            register_file[MODE_IRQ.OFFSET + 14] = *pc;
+
+            halted = false;
             set_mode(MODE_IRQ);
             *pc = 0x18;
         }
@@ -349,6 +360,8 @@ class ARM7TDMI {
         MODE_USER, MODE_FIQ, MODE_IRQ, MODE_SUPERVISOR, MODE_ABORT, MODE_UNDEFINED,
         MODE_SYSTEM
     ];
+
+    bool halted = false;
 
 private:
     uint cpu_states_size = 0;
