@@ -304,7 +304,7 @@ class Memory {
         if (cast(ulong)address >= SIZE_MAIN_MEMORY)
             error(format("Address out of range on write byte %s", to_hex_string(address) ~ ")"));
         // main[address] = value;
-        main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
+        set_memory(address + 0, cast(ubyte)((value >> 0) & 0xff));
         // if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote byte %02x to %x", value, address);
         // if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote byte %02x to %x", value, address);
         // writefln("Wrote byte %08x to %x", value, address);
@@ -320,8 +320,8 @@ class Memory {
         if (cast(ulong)address + 2 >= SIZE_MAIN_MEMORY)
             error(format("Address out of range on write halfword %s", to_hex_string(address) ~ ")"));
         // *(cast(ushort*) (main[0] + address)) = value;
-        main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
-        main[address + 1] = cast(ubyte)((value >> 8) & 0xff);
+        set_memory(address + 0, cast(ubyte)((value >> 0) & 0xff));
+        set_memory(address + 1, cast(ubyte)((value >> 8) & 0xff));
         // if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote halfword %04x to %x", value, address);
         // if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote halfword %04x to %x", value, address);
         // writefln("Wrote halfword %08x to %x", value, address);
@@ -337,10 +337,10 @@ class Memory {
         if (cast(ulong)address + 4 >= SIZE_MAIN_MEMORY)
             error(format("Address out of range on write word %s", to_hex_string(address) ~ ")"));
         // *(cast(uint*) (main[0] + address)) = value;
-        main[address + 0] = cast(ubyte)((value >> 0) & 0xff);
-        main[address + 1] = cast(ubyte)((value >> 8) & 0xff);
-        main[address + 2] = cast(ubyte)((value >> 16) & 0xff);
-        main[address + 3] = cast(ubyte)((value >> 24) & 0xff);
+        set_memory(address + 0, cast(ubyte)((value >> 0)  & 0xff));
+        set_memory(address + 1, cast(ubyte)((value >> 8)  & 0xff));
+        set_memory(address + 2, cast(ubyte)((value >> 16) & 0xff));
+        set_memory(address + 3, cast(ubyte)((value >> 24) & 0xff));
         // if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote word %08x to %x", value, address);
         // if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote word %08x to %x", value, address);
         // writefln("Wrote word %08x to %x", value, address);
@@ -361,6 +361,16 @@ class Memory {
             *KEYINPUT &= ~(0b1 << code);
         } else {
             *KEYINPUT |= (0b1 << code);
+        }
+    }
+
+private:
+    void set_memory(uint address, ubyte value) {
+        // trying to set a bit in register IF will actually clear that bit.
+        if (address == 0x4000202 || address == 0x4000203) { // are we register IF?
+            main[address] &= ~value; 
+        } else {
+            main[address] = value;
         }
     }
 }

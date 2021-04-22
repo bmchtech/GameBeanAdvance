@@ -11,9 +11,12 @@ class PPU {
     // - Although the drawing time is only 960 cycles (240*4), the H-Blank flag is "0" for a total of 1006 cycles.
 
 public:
-    this(Memory memory) {
-        this.memory = memory;
-        dot         = 0;
+    void delegate(uint) interrupt_cpu;
+
+    this(Memory memory, void delegate(uint) interrupt_cpu) {
+        this.memory        = memory;
+        this.interrupt_cpu = interrupt_cpu;
+        dot                = 0;
 
         background_init(memory);
     }
@@ -30,14 +33,16 @@ public:
 
             if (scanline > 227) {
                 scanline = 0;
+                *memory.DISPSTAT &= ~1;
                 memory.has_updated = true;
             }
         }
         *memory.VCOUNT = scanline;
 
         // set vblank or hblank accordingly
-        if (scanline == 160) { // are we in vblank?
+        if (scanline == 160 && dot == 0) { // are we in vblank?
             *memory.DISPSTAT |= 1;
+            if (get_nth_bit(*memory.DISPSTAT, 3)) interrupt_cpu(1);
         }
 
         bool in_hblank = get_nth_bit(*memory.DISPSTAT, 1);

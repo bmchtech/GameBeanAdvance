@@ -39,7 +39,7 @@ public:
     this(Memory memory) {
         this.memory      = memory;
         this.cpu         = new ARM7TDMI(memory, &bios_call);
-        this.ppu         = new PPU(memory);
+        this.ppu         = new PPU(memory, &interrupt_cpu);
         this.dma_manager = new DMAManager(memory);
         this.timers      = new TimerManager(memory);
 
@@ -70,6 +70,11 @@ public:
             cpu.cycle();
             timers.cycle();
         }
+    }
+
+    // interrupt_code must be one-hot
+    void interrupt_cpu(uint interrupt_code) {
+        cpu.interrupt(interrupt_code);
     }
 
     void bios_call(int bios_function) {
@@ -106,6 +111,17 @@ public:
                 }
 
                 break;
+            }
+
+            case 0x04: {
+                cpu.halted = true;
+                break;
+            }
+
+            case 0x05: { // VBlankIntrWait
+                cpu.regs[0] = 1;
+                cpu.regs[1] = 1;
+                goto case 0x04;
             }
 
             case 0x06: { // Division
