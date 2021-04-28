@@ -48,13 +48,11 @@ public:
         // if any of the channels wants to start dma, then copy its data over to the buffers.
         for (int i = 0; i < 4; i++) {
             if (!dma_channels[i].enabled && get_nth_bit(*dma_channels[i].cnt_h, 15)) {
-                if (get_nth_bits(*dma_channels[i].cnt_h, 5, 7) == 0b11) {
-                    dma_channels[i].dest_buf   = *dma_channels[i].dest;
-                }
-
+                dma_channels[i].dest_buf   = *dma_channels[i].dest;
                 dma_channels[i].source_buf = *dma_channels[i].source;
                 dma_channels[i].size_buf   = *dma_channels[i].cnt_l & 0x0FFFFFFF;
-                // writefln("Enabling DMA Channel %x: Transfering %x words from %x to %x", i, dma_channels[i].size_buf, dma_channels[i].source_buf, dma_channels[i].dest_buf);
+                writefln("Enabling DMA Channel %x: Transfering %x words from %x to %x (Settings: %x)", i, dma_channels[i].size_buf, dma_channels[i].source_buf, dma_channels[i].dest_buf, *dma_channels[i].cnt_h);
+                // writefln("RAW DMA Channel %x: Transfering %x words from %x to %x", i, *dma_channels[i].cnt_l, *dma_channels[i].source, *dma_channels[i].dest);
 
                 if (i == 3) dma_channels[i].size_buf &= 0x07FFFFFF;
                 dma_channels[i].enabled = true;
@@ -66,6 +64,11 @@ public:
         int current_channel = -1;
         for (int i = 0; i < 4; i++) {
             if (dma_channels[i].enabled) {
+                // make sure we are not in audio fifo mode (becuase thats not implemented yet)
+                if ((get_nth_bits(*dma_channels[i].cnt_h, 12, 14) == 3 && (i == 1 || i == 2))) {
+                    continue;
+                }
+
                 current_channel = i;
                 break;
             }
@@ -74,14 +77,36 @@ public:
         // if we found no channels, leave.
         if (current_channel == -1) return false;
 
+
         // dma happens every other cycle
         dma_cycle ^= 1;
-        if (!dma_cycle) return false;
+        if (!dma_cycle) return true;
 
         if (get_nth_bit(*dma_channels[current_channel].cnt_h, 14)) {
             warning("EXPECTED INTERRUPT");
         }
 
+        // did we already finish dma?
+        if (dma_channels[current_channel].size_buf == 0) {
+            // do we repeat dma?
+            if (get_nth_bit(*dma_channels[current_channel].cnt_h, 9)) {
+                if (get_nth_bits(*dma_channels[current_channel].cnt_h, 5, 6) == 0b11) {
+                    dma_channels[current_channel].dest_buf = *dma_channels[current_channel].dest;
+                }
+
+                dma_channels[current_channel].size_buf = *dma_channels[current_channel].cnt_l & 0x0FFFFFFF;
+                if (current_channel == 3) dma_channels[current_channel].size_buf &= 0x07FFFFFF;
+            } else {
+                writefln("DMA Channel %x Finished", current_channel);
+                dma_channels[current_channel].enabled = false;
+                *dma_channels[current_channel].cnt_h &= ~(1UL << 15);
+                return true;
+            }
+        } else {
+            dma_channels[current_channel].size_buf--;
+        }
+
+        if (current_channel == 3) writefln("DMA Channel %x successfully transfered %x from %x to %x. %x units left.", current_channel, memory.read_word(dma_channels[current_channel].source_buf), dma_channels[current_channel].source_buf, dma_channels[current_channel].dest_buf, dma_channels[current_channel].size_buf);
         // copy one piece of data over.
         int increment = 0;
         //    writefln("%x", dma_channels[current_channel].source_buf);
@@ -94,7 +119,6 @@ public:
             memory.write_halfword(dma_channels[current_channel].dest_buf, memory.read_halfword(dma_channels[current_channel].source_buf));
             increment = 2;
         }
-        // writefln("DMA Channel %x successfully transfered from %x to %x. %x units left.", current_channel, dma_channels[current_channel].source_buf, dma_channels[current_channel].dest_buf, dma_channels[current_channel].size_buf);
 
 
         // edit dest_buf and source_buf as needed to set up for the next dma
@@ -115,25 +139,6 @@ public:
                 dma_channels[current_channel].source_buf -= increment; break;
             
             default: {}
-        }
-
-        // did we finish dma?
-        if (dma_channels[current_channel].size_buf == 0) {
-            // writefln("DMA Channel %x Finished", current_channel);
-            // do we repeat dma?
-            if (get_nth_bit(*dma_channels[current_channel].cnt_h, 9)) {
-                if (get_nth_bits(*dma_channels[current_channel].cnt_h, 5, 6) == 0b11) {
-                    dma_channels[current_channel].dest_buf = *dma_channels[current_channel].dest;
-                }
-
-                dma_channels[current_channel].size_buf = *dma_channels[current_channel].cnt_l & 0x0FFFFFFF;
-                if (current_channel == 3) dma_channels[current_channel].size_buf &= 0x07FFFFFF;
-            } else {
-                dma_channels[current_channel].enabled = false;
-                *dma_channels[current_channel].cnt_h &= ~(1UL << 15);
-            }
-        } else {
-            dma_channels[current_channel].size_buf--;
         }
 
         return true;

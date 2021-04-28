@@ -46,6 +46,10 @@ public:
         this.enabled = false;
 
         cpu.set_mode(cpu.MODE_SYSTEM);
+
+        // load bios
+        ubyte[] bios = get_rom_as_bytes("source/bios.gba");
+        cpu.memory.main[Memory.OFFSET_BIOS .. Memory.OFFSET_BIOS + bios.length] = bios[0 .. bios.length];
     }
     
     void load_rom(string rom_name) {
@@ -114,7 +118,10 @@ public:
             }
 
             case 0x04: {
+                import std.stdio;
+                writefln("%x, %x", cpu.regs[0], cpu.regs[1]);
                 cpu.halted = true;
+                *cpu.pc += (cpu.get_bit_T() ? 4 : 8);
                 break;
             }
 
@@ -139,21 +146,26 @@ public:
             case 0x0B: { // CpuSet
                 uint source_address = cpu.regs[0];
                 uint dest_address   = cpu.regs[1];
+                warning(format("%x %x %x", cpu.regs[0], cpu.regs[1], cpu.regs[2]));
                 uint length         = get_nth_bits(cpu.regs[2], 0, 21);
                 bool is_fill        = get_nth_bit (cpu.regs[2], 24); // if false, this is a copy
-                bool is_halfword    = get_nth_bit (cpu.regs[2], 26); // if false, we're transferring words
+                bool is_word        = get_nth_bit (cpu.regs[2], 26); // if false, we're transferring halfwords
 
                 for (int i = 0; i < length; i++) {
-                    if (is_halfword) {
-                        memory.write_halfword(dest_address, memory.read_halfword(source_address));
-                        dest_address += 2;
+                    if (is_word) {
+                        memory.write_word    (dest_address, memory.read_word(source_address));
+                        dest_address += 4;
                     } else {
-                        memory.write_word    (dest_address, memory.read_halfword(source_address));
+                        memory.write_halfword(dest_address, memory.read_halfword(source_address));
                         dest_address += 2;
                     }
 
                     if (!is_fill) {
-                        source_address += 2;
+                        if (is_word) {
+                            source_address += 4;
+                        } else {
+                            source_address += 2;
+                        }
                     }
                 }
 
@@ -166,14 +178,15 @@ public:
                 uint length         = get_nth_bits(cpu.regs[2], 0, 21);
                 bool is_fill        = get_nth_bit (cpu.regs[2], 24); // if false, this is a copy
 
+                warning(format("FAST %x %x %x", cpu.regs[0], cpu.regs[1], cpu.regs[2]));
                 if ((length & 0b111) != 0) length = (length & 0xFFFFFFF8) + 1; // round up if not a multiple of 8
 
                 for (int i = 0; i < length; i++) {
-                    memory.write_word(dest_address, memory.read_halfword(source_address));
-                    dest_address += 2;
+                    memory.write_word(dest_address, memory.read_word(source_address));
+                    dest_address += 4;
 
                     if (!is_fill) {
-                        source_address += 2;
+                        source_address += 4;
                     }
                 }
 

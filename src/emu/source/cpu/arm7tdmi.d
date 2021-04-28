@@ -46,15 +46,6 @@ class ARM7TDMI {
         sp   = &regs[13];
         cpsr = &regs[16];
         spsr = &regs[17];
-
-        // set up memory for interrupt handler
-        memory.write_word(0x018, 0xEA000028);
-        memory.write_word(0x128, 0xE92D500F);
-        memory.write_word(0x12C, 0xE3A00301);
-        memory.write_word(0x130, 0xE28FE000);
-        memory.write_word(0x134, 0xE510F004);
-        memory.write_word(0x138, 0xE8BD500F);
-        memory.write_word(0x13C, 0xE25EF004);
     }
 
     // the register array is going to be accessed as such:
@@ -205,14 +196,14 @@ class ARM7TDMI {
             uint opcode = fetch();
 
 
-            // write(format("%08x |", opcode));
-            
-            // for (int j = 0; j < 16; j++)
-            //     write(format("%08x ", regs[j]));
+            // if ((*pc & 0xFF000000) == 0x00000000) {
+                // write(format("%08x |", opcode));
+                
+                // for (int j = 0; j < 16; j++)
+                //     write(format("%08x ", regs[j]));
 
-            // writeln();
-
-            if (*pc == 0x0800_1bfe) readln;
+                // writeln();
+            // }
 
             execute(opcode);
         } else {
@@ -331,9 +322,12 @@ class ARM7TDMI {
         if (get_nth_bit(*cpsr, 7)) return;
 
         if (!(*memory.IME & 0x1)) return; // if interrupts are disabled globally, ignore.
-        
+
         // is this specific interrupt enabled
         if (*memory.IE & interrupt_code) {
+            writefln("Interrupt! %x", *pc);
+            register_file[MODE_IRQ.OFFSET + 17] = *cpsr;
+
             *cpsr |= (1 << 7); // disable interrupts for the time being...
 
             *memory.IF |= interrupt_code;
@@ -341,7 +335,10 @@ class ARM7TDMI {
 
             halted = false;
             set_mode(MODE_IRQ);
+            set_bit_T(false);
             *pc = 0x18;
+
+            // readln();
         }
     }
 

@@ -244,6 +244,7 @@ class Memory {
             error(format("Address out of range on read byte %s", to_hex_string(address) ~ ")"));
             return 0;
         }
+        if (address == 0x030014d0) writefln("Read byte from %08x", address);
         return main[address];
     }
 
@@ -257,6 +258,7 @@ class Memory {
             error(format("Address out of range on read halfword %s", to_hex_string(address) ~ ")"));
             return 0;
         }
+        if (address == 0x030014d0) writefln("Read halfword from %08x", address);
         return (cast(ushort) main[address + 0] << 0) | (cast(ushort) main[address + 1] << 8);
     }
 
@@ -270,6 +272,7 @@ class Memory {
             error(format("Address out of range on read word %s", to_hex_string(address) ~ ")"));
             return 0;
         }
+        if (address == 0x030014d0) writefln("Read word from %08x", address);
         return (cast(uint) main[address + 0] << 0) | (
                 cast(uint) main[address + 1] << 8) | (cast(
                 uint) main[address + 2] << 16) | (cast(uint) main[address + 3] << 24);
@@ -305,8 +308,10 @@ class Memory {
             error(format("Address out of range on write byte %s", to_hex_string(address) ~ ")"));
         // main[address] = value;
         set_memory(address + 0, cast(ubyte)((value >> 0) & 0xff));
-        // if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote byte %02x to %x", value, address);
-        // if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote byte %02x to %x", value, address);
+        if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote byte %02x to %x", value, address);
+        if (address == 0x030014d0) writefln("Wrote byte %08x to %x", value, address);
+        if ((address & 0xFF000000) == 0x0000000) error("ATTEMPT TO OVERWRITE BIOS!!!");
+        // if ((address & 0xFF000000) == 0x6000000) writefln("Wrote byte %02x to %x", value, address);
         // writefln("Wrote byte %08x to %x", value, address);
     }
 
@@ -322,8 +327,10 @@ class Memory {
         // *(cast(ushort*) (main[0] + address)) = value;
         set_memory(address + 0, cast(ubyte)((value >> 0) & 0xff));
         set_memory(address + 1, cast(ubyte)((value >> 8) & 0xff));
-        // if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote halfword %04x to %x", value, address);
-        // if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote halfword %04x to %x", value, address);
+        if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote halfword %04x to %x", value, address);
+        if (address == 0x030014d0) writefln("Wrote halfword %08x to %x", value, address);
+        if ((address & 0xFF000000) == 0x0000000) error("ATTEMPT TO OVERWRITE BIOS!!!");
+        // if ((address & 0xFF000000) == 0x6000000 && value != 0) writefln("Wrote halfword %04x to %x", value, address);
         // writefln("Wrote halfword %08x to %x", value, address);
     }
 
@@ -341,8 +348,10 @@ class Memory {
         set_memory(address + 1, cast(ubyte)((value >> 8)  & 0xff));
         set_memory(address + 2, cast(ubyte)((value >> 16) & 0xff));
         set_memory(address + 3, cast(ubyte)((value >> 24) & 0xff));
-        // if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote word %08x to %x", value, address);
-        // if ((address & 0xFFFF0000) == 0x6000000) writefln("Wrote word %08x to %x", value, address);
+        if ((address & 0xFFFFF000) == 0x4000000) if (address != 0x040000a0) writefln("Wrote word %08x to %x", value, address);
+        if (address == 0x030014d0) writefln("Wrote word %08x to %x", value, address);
+        if ((address & 0xFF000000) == 0x0000000) error("ATTEMPT TO OVERWRITE BIOS!!!");
+        // if ((address & 0xFF000000) == 0x6000000 && value != 0) writefln("Wrote word %08x to %x", value, address);
         // writefln("Wrote word %08x to %x", value, address);
     }
 
