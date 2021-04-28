@@ -132,6 +132,9 @@ private:
             // which tile we are looking at by getting the high five bits (sc_x and sc_y), and we can
             // figure out the offset we are at within the tile by grabbing the low 3 bits (tile_x and
             // tile_y).
+            // 1000_0000
+            // 0, 10
+            // 0, 0
             ushort sc_x   = (x >> 3) & 0x1f;
             ushort sc_y   = (y >> 3) & 0x1f;
             ushort tile_x = x & 0b111;
@@ -166,12 +169,13 @@ private:
             // we use sc_x and sc_y from earlier to get the current tile. each tile is a halfword, so we
             // multiply (sc_x + (sc_y * 32)) by 2.
             ushort current_tile = memory.read_halfword(screen_base_address + (sc_x + (sc_y * 32)) * 2);
+            // if ((sc_x + (sc_y * 32)) * 2 == 0x400) warning(format("tile: %x %x", (sc_x + (sc_y * 32)) * 2, current_tile));
 
             // palettes / colors ratio?
             if (get_nth_bit(*background.control, 7)) { // 256 / 1
-                // only the upper 9 bits of current_tile are relevant. we use these to get the index into the palette ram
+                // only the upper 10 bits of current_tile are relevant. we use these to get the index into the palette ram
                 // for the particular pixel are are interested in (determined by tile_x and tile_y).
-                ubyte index = memory.read_byte(tile_base_address + ((current_tile & 0x1ff) * 64) + tile_y * 8 + tile_x);
+                ubyte index = memory.read_byte(tile_base_address + ((current_tile & 0x3ff) * 64) + tile_y * 8 + tile_x);
 
                 // and we grab that pixel from palette ram and interpret it as 15bit highcolor.
                 uint color = memory.read_halfword(memory.OFFSET_PALETTE_RAM + index * 2);
@@ -179,7 +183,7 @@ private:
             } else { // 16 / 16
                 // same as above, but the upper 4 bits of current_tile specify a color palette. there are 16 color palettes,
                 // each of which is 16 bytes long.
-                ubyte index = memory.read_byte(tile_base_address + ((current_tile & 0x1ff) * 32) + tile_y * 4 + (tile_x / 2));
+                ubyte index = memory.read_byte(tile_base_address + ((current_tile & 0x3ff) * 32) + tile_y * 4 + (tile_x / 2));
                 if (tile_x % 2 == 0) {
                     index &= 0xF;
                 } else {
@@ -244,7 +248,9 @@ private:
             ushort attribute_2 = memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 4);
 
             int x        = sign_extend(cast(ubyte) get_nth_bits(attribute_1,  0,  9), 9);
-            ubyte width  = sprite_sizes[size][shape][0];
+            ubyte width  = sprite_sizes[shape][size][0];
+
+            if (sprite == 0) warning(format("SHAPE: %x %x %x %x %x %x", attribute_0, attribute_1, size, shape, width, height));
 
             // base_tile_number is going to be the tile number of the left-most tile that makes
             // up the sprite in the current scanline. to calculate this, we first get the topleft 
@@ -255,15 +261,19 @@ private:
 
             // colors / palettes
             if (get_nth_bit(attribute_0, 13)) { // 256 / 1
-                base_tile_number += (width / 8) * ((scanline - y) / 8) * 2;
+                if (get_nth_bit(*memory.DISPCNT, 6)) {
+                    base_tile_number += (width / 8) * ((scanline - y) / 8) * 2;
+                } else {
+                    base_tile_number += 32 * ((scanline - y) / 8) * 2;
+                }
                 // ubyte palette = get_nth_bits(attribute_2, 12, 16);
                 for (int draw_x = x; draw_x < x + width; draw_x++) {
                     uint tile_base_address = memory.OFFSET_VRAM + 0x10000; // probably wrong lol
 
                     uint shifted_tile_number = base_tile_number + ((draw_x - x) / 8) * 2;
-                    // only the upper 9 bits of current_tile are relevant. we use these to get the index into the palette ram
+                    // only the upper 10 bits of current_tile are relevant. we use these to get the index into the palette ram
                     // for the particular pixel we are interested in (determined by tile_x and tile_y).
-                    ubyte index = memory.read_byte(tile_base_address + (((shifted_tile_number & 0x1ff) >> 1) * 64) + 
+                    ubyte index = memory.read_byte(tile_base_address + (((shifted_tile_number & 0x3ff) >> 1) * 64) + 
                                                                        ((scanline - y) % 8) * 8 +
                                                                        ((draw_x   - x) % 8));
 
@@ -271,7 +281,12 @@ private:
                     maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index, draw_x, scanline);
                 }
             } else { // 16 / 16
-                base_tile_number += (width / 8) * ((scanline - y) / 8);
+                if (get_nth_bit(*memory.DISPCNT, 6)) {
+                    base_tile_number += (width / 8) * ((scanline - y) / 8);
+                } else {
+                    base_tile_number += 32 * ((scanline - y) / 8);
+                }
+
                 for (int draw_x = x; draw_x < x + width; draw_x += 2) {
                     // TODO: REPEATED CODE
 
@@ -282,20 +297,21 @@ private:
                     // tells us the current tile column we are rendering.
                     uint shifted_tile_number = base_tile_number + ((draw_x - x) / 8);
 
-                    // only the upper 9 bits of current_tile are relevant. we use these to get the index into the palette ram
+                    // only the upper 10 bits of current_tile are relevant. we use these to get the index into the palette ram
                     // for the particular pixel we are interested in (determined by tile_x and tile_y). we multiply
                     // shifted_tile_number by 32 because each tile is 32 bytes long. (scanline - y) % 8 and (draw_x - x) % 8
                     // are the current pixel x y offsets within the tile. since each pixel is half of a byte, we multiply
                     // the x y offsets by (8 / 2) and (1 / 2) respectively.
-                    ubyte index = memory.read_byte(tile_base_address + ((shifted_tile_number & 0x1ff) * 32) + 
+                    ubyte index = memory.read_byte(tile_base_address + ((shifted_tile_number & 0x3ff) * 32) + 
                                                                        ((scanline - y) % 8) * 4 +
                                                                        ((draw_x   - x) % 8) / 2);
 
-                    index += get_nth_bits(attribute_2, 12, 16) * 32;
-
+                    uint index_L = (index & 0xF) + get_nth_bits(attribute_2, 12, 16) * 16;
+                    uint index_H = (index >> 4)  + get_nth_bits(attribute_2, 12, 16) * 16;
+                    
                     // and we grab two pixels from palette ram and interpret them as 15bit highcolor.
-                    maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index & 0xF, draw_x,     scanline);
-                    maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index >> 4,  draw_x + 1, scanline);
+                    maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index_L, draw_x,     scanline);
+                    maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index_H, draw_x + 1, scanline);
                 }
             }
         }
@@ -330,13 +346,14 @@ private:
     }
 
     void maybe_draw_pixel(uint palette_offset, uint palette_index, uint x, uint y) {
-        if (palette_index != 0) {
+        if ((palette_index & 0xF) != 0) {
             draw_pixel(palette_offset, palette_index, x, y);
         }
     }
 
     void draw_pixel(uint palette_offset, uint palette_index, uint x, uint y) {
         uint color = memory.read_halfword(palette_offset + palette_index * 2);
+        // warning(format("%x", palette_offset));
         if (x >= 240 || y >= 160) return;
 
         memory.set_rgb(x, y, cast(ubyte) (get_nth_bits(color,  0,  5) * 255 / 31),

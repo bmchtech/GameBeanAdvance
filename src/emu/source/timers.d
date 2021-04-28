@@ -3,6 +3,8 @@ module timers;
 import memory;
 import util;
 
+import std.stdio;
+
 class TimerManager {
 public:
     this(Memory memory) {
@@ -40,10 +42,12 @@ public:
 
         // were any timers enabled?
         for (int i = 0; i < 4; i++) {
-            if (!timers[i].enabled && get_nth_bit(*timers[i].cnt_h, 15)) {
+            if (!timers[i].enabled && timers[i].reload_value != 0) {
                 timers[i].timer_value = timers[i].reload_value;
                 timers[i].enabled     = true;
                 timers[i].cycles_till_increment = increments[get_nth_bits(*timers[i].cnt_h, 0, 2)];
+
+                writefln("Timer %x enabled.", i);
             }
         }
 
