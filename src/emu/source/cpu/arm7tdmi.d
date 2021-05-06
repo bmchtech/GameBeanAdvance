@@ -193,9 +193,6 @@ class ARM7TDMI {
             //     error("PC out of range!");
             // }
 
-            uint opcode = fetch();
-
-
             // if ((*pc & 0xFF000000) == 0x00000000) {
                 // write(format("%08x |", opcode));
                 
@@ -204,6 +201,9 @@ class ARM7TDMI {
 
                 // writeln();
             // }
+
+            uint opcode = fetch();
+
 
             execute(opcode);
         } else {

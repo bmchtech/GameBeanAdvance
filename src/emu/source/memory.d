@@ -241,7 +241,7 @@ class Memory {
             mixin(VERBOSE_LOG!(`2`,
                     `format("Reading byte from address %s", to_hex_string(address))`));
         if (cast(ulong)address >= SIZE_MAIN_MEMORY) {
-            error(format("Address out of range on read byte %s", to_hex_string(address) ~ ")"));
+            warning(format("Address out of range on read byte %s", to_hex_string(address) ~ ")"));
             return 0;
         }
         if (address == 0x030014d0) writefln("Read byte from %08x", address);
@@ -255,7 +255,7 @@ class Memory {
             mixin(VERBOSE_LOG!(`2`,
                     `format("Reading halfword from address %s", to_hex_string(address))`));
         if (cast(ulong)address + 2 >= SIZE_MAIN_MEMORY) {
-            error(format("Address out of range on read halfword %s", to_hex_string(address) ~ ")"));
+            warning(format("Address out of range on read halfword %s", to_hex_string(address) ~ ")"));
             return 0;
         }
         if (address == 0x030014d0) writefln("Read halfword from %08x", address);
@@ -269,7 +269,7 @@ class Memory {
             mixin(VERBOSE_LOG!(`2`,
                     `format("Reading word from address %s", to_hex_string(address))`));
         if (cast(ulong)address + 4 >= SIZE_MAIN_MEMORY) {
-            error(format("Address out of range on read word %s", to_hex_string(address) ~ ")"));
+            warning(format("Address out of range on read word %s", to_hex_string(address) ~ ")"));
             return 0;
         }
         if (address == 0x030014d0) writefln("Read word from %08x", address);
@@ -300,49 +300,49 @@ class Memory {
         }
 
 
-        // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
+        if (address > 0x08000000) warning("Attempt to write to ROM!" ~ to_hex_string(address));
         // if ((address & 0xFFFF0000) == 0x6000000)
         //     mixin(VERBOSE_LOG!(`2`, `format("Writing byte %s to address %s",
         //             to_hex_string(value), to_hex_string(address))`));
         if (cast(ulong)address >= SIZE_MAIN_MEMORY)
-            error(format("Address out of range on write byte %s", to_hex_string(address) ~ ")"));
+            warning(format("Address out of range on write byte %s", to_hex_string(address) ~ ")"));
         // main[address] = value;
         set_memory(address + 0, cast(ubyte)((value >> 0) & 0xff));
         if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote byte %02x to %x", value, address);
         if (address == 0x030014d0) writefln("Wrote byte %08x to %x", value, address);
-        if ((address & 0xFF000000) == 0x0000000) error("ATTEMPT TO OVERWRITE BIOS!!!");
-        // if ((address & 0xFF000000) == 0x6000000) writefln("Wrote byte %02x to %x", value, address);
+        if ((address & 0xFF000000) == 0x0000000) warning("ATTEMPT TO OVERWRITE BIOS!!!");
+        if ((address & 0xFF000000) == 0x5000000) writefln("Wrote byte %02x to %x", value, address);
         // writefln("Wrote byte %08x to %x", value, address);
     }
 
     void write_halfword(uint address, ushort value) {
         address = calculate_mirrors(address);
 
-        // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
+        if (address > 0x08000000) warning("Attempt to write to ROM!" ~ to_hex_string(address));
         // if ((address & 0xFFFF0000) == 0x6000000)
         //     mixin(VERBOSE_LOG!(`2`, `format("Writing halfword %s to address %s",
         //             to_hex_string(value), to_hex_string(address))`));
         if (cast(ulong)address + 2 >= SIZE_MAIN_MEMORY)
-            error(format("Address out of range on write halfword %s", to_hex_string(address) ~ ")"));
+            warning(format("Address out of range on write halfword %s", to_hex_string(address) ~ ")"));
         // *(cast(ushort*) (main[0] + address)) = value;
         set_memory(address + 0, cast(ubyte)((value >> 0) & 0xff));
         set_memory(address + 1, cast(ubyte)((value >> 8) & 0xff));
         if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote halfword %04x to %x", value, address);
         if (address == 0x030014d0) writefln("Wrote halfword %08x to %x", value, address);
-        if ((address & 0xFF000000) == 0x0000000) error("ATTEMPT TO OVERWRITE BIOS!!!");
-        // if ((address & 0xFF000000) == 0x6000000 && value != 0) writefln("Wrote halfword %04x to %x", value, address);
+        if ((address & 0xFF000000) == 0x0000000) warning("ATTEMPT TO OVERWRITE BIOS!!!");
+        if ((address & 0xFF000000) == 0x5000000) writefln("Wrote halfword %04x to %x", value, address);
         // writefln("Wrote halfword %08x to %x", value, address);
     }
 
     void write_word(uint address, uint value) {
         address = calculate_mirrors(address);
 
-        // if (address > 0x08000000) error("Attempt to read from ROM!" + to_hex_string(address));
+        if (address > 0x08000000) warning("Attempt to write to ROM!" ~ to_hex_string(address));
         // if ((address & 0xFFFF0000) == 0x6000000)
         //     mixin(VERBOSE_LOG!(`2`, `format("Writing word %s to address %s",
         //             to_hex_string(value), to_hex_string(address))`));
         if (cast(ulong)address + 4 >= SIZE_MAIN_MEMORY)
-            error(format("Address out of range on write word %s", to_hex_string(address) ~ ")"));
+            warning(format("Address out of range on write word %s", to_hex_string(address) ~ ")"));
         // *(cast(uint*) (main[0] + address)) = value;
         set_memory(address + 0, cast(ubyte)((value >> 0)  & 0xff));
         set_memory(address + 1, cast(ubyte)((value >> 8)  & 0xff));
@@ -350,8 +350,8 @@ class Memory {
         set_memory(address + 3, cast(ubyte)((value >> 24) & 0xff));
         if ((address & 0xFFFFF000) == 0x4000000) if (address != 0x040000a0) writefln("Wrote word %08x to %x", value, address);
         if (address == 0x030014d0) writefln("Wrote word %08x to %x", value, address);
-        if ((address & 0xFF000000) == 0x0000000) error("ATTEMPT TO OVERWRITE BIOS!!!");
-        // if ((address & 0xFF000000) == 0x6000000 && value != 0) writefln("Wrote word %08x to %x", value, address);
+        if ((address & 0xFF000000) == 0x0000000) warning("ATTEMPT TO OVERWRITE BIOS!!!");
+        if ((address & 0xFF000000) == 0x5000000) writefln("Wrote word %08x to %x", value, address);
         // writefln("Wrote word %08x to %x", value, address);
     }
 

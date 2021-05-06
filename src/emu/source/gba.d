@@ -61,12 +61,12 @@ public:
     }
  
     void cycle() {
-        maybe_cycle_cpu();
-        maybe_cycle_cpu();
-        maybe_cycle_cpu();
-        maybe_cycle_cpu();
+        // maybe_cycle_cpu();
+        // maybe_cycle_cpu();
+        // maybe_cycle_cpu();
+        // maybe_cycle_cpu();
 
-        ppu.cycle();
+        // ppu.cycle();
     }
 
     void maybe_cycle_cpu() {
@@ -82,6 +82,7 @@ public:
     }
 
     void bios_call(int bios_function) {
+        warning(format("BIOS: %x", bios_function));
         switch (bios_function) {
             case 0x01: { // Register RAM Reset
                 // note entry 7 is special so it isnt included
@@ -121,7 +122,7 @@ public:
                 import std.stdio;
                 writefln("%x, %x", cpu.regs[0], cpu.regs[1]);
                 cpu.halted = true;
-                *cpu.pc += (cpu.get_bit_T() ? 4 : 8);
+                // *cpu.pc += 4;
                 break;
             }
 
@@ -146,7 +147,7 @@ public:
             case 0x0B: { // CpuSet
                 uint source_address = cpu.regs[0];
                 uint dest_address   = cpu.regs[1];
-                warning(format("%x %x %x", cpu.regs[0], cpu.regs[1], cpu.regs[2]));
+                // warning(format("%x %x %x", cpu.regs[0], cpu.regs[1], cpu.regs[2]));
                 uint length         = get_nth_bits(cpu.regs[2], 0, 21);
                 bool is_fill        = get_nth_bit (cpu.regs[2], 24); // if false, this is a copy
                 bool is_word        = get_nth_bit (cpu.regs[2], 26); // if false, we're transferring halfwords
@@ -178,10 +179,11 @@ public:
                 uint length         = get_nth_bits(cpu.regs[2], 0, 21);
                 bool is_fill        = get_nth_bit (cpu.regs[2], 24); // if false, this is a copy
 
-                warning(format("FAST %x %x %x", cpu.regs[0], cpu.regs[1], cpu.regs[2]));
-                if ((length & 0b111) != 0) length = (length & 0xFFFFFFF8) + 1; // round up if not a multiple of 8
+                // warning(format("FAST %x %x %x", cpu.regs[0], cpu.regs[1], cpu.regs[2]));
+                if ((length & 0b111) != 0) length = (length & 0xFFFFFFF8) + 8; // round up if not a multiple of 8
 
                 for (int i = 0; i < length; i++) {
+                    // warning(format("%x", dest_address));
                     memory.write_word(dest_address, memory.read_word(source_address));
                     dest_address += 4;
 
@@ -190,6 +192,49 @@ public:
                     }
                 }
 
+                break;
+            }
+        
+            case 0x11: { // LZ77UnCompReadNormalWrite8bit
+                uint source_address = cpu.regs[0];
+                uint dest_address   = cpu.regs[1];
+
+                uint data_size = get_nth_bits(memory.read_word(source_address), 8, 32);
+                source_address += 4;
+                
+                cpu.cycles_remaining += 20 * data_size; // rough estimate
+
+                uint data_read = 0;
+                while (data_read < data_size) {
+                    ubyte flag_data = memory.read_byte(source_address);
+                    source_address++;
+                    data_read++;
+
+                    uint mask = 0b1000_0000;
+                    for (int i = 0; i < 8; i++) {
+                        if (flag_data & mask) { // this bytes compressed
+                            ushort compressed_data = memory.read_halfword(source_address);
+                            source_address += 2;
+
+                            uint disp = (get_nth_bits(compressed_data, 0, 4) << 8) | get_nth_bits(compressed_data, 8, 16);
+                            for (int j = 0; j < get_nth_bits(compressed_data, 4, 8) + 3; j++) {
+                                memory.write_byte(dest_address, memory.read_byte(dest_address - disp - 1));
+                                dest_address++;
+                            }
+
+                            data_read += 2;
+                        } else { // this bytes uncompressed
+                            memory.write_byte(dest_address, memory.read_byte(source_address));
+                            source_address++;
+                            dest_address++;
+                            data_read += 1;
+                        }
+
+                        mask >>= 1;
+                    }
+                }
+
+                warning("Data Decompressed.");
                 break;
             }
 
