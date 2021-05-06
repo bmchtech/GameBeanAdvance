@@ -61,12 +61,12 @@ public:
     }
  
     void cycle() {
-        // maybe_cycle_cpu();
-        // maybe_cycle_cpu();
-        // maybe_cycle_cpu();
-        // maybe_cycle_cpu();
+        maybe_cycle_cpu();
+        maybe_cycle_cpu();
+        maybe_cycle_cpu();
+        maybe_cycle_cpu();
 
-        // ppu.cycle();
+        ppu.cycle();
     }
 
     void maybe_cycle_cpu() {

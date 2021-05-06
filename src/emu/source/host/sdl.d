@@ -8,42 +8,36 @@ import gba;
 import cputrace;
 import logger;
 
+import apu;
+
 class GameBeanSDLHost {
     enum VERIFICATION = 0x2B;
 
-    struct AudioData {
-        ubyte[] chunk;
-        ubyte*  pos;
-        uint    total_bytes;
-        uint    bytes_left;
-        ubyte   verification;
-    }
+    // extern (C) {
+    //     static void fill_audio(void* userdata, ubyte* stream, int len) nothrow {
+    //         AudioData* audio_data = cast(AudioData*) userdata;
 
-    extern (C) {
-        static void fill_audio(void* userdata, ubyte* stream, int len) nothrow {
-            AudioData* audio_data = cast(AudioData*) userdata;
+    //         /* Only play if we have data left */
+    //         if (audio_data.bytes_left == 0)
+    //             return;
 
-            /* Only play if we have data left */
-            if (audio_data.bytes_left == 0)
-                return;
+    //         len = (len > audio_data.bytes_left ? audio_data.bytes_left : len);
 
-            len = (len > audio_data.bytes_left ? audio_data.bytes_left : len);
+    //         try {
+    //             writefln("Mixing... %d %d", audio_data.bytes_left, len);
+    //         } catch (Exception e) {
 
-            try {
-                writefln("Mixing... %d %d", audio_data.bytes_left, len);
-            } catch (Exception e) {
+    //         }
 
-            }
-
-            for (int i = 0; i < len; i++)
-                stream[i] = audio_data.chunk[i];
+    //         for (int i = 0; i < len; i++)
+    //             stream[i] = audio_data.chunk[i];
             
-            for (int i = len; i < audio_data.total_bytes; i++)
-                audio_data.chunk[i - len] = audio_data.chunk[i];
+    //         for (int i = len; i < audio_data.total_bytes; i++)
+    //             audio_data.chunk[i - len] = audio_data.chunk[i];
 
-            audio_data.bytes_left -= len;
-        }
-    }
+    //         audio_data.bytes_left -= len;
+    //     }
+    // }
 
     this(GBA gba, int screen_scale) {
         this.gba = gba;
@@ -72,39 +66,35 @@ class GameBeanSDLHost {
         SDL_AudioSpec wanted;
         SDL_AudioSpec received;
 
-        AudioData audio_data;
-
         /* Set the audio format */
         wanted.freq = 44100;
         wanted.format = AUDIO_U8;
         wanted.channels = 1;    /* 1 = mono, 2 = stereo */
         wanted.samples = 1024;  /* Good low-latency value for callback */
-        wanted.callback = &fill_audio;
-        wanted.userdata = &audio_data;
+        wanted.callback = &apu.audiobuffer.callback;
+        wanted.userdata = apu.audiobuffer.get_audio_data();
 
-        audio_data.chunk = new ubyte[44100 * 2];
-        audio_data.pos = audio_data.chunk.ptr;
-        audio_data.bytes_left = 44100;
-        audio_data.total_bytes = 44100;
-        audio_data.verification = VERIFICATION;
+        // audio_data.chunk = new ubyte[44100 * 2];
+        // audio_data.pos = audio_data.chunk.ptr;
+        // audio_data.bytes_left = 44100;
+        // audio_data.total_bytes = 44100;
+        // audio_data.verification = VERIFICATION;
 
-        for (int i = 0; i < 44100 * 2; i++) {
-            audio_data.chunk[i] = ((i % 588) > 294) ? 0x80 : 0;
+        ubyte[] buffer = new ubyte[0x1000];
+        for (int i = 0; i < 0x1000; i++) {
+            buffer[i] = ((i % 588) > 294) ? 0x80 : 0;
         }
+
+        push_to_buffer(buffer);
         /* Open the audio device, forcing the desired format */
         int output = SDL_OpenAudio(&wanted, &received);
         if (output < 0) {
             writefln("Couldn't open audio: %s\n", SDL_GetError());
-        }
+        } else {
+            writefln("connected. %d %d %d %s", received.freq, received.channels, received.samples, received.format);
+            writefln("[SDL] Audio driver: %s\n", SDL_GetCurrentAudioDriver());
 
-        writefln("connected. %d %d %d %s", received.freq, received.channels, received.samples, received.format);
-        writefln("[SDL] Audio driver: %s\n", SDL_GetCurrentAudioDriver());
-
-
-        SDL_PauseAudio(0);
-        while (audio_data.bytes_left > 0) {
-            writefln("Waiting.");
-            SDL_Delay(100);
+            SDL_PauseAudio(0);
         }
 
         writeln("Complete.");
