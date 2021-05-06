@@ -17,6 +17,7 @@ public:
         this.memory        = memory;
         this.interrupt_cpu = interrupt_cpu;
         dot                = 0;
+        pixel_priorities   = new uint[][](240, 160);
 
         background_init(memory);
     }
@@ -35,6 +36,11 @@ public:
                 scanline = 0;
                 *memory.DISPSTAT &= ~1;
                 memory.has_updated = true;
+
+                // 100 should be more than big enough
+                for (int x = 0; x < 240; x++)
+                for (int y = 0; y < 160; y++)
+                    pixel_priorities[x][y] = 100;
             }
         }
         *memory.VCOUNT = scanline;
@@ -76,6 +82,7 @@ public:
                 render_background_mode0(background_3, scanline);
                 render_sprites(scanline);
                 // test_render_sprites();
+                // test_render_palette();
                 break;
             }
 
@@ -113,6 +120,7 @@ public:
 private:
     Memory memory;
     ushort dot; // the horizontal counterpart to scanlines.
+    uint[][] pixel_priorities; // the associated priorities with each pixel.
 
     void render_background_mode0(Background background, int scanline) {
         // do we even render?
@@ -171,6 +179,8 @@ private:
             ushort current_tile = memory.read_halfword(screen_base_address + (sc_x + (sc_y * 32)) * 2);
             // if ((sc_x + (sc_y * 32)) * 2 == 0x400) warning(format("tile: %x %x", (sc_x + (sc_y * 32)) * 2, current_tile));
 
+            uint priority = get_nth_bits(*background.control, 0, 2) * 2 + 1;
+
             // palettes / colors ratio?
             if (get_nth_bit(*background.control, 7)) { // 256 / 1
                 // only the upper 10 bits of current_tile are relevant. we use these to get the index into the palette ram
@@ -179,7 +189,7 @@ private:
 
                 // and we grab that pixel from palette ram and interpret it as 15bit highcolor.
                 uint color = memory.read_halfword(memory.OFFSET_PALETTE_RAM + index * 2);
-                draw_pixel(memory.OFFSET_PALETTE_RAM, index, x_ofs, scanline);
+                maybe_draw_pixel(memory.OFFSET_PALETTE_RAM, index, priority, x_ofs, scanline);
             } else { // 16 / 16
                 // same as above, but the upper 4 bits of current_tile specify a color palette. there are 16 color palettes,
                 // each of which is 16 bytes long.
@@ -190,8 +200,8 @@ private:
                     index >>= 4;
                 }
 
-                index += get_nth_bits(current_tile, 12, 16) * 32;
-                draw_pixel(memory.OFFSET_PALETTE_RAM, index, x_ofs, scanline);
+                index += get_nth_bits(current_tile, 12, 16) * 16;
+                maybe_draw_pixel(memory.OFFSET_PALETTE_RAM, index, priority, x_ofs, scanline);
             }
         }
     }
@@ -250,7 +260,7 @@ private:
             int x        = sign_extend(cast(ubyte) get_nth_bits(attribute_1,  0,  9), 9);
             ubyte width  = sprite_sizes[shape][size][0];
 
-            if (sprite == 0) warning(format("SHAPE: %x %x %x %x %x %x", attribute_0, attribute_1, size, shape, width, height));
+            // if (sprite == 0) warning(format("SHAPE: %x %x %x %x %x %x", attribute_0, attribute_1, size, shape, width, height));
 
             // base_tile_number is going to be the tile number of the left-most tile that makes
             // up the sprite in the current scanline. to calculate this, we first get the topleft 
@@ -258,6 +268,7 @@ private:
             // tells us the current tile row we are rendering, and (width / 8) is the width of the
             // sprite in tiles.
             ushort base_tile_number = cast(ushort) get_nth_bits(attribute_2, 0, 10);
+            uint priority = 2 * get_nth_bits(attribute_2, 10, 11);
 
             // colors / palettes
             if (get_nth_bit(attribute_0, 13)) { // 256 / 1
@@ -278,7 +289,7 @@ private:
                                                                        ((draw_x   - x) % 8));
 
                     // and we grab the pixel from palette ram and interpret it as 15bit highcolor.
-                    maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index, draw_x, scanline);
+                    maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index, priority, draw_x, scanline);
                 }
             } else { // 16 / 16
                 if (get_nth_bit(*memory.DISPCNT, 6)) {
@@ -310,8 +321,8 @@ private:
                     uint index_H = (index >> 4)  + get_nth_bits(attribute_2, 12, 16) * 16;
                     
                     // and we grab two pixels from palette ram and interpret them as 15bit highcolor.
-                    maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index_L, draw_x,     scanline);
-                    maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index_H, draw_x + 1, scanline);
+                    maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index_L, priority, draw_x,     scanline);
+                    maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index_H, priority, draw_x + 1, scanline);
                 }
             }
         }
@@ -339,14 +350,29 @@ private:
                 ubyte index = memory.read_byte(tile_base_address + (tile_number * 64) + y * 8 + x);
 
                 // // and we grab two pixels from palette ram and interpret them as 15bit highcolor.
-                maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index & 0xF, col * 8 + x, row * 8 + y);
+                draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index & 0xF, col * 8 + x, row * 8 + y);
             }    
             }
         }
     }
 
-    void maybe_draw_pixel(uint palette_offset, uint palette_index, uint x, uint y) {
+    void test_render_palette() {
+        for (int i = 0; i < 256; i++) {
+            for (int x = 0; x < 4; x++) {
+            for (int y = 0; y < 4; y++) {
+                draw_pixel(memory.OFFSET_PALETTE_RAM, i, (i % 16) * 4 + x, (i / 16) * 4 + y);
+            }
+            }
+        }
+    }
+
+    void maybe_draw_pixel(uint palette_offset, uint palette_index, uint priority, uint x, uint y) {
+        if (priority >= pixel_priorities[x][y]) {
+            return;
+        }
+
         if ((palette_index & 0xF) != 0) {
+            pixel_priorities[x][y] = priority;
             draw_pixel(palette_offset, palette_index, x, y);
         }
     }

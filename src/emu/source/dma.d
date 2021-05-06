@@ -106,7 +106,7 @@ public:
             dma_channels[current_channel].size_buf--;
         }
 
-        if (current_channel == 3) writefln("DMA Channel %x successfully transfered %x from %x to %x. %x units left.", current_channel, memory.read_word(dma_channels[current_channel].source_buf), dma_channels[current_channel].source_buf, dma_channels[current_channel].dest_buf, dma_channels[current_channel].size_buf);
+        // if (current_channel == 3) writefln("DMA Channel %x successfully transfered %x from %x to %x. %x units left.", current_channel, memory.read_word(dma_channels[current_channel].source_buf), dma_channels[current_channel].source_buf, dma_channels[current_channel].dest_buf, dma_channels[current_channel].size_buf);
         // copy one piece of data over.
         int increment = 0;
         //    writefln("%x", dma_channels[current_channel].source_buf);
