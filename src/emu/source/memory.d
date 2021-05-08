@@ -44,67 +44,84 @@ class Memory {
     //  IO Registers
     //        NAME         R/W   DESCRIPTION
 
-    ushort* DISPCNT;    // R/W   LCD Control
-    ushort* DISPSTAT;   // R/W   General LCD Status (STAT,LYC)
-    ushort* VCOUNT;     // R     Vertical Counter (LY)
-    ushort* BG0CNT;     // R/W   BG0 Control
-    ushort* BG1CNT;     // R/W   BG1 Control
-    ushort* BG2CNT;     // R/W   BG2 Control
-    ushort* BG3CNT;     // R/W   BG3 Control
-    ushort* BG0HOFS;    // W     BG0 X-Offset
-    ushort* BG0VOFS;    // W     BG0 Y-Offset
-    ushort* BG1HOFS;    // W     BG1 X-Offset
-    ushort* BG1VOFS;    // W     BG1 Y-Offset
-    ushort* BG2HOFS;    // W     BG2 X-Offset
-    ushort* BG2VOFS;    // W     BG2 Y-Offset
-    ushort* BG3HOFS;    // W     BG3 X-Offset
-    ushort* BG3VOFS;    // W     BG3 Y-Offset
-    ushort* BG2PA;      // W     BG2 Rotation/Scaling Parameter A (dx)
-    ushort* BG2PB;      // W     BG2 Rotation/Scaling Parameter B (dmx)
-    ushort* BG2PC;      // W     BG2 Rotation/Scaling Parameter C (dy)
-    ushort* BG2PD;      // W     BG2 Rotation/Scaling Parameter D (dmy)
-    uint*   BG2X;       // W     BG2 Reference Point X-Coordinate
-    uint*   BG2Y;       // W     BG2 Reference Point Y-Coordinate
-    ushort* BG3PA;      // W     BG3 Rotation/Scaling Parameter A (dx)
-    ushort* BG3PB;      // W     BG3 Rotation/Scaling Parameter B (dmx)
-    ushort* BG3PC;      // W     BG3 Rotation/Scaling Parameter C (dy)
-    ushort* BG3PD;      // W     BG3 Rotation/Scaling Parameter D (dmy)
-    uint*   BG3X;       // W     BG3 Reference Point X-Coordinate
-    uint*   BG3Y;       // W     BG3 Reference Point Y-Coordinate
-    ushort* WIN0H;      // W     Window 0 Horizontal Dimensions
-    ushort* WIN1H;      // W     Window 1 Horizontal Dimensions
-    ushort* WIN0V;      // W     Window 0 Vertical Dimensions
-    ushort* WIN1V;      // W     Window 1 Vertical Dimensions
-    ushort* WININ;      // R/W   Inside of Window 0 and 1
-    ushort* WINOUT;     // R/W   Inside of OBJ Window & Outside of Windows
-    ushort* MOSAIC;     // W     Mosaic Size
-    ushort* BLDCNT;     // R/W   Color Special Effects Selection
-    ushort* BLDALPHA;   // R/W   Alpha Blending Coefficients
-    ushort* BLDY;       // W     Brightness (Fade-In/Out) Coefficient
+    ushort* DISPCNT;     // R/W   LCD Control
+    ushort* DISPSTAT;    // R/W   General LCD Status (STAT,LYC)
+    ushort* VCOUNT;      // R     Vertical Counter (LY)
+    ushort* BG0CNT;      // R/W   BG0 Control
+    ushort* BG1CNT;      // R/W   BG1 Control
+    ushort* BG2CNT;      // R/W   BG2 Control
+    ushort* BG3CNT;      // R/W   BG3 Control
+    ushort* BG0HOFS;     // W     BG0 X-Offset
+    ushort* BG0VOFS;     // W     BG0 Y-Offset
+    ushort* BG1HOFS;     // W     BG1 X-Offset
+    ushort* BG1VOFS;     // W     BG1 Y-Offset
+    ushort* BG2HOFS;     // W     BG2 X-Offset
+    ushort* BG2VOFS;     // W     BG2 Y-Offset
+    ushort* BG3HOFS;     // W     BG3 X-Offset
+    ushort* BG3VOFS;     // W     BG3 Y-Offset
+    ushort* BG2PA;       // W     BG2 Rotation/Scaling Parameter A (dx)
+    ushort* BG2PB;       // W     BG2 Rotation/Scaling Parameter B (dmx)
+    ushort* BG2PC;       // W     BG2 Rotation/Scaling Parameter C (dy)
+    ushort* BG2PD;       // W     BG2 Rotation/Scaling Parameter D (dmy)
+    uint*   BG2X;        // W     BG2 Reference Point X-Coordinate
+    uint*   BG2Y;        // W     BG2 Reference Point Y-Coordinate
+    ushort* BG3PA;       // W     BG3 Rotation/Scaling Parameter A (dx)
+    ushort* BG3PB;       // W     BG3 Rotation/Scaling Parameter B (dmx)
+    ushort* BG3PC;       // W     BG3 Rotation/Scaling Parameter C (dy)
+    ushort* BG3PD;       // W     BG3 Rotation/Scaling Parameter D (dmy)
+    uint*   BG3X;        // W     BG3 Reference Point X-Coordinate
+    uint*   BG3Y;        // W     BG3 Reference Point Y-Coordinate
+    ushort* WIN0H;       // W     Window 0 Horizontal Dimensions
+    ushort* WIN1H;       // W     Window 1 Horizontal Dimensions
+    ushort* WIN0V;       // W     Window 0 Vertical Dimensions
+    ushort* WIN1V;       // W     Window 1 Vertical Dimensions
+    ushort* WININ;       // R/W   Inside of Window 0 and 1
+    ushort* WINOUT;      // R/W   Inside of OBJ Window & Outside of Windows
+    ushort* MOSAIC;      // W     Mosaic Size
+    ushort* BLDCNT;      // R/W   Color Special Effects Selection
+    ushort* BLDALPHA;    // R/W   Alpha Blending Coefficients
+    ushort* BLDY;        // W     Brightness (Fade-In/Out) Coefficient
 
-    uint*   DMA0SAD;    // W     DMA 0 Source Address
-    uint*   DMA0DAD;    // W     DMA 0 Destination Address
-    ushort* DMA0CNT_L;  // W     DMA 0 Word Count
-    ushort* DMA0CNT_H;  // R/W   DMA 0 Control
-    uint*   DMA1SAD;    // W     DMA 1 Source Address
-    uint*   DMA1DAD;    // W     DMA 1 Destination Address
-    ushort* DMA1CNT_L;  // W     DMA 1 Word Count
-    ushort* DMA1CNT_H;  // R/W   DMA 1 Control
-    uint*   DMA2SAD;    // W     DMA 2 Source Address
-    uint*   DMA2DAD;    // W     DMA 2 Destination Address
-    ushort* DMA2CNT_L;  // W     DMA 2 Word Count
-    ushort* DMA2CNT_H;  // R/W   DMA 2 Control
-    uint*   DMA3SAD;    // W     DMA 3 Source Address
-    uint*   DMA3DAD;    // W     DMA 3 Destination Address
-    ushort* DMA3CNT_L;  // W     DMA 3 Word Count
-    ushort* DMA3CNT_H;  // R/W   DMA 3 Control
+    ushort* SOUND1CNT_L; // R/W   Channel 1 Sweep Register       (NR10)
+    ushort* SOUND1CNT_H; // R/W   Channel 1 Duty/Length/Envelope (NR11, NR12)
+    ushort* SOUND1CNT_X; // R/W   Channel 1 Frequency/Control    (NR13, NR14)
+    ushort* SOUND2CNT_L; // R/W   Channel 2 Duty/Length/Envelope (NR21, NR22)
+    ushort* SOUND2CNT_H; // R/W   Channel 2 Frequency/Control    (NR23, NR24)
+    ushort* SOUND3CNT_L; // R/W   Channel 3 Stop/Wave RAM select (NR30)
+    ushort* SOUND3CNT_H; // R/W   Channel 3 Length/Volume        (NR31, NR32)
+    ushort* SOUND3CNT_X; // R/W   Channel 3 Frequency/Control    (NR33, NR34)
+    ushort* SOUND4CNT_L; // R/W   Channel 4 Length/Envelope      (NR41, NR42)
+    ushort* SOUND4CNT_H; // R/W   Channel 4 Frequency/Control    (NR43, NR44)
+    ushort* SOUNDCNT_L;  // R/W   Control Stereo/Volume/Enable   (NR50, NR51)
+    ushort* SOUNDCNT_H;  // R/W   Control Mixing/DMA Control
+    ushort* SOUNDCNT_X;  // R/W   Control Sound on/off           (NR52)
+    ushort* SOUNDBIAS;   // BIOS  Sound PWM Control
+    uint*   FIFO_A;      // W     Channel A FIFO, Data 0-3
+    uint*   FIFO_B;      // W     Channel B FIFO, Data 0-3    
 
-    ushort* TM0CNT_L;   // R/W   Timer 0 Counter/Reload
-    ushort* TM0CNT_H;   // R/W   Timer 0 Control
-    ushort* TM1CNT_L;   // R/W   Timer 1 Counter/Reload
-    ushort* TM1CNT_H;   // R/W   Timer 1 Control
-    ushort* TM2CNT_L;   // R/W   Timer 2 Counter/Reload
-    ushort* TM2CNT_H;   // R/W   Timer 2 Control
+    uint*   DMA0SAD;     // W     DMA 0 Source Address
+    uint*   DMA0DAD;     // W     DMA 0 Destination Address
+    ushort* DMA0CNT_L;   // W     DMA 0 Word Count
+    ushort* DMA0CNT_H;   // R/W   DMA 0 Control
+    uint*   DMA1SAD;     // W     DMA 1 Source Address
+    uint*   DMA1DAD;     // W     DMA 1 Destination Address
+    ushort* DMA1CNT_L;   // W     DMA 1 Word Count
+    ushort* DMA1CNT_H;   // R/W   DMA 1 Control
+    uint*   DMA2SAD;     // W     DMA 2 Source Address
+    uint*   DMA2DAD;     // W     DMA 2 Destination Address
+    ushort* DMA2CNT_L;   // W     DMA 2 Word Count
+    ushort* DMA2CNT_H;   // R/W   DMA 2 Control
+    uint*   DMA3SAD;     // W     DMA 3 Source Address
+    uint*   DMA3DAD;     // W     DMA 3 Destination Address
+    ushort* DMA3CNT_L;   // W     DMA 3 Word Count
+    ushort* DMA3CNT_H;   // R/W   DMA 3 Control
+
+    ushort* TM0CNT_L;    // R/W   Timer 0 Counter/Reload
+    ushort* TM0CNT_H;    // R/W   Timer 0 Control
+    ushort* TM1CNT_L;    // R/W   Timer 1 Counter/Reload
+    ushort* TM1CNT_H;    // R/W   Timer 1 Control
+    ushort* TM2CNT_L;    // R/W   Timer 2 Counter/Reload
+    ushort* TM2CNT_H;    // R/W   Timer 2 Control
     ushort* TM3CNT_L;   // R/W   Timer 3 Counter/Reload
     ushort* TM3CNT_H;   // R/W   Timer 3 Control
 
@@ -156,6 +173,23 @@ class Memory {
         BLDALPHA     = cast(ushort*) &main[0x4000052];
         BLDY         = cast(ushort*) &main[0x4000054];
 
+        SOUND1CNT_L  = cast(ushort*) &main[0x4000060];
+        SOUND1CNT_H  = cast(ushort*) &main[0x4000062];
+        SOUND1CNT_X  = cast(ushort*) &main[0x4000064];
+        SOUND2CNT_L  = cast(ushort*) &main[0x4000068];
+        SOUND2CNT_H  = cast(ushort*) &main[0x400006C];
+        SOUND3CNT_L  = cast(ushort*) &main[0x4000070];
+        SOUND3CNT_H  = cast(ushort*) &main[0x4000072];
+        SOUND3CNT_X  = cast(ushort*) &main[0x4000074];
+        SOUND4CNT_L  = cast(ushort*) &main[0x4000078];
+        SOUND4CNT_H  = cast(ushort*) &main[0x400007C];
+        SOUNDCNT_L   = cast(ushort*) &main[0x4000080];
+        SOUNDCNT_H   = cast(ushort*) &main[0x4000082];
+        SOUNDCNT_X   = cast(ushort*) &main[0x4000084];
+        SOUNDBIAS    = cast(ushort*) &main[0x4000088];
+        FIFO_A       = cast(uint*)   &main[0x40000A0];
+        FIFO_B       = cast(uint*)   &main[0x40000A4];
+
         DMA0SAD      = cast(uint*  ) &main[0x40000B0];
         DMA0DAD      = cast(uint*  ) &main[0x40000B4];
         DMA0CNT_L    = cast(ushort*) &main[0x40000B8];
@@ -194,6 +228,7 @@ class Memory {
         // manual overrides: TEMPORARY
         // TODO: remove when properly implemented
         *DISPCNT = 6;
+        *SOUNDBIAS = 0x200;
         write_halfword(0x4000130, 0x03FF);
     }
 
@@ -311,7 +346,7 @@ class Memory {
         if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote byte %02x to %x", value, address);
         if (address == 0x030014d0) writefln("Wrote byte %08x to %x", value, address);
         if ((address & 0xFF000000) == 0x0000000) warning("ATTEMPT TO OVERWRITE BIOS!!!");
-        if ((address & 0xFF000000) == 0x5000000) writefln("Wrote byte %02x to %x", value, address);
+        if ((address & 0xFF000000) == 0x7000000) writefln("Wrote byte %02x to %x", value, address);
         // writefln("Wrote byte %08x to %x", value, address);
     }
 
@@ -330,7 +365,7 @@ class Memory {
         if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote halfword %04x to %x", value, address);
         if (address == 0x030014d0) writefln("Wrote halfword %08x to %x", value, address);
         if ((address & 0xFF000000) == 0x0000000) warning("ATTEMPT TO OVERWRITE BIOS!!!");
-        if ((address & 0xFF000000) == 0x5000000) writefln("Wrote halfword %04x to %x", value, address);
+        if ((address & 0xFF000000) == 0x7000000) writefln("Wrote halfword %04x to %x", value, address);
         // writefln("Wrote halfword %08x to %x", value, address);
     }
 
@@ -351,7 +386,7 @@ class Memory {
         if ((address & 0xFFFFF000) == 0x4000000) if (address != 0x040000a0) writefln("Wrote word %08x to %x", value, address);
         if (address == 0x030014d0) writefln("Wrote word %08x to %x", value, address);
         if ((address & 0xFF000000) == 0x0000000) warning("ATTEMPT TO OVERWRITE BIOS!!!");
-        if ((address & 0xFF000000) == 0x5000000) writefln("Wrote word %08x to %x", value, address);
+        if ((address & 0xFF000000) == 0x7000000) writefln("Wrote word %08x to %x", value, address);
         // writefln("Wrote word %08x to %x", value, address);
     }
 

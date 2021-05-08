@@ -13,6 +13,8 @@ src/jumptable/jumptable-arm.h
 src/jumptable/jumptable-thumb.cpp
 src/jumptable/jumptable-thumb.h
 
+src/emu/*.log
+
 test.dSYM/
 gba_bios.bin
 gba.dSYM/
