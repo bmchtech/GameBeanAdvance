@@ -82,7 +82,7 @@ public:
                 render_background_mode0(background_3, scanline);
                 render_sprites(scanline);
                 // test_render_sprites();
-                // test_render_palette();
+                test_render_palette();
                 break;
             }
 
@@ -260,7 +260,7 @@ private:
             int x        = sign_extend(cast(ubyte) get_nth_bits(attribute_1,  0,  9), 9);
             ubyte width  = sprite_sizes[shape][size][0];
 
-            // if (sprite == 0) warning(format("SHAPE: %x %x %x %x %x %x", attribute_0, attribute_1, size, shape, width, height));
+            // if (sprite == 0) 
 
             // base_tile_number is going to be the tile number of the left-most tile that makes
             // up the sprite in the current scanline. to calculate this, we first get the topleft 
@@ -289,6 +289,7 @@ private:
                                                                        ((draw_x   - x) % 8));
 
                     // and we grab the pixel from palette ram and interpret it as 15bit highcolor.
+
                     maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index, priority, draw_x, scanline);
                 }
             } else { // 16 / 16
@@ -319,7 +320,8 @@ private:
 
                     uint index_L = (index & 0xF) + get_nth_bits(attribute_2, 12, 16) * 16;
                     uint index_H = (index >> 4)  + get_nth_bits(attribute_2, 12, 16) * 16;
-                    
+                                        warning(format("SHAPE: %x %x %x %x %x %x", attribute_0, attribute_1, size, shape, width, height));
+
                     // and we grab two pixels from palette ram and interpret them as 15bit highcolor.
                     maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index_L, priority, draw_x,     scanline);
                     maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index_H, priority, draw_x + 1, scanline);
@@ -330,7 +332,7 @@ private:
 
     void test_render_sprites() {
         int palette = 0;
-        int tile_base_address = memory.OFFSET_VRAM;
+        int tile_base_address = memory.OFFSET_OAM;
         for (int tile_number = 0; tile_number < 10; tile_number++) {
             int col = tile_number / 10;
             int row = tile_number % 10;
@@ -338,16 +340,16 @@ private:
             for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
                 // 16 / 16
-                // ubyte index = memory.read_byte(tile_base_address + (tile_number * 32) + (y * 4) + (x / 2));
-                // index += palette * 32;
-                // if (x % 2 == 0) {
-                //     index &= 0xF;
-                // } else {
-                //     index >>= 4;
-                // }
+                ubyte index = memory.read_byte(tile_base_address + (tile_number * 32) + (y * 4) + (x / 2));
+                index += palette * 32;
+                if (x % 2 == 0) {
+                    index &= 0xF;
+                } else {
+                    index >>= 4;
+                }
 
                 // 256 / 256
-                ubyte index = memory.read_byte(tile_base_address + (tile_number * 64) + y * 8 + x);
+                // ubyte index = memory.read_byte(tile_base_address + (tile_number * 64) + y * 8 + x);
 
                 // // and we grab two pixels from palette ram and interpret them as 15bit highcolor.
                 draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index & 0xF, col * 8 + x, row * 8 + y);
@@ -367,9 +369,9 @@ private:
     }
 
     void maybe_draw_pixel(uint palette_offset, uint palette_index, uint priority, uint x, uint y) {
-        if (priority >= pixel_priorities[x][y]) {
-            return;
-        }
+        // if (priority >= pixel_priorities[x][y]) {
+        //     return;
+        // }
 
         if ((palette_index & 0xF) != 0) {
             pixel_priorities[x][y] = priority;
