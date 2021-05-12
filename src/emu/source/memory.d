@@ -4,6 +4,8 @@ import std.stdio;
 
 import util;
 
+import apu;
+
 // for more details on the GBA memory map: https://problemkaputt.de/gbatek.htm#gbamemorymap
 // i'm going to probably have to split this struct into more specific values later,
 // but for now ill just do the ones i can see myself easily using.
@@ -15,6 +17,10 @@ class Memory {
     ubyte[] main;
     /** video buffer in RGBA8888 */
     uint[][] video_buffer;
+
+    // audio fifos
+    Fifo!ubyte fifo_a;
+    Fifo!ubyte fifo_b;
 
     enum SIZE_MAIN_MEMORY    = 0x10000000;
     enum SIZE_BIOS           = 0x0003FFF - 0x0000000;
@@ -411,8 +417,28 @@ class Memory {
 private:
     void set_memory(uint address, ubyte value) {
         // trying to set a bit in register IF will actually clear that bit.
-        if (address == 0x4000202 || address == 0x4000203) { // are we register IF?
+        if        (address == 0x4000202 || address == 0x4000203) { // are we register IF?
             main[address] &= ~value; 
+        } else if ((address & 0xFFFFFFC) == 0x40000A0) { // are we FIFO A?
+            fifo_a.push(value);
+            if (fifo_a.is_full()) {
+                if (*DMA1DAD == 0x40000A0 && get_nth_bits(*DMA1CNT_H, 12, 14) == 0b11)
+                    write_halfword(*DMA1CNT_H, *DMA1CNT_H & ~(1 << 15));
+                if (*DMA2DAD == 0x40000A0 && get_nth_bits(*DMA2CNT_H, 12, 14) == 0b11)
+                    write_halfword(*DMA2CNT_H, *DMA2CNT_H & ~(1 << 15));
+            }
+
+            main[address] = value;
+        } else if ((address & 0xFFFFFFC) == 0x40000A4) { // are we FIFO B?
+            fifo_b.push(value);
+            if (fifo_b.is_full()) {
+                if (*DMA1DAD == 0x40000A4 && get_nth_bits(*DMA1CNT_H, 12, 14) == 0b11)
+                    write_halfword(*DMA1CNT_H, *DMA1CNT_H & ~(1 << 15));
+                if (*DMA2DAD == 0x40000A4 && get_nth_bits(*DMA2CNT_H, 12, 14) == 0b11)
+                    write_halfword(*DMA2CNT_H, *DMA2CNT_H & ~(1 << 15));
+            }
+
+            main[address] = value;
         } else {
             main[address] = value;
         }
