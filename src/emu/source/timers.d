@@ -5,10 +5,15 @@ import util;
 
 import std.stdio;
 
+import apu;
+
 class TimerManager {
 public:
-    this(Memory memory) {
-        this.memory = memory;
+    void delegate(int) on_timer_overflow;
+
+    this(Memory memory, void delegate(int) on_timer_overflow) {
+        this.memory            = memory;
+        this.on_timer_overflow = on_timer_overflow;
 
         timers = [
             Timer(
@@ -57,6 +62,8 @@ public:
                 if (timers[i].cycles_till_increment == 0) {
                     if (timers[i].timer_value == 0xFFFF) {
                         timers[i].timer_value = timers[i].reload_value;
+
+                        on_timer_overflow(i);
                     } else {
                         timers[i].timer_value++;
                     }

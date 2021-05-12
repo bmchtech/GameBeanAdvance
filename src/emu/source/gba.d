@@ -4,6 +4,7 @@ public {
     import memory;
     import ppu;
     import cpu;
+    import apu;
     import util;
     import dma;
     import timers;
@@ -35,13 +36,15 @@ public:
     Memory       memory;
     DMAManager   dma_manager;
     TimerManager timers;
+    DirectSound  direct_sound;
 
     this(Memory memory) {
-        this.memory      = memory;
-        this.cpu         = new ARM7TDMI(memory, &bios_call);
-        this.ppu         = new PPU(memory, &interrupt_cpu);
-        this.dma_manager = new DMAManager(memory);
-        this.timers      = new TimerManager(memory);
+        this.memory       = memory;
+        this.cpu          = new ARM7TDMI(memory, &bios_call);
+        this.ppu          = new PPU(memory, &interrupt_cpu);
+        this.dma_manager  = new DMAManager(memory);
+        this.timers       = new TimerManager(memory, &on_timer_overflow);
+        this.direct_sound = new DirectSound(memory);
 
         this.enabled = false;
 
@@ -79,6 +82,12 @@ public:
     // interrupt_code must be one-hot
     void interrupt_cpu(uint interrupt_code) {
         cpu.interrupt(interrupt_code);
+    }
+
+    void on_timer_overflow(int timer_id) {
+        // do we have to tell direct sound to request another sample from dma?
+        if (get_nth_bit(*memory.SOUNDCNT_H, 10) == timer_id) direct_sound.push_one_sample_to_buffer(DirectSoundFifo.A);
+        if (get_nth_bit(*memory.SOUNDCNT_H, 14) == timer_id) direct_sound.push_one_sample_to_buffer(DirectSoundFifo.B);
     }
 
     void bios_call(int bios_function) {

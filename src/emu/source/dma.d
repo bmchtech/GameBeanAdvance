@@ -64,10 +64,6 @@ public:
         int current_channel = -1;
         for (int i = 0; i < 4; i++) {
             if (dma_channels[i].enabled) {
-                // make sure we are not in audio fifo mode (becuase thats not implemented yet)
-                if ((get_nth_bits(*dma_channels[i].cnt_h, 12, 14) == 3 && (i == 1 || i == 2))) {
-                    continue;
-                }
 
                 current_channel = i;
                 break;
@@ -76,7 +72,6 @@ public:
 
         // if we found no channels, leave.
         if (current_channel == -1) return false;
-
 
         // dma happens every other cycle
         dma_cycle ^= 1;
@@ -87,7 +82,9 @@ public:
         }
 
         // did we already finish dma?
-        if (dma_channels[current_channel].size_buf == 0) {
+        bool finished_dma = dma_channels[current_channel].size_buf == 0;
+
+        if (finished_dma) {
             // do we repeat dma?
             if (get_nth_bit(*dma_channels[current_channel].cnt_h, 9)) {
                 if (get_nth_bits(*dma_channels[current_channel].cnt_h, 5, 6) == 0b11) {
@@ -118,6 +115,11 @@ public:
         } else {
             memory.write_halfword(dma_channels[current_channel].dest_buf, memory.read_halfword(dma_channels[current_channel].source_buf));
             increment = 2;
+        }
+
+        // are we writing to direct sound fifos?
+        if ((get_nth_bits(*dma_channels[current_channel].cnt_h, 12, 14) == 3 && (current_channel == 1 || current_channel == 2))) {
+            increment = 0;
         }
 
 
