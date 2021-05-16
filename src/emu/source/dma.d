@@ -51,11 +51,18 @@ public:
                 dma_channels[i].dest_buf   = *dma_channels[i].dest;
                 dma_channels[i].source_buf = *dma_channels[i].source;
                 dma_channels[i].size_buf   = *dma_channels[i].cnt_l & 0x0FFFFFFF;
-                writefln("Enabling DMA Channel %x: Transfering %x words from %x to %x (Settings: %x)", i, dma_channels[i].size_buf, dma_channels[i].source_buf, dma_channels[i].dest_buf, *dma_channels[i].cnt_h);
+                // if (i == 1) writefln("Enabling DMA Channel %x: Transfering %x words from %x to %x (Settings: %x)", i, dma_channels[i].size_buf, dma_channels[i].source_buf, dma_channels[i].dest_buf, *dma_channels[i].cnt_h);
                 // writefln("RAW DMA Channel %x: Transfering %x words from %x to %x", i, *dma_channels[i].cnt_l, *dma_channels[i].source, *dma_channels[i].dest);
 
                 if (i == 3) dma_channels[i].size_buf &= 0x07FFFFFF;
                 dma_channels[i].enabled = true;
+
+                // are we writing to direct sound fifos?
+                if ((get_nth_bits(*dma_channels[i].cnt_h, 12, 14) == 3 && (i == 1 || i == 2))) {
+                    dma_channels[i].size_buf = 4;
+                    *dma_channels[i].cnt_h |= (1 << 9);
+                    *dma_channels[i].cnt_h |= (1 << 10);
+                }
                 return true;
             }
         }
@@ -64,7 +71,6 @@ public:
         int current_channel = -1;
         for (int i = 0; i < 4; i++) {
             if (dma_channels[i].enabled) {
-
                 current_channel = i;
                 break;
             }
@@ -93,8 +99,15 @@ public:
 
                 dma_channels[current_channel].size_buf = *dma_channels[current_channel].cnt_l & 0x0FFFFFFF;
                 if (current_channel == 3) dma_channels[current_channel].size_buf &= 0x07FFFFFF;
+
+                if (get_nth_bits(*dma_channels[current_channel].cnt_h, 12, 14) == 3 && (current_channel == 1 || current_channel == 2)) {
+                    dma_channels[current_channel].enabled = false;
+                    *dma_channels[current_channel].cnt_h &= ~(1UL << 15);
+                    *dma_channels[current_channel].source = dma_channels[current_channel].source_buf;
+                    return true;
+                }
             } else {
-                writefln("DMA Channel %x Finished", current_channel);
+                // writefln("DMA Channel %x Finished", current_channel);
                 dma_channels[current_channel].enabled = false;
                 *dma_channels[current_channel].cnt_h &= ~(1UL << 15);
                 return true;
@@ -103,7 +116,7 @@ public:
             dma_channels[current_channel].size_buf--;
         }
 
-        // if (current_channel == 3) writefln("DMA Channel %x successfully transfered %x from %x to %x. %x units left.", current_channel, memory.read_word(dma_channels[current_channel].source_buf), dma_channels[current_channel].source_buf, dma_channels[current_channel].dest_buf, dma_channels[current_channel].size_buf);
+        // if (current_channel == 1) writefln("DMA Channel %x successfully transfered %x from %x to %x. %x units left.", current_channel, memory.read_word(dma_channels[current_channel].source_buf), dma_channels[current_channel].source_buf, dma_channels[current_channel].dest_buf, dma_channels[current_channel].size_buf);
         // copy one piece of data over.
         int increment = 0;
         //    writefln("%x", dma_channels[current_channel].source_buf);
@@ -118,20 +131,17 @@ public:
         }
 
         // are we writing to direct sound fifos?
-        if ((get_nth_bits(*dma_channels[current_channel].cnt_h, 12, 14) == 3 && (current_channel == 1 || current_channel == 2))) {
-            increment = 0;
-        }
-
-
-        // edit dest_buf and source_buf as needed to set up for the next dma
-        switch (get_nth_bits(*dma_channels[current_channel].cnt_h, 5, 7)) {
-            case 0b00:
-            case 0b11:
-                dma_channels[current_channel].dest_buf   += increment; break;
-            case 0b01:
-                dma_channels[current_channel].dest_buf   -= increment; break;
-            
-            default: {}
+        if (!(get_nth_bits(*dma_channels[current_channel].cnt_h, 12, 14) == 3 && (current_channel == 1 || current_channel == 2))) {
+            // edit dest_buf and source_buf as needed to set up for the next dma
+            switch (get_nth_bits(*dma_channels[current_channel].cnt_h, 5, 7)) {
+                case 0b00:
+                case 0b11:
+                    dma_channels[current_channel].dest_buf   += increment; break;
+                case 0b01:
+                    dma_channels[current_channel].dest_buf   -= increment; break;
+                
+                default: {}
+            }
         }
 
         switch (get_nth_bits(*dma_channels[current_channel].cnt_h, 7, 9)) {

@@ -580,7 +580,7 @@
 {
     @IF(L) *cpu.lr = *cpu.pc;
     // unintuitive sign extension: http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
-    *cpu.pc += ((((1U << 23) ^ get_nth_bits(opcode, 0, 24)) - (1U << 23)) << 2) + 4;
+    *cpu.pc += ((((1 << 23) ^ get_nth_bits(opcode, 0, 24)) - (1 << 23)) << 2) + 4;
 
     cpu.cycles_remaining += 3;
 }

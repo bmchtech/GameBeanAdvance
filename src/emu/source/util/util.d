@@ -18,9 +18,9 @@ enum RESET = "\033[0m";
 static int verbosity_level = 0;
 
 // get nth bits from value as so: [start, end)
-pragma(inline) uint get_nth_bits(uint val, ubyte start, ubyte end) {
-    return (val >> start) & cast(uint)(core.stdc.math.pow(2, end - start) - 1);
-}
+// pragma(inline) uint get_nth_bits(uint val, ubyte start, ubyte end) {
+//     return (val >> start) & ((1 << (end - start)) - 1);
+// }
 
 // get nth bit from value
 bool get_nth_bit(uint val, ubyte n) {
@@ -59,7 +59,9 @@ string to_hex_string(uint val) {
 
 // get nth bits from value as so: [start, end)
 pragma(inline) int get_nth_bits(int val, int start, int end) {
-    return (val >> start) & cast(uint)(pow(2, end - start) - 1);
+    int a = cast(uint)(cast(uint)(val) >> start) & ((1 << cast(uint)(end - start)) - 1);
+    if (end - start == 32) a = val;
+    return a;
 }
 
 // get nth bit from value
