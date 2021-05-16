@@ -59,9 +59,10 @@ public:
         // cycle the enabled timers
         for (int i = 0; i < 4; i++) {
             if (timers[i].enabled) {
-                if (timers[i].cycles_till_increment == 0) {
+                if (timers[i].cycles_till_increment == 1) {
                     if (timers[i].timer_value == 0xFFFF) {
                         timers[i].timer_value = timers[i].reload_value;
+                        // writefln("Reset Timer %x to %x", i, timers[i].timer_value);
 
                         on_timer_overflow(i);
                     } else {
@@ -74,10 +75,10 @@ public:
             }
         }
 
-        // overwrite the reload values
-        for (int i = 0; i < 4; i++) {
-            *timers[i].cnt_l = timers[i].timer_value;
-        }
+        // // overwrite the reload values
+        // for (int i = 0; i < 4; i++) {
+        //     *timers[i].cnt_l = timers[i].timer_value;
+        // }
     }
 private:
     Memory memory;

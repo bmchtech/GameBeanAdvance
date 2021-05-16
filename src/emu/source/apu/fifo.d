@@ -1,5 +1,7 @@
 module apu.fifo;
 
+import std.stdio;
+
 class Fifo(T) {
 
     // size must be power of 2
@@ -14,13 +16,18 @@ class Fifo(T) {
 
         this.offset_mask        = size - 1;
         this.reset_value        = reset_value;
+
+        this.size               = 0;
     }
 
     // pushing to a full fifo does nothing
     void push(T new_data) {
-        if (size() == fifo_data.length)
+        if (size == fifo_data.length) {
+            writefln("Too much data :(");
             return;
+        }
 
+        size++;
         fifo_data[push_offset] = new_data;
         push_offset++;
         push_offset &= offset_mask;
@@ -28,9 +35,10 @@ class Fifo(T) {
 
     // popping from an empty fifo returns null
     T pop() {
-        if (size() == 0) 
+        if (size == 0) 
             return reset_value;
         
+        size--;
         T return_value = fifo_data[pop_offset];
         fifo_data[pop_offset] = reset_value;
         pop_offset++;
@@ -38,13 +46,12 @@ class Fifo(T) {
         return return_value;
     }
 
-    int size() {
-        return push_offset - pop_offset;
+    bool is_full() {
+        return size == fifo_data.length;
     }
 
-    bool is_full() {
-        return size() == fifo_data.length;
-    }
+public:
+    uint size;
 
 private:
     T[]  fifo_data;

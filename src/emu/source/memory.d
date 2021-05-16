@@ -230,12 +230,15 @@ class Memory {
         IME          = cast(ushort*) &main[0x4000208];
 
         video_buffer = new uint[][](240, 160);
+        fifo_a = new Fifo!ubyte(0x20, 0x00);
+        fifo_b = new Fifo!ubyte(0x20, 0x00);
 
         // manual overrides: TEMPORARY
         // TODO: remove when properly implemented
         *DISPCNT = 6;
         *SOUNDBIAS = 0x200;
         write_halfword(0x4000130, 0x03FF);
+
     }
 
     pragma(inline) uint mirror_to(uint original_address, uint mirror_location, uint mirror_size) {
@@ -341,7 +344,7 @@ class Memory {
         }
 
 
-        if (address > 0x08000000) warning("Attempt to write to ROM!" ~ to_hex_string(address));
+        // if (address > 0x08000000) warning("Attempt to write to ROM!" ~ to_hex_string(address));
         // if ((address & 0xFFFF0000) == 0x6000000)
         //     mixin(VERBOSE_LOG!(`2`, `format("Writing byte %s to address %s",
         //             to_hex_string(value), to_hex_string(address))`));
@@ -349,17 +352,17 @@ class Memory {
             warning(format("Address out of range on write byte %s", to_hex_string(address) ~ ")"));
         // main[address] = value;
         set_memory(address + 0, cast(ubyte)((value >> 0) & 0xff));
-        if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote byte %02x to %x", value, address);
-        if (address == 0x030014d0) writefln("Wrote byte %08x to %x", value, address);
-        if ((address & 0xFF000000) == 0x0000000) warning("ATTEMPT TO OVERWRITE BIOS!!!");
-        if ((address & 0xFF000000) == 0x7000000) writefln("Wrote byte %02x to %x", value, address);
+        // if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote byte %02x to %x", value, address);
+        // if (address == 0x0821dbb8) writefln("Wrote byte %08x to %x", value, address);
+        // if ((address & 0xFF000000) == 0x0000000) error("ATTEMPT TO OVERWRITE BIOS!!!");
+        if ((address & 0xFF000000) == 0x6000000) writefln("Wrote byte %02x to %x", value, address);
         // writefln("Wrote byte %08x to %x", value, address);
     }
 
     void write_halfword(uint address, ushort value) {
         address = calculate_mirrors(address);
 
-        if (address > 0x08000000) warning("Attempt to write to ROM!" ~ to_hex_string(address));
+        // if (address > 0x08000000) warning("Attempt to write to ROM!" ~ to_hex_string(address));
         // if ((address & 0xFFFF0000) == 0x6000000)
         //     mixin(VERBOSE_LOG!(`2`, `format("Writing halfword %s to address %s",
         //             to_hex_string(value), to_hex_string(address))`));
@@ -368,17 +371,17 @@ class Memory {
         // *(cast(ushort*) (main[0] + address)) = value;
         set_memory(address + 0, cast(ubyte)((value >> 0) & 0xff));
         set_memory(address + 1, cast(ubyte)((value >> 8) & 0xff));
-        if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote halfword %04x to %x", value, address);
-        if (address == 0x030014d0) writefln("Wrote halfword %08x to %x", value, address);
-        if ((address & 0xFF000000) == 0x0000000) warning("ATTEMPT TO OVERWRITE BIOS!!!");
-        if ((address & 0xFF000000) == 0x7000000) writefln("Wrote halfword %04x to %x", value, address);
+        // if ((address & 0xFFFFF000) == 0x4 000000) writefln("Wrote halfword %04x to %x", value, address);
+        // if (address == 0x0821dbb8) writefln("Wrote halfword %08x to %x", value, address);
+        // if ((address & 0xFF000000) == 0x0000000) error("ATTEMPT TO OVERWRITE BIOS!!!");
+        if ((address & 0xFF000000) == 0x6000000) writefln("Wrote halfword %04x to %x", value, address);
         // writefln("Wrote halfword %08x to %x", value, address);
     }
 
     void write_word(uint address, uint value) {
         address = calculate_mirrors(address);
 
-        if (address > 0x08000000) warning("Attempt to write to ROM!" ~ to_hex_string(address));
+        // if (address > 0x08000000) warning("Attempt to write to ROM!" ~ to_hex_string(address));
         // if ((address & 0xFFFF0000) == 0x6000000)
         //     mixin(VERBOSE_LOG!(`2`, `format("Writing word %s to address %s",
         //             to_hex_string(value), to_hex_string(address))`));
@@ -389,10 +392,10 @@ class Memory {
         set_memory(address + 1, cast(ubyte)((value >> 8)  & 0xff));
         set_memory(address + 2, cast(ubyte)((value >> 16) & 0xff));
         set_memory(address + 3, cast(ubyte)((value >> 24) & 0xff));
-        if ((address & 0xFFFFF000) == 0x4000000) if (address != 0x040000a0) writefln("Wrote word %08x to %x", value, address);
-        if (address == 0x030014d0) writefln("Wrote word %08x to %x", value, address);
-        if ((address & 0xFF000000) == 0x0000000) warning("ATTEMPT TO OVERWRITE BIOS!!!");
-        if ((address & 0xFF000000) == 0x7000000) writefln("Wrote word %08x to %x", value, address);
+        // if ((address & 0xFFFFF000) == 0x4000000) if (address != 0x040000a0) writefln("Wrote word %08x to %x", value, address);
+        // if (address == 0x0821dbb8) writefln("Wrote word %08x to %x", value, address);
+        // if ((address & 0xFF000000) == 0x0000000) error("ATTEMPT TO OVERWRITE BIOS!!!");
+        if ((address & 0xFF000000) == 0x6000000) writefln("Wrote word %08x to %x", value, address);
         // writefln("Wrote word %08x to %x", value, address);
     }
 
@@ -418,26 +421,13 @@ private:
     void set_memory(uint address, ubyte value) {
         // trying to set a bit in register IF will actually clear that bit.
         if        (address == 0x4000202 || address == 0x4000203) { // are we register IF?
-            main[address] &= ~value; 
+            main[address] &= ~cast(uint)value; 
         } else if ((address & 0xFFFFFFC) == 0x40000A0) { // are we FIFO A?
             fifo_a.push(value);
-            if (fifo_a.is_full()) {
-                if (*DMA1DAD == 0x40000A0 && get_nth_bits(*DMA1CNT_H, 12, 14) == 0b11)
-                    write_halfword(*DMA1CNT_H, *DMA1CNT_H & ~(1 << 15));
-                if (*DMA2DAD == 0x40000A0 && get_nth_bits(*DMA2CNT_H, 12, 14) == 0b11)
-                    write_halfword(*DMA2CNT_H, *DMA2CNT_H & ~(1 << 15));
-            }
-
             main[address] = value;
+            // writefln("Pushed to FIFO A. Value: %x", value);
         } else if ((address & 0xFFFFFFC) == 0x40000A4) { // are we FIFO B?
             fifo_b.push(value);
-            if (fifo_b.is_full()) {
-                if (*DMA1DAD == 0x40000A4 && get_nth_bits(*DMA1CNT_H, 12, 14) == 0b11)
-                    write_halfword(*DMA1CNT_H, *DMA1CNT_H & ~(1 << 15));
-                if (*DMA2DAD == 0x40000A4 && get_nth_bits(*DMA2CNT_H, 12, 14) == 0b11)
-                    write_halfword(*DMA2CNT_H, *DMA2CNT_H & ~(1 << 15));
-            }
-
             main[address] = value;
         } else {
             main[address] = value;

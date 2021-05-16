@@ -82,7 +82,7 @@ public:
                 render_background_mode0(background_3, scanline);
                 render_sprites(scanline);
                 // test_render_sprites();
-                test_render_palette();
+                // test_render_palette();
                 break;
             }
 
@@ -320,7 +320,7 @@ private:
 
                     uint index_L = (index & 0xF) + get_nth_bits(attribute_2, 12, 16) * 16;
                     uint index_H = (index >> 4)  + get_nth_bits(attribute_2, 12, 16) * 16;
-                                        warning(format("SHAPE: %x %x %x %x %x %x", attribute_0, attribute_1, size, shape, width, height));
+                                        // warning(format("SHAPE: %x %x %x %x %x %x", attribute_0, attribute_1, size, shape, width, height));
 
                     // and we grab two pixels from palette ram and interpret them as 15bit highcolor.
                     maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index_L, priority, draw_x,     scanline);
