@@ -81,7 +81,7 @@ public:
                 render_background_mode0(background_2, scanline);
                 render_background_mode0(background_3, scanline);
                 render_sprites(scanline);
-                // test_render_sprites();
+                test_render_sprites();
                 // test_render_palette();
                 break;
             }
@@ -332,7 +332,7 @@ private:
 
     void test_render_sprites() {
         int palette = 0;
-        int tile_base_address = memory.OFFSET_OAM;
+        int tile_base_address = memory.OFFSET_VRAM;
         for (int tile_number = 0; tile_number < 10; tile_number++) {
             int col = tile_number / 10;
             int row = tile_number % 10;
@@ -373,10 +373,10 @@ private:
         //     return;
         // }
 
-        if ((palette_index & 0xF) != 0) {
+        // if ((palette_index & 0xF) != 0) {
             pixel_priorities[x][y] = priority;
             draw_pixel(palette_offset, palette_index, x, y);
-        }
+        // }
     }
 
     void draw_pixel(uint palette_offset, uint palette_index, uint x, uint y) {
