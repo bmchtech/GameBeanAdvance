@@ -65,7 +65,8 @@ pragma(inline) int get_nth_bits(int val, int start, int end) {
 }
 
 // get nth bit from value
-pragma(inline) bool get_nth_bit(int val, int n) {
+// please inline this function for the love of god the profiler is screaming at you
+pragma(inline, true) bool get_nth_bit(int val, int n) {
     return (val >> n) & 1;
 }
 

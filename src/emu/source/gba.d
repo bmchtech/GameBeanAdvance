@@ -91,7 +91,7 @@ public:
     }
 
     void bios_call(int bios_function) {
-        warning(format("BIOS: %x", bios_function));
+        // warning(format("BIOS: %x", bios_function));
         switch (bios_function) {
             case 0x01: { // Register RAM Reset
                 // note entry 7 is special so it isnt included
@@ -128,8 +128,8 @@ public:
             }
 
             case 0x04: {
-                import std.stdio;
-                writefln("%x, %x", cpu.regs[0], cpu.regs[1]);
+                // import std.stdio;
+                // writefln("%x, %x", cpu.regs[0], cpu.regs[1]);
                 cpu.halted = true;
                 // *cpu.pc += 4;
                 break;

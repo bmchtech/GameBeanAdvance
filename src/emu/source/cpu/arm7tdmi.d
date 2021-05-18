@@ -196,12 +196,12 @@ class ARM7TDMI {
             // }
 
             // if ((*pc & 0xFF000000) == 0x00000000) {
-                // write(format("%08x |", opcode));
+                write(format("%08x |", opcode));
                 
-                // for (int j = 0; j < 16; j++)
-                //     write(format("%08x ", regs[j]));
+                for (int j = 0; j < 16; j++)
+                    write(format("%08x ", regs[j]));
 
-                // writeln();
+                writeln();
             // }
 
             execute(opcode);
@@ -324,7 +324,7 @@ class ARM7TDMI {
 
         // is this specific interrupt enabled
         if (*memory.IE & interrupt_code) {
-            writefln("Interrupt! %x", *pc);
+            // writefln("Interrupt! %x", *pc);
             register_file[MODE_IRQ.OFFSET + 17] = *cpsr;
 
             *cpsr |= (1 << 7); // disable interrupts for the time being...
