@@ -196,12 +196,12 @@ class ARM7TDMI {
             // }
 
             // if ((*pc & 0xFF000000) == 0x00000000) {
-                write(format("%08x |", opcode));
+                // write(format("%08x |", opcode));
                 
-                for (int j = 0; j < 16; j++)
-                    write(format("%08x ", regs[j]));
+                // for (int j = 0; j < 16; j++)
+                //     write(format("%08x ", regs[j]));
 
-                writeln();
+                // writeln();
             // }
 
             execute(opcode);

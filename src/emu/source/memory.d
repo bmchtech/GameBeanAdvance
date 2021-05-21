@@ -47,8 +47,6 @@ class Memory {
     enum OFFSET_ROM_3        = 0xC000000;
     enum OFFSET_SRAM         = 0xE000000;
 
-    //  IO Registers
-    //        NAME         R/W   DESCRIPTION
 
     ushort* DISPCNT;     // R/W   LCD Control
     ushort* DISPSTAT;    // R/W   General LCD Status (STAT,LYC)
@@ -288,6 +286,7 @@ class Memory {
             warning(format("Address out of range on read byte %s", to_hex_string(address) ~ ")"));
             return 0;
         }
+        if (address == 0x030014d0) writefln("Read byte from %08x", address);
         return main[address];
     }
 
@@ -301,6 +300,7 @@ class Memory {
             warning(format("Address out of range on read halfword %s", to_hex_string(address) ~ ")"));
             return 0;
         }
+        if (address == 0x030014d0) writefln("Read halfword from %08x", address);
         return (cast(ushort) main[address + 0] << 0) | (cast(ushort) main[address + 1] << 8);
     }
 
@@ -311,9 +311,10 @@ class Memory {
             mixin(VERBOSE_LOG!(`2`,
                     `format("Reading word from address %s", to_hex_string(address))`));
         if (cast(ulong)address + 4 >= SIZE_MAIN_MEMORY) {
-            error(format("Address out of range on read word %s", to_hex_string(address) ~ ")"));
+            warning(format("Address out of range on read word %s", to_hex_string(address) ~ ")"));
             return 0;
         }
+        if (address == 0x030014d0) writefln("Read word from %08x", address);
         return (cast(uint) main[address + 0] << 0) | (
                 cast(uint) main[address + 1] << 8) | (cast(
                 uint) main[address + 2] << 16) | (cast(uint) main[address + 3] << 24);
