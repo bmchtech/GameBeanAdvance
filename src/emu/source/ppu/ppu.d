@@ -57,7 +57,7 @@ public:
         update_dot_and_scanline();
         
         // if we are hblank or vblank then we do not draw anything
-        if (hblank) {
+        if (vblank || hblank) {
             return;
         }
 
@@ -71,8 +71,8 @@ public:
                 render_background_mode0(backgrounds[1]);
                 render_background_mode0(backgrounds[2]);
                 render_background_mode0(backgrounds[3]);
-                render_sprites();
-                test_render_sprites();
+                // render_sprites();
+                // test_render_sprites();
                 // test_render_palette();
                 break;
             }
@@ -425,10 +425,10 @@ public:
             obj_character_vram_mapping = get_nth_bit (data, 6);
             forced_blank               = get_nth_bit (data, 7);
         } else { // target_byte == 1
-            backgrounds[0].enabled       = get_nth_bit (data, 0);
-            backgrounds[1].enabled       = get_nth_bit (data, 1);
-            backgrounds[2].enabled       = get_nth_bit (data, 2);
-            backgrounds[3].enabled       = get_nth_bit (data, 3);
+            backgrounds[0].enabled     = get_nth_bit (data, 0);
+            backgrounds[1].enabled     = get_nth_bit (data, 1);
+            backgrounds[2].enabled     = get_nth_bit (data, 2);
+            backgrounds[3].enabled     = get_nth_bit (data, 3);
             // TODO: WINDOW 0
             // TODO: WINDOW 1
             // TODO: OBJ WINDOW
