@@ -2,6 +2,6 @@ module apu;
 
 public {
     import apu.audiobuffer;
-    import apu.directsound;
+    // import apu.directsound;
     import apu.fifo;
 }

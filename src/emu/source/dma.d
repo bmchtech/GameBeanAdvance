@@ -13,34 +13,10 @@ public:
         this.idle_cycles = 0;
 
         dma_channels = [
-            DMAChannel(
-                memory.DMA0SAD,
-                memory.DMA0DAD,
-                memory.DMA0CNT_L,
-                memory.DMA0CNT_H,
-                0, 0, 0, false, false
-            ),
-            DMAChannel(
-                memory.DMA1SAD,
-                memory.DMA1DAD,
-                memory.DMA1CNT_L,
-                memory.DMA1CNT_H,
-                0, 0, 0, false, false
-            ),
-            DMAChannel(
-                memory.DMA2SAD,
-                memory.DMA2DAD,
-                memory.DMA2CNT_L,
-                memory.DMA2CNT_H,
-                0, 0, 0, false, false
-            ),
-            DMAChannel(
-                memory.DMA3SAD,
-                memory.DMA3DAD,
-                memory.DMA3CNT_L,
-                memory.DMA3CNT_H,
-                0, 0, 0, false, false
-            )
+            DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately),
+            DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately),
+            DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately),
+            DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately)
         ];
     }
 
@@ -49,31 +25,6 @@ public:
         if (idle_cycles > 0) {
             idle_cycles--;
             return true;
-        }
-
-        // if any of the channels wants to start dma, then copy its data over to the buffers.
-        for (int i = 0; i < 4; i++) {
-            if (get_nth_bit(*dma_channels[i].cnt_h, 15) && !dma_channels[i].enabled) {
-                dma_channels[i].enabled = true;
-                dma_channels[i].waiting_to_start = get_nth_bits(*dma_channels[i].cnt_h, 12, 14) == 0b00;
-
-                // dma_channels[i].dest_buf   = *dma_channels[i].dest;
-                dma_channels[i].source_buf = *dma_channels[i].source;
-                dma_channels[i].size_buf   = *dma_channels[i].cnt_l & 0x0FFFFFFF;
-                writefln("Enabling DMA Channel %x: Transfering %x words from %x to %x (Settings: %x)", i, dma_channels[i].size_buf, *dma_channels[i].source, *dma_channels[i].dest, *dma_channels[i].cnt_h);
-                // // writefln("RAW DMA Channel %x: Transfering %x words from %x to %x", i, *dma_channels[i].cnt_l, *dma_channels[i].source, *dma_channels[i].dest);
-
-                if (i == 3) dma_channels[i].size_buf &= 0x07FFFFFF;
-                // dma_channels[i].enabled = true;
-
-                // // are we writing to direct sound fifos?
-                // if ((get_nth_bits(*dma_channels[i].cnt_h, 12, 14) == 3 && (i == 1 || i == 2))) {
-                //     dma_channels[i].size_buf = 4;
-                //     *dma_channels[i].cnt_h |= (1 << 9);
-                //     *dma_channels[i].cnt_h |= (1 << 10);
-                // }
-                // return true;
-            }
         }
 
         // get the channel with highest priority that wants to start dma
@@ -89,42 +40,42 @@ public:
         if (current_channel == -1) return false;
 
         uint bytes_to_transfer  = dma_channels[current_channel].size_buf;
-        bool transferring_words = get_nth_bit(*dma_channels[current_channel].cnt_h, 10);
         int  source_increment   = 0;
         int  dest_increment     = 0;
 
-        switch (get_nth_bits(*dma_channels[current_channel].cnt_h, 7, 9)) {
-            case 0b00: source_increment =  1; break;
-            case 0b01: source_increment = -1; break;
-            case 0b10: source_increment =  0; break;
+        switch (dma_channels[current_channel].source_addr_control) {
+            case SourceAddrMode.Increment:       source_increment =  1; break;
+            case SourceAddrMode.Decrement:       source_increment = -1; break;
+            case SourceAddrMode.Fixed:           source_increment =  0; break;
+            case SourceAddrMode.IncrementReload: source_increment =  0; break;
             default: assert(0);
         }
 
-        switch (get_nth_bits(*dma_channels[current_channel].cnt_h, 5, 7)) {
-            case 0b00: dest_increment =  1; break;
-            case 0b01: dest_increment = -1; break;
-            case 0b10: dest_increment =  0; break;
-            case 0b11: dest_increment =  1; break;
+        switch (dma_channels[current_channel].dest_addr_control) {
+            case DestAddrMode.Increment:  dest_increment =  1; break;
+            case DestAddrMode.Decrement:  dest_increment = -1; break;
+            case DestAddrMode.Fixed:      dest_increment =  0; break;
+            case DestAddrMode.Prohibited: error("Prohibited DMA Dest Addr Control Used."); break;
             default: assert(0);
         }
 
-        source_increment *= (transferring_words ? 4 : 2);
-        dest_increment   *= (transferring_words ? 4 : 2);
+        source_increment *= (dma_channels[current_channel].transferring_words ? 4 : 2);
+        dest_increment   *= (dma_channels[current_channel].transferring_words ? 4 : 2);
 
         int source_offset = 0;
         int dest_offset   = 0;
 
-        if (get_nth_bit(*dma_channels[current_channel].cnt_h, 10)) {
+        if (dma_channels[current_channel].transferring_words) {
             bytes_to_transfer *= 4;
             for (int i = 0; i < bytes_to_transfer; i += 4) {
-                memory.write_word(*dma_channels[current_channel].dest + source_offset, memory.read_word(*dma_channels[current_channel].source + dest_offset));
+                memory.write_word(dma_channels[current_channel].dest + source_offset, memory.read_word(dma_channels[current_channel].source + dest_offset));
                 source_offset += source_increment;
                 dest_offset   += dest_increment;
             }
         } else {
             bytes_to_transfer *= 2;
             for (int i = 0; i < bytes_to_transfer; i += 2) {
-                memory.write_halfword(*dma_channels[current_channel].dest + source_offset, memory.read_halfword(*dma_channels[current_channel].source + dest_offset));
+                memory.write_halfword(dma_channels[current_channel].dest + source_offset, memory.read_halfword(dma_channels[current_channel].source + dest_offset));
                 source_offset += source_increment;
                 dest_offset   += dest_increment;
             }
@@ -132,32 +83,26 @@ public:
         
         idle_cycles += bytes_to_transfer * 2;
 
-        if (get_nth_bit(*dma_channels[current_channel].cnt_h, 14)) {
+        if (dma_channels[current_channel].irq_on_end) {
             warning("EXPECTED INTERRUPT");
         }
 
 
-        // do we repeat dma?
-        if (get_nth_bit(*dma_channels[current_channel].cnt_h, 9)) {
-            if (get_nth_bits(*dma_channels[current_channel].cnt_h, 5, 6) == 0b11) {
-                dma_channels[current_channel].dest_buf = *dma_channels[current_channel].dest;
+        if (dma_channels[current_channel].repeat) {
+            if (dma_channels[current_channel].source_addr_control == SourceAddrMode.IncrementReload) {
+                dma_channels[current_channel].source_buf = dma_channels[current_channel].source;
             }
 
-            dma_channels[current_channel].size_buf = *dma_channels[current_channel].cnt_l & 0x0FFFFFFF;
-            if (current_channel == 3) dma_channels[current_channel].size_buf &= 0x07FFFFFF;
-
-            // writefln("Repeating DMA Channel %x", current_channel);
-
-            if (get_nth_bits(*dma_channels[current_channel].cnt_h, 12, 14) == 3 && (current_channel == 1 || current_channel == 2)) {
-                dma_channels[current_channel].enabled = false;
-                *dma_channels[current_channel].cnt_h &= ~(1UL << 15);
-                *dma_channels[current_channel].source = dma_channels[current_channel].source_buf;
-                return true;
-            }
+            enable_dma(current_channel);
+            // if (get_nth_bits(*dma_channels[current_channel].cnt_h, 12, 14) == 3 && (current_channel == 1 || current_channel == 2)) {
+            //     dma_channels[current_channel].enabled = false;
+            //     *dma_channels[current_channel].cnt_h &= ~(1UL << 15);
+            //     *dma_channels[current_channel].source = dma_channels[current_channel].source_buf;
+            //     return true;
+            // }
         } else {
             // writefln("DMA Channel %x Finished", current_channel);
             dma_channels[current_channel].enabled = false;
-            *dma_channels[current_channel].cnt_h &= ~(1UL << 15);
             return true;
         }
 
@@ -189,6 +134,19 @@ public:
         return true;
     }
 
+    void enable_dma(int dma_id) {
+        
+        dma_channels[dma_id].num_units = dma_channels[dma_id].num_units & 0x0FFFFFFF;
+        if (dma_id == 3) dma_channels[dma_id].num_units &= 0x07FFFFFF;
+
+        dma_channels[dma_id].source_buf       = dma_channels[dma_id].source;
+        dma_channels[dma_id].dest_buf         = dma_channels[dma_id].dest;
+        dma_channels[dma_id].size_buf         = dma_channels[dma_id].num_units;
+        dma_channels[dma_id].waiting_to_start = dma_channels[dma_id].dma_start_timing == DMAStartTiming.Immediately;
+
+        dma_channels[dma_id].enabled          = true;
+    }
+
 private:
     Memory memory;
     bool   dma_cycle;
@@ -196,18 +154,126 @@ private:
     DMAChannel[4] dma_channels;
 
     uint    idle_cycles;
+
+    enum SourceAddrMode {
+        Increment       = 0b00,
+        Decrement       = 0b01,
+        Fixed           = 0b10,
+        IncrementReload = 0b11
+    }
+
+    enum DestAddrMode {
+        Increment       = 0b00,
+        Decrement       = 0b01,
+        Fixed           = 0b10,
+        Prohibited      = 0b11
+    }
+
+    enum DMAStartTiming {
+        Immediately = 0b00,
+        VBlank      = 0b01,
+        HBlank      = 0b10,
+        Special     = 0b11
+    }
+
+    //.......................................................................................................................
+    //.RRRRRRRRRRR...EEEEEEEEEEEE....GGGGGGGGG....IIII...SSSSSSSSS...TTTTTTTTTTTTT.EEEEEEEEEEEE..RRRRRRRRRRR....SSSSSSSSS....
+    //.RRRRRRRRRRRR..EEEEEEEEEEEE...GGGGGGGGGGG...IIII..SSSSSSSSSSS..TTTTTTTTTTTTT.EEEEEEEEEEEE..RRRRRRRRRRRR..SSSSSSSSSSS...
+    //.RRRRRRRRRRRRR.EEEEEEEEEEEE..GGGGGGGGGGGGG..IIII..SSSSSSSSSSSS.TTTTTTTTTTTTT.EEEEEEEEEEEE..RRRRRRRRRRRR..SSSSSSSSSSSS..
+    //.RRRR.....RRRR.EEEE..........GGGGG....GGGG..IIII..SSSS....SSSS.....TTTT......EEEE..........RRR.....RRRRR.SSSS....SSSS..
+    //.RRRR.....RRRR.EEEE.........GGGGG......GGG..IIII..SSSS.............TTTT......EEEE..........RRR......RRRR.SSSSS.........
+    //.RRRR....RRRRR.EEEEEEEEEEEE.GGGG............IIII..SSSSSSSS.........TTTT......EEEEEEEEEEEE..RRR.....RRRR..SSSSSSSS......
+    //.RRRRRRRRRRRR..EEEEEEEEEEEE.GGGG....GGGGGGG.IIII..SSSSSSSSSSS......TTTT......EEEEEEEEEEEE..RRRRRRRRRRRR...SSSSSSSSSS...
+    //.RRRRRRRRRRRR..EEEEEEEEEEEE.GGGG....GGGGGGG.IIII....SSSSSSSSS......TTTT......EEEEEEEEEEEE..RRRRRRRRRRRR....SSSSSSSSSS..
+    //.RRRRRRRRRRR...EEEE.........GGGG....GGGGGGG.IIII........SSSSSS.....TTTT......EEEE..........RRRRRRRRRR..........SSSSSS..
+    //.RRRR..RRRRR...EEEE.........GGGGG......GGGG.IIII...SS.....SSSS.....TTTT......EEEE..........RRR...RRRRR....SS.....SSSS..
+    //.RRRR...RRRR...EEEE..........GGGGG....GGGGG.IIII.ISSSS....SSSS.....TTTT......EEEE..........RRR....RRRR...SSSS....SSSS..
+    //.RRRR...RRRRR..EEEEEEEEEEEEE.GGGGGGGGGGGGGG.IIII.ISSSSSSSSSSSS.....TTTT......EEEEEEEEEEEEE.RRR....RRRRR..SSSSSSSSSSSS..
+    //.RRRR....RRRRR.EEEEEEEEEEEEE..GGGGGGGGGGGG..IIII..SSSSSSSSSSS......TTTT......EEEEEEEEEEEEE.RRR.....RRRRR.SSSSSSSSSSSS..
+    //.RRRR.....RRRR.EEEEEEEEEEEEE...GGGGGGGGG....IIII...SSSSSSSSS.......TTTT......EEEEEEEEEEEEE.RRR.....RRRRR..SSSSSSSSSS...
+
+public:
+    void write_DMAXSAD(int target_byte, ubyte data, int x) {
+        final switch (target_byte) {
+            case 0b00: dma_channels[x].source = (dma_channels[x].source & 0xFFFFFF00) | (data << 0);  break;
+            case 0b01: dma_channels[x].source = (dma_channels[x].source & 0xFFFF00FF) | (data << 8);  break;
+            case 0b10: dma_channels[x].source = (dma_channels[x].source & 0xFF00FFFF) | (data << 16); break;
+            case 0b11: dma_channels[x].source = (dma_channels[x].source & 0x00FFFFFF) | (data << 24); break;
+        }
+    }
+
+    void write_DMAXDAD(int target_byte, ubyte data, int x) {
+        final switch (target_byte) {
+            case 0b00: dma_channels[x].source = (dma_channels[x].dest & 0xFFFFFF00) | (data << 0);  break;
+            case 0b01: dma_channels[x].source = (dma_channels[x].dest & 0xFFFF00FF) | (data << 8);  break;
+            case 0b10: dma_channels[x].source = (dma_channels[x].dest & 0xFF00FFFF) | (data << 16); break;
+            case 0b11: dma_channels[x].source = (dma_channels[x].dest & 0x00FFFFFF) | (data << 24); break;
+        }
+    }
+
+    void write_DMAXCNT_L(int target_byte, ubyte data, int x) {
+        final switch (target_byte) {
+            case 0b00: dma_channels[x].num_units = (dma_channels[x].num_units & 0xFF00) | (data << 0); break;
+            case 0b01: dma_channels[x].num_units = (dma_channels[x].num_units & 0x00FF) | (data << 8); break;
+        }
+    }
+
+    void write_DMAXCNT_H(int target_byte, ubyte data, int x) {
+        final switch (target_byte) {
+            case 0b00:
+                dma_channels[x].dest_addr_control   = cast(DestAddrMode) get_nth_bits(data, 5, 7);
+                dma_channels[x].source_addr_control = cast(SourceAddrMode) ((get_nth_bit(data, 7) << 0) | (dma_channels[x].source_addr_control & 0x10));
+                break;
+            case 0b01:
+                dma_channels[x].source_addr_control = cast(SourceAddrMode) ((get_nth_bit (data, 0) << 1) | (dma_channels[x].source_addr_control & 0x01));
+                dma_channels[x].repeat              =  get_nth_bit (data, 1);
+                dma_channels[x].transferring_words  =  get_nth_bit (data, 2);
+                dma_channels[x].gamepak_drq         =  get_nth_bit (data, 3);
+                dma_channels[x].dma_start_timing    =  cast(DMAStartTiming) get_nth_bits(data, 4, 6);
+                dma_channels[x].irq_on_end          =  get_nth_bit (data, 6);
+                dma_channels[x].enabled             =  get_nth_bit (data, 7);
+
+                if (get_nth_bit(data, 7)) {
+                    enable_dma(x);
+                }
+                break;
+        }
+    }
+
+    ubyte read_DMAXCNT_H(int target_byte, int x) {
+        final switch (target_byte) {
+            case 0b00:
+                return cast(ubyte) ((dma_channels[x].dest_addr_control          << 5) |
+                                    (dma_channels[x].source_addr_control & 0b01 << 7));
+            case 0b01:
+                return cast(ubyte) (((dma_channels[x].source_addr_control & 0b10) >> 1) |
+                                     (dma_channels[x].repeat                      << 1) |
+                                     (dma_channels[x].transferring_words          << 2) |
+                                     (dma_channels[x].gamepak_drq                 << 3) |
+                                     (dma_channels[x].dma_start_timing            << 4) |
+                                     (dma_channels[x].irq_on_end                  << 6) |
+                                     (dma_channels[x].enabled                     << 7));
+        }
+    }
 }
 
 struct DMAChannel {
-    uint*   source;
-    uint*   dest;
-    ushort* cnt_l;
-    ushort* cnt_h;
+    uint   source;
+    uint   dest;
+    ushort num_units;
 
-    uint    source_buf;
-    uint    dest_buf;
-    ushort  size_buf;
+    uint   source_buf;
+    uint   dest_buf;
+    ushort size_buf;
     
-    bool    enabled;
-    bool    waiting_to_start;
+    bool   enabled;
+    bool   waiting_to_start;
+    bool   repeat;
+    bool   transferring_words;
+    bool   gamepak_drq;
+    bool   irq_on_end;
+
+    DMAManager.DestAddrMode   dest_addr_control;
+    DMAManager.SourceAddrMode source_addr_control;
+    DMAManager.DMAStartTiming dma_start_timing;
 }
