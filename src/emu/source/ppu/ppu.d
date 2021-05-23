@@ -17,20 +17,13 @@ public:
         this.memory        = memory;
         this.interrupt_cpu = interrupt_cpu;
         dot                = 0;
+        scanline           = 0;
         pixel_priorities   = new uint[][](240, 160);
 
         background_init(memory);
     }
 
     void update_dot_and_scanline() {
-        // get current scanline
-        ushort scanline = *memory.VCOUNT;
-
-        // if (get_nth_bit(*memory.DISPCNT, 7)) {
-        //     dot      = 0;
-        //     scanline = 160;
-        // }
-
         // update dot and scanline
         dot++;
         if (dot > 307) { // 960 = 240 * 4 = screen_width * cycles_per_pixel
@@ -39,7 +32,7 @@ public:
 
             if (scanline > 227) {
                 scanline = 0;
-                *memory.DISPSTAT &= ~1;
+                vblank = false;
                 memory.has_updated = true;
 
                 // 100 should be more than big enough
@@ -48,17 +41,15 @@ public:
                     pixel_priorities[x][y] = 100;
             }
         }
-        *memory.VCOUNT = scanline;
 
         // set vblank or hblank accordingly
         if (scanline == 160 && dot == 0) { // are we in vblank?
-            *memory.DISPSTAT |= 1;
-            if (get_nth_bit(*memory.DISPSTAT, 3)) interrupt_cpu(1);
+            vblank = true;
+            if (vblank_irq_enabled) interrupt_cpu(1);
         }
 
-        bool in_hblank = get_nth_bit(*memory.DISPSTAT, 1);
-        if ((dot == 1006 - 960 && !in_hblank) || (dot == 0 && in_hblank)) { // should we toggle hblank?
-            *memory.DISPSTAT ^= 2;
+        if ((dot == 1006 - 960 && hblank) || (dot == 0 && hblank)) { // should we toggle hblank?
+            hblank = !hblank;
         }
     }
 
@@ -66,26 +57,21 @@ public:
         update_dot_and_scanline();
         
         // if we are hblank or vblank then we do not draw anything
-        ushort scanline = *memory.VCOUNT;
-        if (dot >= 240 || scanline >= 160) {
+        if (hblank) {
             return;
         }
-
 
         // only begin rendering if we are on the first cycle
         if (dot != 0) return;
 
-        // check the mode and run the appropriate function
-        ubyte mode = cast(ubyte) get_nth_bits(*memory.DISPCNT, 0, 3);
-
-        switch (mode) {
+        switch (bg_mode) {
             case 0: {
                 // DISPCNT bits 8-11 tell us which backgrounds should be rendered.
-                render_background_mode0(background_0, scanline);
-                render_background_mode0(background_1, scanline);
-                render_background_mode0(background_2, scanline);
-                render_background_mode0(background_3, scanline);
-                render_sprites(scanline);
+                render_background_mode0(backgrounds[0]);
+                render_background_mode0(backgrounds[1]);
+                render_background_mode0(backgrounds[2]);
+                render_background_mode0(backgrounds[3]);
+                render_sprites();
                 test_render_sprites();
                 // test_render_palette();
                 break;
@@ -104,7 +90,7 @@ public:
             case 5: {
                 // modes 4 and 5 are a step up from mode 3. the address of where the colors are stored can
                 // be found using DISPCNT.
-                uint base_frame_address = memory.OFFSET_VRAM + get_nth_bit(*memory.DISPCNT, 4) * 0xA000;
+                uint base_frame_address = memory.OFFSET_VRAM + disp_frame_select * 0xA000;
 
 
                 for (uint x = 0; x < 240; x++) {
@@ -125,21 +111,22 @@ public:
 private:
     Memory memory;
     ushort dot; // the horizontal counterpart to scanlines.
+    ushort scanline;
     uint[][] pixel_priorities; // the associated priorities with each pixel.
 
-    void render_background_mode0(Background background, int scanline) {
+    void render_background_mode0(Background background) {
         // do we even render?
-        if (!get_nth_bit(*memory.DISPCNT, background.enabled_bit)) return;
+        if (!background.enabled) return;
 
         for (ushort x_ofs = 0; x_ofs < 240; x_ofs++) {
-            ushort x = cast(ushort) (dot      + *background.x_offset + x_ofs);
-            ushort y = cast(ushort) (scanline + *background.y_offset);
+            ushort x = cast(ushort) (dot      + background.x_offset + x_ofs);
+            ushort y = cast(ushort) (scanline + background.y_offset);
 
             // the tile base address is where we will find out tilemap.
-            uint tile_base_address   = memory.OFFSET_VRAM + get_nth_bits(*background.control, 2,  4) * 0x4000;
+            uint tile_base_address   = memory.OFFSET_VRAM + background.character_base_block * 0x4000;
 
             // the screen base address is where we will find the indices that point to the tilemap.
-            uint screen_base_address = memory.OFFSET_VRAM + get_nth_bits(*background.control, 8, 13) * 0x800;
+            uint screen_base_address = memory.OFFSET_VRAM + background.screen_base_block    * 0x800;
 
             // x and y point to somewhere within the 240x180 screen. tiles are 8x8. we can figure out
             // which tile we are looking at by getting the high five bits (sc_x and sc_y), and we can
@@ -184,10 +171,10 @@ private:
             ushort current_tile = memory.read_halfword(screen_base_address + (sc_x + (sc_y * 32)) * 2);
             // if ((sc_x + (sc_y * 32)) * 2 == 0x400) warning(format("tile: %x %x", (sc_x + (sc_y * 32)) * 2, current_tile));
 
-            uint priority = get_nth_bits(*background.control, 0, 2) * 2 + 1;
+            uint priority = background.priority * 2 + 1;
 
             // palettes / colors ratio?
-            if (get_nth_bit(*background.control, 7)) { // 256 / 1
+            if (background.doesnt_use_color_palettes) { // 256 / 1
                 // only the upper 10 bits of current_tile are relevant. we use these to get the index into the palette ram
                 // for the particular pixel are are interested in (determined by tile_x and tile_y).
                 ubyte index = memory.read_byte(tile_base_address + ((current_tile & 0x3ff) * 64) + tile_y * 8 + tile_x);
@@ -235,7 +222,7 @@ private:
         ]
     ];
 
-    void render_sprites(ushort scanline) {
+    void render_sprites() {
         // Very useful guide for attributes! https://problemkaputt.de/gbatek.htm#lcdobjoamattributes
         for (int sprite = 0; sprite < 128; sprite++) {
             // first of all, we need to figure out if we render this sprite in the first place.
@@ -277,7 +264,7 @@ private:
 
             // colors / palettes
             if (get_nth_bit(attribute_0, 13)) { // 256 / 1
-                if (get_nth_bit(*memory.DISPCNT, 6)) {
+                if (obj_character_vram_mapping) {
                     base_tile_number += (width / 8) * ((scanline - y) / 8) * 2;
                 } else {
                     base_tile_number += 32 * ((scanline - y) / 8) * 2;
@@ -298,7 +285,7 @@ private:
                     maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index, priority, draw_x, scanline);
                 }
             } else { // 16 / 16
-                if (get_nth_bit(*memory.DISPCNT, 6)) {
+                if (obj_character_vram_mapping) {
                     base_tile_number += (width / 8) * ((scanline - y) / 8);
                 } else {
                     base_tile_number += 32 * ((scanline - y) / 8);
@@ -394,21 +381,145 @@ private:
                              cast(ubyte) (get_nth_bits(color, 10, 15) * 255 / 31));
     }
 
-    //.......................................................................................................................
-    //.RRRRRRRRRRR...EEEEEEEEEEEE....GGGGGGGGG....IIII...SSSSSSSSS...TTTTTTTTTTTTT.EEEEEEEEEEEE..RRRRRRRRRRR....SSSSSSSSS....
-    //.RRRRRRRRRRRR..EEEEEEEEEEEE...GGGGGGGGGGG...IIII..SSSSSSSSSSS..TTTTTTTTTTTTT.EEEEEEEEEEEE..RRRRRRRRRRRR..SSSSSSSSSSS...
-    //.RRRRRRRRRRRRR.EEEEEEEEEEEE..GGGGGGGGGGGGG..IIII..SSSSSSSSSSSS.TTTTTTTTTTTTT.EEEEEEEEEEEE..RRRRRRRRRRRR..SSSSSSSSSSSS..
-    //.RRRR.....RRRR.EEEE..........GGGGG....GGGG..IIII..SSSS....SSSS.....TTTT......EEEE..........RRR.....RRRRR.SSSS....SSSS..
-    //.RRRR.....RRRR.EEEE.........GGGGG......G....IIII..SSSS.............TTTT......EEEE..........RRR......RRRR.SSSSS.........
-    //.RRRR....RRRRR.EEEEEEEEEEEE.GGGG............IIII..SSSSSSSS.........TTTT......EEEEEEEEEEEE..RRR.....RRRR..SSSSSSSS......
-    //.RRRRRRRRRRRR..EEEEEEEEEEEE.GGGG....GGGGGGG.IIII..SSSSSSSSSSS......TTTT......EEEEEEEEEEEE..RRRRRRRRRRRR...SSSSSSSSSS...
-    //.RRRRRRRRRRRR..EEEEEEEEEEEE.GGGG....GGGGGGG.IIII....SSSSSSSSS......TTTT......EEEEEEEEEEEE..RRRRRRRRRRRR....SSSSSSSSSS..
-    //.RRRRRRRRRRR...EEEE.........GGGG....GGGGGGG.IIII........SSSSSS.....TTTT......EEEE..........RRRRRRRRRR..........SSSSSS..
-    //.RRRR..RRRRR...EEEE.........GGGGG......GGGG.IIII...SS.....SSSS.....TTTT......EEEE..........RRR...RRRRR....SS.....SSSS..
-    //.RRRR...RRRR...EEEE..........GGGGG....GGGGG.IIII.ISSSS....SSSS.....TTTT......EEEE..........RRR....RRRR...SSSS....SSSS..
-    //.RRRR...RRRRR..EEEEEEEEEEEEE.GGGGGGGGGGGGGG.IIII.ISSSSSSSSSSSS.....TTTT......EEEEEEEEEEEEE.RRR....RRRRR..SSSSSSSSSSSS..
-    //.RRRR....RRRRR.EEEEEEEEEEEEE..GGGGGGGGGGGG..IIII..SSSSSSSSSSS......TTTT......EEEEEEEEEEEEE.RRR.....RRRRR.SSSSSSSSSSSS..
-    //.RRRR.....RRRR.EEEEEEEEEEEEE...GGGGGGGGG....IIII...SSSSSSSSS.......TTTT......EEEEEEEEEEEEE.RRR.....RRRRR..SSSSSSSSSS...
+// .......................................................................................................................
+// .RRRRRRRRRRR...EEEEEEEEEEEE....GGGGGGGGG....IIII...SSSSSSSSS...TTTTTTTTTTTTT.EEEEEEEEEEEE..RRRRRRRRRRR....SSSSSSSSS....
+// .RRRRRRRRRRRR..EEEEEEEEEEEE...GGGGGGGGGGG...IIII..SSSSSSSSSSS..TTTTTTTTTTTTT.EEEEEEEEEEEE..RRRRRRRRRRRR..SSSSSSSSSSS...
+// .RRRRRRRRRRRRR.EEEEEEEEEEEE..GGGGGGGGGGGGG..IIII..SSSSSSSSSSSS.TTTTTTTTTTTTT.EEEEEEEEEEEE..RRRRRRRRRRRR..SSSSSSSSSSSS..
+// .RRRR.....RRRR.EEEE..........GGGGG....GGGG..IIII..SSSS....SSSS.....TTTT......EEEE..........RRR.....RRRRR.SSSS....SSSS..
+// .RRRR.....RRRR.EEEE.........GGGGG......GGG..IIII..SSSS.............TTTT......EEEE..........RRR......RRRR.SSSSS.........
+// .RRRR....RRRRR.EEEEEEEEEEEE.GGGG............IIII..SSSSSSSS.........TTTT......EEEEEEEEEEEE..RRR.....RRRR..SSSSSSSS......
+// .RRRRRRRRRRRR..EEEEEEEEEEEE.GGGG....GGGGGGG.IIII..SSSSSSSSSSS......TTTT......EEEEEEEEEEEE..RRRRRRRRRRRR...SSSSSSSSSS...
+// .RRRRRRRRRRRR..EEEEEEEEEEEE.GGGG....GGGGGGG.IIII....SSSSSSSSS......TTTT......EEEEEEEEEEEE..RRRRRRRRRRRR....SSSSSSSSSS..
+// .RRRRRRRRRRR...EEEE.........GGGG....GGGGGGG.IIII........SSSSSS.....TTTT......EEEE..........RRRRRRRRRR..........SSSSSS..
+// .RRRR..RRRRR...EEEE.........GGGGG......GGGG.IIII...SS.....SSSS.....TTTT......EEEE..........RRR...RRRRR....SS.....SSSS..
+// .RRRR...RRRR...EEEE..........GGGGG....GGGGG.IIII.ISSSS....SSSS.....TTTT......EEEE..........RRR....RRRR...SSSS....SSSS..
+// .RRRR...RRRRR..EEEEEEEEEEEEE.GGGGGGGGGGGGGG.IIII.ISSSSSSSSSSSS.....TTTT......EEEEEEEEEEEEE.RRR....RRRRR..SSSSSSSSSSSS..
+// .RRRR....RRRRR.EEEEEEEEEEEEE..GGGGGGGGGGGG..IIII..SSSSSSSSSSS......TTTT......EEEEEEEEEEEEE.RRR.....RRRRR.SSSSSSSSSSSS..
+// .RRRR.....RRRR.EEEEEEEEEEEEE...GGGGGGGGG....IIII...SSSSSSSSS.......TTTT......EEEEEEEEEEEEE.RRR.....RRRRR..SSSSSSSSSS...
 
+private:
+    // DISPCNT
+    int  bg_mode;                                   // 0 - 5
+    int  disp_frame_select;                         // 0 - 1
+    bool hblank_interval_free;                      // 1 = OAM can be accessed during h-blank
+    bool is_character_vram_mapping_one_dimensional; // 2 = 2-dimensional
+    bool obj_character_vram_mapping;
+    bool forced_blank;
 
+    // DISPSTAT
+    bool  vblank;
+    bool  hblank;
+    bool  vblank_irq_enabled;
+    bool  hblank_irq_enabled;
+    bool  vcounter_irq_enabled;
+    ubyte vcount_lyc;
+
+public:
+    void write_DISPCNT(int target_byte, ubyte data) {
+        import std.stdio;
+        writefln("%x ,%x", target_byte, data);
+        if (target_byte == 0) {
+            bg_mode                    = get_nth_bits(data, 0, 3);
+            disp_frame_select          = get_nth_bit (data, 4);
+            hblank_interval_free       = get_nth_bit (data, 5);
+            obj_character_vram_mapping = get_nth_bit (data, 6);
+            forced_blank               = get_nth_bit (data, 7);
+        } else { // target_byte == 1
+            backgrounds[0].enabled       = get_nth_bit (data, 0);
+            backgrounds[1].enabled       = get_nth_bit (data, 1);
+            backgrounds[2].enabled       = get_nth_bit (data, 2);
+            backgrounds[3].enabled       = get_nth_bit (data, 3);
+            // TODO: WINDOW 0
+            // TODO: WINDOW 1
+            // TODO: OBJ WINDOW
+        }
+    }
+
+    void write_DISPSTAT(int target_byte, ubyte data) {
+        if (target_byte == 0) {
+            vblank_irq_enabled   = get_nth_bit(data, 3);
+            hblank_irq_enabled   = get_nth_bit(data, 4);
+            vcounter_irq_enabled = get_nth_bit(data, 5);
+        } else { // target_byte == 1
+            vcount_lyc           = data;
+        }
+    }
+
+    void write_BGXCNT(int target_byte, ubyte data, int x) {
+        if (target_byte == 0) {
+            backgrounds[x].priority                   = get_nth_bits(data, 0, 2);
+            backgrounds[x].character_base_block       = get_nth_bits(data, 2, 4);
+            backgrounds[x].is_mosaic                  = get_nth_bit (data, 6);
+            backgrounds[x].doesnt_use_color_palettes  = get_nth_bit (data, 7);
+        } else { // target_byte == 1
+            backgrounds[x].screen_base_block          = get_nth_bits(data, 0, 5);
+            backgrounds[x].does_display_area_overflow = get_nth_bit (data, 5);
+            backgrounds[x].screen_size                = get_nth_bits(data, 6, 8);
+        }
+    }
+
+    void write_BGXHOFS(int target_byte, ubyte data, int x) {
+        if (target_byte == 0) {
+            backgrounds[x].x_offset = (backgrounds[x].x_offset & 0xFF00) | data;
+        } else { // target_byte == 1
+            backgrounds[x].x_offset = (backgrounds[x].x_offset & 0x00FF) | (data << 8);
+        }
+    }
+
+    void write_BGXVOFS(int target_byte, ubyte data, int x) {
+        if (target_byte == 0) {
+            backgrounds[x].y_offset = (backgrounds[x].x_offset & 0xFF00) | data;
+        } else { // target_byte == 1
+            backgrounds[x].y_offset = (backgrounds[x].x_offset & 0x00FF) | (data << 8);
+        }
+    }
+
+    ubyte read_DISPCNT(int target_byte) {
+        if (target_byte == 0) {
+            return cast(ubyte) ((bg_mode                    << 0) |
+                                (disp_frame_select          << 4) |
+                                (hblank_interval_free       << 5) |
+                                (obj_character_vram_mapping << 6) |
+                                (forced_blank               << 7));
+        } else { // target_byte == 1
+            return (backgrounds[0].enabled << 0) |
+                   (backgrounds[1].enabled << 1) |
+                   (backgrounds[2].enabled << 2) |
+                   (backgrounds[3].enabled << 3);
+        }
+    }
+
+    ubyte read_DISPSTAT(int target_byte) {
+        if (target_byte == 0) {
+            return (vblank                   << 0) |
+                   (hblank                   << 1) | 
+                   ((scanline == vcount_lyc) << 2) |
+                   (vblank_irq_enabled       << 3) |
+                   (hblank_irq_enabled       << 4) |
+                   (vcounter_irq_enabled     << 5);
+        } else { // target_byte == 1
+            return vcount_lyc;
+        }
+    }
+
+    ubyte read_VCOUNT(int target_byte) {
+        if (target_byte == 0) {
+            return (scanline & 0x00FF) >> 0;
+        } else {
+            return (scanline & 0xFF00) >> 8;
+        }
+    }
+
+    ubyte read_BGXCNT(int target_byte, int x) {
+        if (target_byte == 0) {
+            return cast(ubyte) ((backgrounds[x].priority                  << 0) |
+                                (backgrounds[x].character_base_block      << 2) |
+                                (backgrounds[x].is_mosaic                 << 6) |
+                                (backgrounds[x].doesnt_use_color_palettes << 7));
+        } else { // target_byte == 1
+            return cast(ubyte) ((backgrounds[x].screen_base_block          << 0) |
+                                (backgrounds[x].does_display_area_overflow << 5) |
+                                (backgrounds[x].screen_size                << 6));
+        }
+    }
 }

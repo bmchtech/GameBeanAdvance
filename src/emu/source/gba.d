@@ -8,6 +8,7 @@ public {
     import util;
     import dma;
     import timers;
+    import mmio;
 }
 
 enum CART_SIZE = 0x1000000;
@@ -36,7 +37,7 @@ public:
     Memory       memory;
     DMAManager   dma_manager;
     TimerManager timers;
-    DirectSound  direct_sound;
+    // DirectSound  direct_sound;
 
     this(Memory memory) {
         this.memory       = memory;
@@ -44,7 +45,10 @@ public:
         this.ppu          = new PPU(memory, &interrupt_cpu);
         this.dma_manager  = new DMAManager(memory);
         this.timers       = new TimerManager(memory, &on_timer_overflow);
-        this.direct_sound = new DirectSound(memory);
+        // this.direct_sound = new DirectSound(memory);
+
+        MMIO mmio = new MMIO(ppu, dma_manager, timers);
+        memory.set_mmio(mmio);
 
         this.enabled = false;
 
@@ -85,9 +89,9 @@ public:
     }
 
     void on_timer_overflow(int timer_id) {
-        // do we have to tell direct sound to request another sample from dma?
-        if (get_nth_bit(*memory.SOUNDCNT_H, 10) == timer_id) direct_sound.push_one_sample_to_buffer(DirectSoundFifo.A);
-        if (get_nth_bit(*memory.SOUNDCNT_H, 14) == timer_id) direct_sound.push_one_sample_to_buffer(DirectSoundFifo.B);
+        // // do we have to tell direct sound to request another sample from dma?
+        // if (get_nth_bit(*memory.SOUNDCNT_H, 10) == timer_id) direct_sound.push_one_sample_to_buffer(DirectSoundFifo.A);
+        // if (get_nth_bit(*memory.SOUNDCNT_H, 14) == timer_id) direct_sound.push_one_sample_to_buffer(DirectSoundFifo.B);
     }
 
     void bios_call(int bios_function) {

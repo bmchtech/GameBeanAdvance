@@ -317,28 +317,28 @@ class ARM7TDMI {
 
     // interrupt_code must be one-hot
     void interrupt(uint interrupt_code) {
-        // interrupts not allowed if the cpu itself has interrupts disabled.
-        if (get_nth_bit(*cpsr, 7)) return;
+        // // interrupts not allowed if the cpu itself has interrupts disabled.
+        // if (get_nth_bit(*cpsr, 7)) return;
 
-        if (!(*memory.IME & 0x1)) return; // if interrupts are disabled globally, ignore.
+        // if (!(*memory.IME & 0x1)) return; // if interrupts are disabled globally, ignore.
 
-        // is this specific interrupt enabled
-        if (*memory.IE & interrupt_code) {
-            // writefln("Interrupt! %x", *pc);
-            register_file[MODE_IRQ.OFFSET + 17] = *cpsr;
+        // // is this specific interrupt enabled
+        // if (*memory.IE & interrupt_code) {
+        //     // writefln("Interrupt! %x", *pc);
+        //     register_file[MODE_IRQ.OFFSET + 17] = *cpsr;
 
-            *cpsr |= (1 << 7); // disable interrupts for the time being...
+        //     *cpsr |= (1 << 7); // disable interrupts for the time being...
 
-            *memory.IF |= interrupt_code;
-            register_file[MODE_IRQ.OFFSET + 14] = *pc;
+        //     *memory.IF |= interrupt_code;
+        //     register_file[MODE_IRQ.OFFSET + 14] = *pc;
 
-            halted = false;
-            set_mode(MODE_IRQ);
-            set_bit_T(false);
-            *pc = 0x18;
+        //     halted = false;
+        //     set_mode(MODE_IRQ);
+        //     set_bit_T(false);
+        //     *pc = 0x18;
 
-            // readln();
-        }
+        //     // readln();
+        // }
     }
 
     // an explanation of these constants is partially in here as well as cpu-mode.h
