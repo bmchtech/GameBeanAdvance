@@ -3,6 +3,9 @@ module mmio;
 import ppu;
 import dma;
 import timers;
+import interrupts;
+
+import std.stdio;
 
 class MMIO {
 
@@ -95,10 +98,11 @@ class MMIO {
     enum IF            = 0x4000202; //  2    R/W   Interrupt Request Flags / IRQ Acknowledge
     enum IME           = 0x4000208; //  2    R/W   Interrupt Master Enable Register
 
-    this(PPU ppu, DMAManager dma, TimerManager timers) {
-        this.ppu    = ppu;
-        this.dma    = dma;
-        this.timers = timers;
+    this(PPU ppu, DMAManager dma, TimerManager timers, InterruptManager interrupt) {
+        this.ppu       = ppu;
+        this.dma       = dma;
+        this.timers    = timers;
+        this.interrupt = interrupt;
     }
 
     ubyte read(uint address) {
@@ -187,12 +191,12 @@ class MMIO {
             // case KEYCNT      + 0: return keyinput.read_KEYCNT(); 
             // case KEYCNT      + 1: return keyinput.read_KEYCNT(); 
 
-            // case IE          + 0: return interrupt.read_IE(); 
-            // case IE          + 1: return interrupt.read_IE(); 
-            // case IF          + 0: return interrupt.read_IF(); 
-            // case IF          + 1: return interrupt.read_IF(); 
-            // case IME         + 0: return interrupt.read_IME(); 
-            // case IME         + 1: return interrupt.read_IME(); 
+            case IE          + 0: return interrupt.read_IE   (0); 
+            case IE          + 1: return interrupt.read_IE   (1); 
+            case IF          + 0: return interrupt.read_IF   (0); 
+            case IF          + 1: return interrupt.read_IF   (1); 
+            case IME         + 0: return interrupt.read_IME  (0); 
+            case IME         + 1: return interrupt.read_IME  (1); 
 
             default: return 0;
         }
@@ -350,12 +354,12 @@ class MMIO {
             // case KEYCNT      + 0: keyinput.write_KEYCNT(0, data); break;
             // case KEYCNT      + 1: keyinput.write_KEYCNT(1, data); break;
             
-            // case IE          + 0: interrupt.write_IE   (0, data); break;
-            // case IE          + 1: interrupt.write_IE   (1, data); break;
-            // case IF          + 0: interrupt.write_IF   (0, data); break;
-            // case IF          + 1: interrupt.write_IF   (1, data); break;
-            // case IME         + 0: interrupt.write_IME  (0, data); break;
-            // case IME         + 1: interrupt.write_IME  (1, data); break;
+            case IE          + 0: interrupt.write_IE   (0, data); break;
+            case IE          + 1: interrupt.write_IE   (1, data); break;
+            case IF          + 0: interrupt.write_IF   (0, data); break;
+            case IF          + 1: interrupt.write_IF   (1, data); break;
+            case IME         + 0: interrupt.write_IME  (0, data); break;
+            case IME         + 1: interrupt.write_IME  (1, data); break;
 
             default: break;
         }
@@ -363,7 +367,8 @@ class MMIO {
 
 
 private:
-    PPU          ppu;
-    DMAManager   dma;
-    TimerManager timers;
+    PPU              ppu;
+    DMAManager       dma;
+    TimerManager     timers;
+    InterruptManager interrupt;
 }

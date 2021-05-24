@@ -182,32 +182,30 @@ class ARM7TDMI {
         return (*cpsr >> 5) & 1;
     }
 
-    void cycle() {
-        if (halted) return;
+    int cycle() {
+        if (halted) return 0;
 
-        // cycles_remaining = 0;
+        cycles_remaining = 0;
 
-        if (cycles_remaining == 0) {
-            // Logger.instance.capture_cpu();
-            uint opcode = fetch();
+        // Logger.instance.capture_cpu();
+        uint opcode = fetch();
 
-            // if ((*pc & 0x0F00_0000) != 0x0800_0000) {
-            //     error("PC out of range!");
-            // }
+        // if ((*pc & 0x0F00_0000) != 0x0800_0000) {
+        //     error("PC out of range!");
+        // }
 
-            // if ((*pc & 0xFF000000) == 0x00000000) {
-                // write(format("%08x |", opcode));
-                
-                // for (int j = 0; j < 16; j++)
-                //     write(format("%08x ", regs[j]));
+        // if ((*pc & 0xFF000000) == 0x00000000) {
+            // write(format("%08x |", opcode));
+            
+            // for (int j = 0; j < 16; j++)
+            //     write(format("%08x ", regs[j]));
 
-                // writeln();
-            // }
+            // writeln();
+        // }
 
-            execute(opcode);
-        } else {
-            cycles_remaining--;
-        }
+        execute(opcode);
+
+        return cycles_remaining;
     }
 
     uint fetch() {
@@ -296,49 +294,25 @@ class ARM7TDMI {
         return result;
     }
 
-
-    // set up the possible interrupts
-    enum INTERRUPT {
-        LCD_VBLANK           = 1,
-        LCD_HBLANK           = 2,
-        LCD_VCOUNTER_MATCH   = 4,
-        TIMER_0_OVERFLOW     = 8,
-        TIMER_1_OVERFLOW     = 16,
-        TIMER_2_OVERFLOW     = 32,
-        TIMER_3_OVERFLOW     = 64,
-        SERIAL_COMMUNICATION = 128,
-        DMA_0                = 256,
-        DMA_1                = 512,
-        DMA_2                = 1024,
-        DMA_3                = 2048,
-        KEYPAD               = 4096,
-        GAMEPAK              = 8192
-    }
-
     // interrupt_code must be one-hot
-    void interrupt(uint interrupt_code) {
-        // // interrupts not allowed if the cpu itself has interrupts disabled.
-        // if (get_nth_bit(*cpsr, 7)) return;
+    void interrupt() {
+        // interrupts not allowed if the cpu itself has interrupts disabled.
+        if (get_nth_bit(*cpsr, 7)) {
+            memory.write_halfword(0x4000202, memory.read_halfword(0x4000202));
+            return;
+        }
 
-        // if (!(*memory.IME & 0x1)) return; // if interrupts are disabled globally, ignore.
+        // writefln("Interrupt! %x", *pc);
+        register_file[MODE_IRQ.OFFSET + 17] = *cpsr;
 
-        // // is this specific interrupt enabled
-        // if (*memory.IE & interrupt_code) {
-        //     // writefln("Interrupt! %x", *pc);
-        //     register_file[MODE_IRQ.OFFSET + 17] = *cpsr;
+        *cpsr |= (1 << 7); // disable interrupts for the time being...
 
-        //     *cpsr |= (1 << 7); // disable interrupts for the time being...
+        register_file[MODE_IRQ.OFFSET + 14] = *pc;
 
-        //     *memory.IF |= interrupt_code;
-        //     register_file[MODE_IRQ.OFFSET + 14] = *pc;
-
-        //     halted = false;
-        //     set_mode(MODE_IRQ);
-        //     set_bit_T(false);
-        //     *pc = 0x18;
-
-        //     // readln();
-        // }
+        halted = false;
+        set_mode(MODE_IRQ);
+        set_bit_T(false);
+        *pc = 0x18;
     }
 
     // an explanation of these constants is partially in here as well as cpu-mode.h

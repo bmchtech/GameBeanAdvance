@@ -71,7 +71,7 @@ public:
                 render_background_mode0(backgrounds[1]);
                 render_background_mode0(backgrounds[2]);
                 render_background_mode0(backgrounds[3]);
-                // render_sprites();
+                render_sprites();
                 // test_render_sprites();
                 // test_render_palette();
                 break;
@@ -173,6 +173,11 @@ private:
 
             uint priority = background.priority * 2 + 1;
 
+            bool flipped_x = (current_tile >> 10) & 1;
+            bool flipped_y = (current_tile >> 11) & 1;
+            if (flipped_x) tile_x = cast(ushort) (7 - tile_x);
+            if (flipped_y) tile_y = cast(ushort) (7 - tile_y);
+
             // palettes / colors ratio?
             if (background.doesnt_use_color_palettes) { // 256 / 1
                 // only the upper 10 bits of current_tile are relevant. we use these to get the index into the palette ram
@@ -262,6 +267,9 @@ private:
             ushort base_tile_number = cast(ushort) get_nth_bits(attribute_2, 0, 10);
             uint priority = 2 * get_nth_bits(attribute_2, 10, 11);
 
+            bool flipped_x = (attribute_1 >> 12) & 1;
+            bool flipped_y = (attribute_1 >> 13) & 1;
+
             // colors / palettes
             if (get_nth_bit(attribute_0, 13)) { // 256 / 1
                 if (obj_character_vram_mapping) {
@@ -271,6 +279,7 @@ private:
                 }
                 // ubyte palette = get_nth_bits(attribute_2, 12, 16);
                 for (int draw_x = x; draw_x < x + width; draw_x++) {
+
                     uint tile_base_address = memory.OFFSET_VRAM + 0x10000; // probably wrong lol
 
                     uint shifted_tile_number = base_tile_number + ((draw_x - x) / 8) * 2;
@@ -293,13 +302,15 @@ private:
 
                 for (int draw_x = x; draw_x < x + width; draw_x += 2) {
                     // TODO: REPEATED CODE
+                    int adjusted_draw_x = flipped_x ? x + (width  - (draw_x   - x) - 1) : draw_x;
+                    int adjusted_draw_y = flipped_y ? y + (height - (scanline - y) - 1) : scanline;
 
                     // tile_base_address is just the base address of the tiles for sprites
                     uint tile_base_address = memory.OFFSET_VRAM + 0x10000; // probably wrong lol
 
                     // shifted_tile_number tells us the exact tile we will be rendering. note that (draw_x - x)/ 8
                     // tells us the current tile column we are rendering.
-                    uint shifted_tile_number = base_tile_number + ((draw_x - x) / 8);
+                    uint shifted_tile_number = base_tile_number + ((adjusted_draw_x - x) / 8);
 
                     // only the upper 10 bits of current_tile are relevant. we use these to get the index into the palette ram
                     // for the particular pixel we are interested in (determined by tile_x and tile_y). we multiply
@@ -307,11 +318,16 @@ private:
                     // are the current pixel x y offsets within the tile. since each pixel is half of a byte, we multiply
                     // the x y offsets by (8 / 2) and (1 / 2) respectively.
                     ubyte index = memory.read_byte(tile_base_address + ((shifted_tile_number & 0x3ff) * 32) + 
-                                                                       ((scanline - y) % 8) * 4 +
-                                                                       ((draw_x   - x) % 8) / 2);
+                                                                       ((adjusted_draw_y - y) % 8) * 4 +
+                                                                       ((adjusted_draw_x - x) % 8) / 2);
 
                     uint index_L = (index & 0xF) + get_nth_bits(attribute_2, 12, 16) * 16;
                     uint index_H = (index >> 4)  + get_nth_bits(attribute_2, 12, 16) * 16;
+                    if (flipped_x) {
+                        uint temp = index_L;
+                        index_L = index_H;
+                        index_H = temp;
+                    }
                                         // warning(format("SHAPE: %x %x %x %x %x %x", attribute_0, attribute_1, size, shape, width, height));
 
                     // and we grab two pixels from palette ram and interpret them as 15bit highcolor.
@@ -365,10 +381,10 @@ private:
         //     return;
         // }
 
-        // if ((palette_index & 0xF) != 0) {
+        if ((palette_index & 0xF) != 0) {
             pixel_priorities[x][y] = priority;
             draw_pixel(palette_offset, palette_index, x, y);
-        // }
+        }
     }
 
     void draw_pixel(uint palette_offset, uint palette_index, uint x, uint y) {
@@ -416,8 +432,6 @@ private:
 
 public:
     void write_DISPCNT(int target_byte, ubyte data) {
-        import std.stdio;
-        writefln("%x ,%x", target_byte, data);
         if (target_byte == 0) {
             bg_mode                    = get_nth_bits(data, 0, 3);
             disp_frame_select          = get_nth_bit (data, 4);
