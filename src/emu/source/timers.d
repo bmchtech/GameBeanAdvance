@@ -23,7 +23,7 @@ public:
         ];
     }
 
-    void cycle() {
+    int cycle() {
         // cycle the enabled timers
         for (int i = 0; i < 4; i++) {
             if (timers[i].enabled) {
@@ -47,6 +47,8 @@ public:
         // for (int i = 0; i < 4; i++) {
         //     *timers[i].cnt_l = timers[i].timer_value;
         // }
+
+        return 0;
     }
 
     void reload_timer(int timer_id) {

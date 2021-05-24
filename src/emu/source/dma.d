@@ -20,13 +20,10 @@ public:
         ];
     }
 
-    // returns true if any DMA cycle occurred. returns false otherwise.
-    bool handle_dma() {
-        if (idle_cycles > 0) {
-            idle_cycles--;
-            return true;
-        }
-
+    // returns the amount of cycles to idle
+    int handle_dma() {
+        idle_cycles = 0;
+        
         // get the channel with highest priority that wants to start dma
         int current_channel = -1;
         for (int i = 0; i < 4; i++) {
@@ -37,7 +34,7 @@ public:
         }
 
         // if we found no channels, leave.
-        if (current_channel == -1) return false;
+        if (current_channel == -1) return 0;
 
         uint bytes_to_transfer  = dma_channels[current_channel].size_buf;
         int  source_increment   = 0;
@@ -68,14 +65,18 @@ public:
         if (dma_channels[current_channel].transferring_words) {
             bytes_to_transfer *= 4;
             for (int i = 0; i < bytes_to_transfer; i += 4) {
-                memory.write_word(dma_channels[current_channel].dest + source_offset, memory.read_word(dma_channels[current_channel].source + dest_offset));
+                // writefln("DMA Channel %x successfully transfered %x from %x to %x. %x words done.", current_channel, memory.read_word(dma_channels[current_channel].source), dma_channels[current_channel].source, dma_channels[current_channel].dest, i);
+
+                memory.write_word(dma_channels[current_channel].dest + dest_offset, memory.read_word(dma_channels[current_channel].source + source_offset));
                 source_offset += source_increment;
                 dest_offset   += dest_increment;
             }
         } else {
             bytes_to_transfer *= 2;
             for (int i = 0; i < bytes_to_transfer; i += 2) {
-                memory.write_halfword(dma_channels[current_channel].dest + source_offset, memory.read_halfword(dma_channels[current_channel].source + dest_offset));
+                // writefln("DMA Channel %x successfully transfered %x from %x to %x. %x halfwords done.", current_channel, memory.read_word(dma_channels[current_channel].source), dma_channels[current_channel].source, dma_channels[current_channel].dest, i);
+
+                memory.write_halfword(dma_channels[current_channel].dest + dest_offset, memory.read_halfword(dma_channels[current_channel].source + source_offset));
                 source_offset += source_increment;
                 dest_offset   += dest_increment;
             }
@@ -103,7 +104,7 @@ public:
         } else {
             // writefln("DMA Channel %x Finished", current_channel);
             dma_channels[current_channel].enabled = false;
-            return true;
+            return idle_cycles;
         }
 
         // if (current_channel == 1) writefln("DMA Channel %x successfully transfered %x from %x to %x. %x units left.", current_channel, memory.read_word(dma_channels[current_channel].source_buf), dma_channels[current_channel].source_buf, dma_channels[current_channel].dest_buf, dma_channels[current_channel].size_buf);
@@ -131,11 +132,10 @@ public:
         //     default: {}
         // }
 
-        return true;
+        return idle_cycles;
     }
 
     void enable_dma(int dma_id) {
-        
         dma_channels[dma_id].num_units = dma_channels[dma_id].num_units & 0x0FFFFFFF;
         if (dma_id == 3) dma_channels[dma_id].num_units &= 0x07FFFFFF;
 
@@ -143,6 +143,8 @@ public:
         dma_channels[dma_id].dest_buf         = dma_channels[dma_id].dest;
         dma_channels[dma_id].size_buf         = dma_channels[dma_id].num_units;
         dma_channels[dma_id].waiting_to_start = dma_channels[dma_id].dma_start_timing == DMAStartTiming.Immediately;
+
+        // writefln("DMA Channel %x enabled. Transferring %x bytes from %x to %x.", dma_id, dma_channels[dma_id].num_units, dma_channels[dma_id].source, dma_channels[dma_id].dest);
 
         dma_channels[dma_id].enabled          = true;
     }
@@ -204,10 +206,10 @@ public:
 
     void write_DMAXDAD(int target_byte, ubyte data, int x) {
         final switch (target_byte) {
-            case 0b00: dma_channels[x].source = (dma_channels[x].dest & 0xFFFFFF00) | (data << 0);  break;
-            case 0b01: dma_channels[x].source = (dma_channels[x].dest & 0xFFFF00FF) | (data << 8);  break;
-            case 0b10: dma_channels[x].source = (dma_channels[x].dest & 0xFF00FFFF) | (data << 16); break;
-            case 0b11: dma_channels[x].source = (dma_channels[x].dest & 0x00FFFFFF) | (data << 24); break;
+            case 0b00: dma_channels[x].dest = (dma_channels[x].dest & 0xFFFFFF00) | (data << 0);  break;
+            case 0b01: dma_channels[x].dest = (dma_channels[x].dest & 0xFFFF00FF) | (data << 8);  break;
+            case 0b10: dma_channels[x].dest = (dma_channels[x].dest & 0xFF00FFFF) | (data << 16); break;
+            case 0b11: dma_channels[x].dest = (dma_channels[x].dest & 0x00FFFFFF) | (data << 24); break;
         }
     }
 

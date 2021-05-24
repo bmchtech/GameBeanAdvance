@@ -9,6 +9,7 @@ public {
     import dma;
     import timers;
     import mmio;
+    import interrupts;
 }
 
 enum CART_SIZE = 0x1000000;
@@ -32,22 +33,24 @@ enum GBAKey {
 
 class GBA {
 public:
-    ARM7TDMI     cpu;
-    PPU          ppu;
-    Memory       memory;
-    DMAManager   dma_manager;
-    TimerManager timers;
+    ARM7TDMI         cpu;
+    PPU              ppu;
+    Memory           memory;
+    DMAManager       dma_manager;
+    TimerManager     timers;
+    InterruptManager interrupt_manager;
     // DirectSound  direct_sound;
 
     this(Memory memory) {
-        this.memory       = memory;
-        this.cpu          = new ARM7TDMI(memory, &bios_call);
-        this.ppu          = new PPU(memory, &interrupt_cpu);
-        this.dma_manager  = new DMAManager(memory);
-        this.timers       = new TimerManager(memory, &on_timer_overflow);
+        this.memory            = memory;
+        this.cpu               = new ARM7TDMI(memory, &bios_call);
+        this.interrupt_manager = new InterruptManager(&interrupt_cpu);
+        this.ppu               = new PPU(memory, &interrupt_manager.interrupt);
+        this.dma_manager       = new DMAManager(memory);
+        this.timers            = new TimerManager(memory, &on_timer_overflow);
         // this.direct_sound = new DirectSound(memory);
 
-        MMIO mmio = new MMIO(ppu, dma_manager, timers);
+        MMIO mmio = new MMIO(ppu, dma_manager, timers, interrupt_manager);
         memory.set_mmio(mmio);
 
         this.enabled = false;
@@ -77,15 +80,19 @@ public:
     }
 
     void maybe_cycle_cpu() {
-        if (!dma_manager.handle_dma()) {
-            cpu.cycle();
-            timers.cycle();
+        if (idle_cycles > 0) {
+            idle_cycles--;
+            return;
         }
+
+        idle_cycles += cpu.cycle();
+        idle_cycles += dma_manager.handle_dma();
+        idle_cycles += timers.cycle();
     }
 
     // interrupt_code must be one-hot
-    void interrupt_cpu(uint interrupt_code) {
-        cpu.interrupt(interrupt_code);
+    void interrupt_cpu() {
+        cpu.interrupt();
     }
 
     void on_timer_overflow(int timer_id) {
@@ -95,7 +102,6 @@ public:
     }
 
     void bios_call(int bios_function) {
-        // warning(format("BIOS: %x", bios_function));
         switch (bios_function) {
             case 0x01: { // Register RAM Reset
                 // note entry 7 is special so it isnt included
@@ -209,6 +215,7 @@ public:
             }
         
             case 0x11: { // LZ77UnCompReadNormalWrite8bit
+                warning(format("BIOS: %x %x", cpu.regs[1], *cpu.pc));
                 uint source_address = cpu.regs[0];
                 uint dest_address   = cpu.regs[1];
 
@@ -260,5 +267,6 @@ public:
 
 private:
     bool dma_cycle = false;
+    int idle_cycles = 0;
     
 }

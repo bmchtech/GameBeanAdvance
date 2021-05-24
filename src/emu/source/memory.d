@@ -116,7 +116,7 @@ class Memory {
             warning(format("Address out of range on read byte %s", to_hex_string(address) ~ ")"));
             return 0;
         }
-        if (address == 0x030014d0) writefln("Read byte from %08x", address);
+        // if (address == 0x030014d0) writefln("Read byte from %08x", address);
         return read_memory(address);
     }
 
@@ -130,7 +130,7 @@ class Memory {
             warning(format("Address out of range on read halfword %s", to_hex_string(address) ~ ")"));
             return 0;
         }
-        if (address == 0x030014d0) writefln("Read halfword from %08x", address);
+        // if (address == 0x030014d0) writefln("Read halfword from %08x", address);
         return (cast(ushort) read_memory(address + 0) << 0) | 
                (cast(ushort) read_memory(address + 1) << 8);
     }
@@ -145,7 +145,7 @@ class Memory {
             warning(format("Address out of range on read word %s", to_hex_string(address) ~ ")"));
             return 0;
         }
-        if (address == 0x030014d0) writefln("Read word from %08x", address);
+        // if (address == 0x030014d0) writefln("Read word from %08x", address);
         return (cast(uint) read_memory(address + 0) << 0)  |
                (cast(uint) read_memory(address + 1) << 8)  |
                (cast(uint) read_memory(address + 2) << 16) | 
