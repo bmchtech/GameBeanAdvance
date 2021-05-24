@@ -65,7 +65,8 @@ public:
         if (dot != 0) return;
 
         switch (bg_mode) {
-            case 0: {
+            case 0: 
+            case 1: {
                 // DISPCNT bits 8-11 tell us which backgrounds should be rendered.
                 render_background_mode0(backgrounds[0]);
                 render_background_mode0(backgrounds[1]);
@@ -294,16 +295,16 @@ private:
                     maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index, priority, draw_x, scanline);
                 }
             } else { // 16 / 16
+                int adjusted_draw_y = flipped_y ? y + (height - (scanline - y) - 1) : scanline;
                 if (obj_character_vram_mapping) {
-                    base_tile_number += (width / 8) * ((scanline - y) / 8);
+                    base_tile_number += (width / 8) * ((adjusted_draw_y - y) / 8);
                 } else {
-                    base_tile_number += 32 * ((scanline - y) / 8);
+                    base_tile_number += 32 * ((adjusted_draw_y - y) / 8);
                 }
 
-                for (int draw_x = x; draw_x < x + width; draw_x += 2) {
+                for (int draw_x = x; draw_x < x + width; draw_x++) {
                     // TODO: REPEATED CODE
-                    int adjusted_draw_x = flipped_x ? x + (width  - (draw_x   - x) - 1) : draw_x;
-                    int adjusted_draw_y = flipped_y ? y + (height - (scanline - y) - 1) : scanline;
+                    int adjusted_draw_x = flipped_x ? x + (width  - ((draw_x << 1)   - x) - 1) : draw_x << 1;
 
                     // tile_base_address is just the base address of the tiles for sprites
                     uint tile_base_address = memory.OFFSET_VRAM + 0x10000; // probably wrong lol
@@ -319,20 +320,26 @@ private:
                     // the x y offsets by (8 / 2) and (1 / 2) respectively.
                     ubyte index = memory.read_byte(tile_base_address + ((shifted_tile_number & 0x3ff) * 32) + 
                                                                        ((adjusted_draw_y - y) % 8) * 4 +
-                                                                       ((adjusted_draw_x - x) % 8) / 2);
+                                                                       ((adjusted_draw_x - x) % 8) );
 
-                    uint index_L = (index & 0xF) + get_nth_bits(attribute_2, 12, 16) * 16;
-                    uint index_H = (index >> 4)  + get_nth_bits(attribute_2, 12, 16) * 16;
-                    if (flipped_x) {
-                        uint temp = index_L;
-                        index_L = index_H;
-                        index_H = temp;
-                    }
+
+                    // if (flipped_x) {
+                    //     uint temp = index_L;
+                    //     index_L = index_H;
+                    //     index_H = temp;
+                    // }
                                         // warning(format("SHAPE: %x %x %x %x %x %x", attribute_0, attribute_1, size, shape, width, height));
+                    
+                    if (adjusted_draw_x % 2 == 0) {
+                        index &= 0xF;
+                    } else {
+                        index >>= 4;
+                    }
+                    index += get_nth_bits(attribute_2, 12, 16) * 16;
 
                     // and we grab two pixels from palette ram and interpret them as 15bit highcolor.
-                    maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index_L, priority, draw_x,     scanline);
-                    maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index_H, priority, draw_x + 1, scanline);
+                    maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index, priority, draw_x, scanline);
+                    // maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index_H, priority, draw_x + 1, scanline);
                 }
             }
         }
@@ -377,9 +384,9 @@ private:
     }
 
     void maybe_draw_pixel(uint palette_offset, uint palette_index, uint priority, uint x, uint y) {
-        // if (priority >= pixel_priorities[x][y]) {
-        //     return;
-        // }
+        if (priority >= pixel_priorities[x][y]) {
+            return;
+        }
 
         if ((palette_index & 0xF) != 0) {
             pixel_priorities[x][y] = priority;

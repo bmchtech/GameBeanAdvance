@@ -215,7 +215,6 @@ public:
             }
         
             case 0x11: { // LZ77UnCompReadNormalWrite8bit
-                warning(format("BIOS: %x %x", cpu.regs[1], *cpu.pc));
                 uint source_address = cpu.regs[0];
                 uint dest_address   = cpu.regs[1];
 
@@ -254,12 +253,11 @@ public:
                     }
                 }
 
-                warning("Data Decompressed.");
                 break;
             }
 
             default: 
-                error(format("Invalid BIOS Call: %x", bios_function));
+                warning(format("Invalid BIOS Call: %x", bios_function));
         }
     }
 
