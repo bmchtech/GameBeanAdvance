@@ -101,7 +101,6 @@ class GameBeanSDLHost {
     }
 
     void run() {
-        readln();
         running = true;
 
         // each cycle() does 4 cpu cycles

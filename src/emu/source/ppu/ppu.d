@@ -13,6 +13,24 @@ class PPU {
 public:
     void delegate(uint) interrupt_cpu;
 
+    struct Pixel {
+        uint r;
+        uint g;
+        uint b;
+        uint priority;
+        bool transparent;
+    }
+    
+    enum SCREEN_WIDTH  = 240;
+    enum SCREEN_HEIGHT = 160;
+    // enum Pixel RESET_PIXEL = (0, 0, 0, 0, false);
+
+    // typedef Layer Pixel[SCREEN_WIDTH][SCREEN_HEIGHT]
+
+    // Layer    backdrop;
+    // Layer[4] backgrounds;
+    // Layer    sprites;
+
     this(Memory memory, void delegate(uint) interrupt_cpu) {
         this.memory        = memory;
         this.interrupt_cpu = interrupt_cpu;
@@ -20,8 +38,23 @@ public:
         scanline           = 0;
         pixel_priorities   = new uint[][](240, 160);
 
+        // fill_layer(backdrop,       RESET_PIXEL);
+        // fill_layer(backgrounds[0], RESET_PIXEL);
+        // fill_layer(backgrounds[1], RESET_PIXEL);
+        // fill_layer(backgrounds[2], RESET_PIXEL);
+        // fill_layer(backgrounds[3], RESET_PIXEL);
+        // fill_layer(sprites,        RESET_PIXEL);
+
         background_init(memory);
     }
+
+    // void fill_layer(Layer layer, Pixel pixel) {
+    //     for (int x = 0; x < SCREEN_WIDTH;  x++) {
+    //     for (int y = 0; y < SCREEN_HEIGHT; y++) {
+    //         layer[x][y] = pixel;
+    //     }
+    //     }
+    // }
 
     void update_dot_and_scanline() {
         // update dot and scanline
@@ -119,15 +152,15 @@ private:
         // do we even render?
         if (!background.enabled) return;
 
+        // the tile base address is where we will find out tilemap.
+        uint tile_base_address   = memory.OFFSET_VRAM + background.character_base_block * 0x4000;
+
+        // the screen base address is where we will find the indices that point to the tilemap.
+        uint screen_base_address = memory.OFFSET_VRAM + background.screen_base_block    * 0x800;
+
         for (ushort x_ofs = 0; x_ofs < 240; x_ofs++) {
             ushort x = cast(ushort) (dot      + background.x_offset + x_ofs);
             ushort y = cast(ushort) (scanline + background.y_offset);
-
-            // the tile base address is where we will find out tilemap.
-            uint tile_base_address   = memory.OFFSET_VRAM + background.character_base_block * 0x4000;
-
-            // the screen base address is where we will find the indices that point to the tilemap.
-            uint screen_base_address = memory.OFFSET_VRAM + background.screen_base_block    * 0x800;
 
             // x and y point to somewhere within the 240x180 screen. tiles are 8x8. we can figure out
             // which tile we are looking at by getting the high five bits (sc_x and sc_y), and we can
@@ -185,14 +218,12 @@ private:
                 // for the particular pixel are are interested in (determined by tile_x and tile_y).
                 ubyte index = memory.read_byte(tile_base_address + ((current_tile & 0x3ff) * 64) + tile_y * 8 + tile_x);
 
-                // and we grab that pixel from palette ram and interpret it as 15bit highcolor.
-                uint color = memory.read_halfword(memory.OFFSET_PALETTE_RAM + index * 2);
                 maybe_draw_pixel(memory.OFFSET_PALETTE_RAM, index, priority, x_ofs, scanline);
             } else { // 16 / 16
                 // same as above, but the upper 4 bits of current_tile specify a color palette. there are 16 color palettes,
                 // each of which is 16 bytes long.
                 ubyte index = memory.read_byte(tile_base_address + ((current_tile & 0x3ff) * 32) + tile_y * 4 + (tile_x / 2));
-                if (tile_x % 2 == 0) {
+                if ((tile_x % 2 == 0) ^ flipped_x) {
                     index &= 0xF;
                 } else {
                     index >>= 4;
@@ -304,7 +335,7 @@ private:
 
                 for (int draw_x = x; draw_x < x + width; draw_x++) {
                     // TODO: REPEATED CODE
-                    int adjusted_draw_x = flipped_x ? x + (width  - ((draw_x << 1)   - x) - 1) : draw_x << 1;
+                    int adjusted_draw_x = flipped_x ? x + (width  - ((draw_x & ~1)   - x) - 1) : draw_x & ~1;
 
                     // tile_base_address is just the base address of the tiles for sprites
                     uint tile_base_address = memory.OFFSET_VRAM + 0x10000; // probably wrong lol
@@ -320,26 +351,16 @@ private:
                     // the x y offsets by (8 / 2) and (1 / 2) respectively.
                     ubyte index = memory.read_byte(tile_base_address + ((shifted_tile_number & 0x3ff) * 32) + 
                                                                        ((adjusted_draw_y - y) % 8) * 4 +
-                                                                       ((adjusted_draw_x - x) % 8) );
+                                                                       ((adjusted_draw_x - x) % 8) / 2);
 
-
-                    // if (flipped_x) {
-                    //     uint temp = index_L;
-                    //     index_L = index_H;
-                    //     index_H = temp;
-                    // }
-                                        // warning(format("SHAPE: %x %x %x %x %x %x", attribute_0, attribute_1, size, shape, width, height));
                     
-                    if (adjusted_draw_x % 2 == 0) {
+                    if ((draw_x % 2 == 0) ^ flipped_x) {
                         index &= 0xF;
                     } else {
                         index >>= 4;
                     }
                     index += get_nth_bits(attribute_2, 12, 16) * 16;
-
-                    // and we grab two pixels from palette ram and interpret them as 15bit highcolor.
                     maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index, priority, draw_x, scanline);
-                    // maybe_draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index_H, priority, draw_x + 1, scanline);
                 }
             }
         }

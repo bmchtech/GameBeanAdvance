@@ -2,6 +2,8 @@ module dma;
 
 import memory;
 import util;
+import apu;
+import mmio;
 
 import std.stdio;
 
@@ -144,9 +146,23 @@ public:
         dma_channels[dma_id].size_buf         = dma_channels[dma_id].num_units;
         dma_channels[dma_id].waiting_to_start = dma_channels[dma_id].dma_start_timing == DMAStartTiming.Immediately;
 
-        // writefln("DMA Channel %x enabled. Transferring %x bytes from %x to %x.", dma_id, dma_channels[dma_id].num_units, dma_channels[dma_id].source, dma_channels[dma_id].dest);
+        writefln("DMA Channel %x enabled. Transferring %x bytes from %x to %x.", dma_id, dma_channels[dma_id].num_units, dma_channels[dma_id].source, dma_channels[dma_id].dest);
 
         dma_channels[dma_id].enabled          = true;
+    }
+
+    void maybe_refill_fifo(DirectSound fifo_type) {
+        uint destination_address = 0;
+        final switch (fifo_type) {
+            case DirectSound.A: destination_address = MMIO.FIFO_A; break;
+            case DirectSound.B: destination_address = MMIO.FIFO_B; break;
+        }
+
+        for (int i = 1; i < 3; i++) { // only check channels 1 and 2, theyre the only ones capable of audio fifo
+            if (dma_channels[i].dest == destination_address && dma_channels[i].dma_start_timing == DMAStartTiming.Special) {
+                enable_dma(i);
+            }
+        }
     }
 
 private:
