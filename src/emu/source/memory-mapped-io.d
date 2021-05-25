@@ -1,6 +1,7 @@
 module mmio;
 
 import ppu;
+import apu;
 import dma;
 import timers;
 import interrupts;
@@ -64,6 +65,8 @@ class MMIO {
     enum SOUNDCNT_H    = 0x4000082; //  2    R/W   Control Mixing/DMA Control
     enum SOUNDCNT_X    = 0x4000084; //  2    R/W   Control Sound on/off           (NR52)
     enum SOUNDBIAS     = 0x4000088; //  2    BIOS  Sound PWM Control
+    enum FIFO_A        = 0x40000A0; //  4      W   Channel A FIFO, Data 0-3
+    enum FIFO_B        = 0x40000A4; //  4      W   Channel B FIFO, Data 0-3
 
     enum DMA0SAD       = 0x40000B0; //  4      W   DMA 0 Source Address
     enum DMA0DAD       = 0x40000B4; //  4      W   DMA 0 Destination Address
@@ -98,8 +101,9 @@ class MMIO {
     enum IF            = 0x4000202; //  2    R/W   Interrupt Request Flags / IRQ Acknowledge
     enum IME           = 0x4000208; //  2    R/W   Interrupt Master Enable Register
 
-    this(PPU ppu, DMAManager dma, TimerManager timers, InterruptManager interrupt) {
+    this(PPU ppu, APU apu, DMAManager dma, TimerManager timers, InterruptManager interrupt) {
         this.ppu       = ppu;
+        this.apu       = apu;
         this.dma       = dma;
         this.timers    = timers;
         this.interrupt = interrupt;
@@ -155,7 +159,7 @@ class MMIO {
             // case SOUNDCNT_H  + 0: return apu.read_SOUNDCNT_H(); 
             // case SOUNDCNT_H  + 1: return apu.read_SOUNDCNT_H(); 
             // case SOUNDCNT_X  + 0: return apu.read_SOUNDCNT_X(); 
-            // case SOUNDCNT_X  + 1: return apu.read_SOUNDCNT_X(); 
+            // case SOUNDCNT_X  + 1: return apu.read_SOUNDCNT_X();
             // case SOUNDBIAS   + 0: return apu.read_SOUNDBIAS(); 
             // case SOUNDBIAS   + 1: return apu.read_SOUNDBIAS(); 
 
@@ -285,6 +289,43 @@ class MMIO {
             // case BLDY        + 0: ppu.write_BLDY(data); break;
             // case BLDY        + 1: ppu.write_BLDY(data); break;
 
+            // case SOUND1CNT_L + 0: apu.write_SOUND1CNT_L(); break; 
+            // case SOUND1CNT_L + 1: apu.write_SOUND1CNT_L(); break; 
+            // case SOUND1CNT_H + 0: apu.write_SOUND1CNT_H(); break; 
+            // case SOUND1CNT_H + 1: apu.write_SOUND1CNT_H(); break; 
+            // case SOUND1CNT_X + 0: apu.write_SOUND1CNT_X(); break; 
+            // case SOUND1CNT_X + 1: apu.write_SOUND1CNT_X(); break; 
+            // case SOUND2CNT_L + 0: apu.write_SOUND2CNT_L(); break; 
+            // case SOUND2CNT_L + 1: apu.write_SOUND2CNT_L(); break; 
+            // case SOUND2CNT_H + 0: apu.write_SOUND2CNT_H(); break; 
+            // case SOUND2CNT_H + 1: apu.write_SOUND2CNT_H(); break; 
+            // case SOUND3CNT_L + 0: apu.write_SOUND3CNT_L(); break; 
+            // case SOUND3CNT_L + 1: apu.write_SOUND3CNT_L(); break; 
+            // case SOUND3CNT_H + 0: apu.write_SOUND3CNT_H(); break; 
+            // case SOUND3CNT_H + 1: apu.write_SOUND3CNT_H(); break; 
+            // case SOUND3CNT_X + 0: apu.write_SOUND3CNT_X(); break; 
+            // case SOUND3CNT_X + 1: apu.write_SOUND3CNT_X(); break; 
+            // case SOUND4CNT_L + 0: apu.write_SOUND4CNT_L(); break; 
+            // case SOUND4CNT_L + 1: apu.write_SOUND4CNT_L(); break; 
+            // case SOUND4CNT_H + 0: apu.write_SOUND4CNT_H(); break; 
+            // case SOUND4CNT_H + 1: apu.write_SOUND4CNT_H(); break; 
+            // case SOUNDCNT_L  + 0: apu.write_SOUNDCNT_L (0, data); break; 
+            // case SOUNDCNT_L  + 1: apu.write_SOUNDCNT_L (1, data); break; 
+            case SOUNDCNT_H  + 0: apu.write_SOUNDCNT_H (0, data); break; 
+            case SOUNDCNT_H  + 1: apu.write_SOUNDCNT_H (1, data); break; 
+            // case SOUNDCNT_X  + 0: apu.write_SOUNDCNT_X (0, data); break; 
+            // case SOUNDCNT_X  + 1: apu.write_SOUNDCNT_X (1, data); break;
+            // case SOUNDBIAS   + 0: apu.write_SOUNDBIAS(); break; 
+            // case SOUNDBIAS   + 1: apu.write_SOUNDBIAS(); break; 
+            case FIFO_A      + 0: apu.write_FIFO       (data, DirectSound.A); break;
+            case FIFO_A      + 1: apu.write_FIFO       (data, DirectSound.A); break;
+            case FIFO_A      + 2: apu.write_FIFO       (data, DirectSound.A); break;
+            case FIFO_A      + 3: apu.write_FIFO       (data, DirectSound.A); break;
+            case FIFO_B      + 0: apu.write_FIFO       (data, DirectSound.B); break;
+            case FIFO_B      + 1: apu.write_FIFO       (data, DirectSound.B); break;
+            case FIFO_B      + 2: apu.write_FIFO       (data, DirectSound.B); break;
+            case FIFO_B      + 3: apu.write_FIFO       (data, DirectSound.B); break;
+
             case DMA0SAD     + 0: dma.write_DMAXSAD    (0, data, 0); break;
             case DMA0SAD     + 1: dma.write_DMAXSAD    (1, data, 0); break;
             case DMA0SAD     + 2: dma.write_DMAXSAD    (2, data, 0); break;
@@ -368,6 +409,7 @@ class MMIO {
 
 private:
     PPU              ppu;
+    APU              apu;
     DMAManager       dma;
     TimerManager     timers;
     InterruptManager interrupt;

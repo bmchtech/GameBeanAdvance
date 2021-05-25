@@ -5,19 +5,15 @@ import std.stdio;
 class Fifo(T) {
 
     // size must be power of 2
-    this(int size, T reset_value) {
-        assert((size & (size - 1)) == 0, "Size of FIFO isnt a power of 2.");
-        
+    this(int size, T reset_value) {        
         this.fifo_data          = new T[size];
         this.fifo_data[0..size] = reset_value;
 
-        this.push_offset        = 0;
-        this.pop_offset         = 0;
 
         this.offset_mask        = size - 1;
         this.reset_value        = reset_value;
 
-        this.size               = 0;
+        reset();
     }
 
     // pushing to a full fifo does nothing
@@ -48,6 +44,14 @@ class Fifo(T) {
 
     bool is_full() {
         return size == fifo_data.length;
+    }
+
+    void reset() {
+        this.fifo_data[0..fifo_data.length] = reset_value;
+
+        this.push_offset        = 0;
+        this.pop_offset         = 0;
+        this.size               = 0;
     }
 
 public:

@@ -35,6 +35,7 @@ class GBA {
 public:
     ARM7TDMI         cpu;
     PPU              ppu;
+    APU              apu;
     Memory           memory;
     DMAManager       dma_manager;
     TimerManager     timers;
@@ -46,11 +47,12 @@ public:
         this.cpu               = new ARM7TDMI(memory, &bios_call);
         this.interrupt_manager = new InterruptManager(&interrupt_cpu);
         this.ppu               = new PPU(memory, &interrupt_manager.interrupt);
+        this.apu               = new APU(memory, &on_fifo_empty);
         this.dma_manager       = new DMAManager(memory);
         this.timers            = new TimerManager(memory, &on_timer_overflow);
         // this.direct_sound = new DirectSound(memory);
 
-        MMIO mmio = new MMIO(ppu, dma_manager, timers, interrupt_manager);
+        MMIO mmio = new MMIO(ppu, apu, dma_manager, timers, interrupt_manager);
         memory.set_mmio(mmio);
 
         this.enabled = false;
@@ -96,9 +98,12 @@ public:
     }
 
     void on_timer_overflow(int timer_id) {
-        // // do we have to tell direct sound to request another sample from dma?
-        // if (get_nth_bit(*memory.SOUNDCNT_H, 10) == timer_id) direct_sound.push_one_sample_to_buffer(DirectSoundFifo.A);
-        // if (get_nth_bit(*memory.SOUNDCNT_H, 14) == timer_id) direct_sound.push_one_sample_to_buffer(DirectSoundFifo.B);
+        // do we have to tell direct sound to request another sample from dma?
+        apu.on_timer_overflow(timer_id);
+    }
+
+    void on_fifo_empty(DirectSound fifo_type) {
+        dma_manager.maybe_refill_fifo(fifo_type);
     }
 
     void bios_call(int bios_function) {
