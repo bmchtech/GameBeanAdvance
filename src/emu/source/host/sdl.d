@@ -10,9 +10,9 @@ import logger;
 
 import apu;
 
-class GameBeanSDLHost {
-    enum VERIFICATION = 0x2B;
+import core.sync.mutex;
 
+class GameBeanSDLHost {
     // extern (C) {
     //     static void fill_audio(void* userdata, ubyte* stream, int len) nothrow {
     //         AudioData* audio_data = cast(AudioData*) userdata;
@@ -39,9 +39,13 @@ class GameBeanSDLHost {
     //     }
     // }
 
+    Mutex gba_batch_enable_mutex;
+    bool gba_batch_enable = false;
+
     this(GBA gba, int screen_scale) {
         this.gba = gba;
         this.screen_scale = screen_scale;
+        gba_batch_enable_mutex = new Mutex();
     }
 
     void init() {
@@ -80,9 +84,9 @@ class GameBeanSDLHost {
         // audio_data.total_bytes = 44100;
         // audio_data.verification = VERIFICATION;
 
-        ubyte[] buffer = new ubyte[0x1000];
-        for (int i = 0; i < 0x1000; i++) {
-            buffer[i] = ((i % 588) > 294) ? 0x80 : 0;
+        ubyte[] buffer = new ubyte[0x10000];
+        for (int i = 0; i < 0x10000; i++) {
+            buffer[i] = cast(ubyte) (256.0 * (cast(double)(i % 200)) / 200.0);
         }
 
         push_to_buffer(buffer);
@@ -93,9 +97,11 @@ class GameBeanSDLHost {
         } else {
             writefln("connected. %d %d %d %s", received.freq, received.channels, received.samples, received.format);
             writefln("[SDL] Audio driver: %s\n", SDL_GetCurrentAudioDriver());
-
-            SDL_PauseAudio(0);
         }
+
+        gba.set_internal_sample_rate(16_000_000 / received.freq);
+        this.sample_rate          = received.freq;
+        this.samples_per_callback = received.samples;
 
         writeln("Complete.");
     }
@@ -103,72 +109,98 @@ class GameBeanSDLHost {
     void run() {
         running = true;
 
-        // each cycle() does 4 cpu cycles
-        enum cycles_per_second = 16_000_000 / 4;
-        enum gba_cycle_batch_sz = 1024;
-        enum nsec_per_cycle = 1_000_000_000 / cast(double) cycles_per_second;
-        // 62.5 nsec per cycle: this is nsec per batch
-        enum nsec_per_gba_cyclebatch = cast(long) (nsec_per_cycle * gba_cycle_batch_sz);
-        // enum nsec_per_gba_cyclebatch = 1; // unlock speed
-        // enum nsec_per_gba_cyclebatch = 50_000; // medium locking
+        int num_batches       = this.sample_rate / this.samples_per_callback;
+        int cycles_per_second = 16_780_000 / 4;
+        this.cycles_per_batch  = cycles_per_second / num_batches;
+        writefln("%d batches per second, %d batches per cycle.", num_batches, cycles_per_batch);
+        writefln("sample rate: %d, samples_per_callback: %d", sample_rate, samples_per_callback);
 
-        // 16.6666 ms
+        set_audio_buffer_callback(&cycle_gba);
+        SDL_PauseAudio(0);
+
+        // // each cycle() does 4 cpu cycles
+        // enum cycles_per_second = 16_000_000 / 4;
+        // enum gba_cycle_batch_sz = 1024;
+        // enum nsec_per_cycle = 1_000_000_000 / cast(double) cycles_per_second;
+        // // 62.5 nsec per cycle: this is nsec per batch
+        // enum nsec_per_gba_cyclebatch = cast(long) (nsec_per_cycle * gba_cycle_batch_sz);
+        // // enum nsec_per_gba_cyclebatch = 1; // unlock speed
+        // // enum nsec_per_gba_cyclebatch = 50_000; // medium locking
+
+        // // 16.6666 ms
         enum nsec_per_frame = 16_666_660;
 
         auto stopwatch = new NSStopwatch();
-        long clockfor_cycle = 0;
+        // long clockfor_cycle = 0;
         long clockfor_frame = 0;
-        auto total_cycles = 0;
+        // auto total_cycles = 0;
 
-        // 2 seconds
-        enum sec_per_log = 2;
-        enum nsec_per_log = sec_per_log * 1_000_000_000;
-        enum cycles_per_log = cycles_per_second * sec_per_log;
-        long clockfor_log = 0;
-        ulong cycles_since_last_log = 0;
+        // // 2 seconds
+        // enum sec_per_log = 2;
+        // enum nsec_per_log = sec_per_log * 1_000_000_000;
+        // enum cycles_per_log = cycles_per_second * sec_per_log;
+        // long clockfor_log = 0;
+        // ulong cycles_since_last_log = 0;
 
-        writefln("ns for single: %s, ns for batch: %s, ", nsec_per_cycle, nsec_per_gba_cyclebatch);
+        // writefln("ns for single: %s, ns for batch: %s, ", nsec_per_cycle, nsec_per_gba_cyclebatch);
 
         while (running) {
             long elapsed = stopwatch.update();
-            mixin(VERBOSE_LOG!(`3`, `format("elapsed: %s ns", elapsed)`));
-
-            clockfor_cycle += elapsed;
             clockfor_frame += elapsed;
-            clockfor_log += elapsed;
+        //     mixin(VERBOSE_LOG!(`3`, `format("elapsed: %s ns", elapsed)`));
 
-            // GBA cycle batching
-            if (clockfor_cycle > nsec_per_gba_cyclebatch) {
-                for (int i = 0; i < gba_cycle_batch_sz; i++) {
-                    mixin(VERBOSE_LOG!(`3`, `format("pc: %00000000x (cycle %s)",
-                            *gba.cpu.pc, total_cycles + i)`));
-                    gba.cycle();
-                }
-                total_cycles += gba_cycle_batch_sz;
-                cycles_since_last_log += gba_cycle_batch_sz;
-                mixin(VERBOSE_LOG!(`3`, `format("CYCLE[%s]", gba_cycle_batch_sz)`));
-                clockfor_cycle -= nsec_per_gba_cyclebatch;
-            }
+        //     // GBA cycle batching
+        //     if (clockfor_cycle > nsec_per_gba_cyclebatch) {
+        //         for (int i = 0; i < gba_cycle_batch_sz; i++) {
+        //             mixin(VERBOSE_LOG!(`3`, `format("pc: %00000000x (cycle %s)",
+        //                     *gba.cpu.pc, total_cycles + i)`));
+        //             gba.cycle();
+        //         }
+        //         total_cycles += gba_cycle_batch_sz;
+        //         cycles_since_last_log += gba_cycle_batch_sz;
+        //         mixin(VERBOSE_LOG!(`3`, `format("CYCLE[%s]", gba_cycle_batch_sz)`));
+        //         clockfor_cycle -= nsec_per_gba_cyclebatch;
+        //     }
 
-            // 60Hz frame refresh (mod 267883)
+        //     // 60Hz frame refresh (mod 267883)
             if (clockfor_frame > nsec_per_frame) {
                 frame();
                 mixin(VERBOSE_LOG!(`3`, `format("FRAME %s", frame_count)`));
                 clockfor_frame = 0;
             }
 
-            // writefln("NSEC: %s  |  %s OF %s", total_time.total!"nsecs", clockfor_log, nsec_per_log);
-            if (clockfor_log > nsec_per_log) {
-                immutable auto cpu_cycles_since_last_log = cycles_since_last_log;
-                double avg_speed = (cast(double) cpu_cycles_since_last_log / cast(
-                        double) cycles_per_log);
-                mixin(VERBOSE_LOG!(`1`, `format("AVG SPEED: [%s/%s] = %s",
-                        cpu_cycles_since_last_log, cycles_per_log, avg_speed)`));
-                clockfor_log = 0;
-                cycles_since_last_log = 0;
-            }
+            audio_data.mutex.lock();
+                if (audio_data.buffer_offset < samples_per_callback * 5) {
+                    // writefln("Cycling");
+                    for (int i = 0; i < cycles_per_batch; i++) {
+                        gba.cycle();
+                    }
+                    gba_batch_enable = false;
+                    // writefln("Cycled");
+                }
+            audio_data.mutex.unlock();
+
+        //     // writefln("NSEC: %s  |  %s OF %s", total_time.total!"nsecs", clockfor_log, nsec_per_log);
+        //     if (clockfor_log > nsec_per_log) {
+        //         immutable auto cpu_cycles_since_last_log = cycles_since_last_log;
+        //         double avg_speed = (cast(double) cpu_cycles_since_last_log / cast(
+        //                 double) cycles_per_log);
+        //         mixin(VERBOSE_LOG!(`1`, `format("AVG SPEED: [%s/%s] = %s",
+        //                 cpu_cycles_since_last_log, cycles_per_log, avg_speed)`));
+        //         clockfor_log = 0;
+        //         cycles_since_last_log = 0;
+        //     }
 
             // Thread.sleep(0.msecs);
+        }
+    }
+
+    void cycle_gba() {
+        // writefln("Enabling");
+        bool acquired = gba_batch_enable_mutex.tryLock();
+        if (acquired) {
+            gba_batch_enable = true;
+            gba_batch_enable_mutex.unlock();
         }
     }
 
@@ -204,6 +236,10 @@ class GameBeanSDLHost {
     }
 
 private:
+    uint sample_rate;
+    uint samples_per_callback;
+    uint cycles_per_batch;
+
     void frame() {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {

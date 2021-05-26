@@ -63,6 +63,10 @@ public:
         ubyte[] bios = get_rom_as_bytes("source/bios.gba");
         cpu.memory.main[Memory.OFFSET_BIOS .. Memory.OFFSET_BIOS + bios.length] = bios[0 .. bios.length];
     }
+
+    void set_internal_sample_rate(uint sample_rate) {
+        apu.set_internal_sample_rate(sample_rate);
+    }
     
     void load_rom(string rom_name) {
         ubyte[] rom = get_rom_as_bytes(rom_name);
@@ -78,7 +82,17 @@ public:
         maybe_cycle_cpu();
         maybe_cycle_cpu();
 
+        apu.cycle();
+        apu.cycle();
+        apu.cycle();
+        apu.cycle();
+        
         ppu.cycle();
+
+        timers.cycle();
+        timers.cycle();
+        timers.cycle();
+        timers.cycle();
     }
 
     void maybe_cycle_cpu() {
@@ -89,7 +103,6 @@ public:
 
         idle_cycles += cpu.cycle();
         idle_cycles += dma_manager.handle_dma();
-        idle_cycles += timers.cycle();
     }
 
     // interrupt_code must be one-hot

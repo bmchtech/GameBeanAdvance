@@ -12,43 +12,74 @@ enum DirectSound {
 }
 
 class APU {
-    this(Memory memory, void delegate(DirectSound) on_fifo_empty) {
-        dma_sounds = [
-            DMASound(0, false, false, 0, new Fifo!ubyte(FIFO_SIZE, 0)),
-            DMASound(0, false, false, 0, new Fifo!ubyte(FIFO_SIZE, 0))
-        ];
-    }
 
 public:
 
+    this(Memory memory, void delegate(DirectSound) on_fifo_empty) {
+        dma_sounds = [
+            DMASound(0, false, false, 0, 0, new Fifo!ubyte(FIFO_SIZE, 0)),
+            DMASound(0, false, false, 0, 0, new Fifo!ubyte(FIFO_SIZE, 0))
+        ];
+
+        this.on_fifo_empty           = on_fifo_empty;
+        this.sample_rate             = 0;
+        this.cycles_till_next_sample = 0;
+
+        // should be big enough
+        // this.audio_buffer            = new ubyte[sample_size * 8];
+        this.audio_buffer_size       = 0;
+    }
+
+    void cycle() {
+        if (cycles_till_next_sample > 1) {
+            cycles_till_next_sample--;
+            return;
+        }
+
+        cycles_till_next_sample = sample_rate;
+        sample();
+    }
+
     void on_timer_overflow(int timer_id) {
         for (int i = 0; i < dma_sounds.length; i++) {
-            if (dma_sounds[i].timer_select == timer_id) {
-                push_one_sample_to_buffer(cast(DirectSound) i);
+            if (dma_sounds[i].timer_select == timer_id && (dma_sounds[i].enabled_left || dma_sounds[i].enabled_right)) {
+                pop_one_sample(cast(DirectSound) i);
             }
         }
     }
 
+    void set_internal_sample_rate(uint sample_rate) {
+        this.sample_rate = sample_rate;
+    }
+
 private:
+
+    uint sample_rate;
+    uint cycles_till_next_sample;
+
+    ubyte[] audio_buffer;
+    uint    audio_buffer_size;
 
     struct DMASound {
         int  volume; // (0=50%, 1=100%)
         bool enabled_right;
         bool enabled_left;
         bool timer_select;
+        ubyte popped_sample;
 
         Fifo!ubyte fifo;
     }
 
-    enum FIFO_SIZE           = 20;
-    enum FIFO_FULL_THRESHOLD = 4;
+    enum FIFO_SIZE           = 0x20;
+    enum FIFO_FULL_THRESHOLD = 16;
 
     void delegate(DirectSound) on_fifo_empty;
 
-    void push_one_sample_to_buffer(DirectSound fifo_type) {
+    void pop_one_sample(DirectSound fifo_type) {
         if (dma_sounds[fifo_type].fifo.size != 0) {
-            ubyte value = dma_sounds[fifo_type].fifo.pop();
-            push_to_buffer([value]);
+            dma_sounds[fifo_type].popped_sample = dma_sounds[fifo_type].fifo.pop();
+            // writefln("%x", value);
+            // push_to_buffer([value]);
         }
 
         if (dma_sounds[fifo_type].fifo.size <= FIFO_FULL_THRESHOLD) {
@@ -57,6 +88,11 @@ private:
     }
 
     DMASound[2] dma_sounds;
+
+    void sample() {
+        // TODO: mixing
+        push_to_buffer([dma_sounds[DirectSound.A].popped_sample]);
+    }
 
 // .......................................................................................................................
 // .RRRRRRRRRRR...EEEEEEEEEEEE....GGGGGGGGG....IIII...SSSSSSSSS...TTTTTTTTTTTTT.EEEEEEEEEEEE..RRRRRRRRRRR....SSSSSSSSS....
@@ -108,7 +144,7 @@ public:
     }
 
     void write_FIFO(ubyte data, DirectSound fifo_type) {
-        writefln("Received FIFO data: %x", data);
+        // writefln("Received FIFO data: %x", data);
         dma_sounds[fifo_type].fifo.push(data);
     }
 }

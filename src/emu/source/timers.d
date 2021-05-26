@@ -29,7 +29,7 @@ public:
             if (timers[i].enabled) {
                 if (timers[i].cycles_till_increment == 1) {
                     if (timers[i].timer_value == 0xFFFF) {
-                        timers[i].timer_value = timers[i].reload_value;
+                        reload_timer(i);
                         // writefln("Reset Timer %x to %x", i, timers[i].timer_value);
 
                         on_timer_overflow(i);
@@ -52,8 +52,8 @@ public:
     }
 
     void reload_timer(int timer_id) {
-        timers[timer_id].timer_value                  = timers[timer_id].reload_value;
-        timers[timer_id].cycles_till_increment_buffer = timers[timer_id].cycles_till_increment_buffer;
+        timers[timer_id].timer_value           = timers[timer_id].reload_value;
+        // warning(format("Reloaded timer %x to %x %x", timer_id, timers[timer_id].reload_value));
     }
 private:
     Memory memory;
@@ -107,6 +107,7 @@ public:
                 // are we enabling the timer?
                 if (!timers[x].enabled && get_nth_bit(data, 7)) {
                     reload_timer(x);
+                    timers[x].cycles_till_increment = timers[x].cycles_till_increment_buffer;
                     timers[x].enabled = true;
                 }
 
