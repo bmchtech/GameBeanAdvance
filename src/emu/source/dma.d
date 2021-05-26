@@ -67,7 +67,7 @@ public:
         if (dma_channels[current_channel].transferring_words) {
             bytes_to_transfer *= 4;
             for (int i = 0; i < bytes_to_transfer; i += 4) {
-                // writefln("DMA Channel %x successfully transfered %x from %x to %x. %x words done.", current_channel, memory.read_word(dma_channels[current_channel].source), dma_channels[current_channel].source, dma_channels[current_channel].dest, i);
+                // writefln("DMA Channel %x successfully transfered %x from %x to %x. %x words done.", current_channel, memory.read_word(dma_channels[current_channel].source), dma_channels[current_channel].source + source_offset, dma_channels[current_channel].dest, i);
 
                 memory.write_word(dma_channels[current_channel].dest + dest_offset, memory.read_word(dma_channels[current_channel].source + source_offset));
                 source_offset += source_increment;
@@ -83,6 +83,9 @@ public:
                 dest_offset   += dest_increment;
             }
         }
+
+        dma_channels[current_channel].source += source_offset;
+        dma_channels[current_channel].dest   += dest_offset;
         
         idle_cycles += bytes_to_transfer * 2;
 
@@ -93,6 +96,8 @@ public:
 
         if (dma_channels[current_channel].repeat) {
             if (dma_channels[current_channel].source_addr_control == SourceAddrMode.IncrementReload) {
+                dma_channels[current_channel].source = dma_channels[current_channel].source_buf;
+            } else {
                 dma_channels[current_channel].source_buf = dma_channels[current_channel].source;
             }
 
@@ -141,14 +146,30 @@ public:
         dma_channels[dma_id].num_units = dma_channels[dma_id].num_units & 0x0FFFFFFF;
         if (dma_id == 3) dma_channels[dma_id].num_units &= 0x07FFFFFF;
 
+        if (is_dma_channel_fifo(dma_id)) {
+            dma_channels[dma_id].num_units          = 4;
+            dma_channels[dma_id].repeat             = true;
+            dma_channels[dma_id].transferring_words = true;
+            dma_channels[dma_id].dest_addr_control  = DestAddrMode.Fixed;
+        }
+
         dma_channels[dma_id].source_buf       = dma_channels[dma_id].source;
         dma_channels[dma_id].dest_buf         = dma_channels[dma_id].dest;
         dma_channels[dma_id].size_buf         = dma_channels[dma_id].num_units;
         dma_channels[dma_id].waiting_to_start = dma_channels[dma_id].dma_start_timing == DMAStartTiming.Immediately;
 
-        writefln("DMA Channel %x enabled. Transferring %x bytes from %x to %x.", dma_id, dma_channels[dma_id].num_units, dma_channels[dma_id].source, dma_channels[dma_id].dest);
+
+        // writefln("DMA Channel %x enabled. Transferring %x bytes from %x to %x.", dma_id, dma_channels[dma_id].num_units, dma_channels[dma_id].source, dma_channels[dma_id].dest);
 
         dma_channels[dma_id].enabled          = true;
+    }
+
+    void start_dma_channel(int dma_id) {
+        dma_channels[dma_id].waiting_to_start = true;
+    }
+
+    bool is_dma_channel_fifo(int i) {
+        return (i == 1 || i == 2) && dma_channels[i].dma_start_timing == DMAStartTiming.Special;
     }
 
     void maybe_refill_fifo(DirectSound fifo_type) {
@@ -158,9 +179,9 @@ public:
             case DirectSound.B: destination_address = MMIO.FIFO_B; break;
         }
 
-        for (int i = 1; i < 3; i++) { // only check channels 1 and 2, theyre the only ones capable of audio fifo
-            if (dma_channels[i].dest == destination_address && dma_channels[i].dma_start_timing == DMAStartTiming.Special) {
-                enable_dma(i);
+        for (int i = 0; i < 4; i++) { // only check channels 1 and 2, theyre the only ones capable of audio fifo
+            if (dma_channels[i].dest == destination_address && is_dma_channel_fifo(i)) {
+                start_dma_channel(i);
             }
         }
     }

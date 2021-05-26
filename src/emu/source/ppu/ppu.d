@@ -98,8 +98,7 @@ public:
         if (dot != 0) return;
 
         switch (bg_mode) {
-            case 0: 
-            case 1: {
+            case 0: {
                 // DISPCNT bits 8-11 tell us which backgrounds should be rendered.
                 render_background_mode0(backgrounds[0]);
                 render_background_mode0(backgrounds[1]);
@@ -510,9 +509,9 @@ public:
 
     void write_BGXVOFS(int target_byte, ubyte data, int x) {
         if (target_byte == 0) {
-            backgrounds[x].y_offset = (backgrounds[x].x_offset & 0xFF00) | data;
+            backgrounds[x].y_offset = (backgrounds[x].y_offset & 0xFF00) | data;
         } else { // target_byte == 1
-            backgrounds[x].y_offset = (backgrounds[x].x_offset & 0x00FF) | (data << 8);
+            backgrounds[x].y_offset = (backgrounds[x].y_offset & 0x00FF) | (data << 8);
         }
     }
 
