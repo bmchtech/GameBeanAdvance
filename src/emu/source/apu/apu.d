@@ -28,6 +28,7 @@ public:
         // should be big enough
         // this.audio_buffer            = new ubyte[sample_size * 8];
         this.audio_buffer_size       = 0;
+        this.bias                    = 0x200;
     }
 
     void cycle() {
@@ -42,6 +43,7 @@ public:
 
     void on_timer_overflow(int timer_id) {
         for (int i = 0; i < dma_sounds.length; i++) {
+            // writefln("%x", dma_sounds[i].timer_select);
             if (dma_sounds[i].timer_select == timer_id && (dma_sounds[i].enabled_left || dma_sounds[i].enabled_right)) {
                 pop_one_sample(cast(DirectSound) i);
             }
@@ -91,7 +93,9 @@ private:
 
     void sample() {
         // TODO: mixing
-        push_to_buffer([dma_sounds[DirectSound.A].popped_sample]);
+        short dma_sample   = 2 * cast(short) (cast(byte) dma_sounds[DirectSound.A].popped_sample);
+        dma_sample += bias;
+        push_to_buffer([dma_sample]);
     }
 
 // .......................................................................................................................
@@ -113,6 +117,9 @@ private:
 private:
     // SOUNDCNT_H
     int sound_1_4_volume;   // (0=25%, 1=50%, 2=100%, 3=Prohibited)
+
+    // SOUNDBIAS
+    short bias;
 
 public:
     void write_SOUNDCNT_H(int target_byte, ubyte data) {
@@ -146,5 +153,16 @@ public:
     void write_FIFO(ubyte data, DirectSound fifo_type) {
         // writefln("Received FIFO data: %x", data);
         dma_sounds[fifo_type].fifo.push(data);
+    }
+
+    void write_SOUNDBIAS(int target_byte, ubyte data) {
+        final switch (target_byte) {
+            case 0b0:
+                bias = (bias & 0x100) | data;
+                break;
+
+            case 0b1:
+                break; // TODO
+        }
     }
 }

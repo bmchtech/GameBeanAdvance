@@ -12,7 +12,7 @@ import core.sync.mutex;
 // properly.
 
 struct AudioData {
-    ubyte[] buffer;
+    short[] buffer;
     uint    buffer_offset;
     Mutex   mutex;
     void delegate() callback;
@@ -27,7 +27,7 @@ private bool      has_set_up_audio_data = false;
 void* get_audio_data() {
     if (has_set_up_audio_data) return cast(void*) &audio_data;
 
-    audio_data.buffer        = new ubyte[BUFFER_SIZE];
+    audio_data.buffer        = new short[BUFFER_SIZE];
     audio_data.buffer_offset = 0;
     audio_data.mutex         = new Mutex();
     has_set_up_audio_data    = true;
@@ -39,30 +39,29 @@ extern (C) {
         AudioData* audio_data = cast(AudioData*) userdata;
         if (audio_data.mutex is null) return;
         // writefln("call");
+
+        short* out_stream = cast(short*) stream;
         
         audio_data.mutex.lock_nothrow();
 
             // try { writefln("Details: %x %x", len, audio_data.buffer_offset);} catch (Exception e) {}
 
-            // try {
-            //     for (int i = 0; i < audio_data.buffer_offset; i++) writefln("%x", audio_data.buffer[i]);
-            // } catch (Exception e) {
-            // }
             len = (len > audio_data.buffer_offset ? audio_data.buffer_offset : len);
 
-            for (int i = 0; i < len; i++) {
-                stream[i] = audio_data.buffer[i];
-                // try {
-                //     writefln("%x", stream[i]);
-                // } catch (Exception e) {
-                // }
+            for (int i = 0; i < len / 2; i++) {
+                short sample = cast(short)(audio_data.buffer[i] * 0x2A);
+
+                out_stream[i] = sample;            try {
+                //  writefln("%x", out_stream[i]);
+            } catch (Exception e) {
+            }
             }
 
             for (int i = 0; i < audio_data.buffer_offset - len; i++) {
                 audio_data.buffer[i] = audio_data.buffer[i + len];
             }
 
-            audio_data.buffer_offset -= len;
+            audio_data.buffer_offset -= len / 2;
             
         audio_data.mutex.unlock_nothrow();
     }
@@ -72,7 +71,7 @@ void set_audio_buffer_callback(void delegate() callback) {
     audio_data.callback = callback;
 }
 
-void push_to_buffer(ubyte[] data) {
+void push_to_buffer(short[] data) {
     if (audio_data.mutex is null) return;
     
     audio_data.mutex.lock_nothrow();
