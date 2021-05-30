@@ -72,7 +72,7 @@ class GameBeanSDLHost {
 
         /* Set the audio format */
         wanted.freq = 44100;
-        wanted.format = AUDIO_U8;
+        wanted.format = AUDIO_S16LSB;
         wanted.channels = 1;    /* 1 = mono, 2 = stereo */
         wanted.samples = 1024;  /* Good low-latency value for callback */
         wanted.callback = &apu.audiobuffer.callback;
@@ -84,12 +84,12 @@ class GameBeanSDLHost {
         // audio_data.total_bytes = 44100;
         // audio_data.verification = VERIFICATION;
 
-        ubyte[] buffer = new ubyte[0x10000];
-        for (int i = 0; i < 0x10000; i++) {
-            buffer[i] = cast(ubyte) (256.0 * (cast(double)(i % 200)) / 200.0);
-        }
+        // short[] buffer = new short[0x10000];
+        // for (int i = 0; i < 0x10000; i++) {
+            // buffer[i] = cast(short) (256.0 * (cast(double)(i % 200)) / 200.0);
+        // }
 
-        push_to_buffer(buffer);
+        // push_to_buffer(buffer);
         /* Open the audio device, forcing the desired format */
         int output = SDL_OpenAudio(&wanted, &received);
         if (output < 0) {
@@ -110,8 +110,8 @@ class GameBeanSDLHost {
         running = true;
 
         int num_batches       = this.sample_rate / this.samples_per_callback;
-        int cycles_per_second = 16_780_000 / 4;
-        this.cycles_per_batch  = cycles_per_second / num_batches;
+        enum cycles_per_second = 16_780_000 / 4;
+        this.cycles_per_batch  = 2 * cycles_per_second / num_batches;
         writefln("%d batches per second, %d batches per cycle.", num_batches, cycles_per_batch);
         writefln("sample rate: %d, samples_per_callback: %d", sample_rate, samples_per_callback);
 
@@ -135,18 +135,19 @@ class GameBeanSDLHost {
         long clockfor_frame = 0;
         // auto total_cycles = 0;
 
-        // // 2 seconds
-        // enum sec_per_log = 2;
-        // enum nsec_per_log = sec_per_log * 1_000_000_000;
-        // enum cycles_per_log = cycles_per_second * sec_per_log;
-        // long clockfor_log = 0;
-        // ulong cycles_since_last_log = 0;
+        enum sec_per_log = 1;
+        enum nsec_per_log = sec_per_log * 1_000_000_000;
+        enum cycles_per_log = cycles_per_second * sec_per_log;
+        long clockfor_log = 0;
+        ulong cycles_since_last_log = 0;
 
         // writefln("ns for single: %s, ns for batch: %s, ", nsec_per_cycle, nsec_per_gba_cyclebatch);
 
         while (running) {
             long elapsed = stopwatch.update();
             clockfor_frame += elapsed;
+            clockfor_log   += elapsed;
+
         //     mixin(VERBOSE_LOG!(`3`, `format("elapsed: %s ns", elapsed)`));
 
         //     // GBA cycle batching
@@ -176,20 +177,21 @@ class GameBeanSDLHost {
                         gba.cycle();
                     }
                     gba_batch_enable = false;
+                    cycles_since_last_log += cycles_per_batch;
                     // writefln("Cycled");
                 }
             audio_data.mutex.unlock();
 
         //     // writefln("NSEC: %s  |  %s OF %s", total_time.total!"nsecs", clockfor_log, nsec_per_log);
-        //     if (clockfor_log > nsec_per_log) {
-        //         immutable auto cpu_cycles_since_last_log = cycles_since_last_log;
-        //         double avg_speed = (cast(double) cpu_cycles_since_last_log / cast(
-        //                 double) cycles_per_log);
-        //         mixin(VERBOSE_LOG!(`1`, `format("AVG SPEED: [%s/%s] = %s",
-        //                 cpu_cycles_since_last_log, cycles_per_log, avg_speed)`));
-        //         clockfor_log = 0;
-        //         cycles_since_last_log = 0;
-        //     }
+            if (clockfor_log > nsec_per_log) {
+                immutable auto cpu_cycles_since_last_log = cycles_since_last_log;
+                double avg_speed = (cast(double) cpu_cycles_since_last_log / cast(
+                        double) cycles_per_log);
+                mixin(VERBOSE_LOG!(`1`, `format("AVG SPEED: [%s/%s] = %s",
+                        cpu_cycles_since_last_log, cycles_per_log, avg_speed)`));
+                clockfor_log = 0;
+                cycles_since_last_log = 0;
+            }
 
             // Thread.sleep(0.msecs);
         }

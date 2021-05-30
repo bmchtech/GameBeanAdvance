@@ -105,7 +105,6 @@ public:
         idle_cycles += dma_manager.handle_dma();
     }
 
-    // interrupt_code must be one-hot
     void interrupt_cpu() {
         cpu.interrupt();
     }

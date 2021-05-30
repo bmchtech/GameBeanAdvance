@@ -129,8 +129,8 @@ class MMIO {
             // case WININ       + 1: return ppu.read_WININ(); 
             // case WINOUT      + 0: return ppu.read_WINOUT(); 
             // case WINOUT      + 1: return ppu.read_WINOUT(); 
-            // case BLDCNT      + 0: return ppu.read_BLDCNT(); 
-            // case BLDCNT      + 1: return ppu.read_BLDCNT(); 
+            case BLDCNT      + 0: return ppu.read_BLDCNT     (0); 
+            case BLDCNT      + 1: return ppu.read_BLDCNT     (1); 
             // case BLDALPHA    + 0: return ppu.read_BLDALPHA(); 
             // case BLDALPHA    + 1: return ppu.read_BLDALPHA(); 
 
@@ -282,12 +282,12 @@ class MMIO {
             // case WINOUT      + 1: ppu.write_WINOUT(data); break;
             // case MOSAIC      + 0: ppu.write_MOSAIC(data); break;
             // case MOSAIC      + 1: ppu.write_MOSAIC(data); break;
-            // case BLDCNT      + 0: ppu.write_BLDCNT(data); break;
-            // case BLDCNT      + 1: ppu.write_BLDCNT(data); break;
-            // case BLDALPHA    + 0: ppu.write_BLDALPHA(data); break;
-            // case BLDALPHA    + 1: ppu.write_BLDALPHA(data); break;
-            // case BLDY        + 0: ppu.write_BLDY(data); break;
-            // case BLDY        + 1: ppu.write_BLDY(data); break;
+            case BLDCNT      + 0: ppu.write_BLDCNT     (0, data); break;
+            case BLDCNT      + 1: ppu.write_BLDCNT     (1, data); break;
+            // case BLDALPHA    + 0: ppu.write_BLDALPHA   (0, data); break;
+            // case BLDALPHA    + 1: ppu.write_BLDALPHA   (1, data); break;
+            case BLDY        + 0: ppu.write_BLDY       (0, data); break;
+            case BLDY        + 1: ppu.write_BLDY       (1, data); break;
 
             // case SOUND1CNT_L + 0: apu.write_SOUND1CNT_L(); break; 
             // case SOUND1CNT_L + 1: apu.write_SOUND1CNT_L(); break; 
@@ -315,8 +315,8 @@ class MMIO {
             case SOUNDCNT_H  + 1: apu.write_SOUNDCNT_H (1, data); break; 
             // case SOUNDCNT_X  + 0: apu.write_SOUNDCNT_X (0, data); break; 
             // case SOUNDCNT_X  + 1: apu.write_SOUNDCNT_X (1, data); break;
-            // case SOUNDBIAS   + 0: apu.write_SOUNDBIAS(); break; 
-            // case SOUNDBIAS   + 1: apu.write_SOUNDBIAS(); break; 
+            case SOUNDBIAS   + 0: apu.write_SOUNDBIAS  (0, data); break; 
+            case SOUNDBIAS   + 1: apu.write_SOUNDBIAS  (1, data); break; 
             case FIFO_A      + 0: apu.write_FIFO       (data, DirectSound.A); break;
             case FIFO_A      + 1: apu.write_FIFO       (data, DirectSound.A); break;
             case FIFO_A      + 2: apu.write_FIFO       (data, DirectSound.A); break;

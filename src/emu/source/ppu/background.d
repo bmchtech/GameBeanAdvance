@@ -1,6 +1,7 @@
-module background;
+module ppu.background;
 
 import memory;
+import ppu;
 
 struct Background {
     // all backgrounds have the following:
@@ -14,7 +15,7 @@ struct Background {
 
     ushort x_offset;
     ushort y_offset;
-    bool enabled;
+    bool   enabled;
 
     // only backgrounds 2 and 3 have the following:
     ushort transformation_dx;
@@ -23,7 +24,6 @@ struct Background {
     ushort transformation_dmy;
     uint   reference_x;
     uint   reference_y;
-
 }
 
 static Background[] backgrounds;

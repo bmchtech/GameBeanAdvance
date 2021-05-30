@@ -67,7 +67,7 @@ public:
         if (dma_channels[current_channel].transferring_words) {
             bytes_to_transfer *= 4;
             for (int i = 0; i < bytes_to_transfer; i += 4) {
-                // writefln("DMA Channel %x successfully transfered %x from %x to %x. %x words done.", current_channel, memory.read_word(dma_channels[current_channel].source), dma_channels[current_channel].source + source_offset, dma_channels[current_channel].dest, i);
+                if (is_dma_channel_fifo(i)) writefln("DMA Channel %x successfully transfered %x from %x to %x. %x words done.", current_channel, memory.read_word(dma_channels[current_channel].source), dma_channels[current_channel].source + source_offset, dma_channels[current_channel].dest, i);
 
                 memory.write_word(dma_channels[current_channel].dest + dest_offset, memory.read_word(dma_channels[current_channel].source + source_offset));
                 source_offset += source_increment;
@@ -157,9 +157,6 @@ public:
         dma_channels[dma_id].dest_buf         = dma_channels[dma_id].dest;
         dma_channels[dma_id].size_buf         = dma_channels[dma_id].num_units;
         dma_channels[dma_id].waiting_to_start = dma_channels[dma_id].dma_start_timing == DMAStartTiming.Immediately;
-
-
-        // writefln("DMA Channel %x enabled. Transferring %x bytes from %x to %x.", dma_id, dma_channels[dma_id].num_units, dma_channels[dma_id].source, dma_channels[dma_id].dest);
 
         dma_channels[dma_id].enabled          = true;
     }
