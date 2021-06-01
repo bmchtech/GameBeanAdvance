@@ -107,6 +107,7 @@ class GameBeanSDLHost {
     }
 
     void run() {
+        // readln();
         running = true;
 
         int num_batches       = this.sample_rate / this.samples_per_callback;
@@ -171,12 +172,12 @@ class GameBeanSDLHost {
             }
 
             audio_data.mutex.lock();
-                if (audio_data.buffer_offset < samples_per_callback * 5) {
+                if (audio_data.buffer_offset < samples_per_callback * 3) {
                     // writefln("Cycling");
                     for (int i = 0; i < cycles_per_batch; i++) {
                         gba.cycle();
                     }
-                    gba_batch_enable = false;
+                    // gba_batch_enable = false;
                     cycles_since_last_log += cycles_per_batch;
                     // writefln("Cycled");
                 }

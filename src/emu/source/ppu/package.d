@@ -6,4 +6,6 @@ public {
     import ppu.pixel;
     import ppu.core;
     import ppu.effects;
+    import ppu.point;
+    import ppu.delta_optimization;
 }

@@ -247,6 +247,40 @@ class Memory {
         // }
     }
 
+    // These functions should only be used if you know exactly what address youre going to be reading / writing to.
+    // It skips all the preprocessing that read / writes do and skips straight to the reading / writing.
+    void force_write_byte(uint address, ubyte value) {
+        write_memory(address, value);
+    }
+
+    void force_write_halfword(uint address, ushort value) {
+        write_memory(address + 0, (value >> 0) & 0xFF);
+        write_memory(address + 1, (value >> 8) & 0xFF);
+    }
+
+    void force_write_word(uint address, uint value) {
+        write_memory(address + 0, (value >>  0) & 0xFF);
+        write_memory(address + 1, (value >>  8) & 0xFF);
+        write_memory(address + 2, (value >> 16) & 0xFF);
+        write_memory(address + 3, (value >> 24) & 0xFF);
+    }
+
+    ubyte force_read_byte(uint address) {
+        return read_memory(address);
+    }
+
+    ushort force_read_halfword(uint address) {
+        return (cast(ushort) read_memory(address + 0) << 0) | 
+               (cast(ushort) read_memory(address + 1) << 8);
+    }
+
+    uint force_read_word(uint address) {
+        return (cast(uint) read_memory(address + 0) << 0)  |
+               (cast(uint) read_memory(address + 1) << 8)  |
+               (cast(uint) read_memory(address + 2) << 16) | 
+               (cast(uint) read_memory(address + 3) << 24);
+    }
+
 private:
     ubyte read_memory(uint address) {
         if ((address & 0x0F000000) == 0x4000000) {
