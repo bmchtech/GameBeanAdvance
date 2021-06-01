@@ -12,6 +12,8 @@ sourceFiles "jumptable/jumptable_arm.d" "jumptable/jumptable_thumb.d"
 importPaths "./jumptable" "./source"
 preGenerateCommands "bash ./generate_jumptables.sh"
 
+dflags "--O3" "--boundscheck=off"
+
 configuration "default" {
     versions "default"
 }
@@ -19,9 +21,4 @@ configuration "default" {
 configuration "gperf" {
     dependency "gperftools_d" version="~>0.1.0"
     versions "gperf"
-}
-
-configuration "unittest" {
-    # test runner
-    # dependency "silly" version="~>1.1.1"
 }

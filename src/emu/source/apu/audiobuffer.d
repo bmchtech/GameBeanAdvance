@@ -26,7 +26,7 @@ private bool      has_set_up_audio_data = false;
 
 void* get_audio_data() {
     if (has_set_up_audio_data) return cast(void*) &audio_data;
-
+    
     audio_data.buffer        = new short[BUFFER_SIZE];
     audio_data.buffer_offset = 0;
     audio_data.mutex         = new Mutex();
@@ -45,6 +45,10 @@ extern (C) {
         audio_data.mutex.lock_nothrow();
 
             // try { writefln("Details: %x %x", len, audio_data.buffer_offset);} catch (Exception e) {}
+
+            if (len > audio_data.buffer_offset) {
+                // try { warning("Emulator too slow!"); } catch (Exception e) {}
+            }
 
             len = (len > audio_data.buffer_offset ? audio_data.buffer_offset : len);
 
