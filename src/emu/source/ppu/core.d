@@ -143,7 +143,6 @@ public:
                 render_background__text(0);
                 render_background__text(1);
                 render_background__rotation_scaling(2);
-                render_background__rotation_scaling(3);
                 render_sprites();
                 break;
 
