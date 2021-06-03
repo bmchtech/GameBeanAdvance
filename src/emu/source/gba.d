@@ -1,5 +1,8 @@
 module gba;
 
+import std.math;
+import std.stdio;
+
 public {
     import memory;
     import ppu;
@@ -228,6 +231,48 @@ public:
                     }
                 }
 
+                break;
+            }
+
+            case 0xF: { // ObjAffineSet
+                uint source = cpu.regs[0];
+                uint dest   = cpu.regs[1];
+                uint offset = cpu.regs[3];
+                
+                for (int i = 0; i < cpu.regs[2]; i++) {
+                    ushort scale_x = memory.read_halfword(source + 0);
+                    ushort scale_y = memory.read_halfword(source + 2);
+                    ushort theta   = memory.read_halfword(source + 4);
+                    writefln("Args: %s %s %s", scale_x, scale_y, theta);
+                    
+                    double d_scale_x = convert_from_8_8f_to_double(scale_x);
+                    double d_scale_y = convert_from_8_8f_to_double(scale_y);
+
+                    double theta_radians = ((cast(double) theta) / 0xFFFF) * 2 * PI;
+                    writefln("%s", theta_radians);
+                    writefln("Saving to %x with offset %x", dest, offset);
+
+                    double pA = cast(double) cos(theta_radians) /  d_scale_x;
+                    double pB = cast(double) sin(theta_radians) / -d_scale_x;
+                    double pC = cast(double) cos(theta_radians) /  d_scale_y;
+                    double pD = cast(double) sin(theta_radians) /  d_scale_y;
+
+                    memory.write_halfword(dest + offset * 0, convert_from_double_to_8_8f(pA));
+                    memory.write_halfword(dest + offset * 1, convert_from_double_to_8_8f(pB));
+                    memory.write_halfword(dest + offset * 2, convert_from_double_to_8_8f(pC));
+                    memory.write_halfword(dest + offset * 3, convert_from_double_to_8_8f(pD));
+                    writefln("Result: %x %x %x %x", convert_from_double_to_8_8f(pA),
+                                                    convert_from_double_to_8_8f(pB),
+                                                    convert_from_double_to_8_8f(pC),
+                                                    convert_from_double_to_8_8f(pD));
+
+                    source += 6;
+                    dest   += offset * 4;
+                }
+
+                cpu.cycles_remaining += cpu.regs[2] * 50;
+                writefln("%x", *cpu.pc);
+                // readln();
                 break;
             }
         

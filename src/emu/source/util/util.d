@@ -82,6 +82,14 @@ ubyte[] get_rom_as_bytes(string rom_name) {
     return buffer;
 }
 
+pragma(inline) double convert_from_8_8f_to_double(ushort input) {
+    return (input >> 8) + ((cast(double) (input & 0xFF)) / 256.0);
+}
+
+pragma(inline) ushort convert_from_double_to_8_8f(double input) {
+    return (cast(ushort) ((cast(ushort) (input / 1)) << 8)) | ((cast(ushort) ((input % 1) * 256)) & 0xFF);
+}
+
 class NSStopwatch {
     import core.time;
 
