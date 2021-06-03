@@ -49,7 +49,7 @@ public:
         this.memory            = memory;
         this.cpu               = new ARM7TDMI(memory, &bios_call);
         this.interrupt_manager = new InterruptManager(&interrupt_cpu);
-        this.ppu               = new PPU(memory, &interrupt_manager.interrupt);
+        this.ppu               = new PPU(memory, &interrupt_manager.interrupt, &on_hblank);
         this.apu               = new APU(memory, &on_fifo_empty);
         this.dma_manager       = new DMAManager(memory);
         this.timers            = new TimerManager(memory, &on_timer_overflow);
@@ -119,6 +119,10 @@ public:
 
     void on_fifo_empty(DirectSound fifo_type) {
         dma_manager.maybe_refill_fifo(fifo_type);
+    }
+
+    void on_hblank() {
+        dma_manager.on_hblank();
     }
 
     void bios_call(int bios_function) {
@@ -243,14 +247,14 @@ public:
                     ushort scale_x = memory.read_halfword(source + 0);
                     ushort scale_y = memory.read_halfword(source + 2);
                     ushort theta   = memory.read_halfword(source + 4);
-                    writefln("Args: %s %s %s", scale_x, scale_y, theta);
+                    // writefln("Args: %s %s %s", scale_x, scale_y, theta);
                     
                     double d_scale_x = convert_from_8_8f_to_double(scale_x);
                     double d_scale_y = convert_from_8_8f_to_double(scale_y);
 
                     double theta_radians = ((cast(double) theta) / 0xFFFF) * 2 * PI;
-                    writefln("%s", theta_radians);
-                    writefln("Saving to %x with offset %x", dest, offset);
+                    // writefln("%s", theta_radians);
+                    // writefln("Saving to %x with offset %x", dest, offset);
 
                     double pA = cast(double) cos(theta_radians) /  d_scale_x;
                     double pB = cast(double) sin(theta_radians) / -d_scale_x;
@@ -261,17 +265,17 @@ public:
                     memory.write_halfword(dest + offset * 1, convert_from_double_to_8_8f(pB));
                     memory.write_halfword(dest + offset * 2, convert_from_double_to_8_8f(pC));
                     memory.write_halfword(dest + offset * 3, convert_from_double_to_8_8f(pD));
-                    writefln("Result: %x %x %x %x", convert_from_double_to_8_8f(pA),
-                                                    convert_from_double_to_8_8f(pB),
-                                                    convert_from_double_to_8_8f(pC),
-                                                    convert_from_double_to_8_8f(pD));
+                    // writefln("Result: %x %x %x %x", convert_from_double_to_8_8f(pA),
+                                                    // convert_from_double_to_8_8f(pB),
+                                                    // convert_from_double_to_8_8f(pC),
+                                                    // convert_from_double_to_8_8f(pD));
 
                     source += 6;
                     dest   += offset * 4;
                 }
 
                 cpu.cycles_remaining += cpu.regs[2] * 50;
-                writefln("%x", *cpu.pc);
+                // writefln("%x", *cpu.pc);
                 // readln();
                 break;
             }

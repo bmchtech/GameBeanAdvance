@@ -3,6 +3,7 @@ module ppu.core;
 import memory;
 import util;
 import ppu;
+import interrupts;
 
 import std.stdio;
 import std.typecons;
@@ -18,6 +19,7 @@ class PPU {
 
 public:
     void delegate(uint) interrupt_cpu;
+    void delegate()     on_hblank;
     
     enum Pixel RESET_PIXEL = Pixel(0, 0, 0, 0, true);
 
@@ -32,9 +34,10 @@ public:
 
     Pixel[SCREEN_WIDTH][SCREEN_HEIGHT] screen;
 
-    this(Memory memory, void delegate(uint) interrupt_cpu) {
+    this(Memory memory, void delegate(uint) interrupt_cpu, void delegate() on_hblank) {
         this.memory        = memory;
         this.interrupt_cpu = interrupt_cpu;
+        this.on_hblank     = on_hblank;
         dot                = 0;
         scanline           = 0;
 
@@ -94,9 +97,8 @@ public:
         // set vblank or hblank accordingly
         if (scanline == 160 && dot == 0) { // are we in vblank?
             vblank = true;
-            if (vblank_irq_enabled) interrupt_cpu(1);
+            if (vblank_irq_enabled) interrupt_cpu(INTERRUPT.LCD_VBLANK);
 
-            render();
             apply_special_effects();
             overlay_all_layers();
             render_layer_result();
@@ -114,8 +116,14 @@ public:
             reset_changed_pixels();
         }
 
-        if ((dot == 1006 - 960 && hblank) || (dot == 0 && hblank)) { // should we toggle hblank?
-            hblank = !hblank;
+        if (dot == 240 && !vblank) {
+            hblank = true;
+            if (hblank_irq_enabled) interrupt_cpu(INTERRUPT.LCD_HBLANK);
+            on_hblank();
+        }
+        
+        if (dot == 0) {
+            hblank = false;
         }
     }
 
@@ -128,6 +136,8 @@ public:
         }
 
         // only begin rendering if we are on the first cycle
+        if (dot != 0) return;
+        render();
     }
 
     void render() {
@@ -138,6 +148,7 @@ public:
                 render_background__text(2);
                 render_background__text(3);
                 render_sprites();
+                break;
 
             case 1:
                 render_background__text(0);
@@ -215,30 +226,26 @@ private:
         return ((tile_y * tiles_per_row) + tile_x);
     }
 
-    void render_tile_256_1(Layer layer, int tile, int tile_base_address, int palette_base_address, int topleft_x, int topleft_y, bool flipped_x, bool flipped_y) {
+    void render_tile_256_1(Layer layer, int tile, int tile_base_address, int palette_base_address, int left_x, int y, bool flipped_x, bool flipped_y) {
         for (int tile_x = 0; tile_x < 8; tile_x++) {
-        for (int tile_y = 0; tile_y < 8; tile_y++) {
-            ubyte index = memory.force_read_byte(tile_base_address + ((tile & 0x3ff) * 64) + tile_y * 8 + tile_x);
+            ubyte index = memory.force_read_byte(tile_base_address + ((tile & 0x3ff) * 64) + y * 8 + tile_x);
 
-            int draw_x = flipped_x ? topleft_x + (7 - tile_x) : topleft_x + tile_x;
-            int draw_y = flipped_y ? topleft_y + (7 - tile_y) : topleft_y + tile_y;
+            int draw_x = flipped_x ? left_x   + (7 - tile_x) : left_x + tile_x;
+            int draw_y = flipped_y ? scanline + (7 -      y) : scanline;
             maybe_draw_pixel_on_layer(layer, palette_base_address, index, 0, draw_x, draw_y, index == 0);
-        }
         }
     }
 
-    void render_tile_16_16(Layer layer, int tile, int tile_base_address, int palette_base_address, int topleft_x, int topleft_y, bool flipped_x, bool flipped_y, int palette) {
+    void render_tile_16_16(Layer layer, int tile, int tile_base_address, int palette_base_address, int left_x, int y, bool flipped_x, bool flipped_y, int palette) {
         for (int tile_x = 0; tile_x < 8; tile_x++) {
-        for (int tile_y = 0; tile_y < 8; tile_y++) {
-            ubyte index = memory.force_read_byte(tile_base_address + ((tile & 0x3ff) * 32) + tile_y * 4 + (tile_x / 2));
+            ubyte index = memory.force_read_byte(tile_base_address + ((tile & 0x3ff) * 32) + y * 4 + (tile_x / 2));
 
-            int draw_x = flipped_x ? topleft_x + (7 - tile_x) : topleft_x + tile_x;
-            int draw_y = flipped_y ? topleft_y + (7 - tile_y) : topleft_y + tile_y;
+            int draw_x = flipped_x ? left_x   + (7 - tile_x) : left_x + tile_x;
+            int draw_y = flipped_y ? scanline + (7 -      y) : scanline;
 
             index = (tile_x % 2 == 0) ? index & 0xF : index >> 4;
             index += palette * 16;
             maybe_draw_pixel_on_layer(layer, palette_base_address, index, 0, draw_x, draw_y, index == 0);
-        }
         } 
     }
 
@@ -253,7 +260,7 @@ private:
 
         // the coordinates at the topleft of the background that we are drawing
         int topleft_x      = background.x_offset;
-        int topleft_y      = background.y_offset;
+        int topleft_y      = background.y_offset + scanline;
 
         // the tile number at the topleft of the background that we are drawing
         int topleft_tile_x = topleft_x >> 3;
@@ -268,23 +275,21 @@ private:
         // tile_x_offset and tile_y_offset are offsets from the topleft tile. we use this to iterate through
         // each tile.
         for (int tile_x_offset = 0; tile_x_offset < 32 + 1; tile_x_offset++) {
-        for (int tile_y_offset = 0; tile_y_offset < 32 + 1; tile_y_offset++) {
 
             // get the tile address and read it from memory
-            int tile_address = get_tile_address__text(topleft_tile_x + tile_x_offset, topleft_tile_y + tile_y_offset, BG_TEXT_SCREENS_DIMENSIONS[background.screen_size][0]);
+            int tile_address = get_tile_address__text(topleft_tile_x + tile_x_offset, topleft_tile_y, BG_TEXT_SCREENS_DIMENSIONS[background.screen_size][0]);
             int tile = memory.force_read_halfword(screen_base_address + tile_address);
 
             int draw_x = tile_x_offset * 8 - tile_dx;
-            int draw_y = tile_y_offset * 8 - tile_dy;
+            int draw_y = scanline;
 
             bool flipped_x = (tile >> 10) & 1;
             bool flipped_y = (tile >> 11) & 1;
 
             if (background.doesnt_use_color_palettes) 
-                render_tile_256_1(layer_backgrounds[background_id], tile, tile_base_address, memory.OFFSET_PALETTE_RAM, draw_x, draw_y, flipped_x, flipped_y);
+                render_tile_256_1(layer_backgrounds[background_id], tile, tile_base_address, memory.OFFSET_PALETTE_RAM, draw_x, tile_dy, flipped_x, flipped_y);
             else                                      
-                render_tile_16_16(layer_backgrounds[background_id], tile, tile_base_address, memory.OFFSET_PALETTE_RAM, draw_x, draw_y, flipped_x, flipped_y, get_nth_bits(tile, 12, 16));
-        }
+                render_tile_16_16(layer_backgrounds[background_id], tile, tile_base_address, memory.OFFSET_PALETTE_RAM, draw_x, tile_dy, flipped_x, flipped_y, get_nth_bits(tile, 12, 16));
         }
     }
 
@@ -299,7 +304,7 @@ private:
 
         // the coordinates at the topleft of the background that we are drawing
         int topleft_x      = background.x_offset;
-        int topleft_y      = background.y_offset;
+        int topleft_y      = background.y_offset + scanline;
 
         // the tile number at the topleft of the background that we are drawing
         int topleft_tile_x = topleft_x >> 3;
@@ -316,17 +321,15 @@ private:
         // tile_x_offset and tile_y_offset are offsets from the topleft tile. we use this to iterate through
         // each tile.
         for (int tile_x_offset = 0; tile_x_offset < 32 + 1; tile_x_offset++) {
-        for (int tile_y_offset = 0; tile_y_offset < 32 + 1; tile_y_offset++) {
 
             // get the tile address and read it from memory
-            int tile_address = get_tile_address__rotation_scaling(topleft_tile_x + tile_x_offset, topleft_tile_y + tile_y_offset, tiles_per_row);
+            int tile_address = get_tile_address__rotation_scaling(topleft_tile_x + tile_x_offset, topleft_tile_y, tiles_per_row);
             int tile = memory.force_read_byte(screen_base_address + tile_address);
 
             int draw_x = tile_x_offset * 8 - tile_dx;
-            int draw_y = tile_y_offset * 8 - tile_dy;
+            int draw_y = scanline;
 
-            render_tile_256_1(layer_backgrounds[background_id], tile, tile_base_address, memory.OFFSET_PALETTE_RAM, draw_x, draw_y, false, false);
-        }
+            render_tile_256_1(layer_backgrounds[background_id], tile, tile_base_address, memory.OFFSET_PALETTE_RAM, draw_x, tile_dy, false, false);
         }
     }
 
