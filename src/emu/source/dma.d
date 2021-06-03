@@ -183,6 +183,14 @@ public:
         }
     }
 
+    void on_hblank() {
+        for (int i = 0; i < 4; i++) {
+            if (dma_channels[i].dma_start_timing == DMAStartTiming.HBlank) {
+                start_dma_channel(i);
+            }
+        }
+    }
+
 private:
     Memory memory;
     bool   dma_cycle;

@@ -2,27 +2,27 @@ module interrupts;
 
 import std.stdio;
 
+// set up the possible interrupts
+enum INTERRUPT {
+    LCD_VBLANK           = 1,
+    LCD_HBLANK           = 2,
+    LCD_VCOUNTER_MATCH   = 4,
+    TIMER_0_OVERFLOW     = 8,
+    TIMER_1_OVERFLOW     = 16,
+    TIMER_2_OVERFLOW     = 32,
+    TIMER_3_OVERFLOW     = 64,
+    SERIAL_COMMUNICATION = 128,
+    DMA_0                = 256,
+    DMA_1                = 512,
+    DMA_2                = 1024,
+    DMA_3                = 2048,
+    KEYPAD               = 4096,
+    GAMEPAK              = 8192
+}
+
 class InterruptManager {
     this(void delegate() interrupt_cpu) {
         this.interrupt_cpu = interrupt_cpu;
-    }
-
-    // set up the possible interrupts
-    enum INTERRUPT {
-        LCD_VBLANK           = 1,
-        LCD_HBLANK           = 2,
-        LCD_VCOUNTER_MATCH   = 4,
-        TIMER_0_OVERFLOW     = 8,
-        TIMER_1_OVERFLOW     = 16,
-        TIMER_2_OVERFLOW     = 32,
-        TIMER_3_OVERFLOW     = 64,
-        SERIAL_COMMUNICATION = 128,
-        DMA_0                = 256,
-        DMA_1                = 512,
-        DMA_2                = 1024,
-        DMA_3                = 2048,
-        KEYPAD               = 4096,
-        GAMEPAK              = 8192
     }
 
     // interrupt_code must be one-hot
