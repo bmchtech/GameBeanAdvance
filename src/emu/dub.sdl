@@ -12,7 +12,7 @@ sourceFiles "jumptable/jumptable_arm.d" "jumptable/jumptable_thumb.d"
 importPaths "./jumptable" "./source"
 preGenerateCommands "bash ./generate_jumptables.sh"
 
-dflags "--O3" "--boundscheck=off"
+// dflags "--O3" "--boundscheck=off"
 
 configuration "default" {
     versions "default"

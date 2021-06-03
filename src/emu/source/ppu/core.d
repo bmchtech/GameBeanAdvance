@@ -96,6 +96,7 @@ public:
             vblank = true;
             if (vblank_irq_enabled) interrupt_cpu(1);
 
+            render();
             apply_special_effects();
             overlay_all_layers();
             render_layer_result();
@@ -127,8 +128,9 @@ public:
         }
 
         // only begin rendering if we are on the first cycle
-        if (dot != 0) return;
+    }
 
+    void render() {
         switch (bg_mode) {
             case 0: 
             case 1: {
@@ -181,92 +183,99 @@ private:
     ushort scanline;
     // uint[][] pixel_priorities; // the associated priorities with each pixel.
 
-    void render_background_mode0(uint background_id) {
-        Background background = backgrounds[background_id];
+    static int[][] BG_TEXT_SCREENS_DIMENSIONS = [
+        [1, 1],
+        [1, 2],
+        [2, 1],
+        [2, 2]
+    ];
 
-        // do we even render?
+    int get_tile_address(int tile_x, int tile_y, int screens_per_row) {
+        // each screen is 32 x 32 tiles. so to get the tile offset within its screen
+        // we can get the low 5 bits
+        int tile_x_within_screen = tile_x & 0x1F;
+        int tile_y_within_screen = tile_y & 0x1F;
+
+        // similarly we can find out which screen this tile is located in
+        // by getting its high bit
+        int screen_x             = (tile_x >> 5) & 1;
+        int screen_y             = (tile_y >> 5) & 1;
+        int screen               = screen_x * screens_per_row + screen_y;
+
+        int tile_address_offset_within_screen = ((tile_y_within_screen * 32) + tile_x_within_screen) * 2;
+        return tile_address_offset_within_screen + screen * 0x800; 
+    }
+
+    void render_tile_256_1(Layer layer, int tile, int tile_base_address, int palette_base_address, int topleft_x, int topleft_y, bool flipped_x, bool flipped_y) {
+        for (int tile_x = 0; tile_x < 8; tile_x++) {
+        for (int tile_y = 0; tile_y < 8; tile_y++) {
+            ubyte index = memory.force_read_byte(tile_base_address + ((tile & 0x3ff) * 64) + tile_y * 8 + tile_x);
+
+            int draw_x = flipped_x ? topleft_x + (7 - tile_x) : topleft_x + tile_x;
+            int draw_y = flipped_y ? topleft_y + (7 - tile_y) : topleft_y + tile_y;
+            maybe_draw_pixel_on_layer(layer, palette_base_address, index, 0, draw_x, draw_y, index == 0);
+        }
+        }
+    }
+
+    void render_tile_16_16(Layer layer, int tile, int tile_base_address, int palette_base_address, int topleft_x, int topleft_y, bool flipped_x, bool flipped_y, int palette) {
+        for (int tile_x = 0; tile_x < 8; tile_x++) {
+        for (int tile_y = 0; tile_y < 8; tile_y++) {
+            ubyte index = memory.force_read_byte(tile_base_address + ((tile & 0x3ff) * 32) + tile_y * 4 + (tile_x / 2));
+
+            int draw_x = flipped_x ? topleft_x + (7 - tile_x) : topleft_x + tile_x;
+            int draw_y = flipped_y ? topleft_y + (7 - tile_y) : topleft_y + tile_y;
+
+            index = (tile_x % 2 == 0) ? index & 0xF : index >> 4;
+            index += palette * 16;
+            maybe_draw_pixel_on_layer(layer, palette_base_address, index, 0, draw_x, draw_y, index == 0);
+        }
+        } 
+    }
+
+    void render_background_mode0(uint background_id) {
+    // do we even render?
+        Background background = backgrounds[background_id];
         if (!background.enabled) return;
 
-        // the tile base address is where we will find out tilemap.
-        uint tile_base_address   = memory.OFFSET_VRAM + background.character_base_block * 0x4000;
+        // relevant addresses for the background's tilemap and screen
+        int screen_base_address = memory.OFFSET_VRAM + background.screen_base_block    * 0x800;
+        int tile_base_address   = memory.OFFSET_VRAM + background.character_base_block * 0x4000;
 
-        // the screen base address is where we will find the indices that point to the tilemap.
-        uint screen_base_address = memory.OFFSET_VRAM + background.screen_base_block    * 0x800;
+        // the coordinates at the topleft of the background that we are drawing
+        int topleft_x      = background.x_offset;
+        int topleft_y      = background.y_offset;
 
-        for (ushort x_ofs = 0; x_ofs < SCREEN_WIDTH; x_ofs++) {
-            ushort x = cast(ushort) (dot      + background.x_offset + x_ofs);
-            ushort y = cast(ushort) (scanline + background.y_offset);
+        // the tile number at the topleft of the background that we are drawing
+        int topleft_tile_x = topleft_x >> 3;
+        int topleft_tile_y = topleft_y >> 3;
 
-            // x and y point to somewhere within the 240x180 screen. tiles are 8x8. we can figure out
-            // which tile we are looking at by getting the high five bits (sc_x and sc_y), and we can
-            // figure out the offset we are at within the tile by grabbing the low 3 bits (tile_x and
-            // tile_y).
-            // 1000_0000
-            // 0, 10
-            // 0, 0
-            ushort sc_x   = (x >> 3) & 0x1f;
-            ushort sc_y   = (y >> 3) & 0x1f;
-            ushort tile_x = x & 0b111;
-            ushort tile_y = y & 0b111;
+        // how far back do we have to render the tile? because the topleft of the screen
+        // usually doesn't mark the start of the tile, so these are the offsets we can
+        // subtract to handle the mislignment
+        int tile_dx        = topleft_x & 0b111;
+        int tile_dy        = topleft_y & 0b111;
 
-            // TODO: the following line of code assumes screen size is 3
-            // the PPU can have up to 4 screens. graphically, the screens are laid out like this:
-            // -----------------------------------------------------------
-            // |                            |                            |
-            // |                            |                            |
-            // |          SCREEN 0          |         SCREEN 1           |
-            // |          +0x0000           |         +0x0800            |
-            // |                            |                            |
-            // |                            |                            |
-            // -----------------------------------------------------------
-            // |                            |                            |
-            // |                            |                            |
-            // |          SCREEN 2          |         SCREEN 3           |
-            // |          +0x1000           |         +0x1800            |
-            // |                            |                            |
-            // |                            |                            |
-            // -----------------------------------------------------------
-            //
-            // in order to force_read from the right place in memory, we need to know what screen we are at.
-            // since each screen is 32x32 tiles (256x256 pixels), we can get the screen by taking the
-            // 9th bits in x and y and combining them together.
+        // tile_x_offset and tile_y_offset are offsets from the topleft tile. we use this to iterate through
+        // each tile.
+        for (int tile_x_offset = 0; tile_x_offset < 32 + 1; tile_x_offset++) {
+        for (int tile_y_offset = 0; tile_y_offset < 32 + 1; tile_y_offset++) {
 
-            ubyte  screen       = ((x >> 8) & 1) + (((y >> 8) & 1) << 1);
-            // std::cout << std::to_string(screen) << std::endl;
-            screen_base_address  += screen * 0x800;
+            // get the tile address and read it from memory
+            int tile_address = get_tile_address(topleft_tile_x + tile_x_offset, topleft_tile_y + tile_y_offset, BG_TEXT_SCREENS_DIMENSIONS[background.screen_size][0]);
+            int tile = memory.force_read_halfword(screen_base_address + tile_address);
 
-            // we use sc_x and sc_y from earlier to get the current tile. each tile is a halfword, so we
-            // multiply (sc_x + (sc_y * 32)) by 2.
-            ushort current_tile = memory.force_read_halfword(screen_base_address + (sc_x + (sc_y * 32)) * 2);
-            // if ((sc_x + (sc_y * 32)) * 2 == 0x400) warning(format("tile: %x %x", (sc_x + (sc_y * 32)) * 2, current_tile));
+            int draw_x = tile_x_offset * 8 - tile_dx;
+            int draw_y = tile_y_offset * 8 - tile_dy;
 
-            uint priority = background.priority * 2 + 1;
+            bool flipped_x = (tile >> 10) & 1;
+            bool flipped_y = (tile >> 11) & 1;
 
-            bool flipped_x = (current_tile >> 10) & 1;
-            bool flipped_y = (current_tile >> 11) & 1;
-            if (flipped_x) tile_x = cast(ushort) (7 - tile_x);
-            if (flipped_y) tile_y = cast(ushort) (7 - tile_y);
-
-            // palettes / colors ratio?
-            if (background.doesnt_use_color_palettes) { // 256 / 1
-                // only the upper 10 bits of current_tile are relevant. we use these to get the index into the palette ram
-                // for the particular pixel are are interested in (determined by tile_x and tile_y).
-                ubyte index = memory.force_read_byte(tile_base_address + ((current_tile & 0x3ff) * 64) + tile_y * 8 + tile_x);
-
-                maybe_draw_pixel_on_layer(layer_backgrounds[background_id], memory.OFFSET_PALETTE_RAM, index, priority, x_ofs, scanline, index == 0);
-            } else { // 16 / 16
-                // same as above, but the upper 4 bits of current_tile specify a color palette. there are 16 color palettes,
-                // each of which is 16 bytes long.
-                ubyte index = memory.force_read_byte(tile_base_address + ((current_tile & 0x3ff) * 32) + tile_y * 4 + (tile_x / 2));
-                if (tile_x % 2 == 0) {
-                    index &= 0xF;
-                } else {
-                    index >>= 4;
-                }
-
-                index += get_nth_bits(current_tile, 12, 16) * 16;
-                maybe_draw_pixel_on_layer(layer_backgrounds[background_id], memory.OFFSET_PALETTE_RAM, index, priority, x_ofs, scanline, (index & 0xf) == 0);
-            }
+            if (background.doesnt_use_color_palettes) 
+                render_tile_256_1(layer_backgrounds[background_id], tile, tile_base_address, memory.OFFSET_PALETTE_RAM, draw_x, draw_y, flipped_x, flipped_y);
+            else                                      
+                render_tile_16_16(layer_backgrounds[background_id], tile, tile_base_address, memory.OFFSET_PALETTE_RAM, draw_x, draw_y, flipped_x, flipped_y, get_nth_bits(tile, 12, 16));
+        }
         }
     }
 
@@ -296,161 +305,98 @@ private:
 
     void render_sprites() {
         // Very useful guide for attributes! https://problemkaputt.de/gbatek.htm#lcdobjoamattributes
-        for (int sprite = 0; sprite < 128; sprite++) {
+        for (int sprite = 127; sprite >= 0; sprite--) {
             // first of all, we need to figure out if we render this sprite in the first place.
             // so, we collect a bunch of info that'll help us figure that out.
             ushort attribute_0 = memory.force_read_halfword(memory.OFFSET_OAM + sprite * 8 + 0);
 
             // is this sprite even enabled
             if (get_nth_bits(attribute_0, 8, 10) == 0b10) continue;
-            // it is enabled? great. now, we need to check which if the sprite appears in the
-            // current scanline. for that, we need attribute 1.
-            ushort attribute_1 = memory.force_read_halfword(memory.OFFSET_OAM + sprite * 8 + 2);
 
-            // get the size and shape of the sprite so we know its height
-            ubyte size   = cast(ubyte) get_nth_bits(attribute_1, 14, 16);
-            ubyte shape  = cast(ubyte) get_nth_bits(attribute_0, 14, 16);
+            // it is enabled? great. let's get the other two attributes and collect some
+            // relevant information.
+            int attribute_1 = memory.force_read_halfword(memory.OFFSET_OAM + sprite * 8 + 2);
+            int attribute_2 = memory.force_read_halfword(memory.OFFSET_OAM + sprite * 8 + 4);
 
-            // get y and height from attribute_0 and the sprite_sizezs lookup table.
-            byte y       = cast(byte) get_nth_bits(attribute_0,  0,  8);
-            ubyte height = sprite_sizes[shape][size][1];
+            int size   = get_nth_bits(attribute_1, 14, 16);
+            int shape  = get_nth_bits(attribute_0, 14, 16);
 
-            // is this sprite rendered or not in this scanline
-            if (scanline < y || scanline >= y + height) continue;
+            ubyte width  = sprite_sizes[shape][size][0] >> 3;
+            ubyte height = sprite_sizes[shape][size][1] >> 3;
 
-            // now we need to get attribute 2, as well as the x position and the sprite width.
-            ushort attribute_2 = memory.force_read_halfword(memory.OFFSET_OAM + sprite * 8 + 4);
+            int topleft_x = sign_extend(cast(ubyte) get_nth_bits(attribute_1,  0,  9), 9);
+            int topleft_y = get_nth_bits(attribute_0,  0,  8);
 
-            int x        = sign_extend(cast(ubyte) get_nth_bits(attribute_1,  0,  9), 9);
-            ubyte width  = sprite_sizes[shape][size][0];
+            uint base_tile_number = cast(ushort) get_nth_bits(attribute_2, 0, 10);
+            uint priority = get_nth_bits(attribute_2, 10, 11);
 
-            // if (sprite == 0) 
+            int tile_number_increment_per_row = obj_character_vram_mapping ? width : 32;
 
-            // base_tile_number is going to be the tile number of the left-most tile that makes
-            // up the sprite in the current scanline. to calculate this, we first get the topleft 
-            // tile. then, we add (width / 8) * ((scanline - y) / 8). note that (scanline - y) / 8
-            // tells us the current tile row we are rendering, and (width / 8) is the width of the
-            // sprite in tiles.
-            ushort base_tile_number = cast(ushort) get_nth_bits(attribute_2, 0, 10);
-            uint priority = 2 * get_nth_bits(attribute_2, 10, 11);
+            bool doesnt_use_color_palettes = get_nth_bit(attribute_0, 13);
 
-            bool flipped_x = (attribute_1 >> 12) & 1;
-            bool flipped_y = (attribute_1 >> 13) & 1;
+            bool flipped_x = get_nth_bit(attribute_1, 12);
+            bool flipped_y = get_nth_bit(attribute_1, 13);
 
-            // colors / palettes
-            if (get_nth_bit(attribute_0, 13)) { // 256 / 1
-                if (obj_character_vram_mapping) {
-                    base_tile_number += (width / 8) * ((scanline - y) / 8) * 2;
-                } else {
-                    base_tile_number += 32 * ((scanline - y) / 8) * 2;
-                }
-                // ubyte palette = get_nth_bits(attribute_2, 12, 16);
-                for (int draw_x = x; draw_x < x + width; draw_x++) {
+            for (int tile_x_offset = 0; tile_x_offset < width;  tile_x_offset++) {
+            for (int tile_y_offset = 0; tile_y_offset < height; tile_y_offset++) {
 
-                    uint tile_base_address = memory.OFFSET_VRAM + 0x10000; // probably wrong lol
+                // get the tile address and read it from memory
+                // int tile_address = get_tile_address(topleft_tile_x + tile_x_offset, topleft_tile_y + tile_y_offset, tile_number_increment_per_row);
+                int tile = base_tile_number + (tile_y_offset * tile_number_increment_per_row) + tile_x_offset;
 
-                    uint shifted_tile_number = base_tile_number + ((draw_x - x) / 8) * 2;
-                    // only the upper 10 bits of current_tile are relevant. we use these to get the index into the palette ram
-                    // for the particular pixel we are interested in (determined by tile_x and tile_y).
-                    ubyte index = memory.force_read_byte(tile_base_address + (((shifted_tile_number & 0x3ff) >> 1) * 64) + 
-                                                                       ((scanline - y) % 8) * 8 +
-                                                                       ((draw_x   - x) % 8));
+                int draw_x = flipped_x ? (width  - tile_x_offset - 1) * 8 + topleft_x : tile_x_offset * 8 + topleft_x;
+                int draw_y = flipped_y ? (height - tile_y_offset - 1) * 8 + topleft_y : tile_y_offset * 8 + topleft_y;
 
-                    // and we grab the pixel from palette ram and interpret it as 15bit highcolor.
-
-                    int final_x = get_nth_bit(attribute_0, 8) ? scale_x_sprites(draw_x, scanline, sprite) : draw_x;
-                    int final_y = get_nth_bit(attribute_0, 8) ? scale_y_sprites(draw_x, scanline, sprite) : scanline;
-                    maybe_draw_pixel_on_layer(layer_sprites[priority], memory.OFFSET_PALETTE_RAM + 0x200, index, priority, final_x, final_y, index == 0);
-                }
-            } else { // 16 / 16
-                int adjusted_draw_y = flipped_y ? y + (height - (scanline - y) - 1) : scanline;
-                if (obj_character_vram_mapping) {
-                    base_tile_number += (width / 8) * ((adjusted_draw_y - y) / 8);
-                } else {
-                    base_tile_number += 32 * ((adjusted_draw_y - y) / 8);
-                }
-
-                for (int draw_x = x; draw_x < x + width; draw_x += 2) {
-                    // TODO: REPEATED CODE
-                    uint adjusted_draw_x = flipped_x ? x + (width - (draw_x - x) - 2) : draw_x;
-                    // uint adjusted_draw_x = draw_x & 0xFFFFFFFE;
-
-                    // tile_base_address is just the base address of the tiles for sprites
-                    uint tile_base_address = memory.OFFSET_VRAM + 0x10000; // probably wrong lol
-
-                    // shifted_tile_number tells us the exact tile we will be rendering. note that (draw_x - x)/ 8
-                    // tells us the current tile column we are rendering.
-                    uint shifted_tile_number = base_tile_number + ((adjusted_draw_x - x) / 8);
-
-                    // only the upper 10 bits of current_tile are relevant. we use these to get the index into the palette ram
-                    // for the particular pixel we are interested in (determined by tile_x and tile_y). we multiply
-                    // shifted_tile_number by 32 because each tile is 32 bytes long. (scanline - y) % 8 and (draw_x - x) % 8
-                    // are the current pixel x y offsets within the tile. since each pixel is half of a byte, we multiply
-                    // the x y offsets by (8 / 2) and (1 / 2) respectively.
-                    ubyte index = memory.force_read_byte(tile_base_address + ((shifted_tile_number & 0x3ff) * 32) + 
-                                                                       ((adjusted_draw_y - y) % 8) * 4 +
-                                                                       ((adjusted_draw_x - x) % 8) / 2);
-
-                    
-                    ubyte index_L = index & 0xF;
-                    ubyte index_H = index >> 4;
-
-                    if (flipped_x) {
-                        ubyte temp = index_L;
-                        index_L = index_H;
-                        index_H = temp;
-                    }
-
-                    index_L += get_nth_bits(attribute_2, 12, 16) * 16;
-                    index_H += get_nth_bits(attribute_2, 12, 16) * 16;
-                    int final_x_0 = get_nth_bit(attribute_0, 8) ? scale_x_sprites(adjusted_draw_x + 0, adjusted_draw_y, sprite) : draw_x;
-                    int final_x_1 = get_nth_bit(attribute_0, 8) ? scale_x_sprites(adjusted_draw_x + 1, adjusted_draw_y, sprite) : draw_x + 1;
-                    int final_y_0 = get_nth_bit(attribute_0, 8) ? scale_y_sprites(adjusted_draw_x + 0, adjusted_draw_y, sprite) : adjusted_draw_y;
-                    int final_y_1 = get_nth_bit(attribute_0, 8) ? scale_y_sprites(adjusted_draw_x + 1, adjusted_draw_y, sprite) : adjusted_draw_y;
-                    maybe_draw_pixel_on_layer(layer_sprites[priority], memory.OFFSET_PALETTE_RAM + 0x200, index_L, priority, final_x_0, final_y_0, (index_L & 0xf) == 0);
-                    maybe_draw_pixel_on_layer(layer_sprites[priority], memory.OFFSET_PALETTE_RAM + 0x200, index_H, priority, final_x_1, final_y_1, (index_H & 0xf) == 0);
-                }
+                if (doesnt_use_color_palettes) 
+                    render_tile_256_1(layer_sprites[priority], tile, memory.OFFSET_VRAM + 0x10000, memory.OFFSET_PALETTE_RAM + 0x200, draw_x, draw_y, flipped_x, flipped_y);
+                else                                      
+                    render_tile_16_16(layer_sprites[priority], tile, memory.OFFSET_VRAM + 0x10000, memory.OFFSET_PALETTE_RAM + 0x200, draw_x, draw_y, flipped_x, flipped_y, get_nth_bits(attribute_2, 12, 16));
+            }
             }
         }
     }
 
-    int scale_x_sprites(uint original_x, uint original_y, int sprite_number) {
-        return memory.force_read_halfword(memory.OFFSET_OAM + 0x06 + 0x20 * sprite_number) * original_x +
-               memory.force_read_halfword(memory.OFFSET_OAM + 0x0E + 0x20 * sprite_number) * original_y;
+    int scale_x_sprites(int reference_point_x, int reference_point_y, uint original_x, uint original_y, int scaling_number) {
+        double pA = convert_from_8_8f_to_double(memory.force_read_halfword(memory.OFFSET_OAM + 0x06 + 0x20 * scaling_number));
+        double pB = convert_from_8_8f_to_double(memory.force_read_halfword(memory.OFFSET_OAM + 0x0E + 0x20 * scaling_number));
+        
+        return cast(int) (pA * (original_x - reference_point_x) + pB * (reference_point_y - original_y)) + original_x;
     }
 
-    int scale_y_sprites(uint original_x, uint original_y, int sprite_number) {
-        return memory.force_read_halfword(memory.OFFSET_OAM + 0x16 + 0x20 * sprite_number) * original_x +
-               memory.force_read_halfword(memory.OFFSET_OAM + 0x1E + 0x20 * sprite_number) * original_y;
+    int scale_y_sprites(int reference_point_x, int reference_point_y, uint original_x, uint original_y, int scaling_number) {
+        double pC = convert_from_8_8f_to_double(memory.force_read_halfword(memory.OFFSET_OAM + 0x16 + 0x20 * scaling_number));
+        double pD = convert_from_8_8f_to_double(memory.force_read_halfword(memory.OFFSET_OAM + 0x1E + 0x20 * scaling_number));
+        
+        return cast(int) (pC * (original_x - reference_point_x) + pD * (reference_point_y - original_y)) + original_x;
     }
 
-    // void test_render_sprites() {
-    //     int palette = 0;
-    //     int tile_base_address = memory.OFFSET_VRAM;
-    //     for (int tile_number = 0; tile_number < 10; tile_number++) {
-    //         int col = tile_number / 10;
-    //         int row = tile_number % 10;
+    void test_render_sprites() {
+        int palette = 0;
+        int tile_base_address = memory.OFFSET_VRAM + 0x4000;
+        for (int tile_number = 0; tile_number < 10; tile_number++) {
+            int col = tile_number / 10;
+            int row = tile_number % 10;
 
-    //         for (int x = 0; x < 8; x++) {
-    //         for (int y = 0; y < 8; y++) {
-    //             // 16 / 16
-    //             ubyte index = memory.force_read_byte(tile_base_address + (tile_number * 32) + (y * 4) + (x / 2));
-    //             index += palette * 32;
-    //             if (x % 2 == 0) {
-    //                 index &= 0xF;
-    //             } else {
-    //                 index >>= 4;
-    //             }
+            for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
+                // 16 / 16
+                ubyte index = memory.force_read_byte(tile_base_address + (tile_number * 32) + (y * 4) + (x / 2));
+                index += palette * 32;
+                if (x % 2 == 0) {
+                    index &= 0xF;
+                } else {
+                    index >>= 4;
+                }
 
-    //             // 256 / 256
-    //             // ubyte index = memory.force_read_byte(tile_base_address + (tile_number * 64) + y * 8 + x);
+                // 256 / 256
+                // ubyte index = memory.force_read_byte(tile_base_address + (tile_number * 64) + y * 8 + x);
 
-    //             // // and we grab two pixels from palette ram and interpret them as 15bit highcolor.
-    //             draw_pixel(memory.OFFSET_PALETTE_RAM + 0x200, index & 0xF, col * 8 + x, row * 8 + y);
-    //         }    
-    //         }
-    //     }
-    // }
+                // // and we grab two pixels from palette ram and interpret them as 15bit highcolor.
+                maybe_draw_pixel_on_layer(layer_sprites[0], memory.OFFSET_PALETTE_RAM + 0x200, index & 0xF, 0, col * 8 + x, row * 8 + y, false);
+            }    
+            }
+        }
+    }
 
     // void test_render_palette() {
     //     for (int i = 0; i < 256; i++) {
@@ -524,6 +470,7 @@ private:
     }
 
     void overlay_all_layers() {
+        // layer_result = layer_backgrounds[1];
         Point[] changed_pixels = get_changed_pixels();
 
         overlay_layer(layer_backdrop, layer_result, changed_pixels);
@@ -550,9 +497,9 @@ private:
     void render_layer_result() {
         for (int x = 0; x < SCREEN_WIDTH;  x++) {
         for (int y = 0; y < SCREEN_HEIGHT; y++) {
-            memory.set_rgb(x, y, cast(ubyte) (layer_result.pixels[x][y].r * 255 / 31), 
-                                 cast(ubyte) (layer_result.pixels[x][y].g * 255 / 31), 
-                                 cast(ubyte) (layer_result.pixels[x][y].b * 255 / 31));
+            memory.set_rgb(x, y, cast(ubyte) (layer_result.pixels[x][y].r << 3), 
+                                 cast(ubyte) (layer_result.pixels[x][y].g << 3), 
+                                 cast(ubyte) (layer_result.pixels[x][y].b << 3));
         }
         }
     }
