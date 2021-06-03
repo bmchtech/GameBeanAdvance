@@ -133,17 +133,19 @@ public:
     void render() {
         switch (bg_mode) {
             case 0: 
-            case 1: {
-                // DISPCNT bits 8-11 tell us which backgrounds should be rendered.
-                render_background_mode0(0);
-                render_background_mode0(1);
-                render_background_mode0(2);
-                render_background_mode0(3);
+                render_background__text(0);
+                render_background__text(1);
+                render_background__text(2);
+                render_background__text(3);
                 render_sprites();
-                // test_render_sprites();
-                // test_render_palette();
+
+            case 1:
+                render_background__text(0);
+                render_background__text(1);
+                render_background__rotation_scaling(2);
+                render_background__rotation_scaling(3);
+                render_sprites();
                 break;
-            }
 
             case 3: {
                 // in mode 3, the dot and scanline (x and y) simply tell us where to read from in VRAM. The colors
@@ -190,7 +192,11 @@ private:
         [2, 2]
     ];
 
-    int get_tile_address(int tile_x, int tile_y, int screens_per_row) {
+    static int[] BG_ROTATION_SCALING_TILE_DIMENSIONS = [
+        16, 32, 64, 128
+    ];
+
+    int get_tile_address__text(int tile_x, int tile_y, int screens_per_row) {
         // each screen is 32 x 32 tiles. so to get the tile offset within its screen
         // we can get the low 5 bits
         int tile_x_within_screen = tile_x & 0x1F;
@@ -204,6 +210,10 @@ private:
 
         int tile_address_offset_within_screen = ((tile_y_within_screen * 32) + tile_x_within_screen) * 2;
         return tile_address_offset_within_screen + screen * 0x800; 
+    }
+
+    int get_tile_address__rotation_scaling(int tile_x, int tile_y, int tiles_per_row) {
+        return ((tile_y * tiles_per_row) + tile_x);
     }
 
     void render_tile_256_1(Layer layer, int tile, int tile_base_address, int palette_base_address, int topleft_x, int topleft_y, bool flipped_x, bool flipped_y) {
@@ -233,8 +243,8 @@ private:
         } 
     }
 
-    void render_background_mode0(uint background_id) {
-    // do we even render?
+    void render_background__text(uint background_id) {
+        // do we even render?
         Background background = backgrounds[background_id];
         if (!background.enabled) return;
 
@@ -262,7 +272,7 @@ private:
         for (int tile_y_offset = 0; tile_y_offset < 32 + 1; tile_y_offset++) {
 
             // get the tile address and read it from memory
-            int tile_address = get_tile_address(topleft_tile_x + tile_x_offset, topleft_tile_y + tile_y_offset, BG_TEXT_SCREENS_DIMENSIONS[background.screen_size][0]);
+            int tile_address = get_tile_address__text(topleft_tile_x + tile_x_offset, topleft_tile_y + tile_y_offset, BG_TEXT_SCREENS_DIMENSIONS[background.screen_size][0]);
             int tile = memory.force_read_halfword(screen_base_address + tile_address);
 
             int draw_x = tile_x_offset * 8 - tile_dx;
@@ -275,6 +285,48 @@ private:
                 render_tile_256_1(layer_backgrounds[background_id], tile, tile_base_address, memory.OFFSET_PALETTE_RAM, draw_x, draw_y, flipped_x, flipped_y);
             else                                      
                 render_tile_16_16(layer_backgrounds[background_id], tile, tile_base_address, memory.OFFSET_PALETTE_RAM, draw_x, draw_y, flipped_x, flipped_y, get_nth_bits(tile, 12, 16));
+        }
+        }
+    }
+
+    void render_background__rotation_scaling(uint background_id) {
+        // do we even render?
+        Background background = backgrounds[background_id];
+        if (!background.enabled) return;
+
+        // relevant addresses for the background's tilemap and screen
+        int screen_base_address = memory.OFFSET_VRAM + background.screen_base_block    * 0x800;
+        int tile_base_address   = memory.OFFSET_VRAM + background.character_base_block * 0x4000;
+
+        // the coordinates at the topleft of the background that we are drawing
+        int topleft_x      = background.x_offset;
+        int topleft_y      = background.y_offset;
+
+        // the tile number at the topleft of the background that we are drawing
+        int topleft_tile_x = topleft_x >> 3;
+        int topleft_tile_y = topleft_y >> 3;
+
+        // how far back do we have to render the tile? because the topleft of the screen
+        // usually doesn't mark the start of the tile, so these are the offsets we can
+        // subtract to handle the mislignment
+        int tile_dx        = topleft_x & 0b111;
+        int tile_dy        = topleft_y & 0b111;
+
+        int tiles_per_row  = BG_ROTATION_SCALING_TILE_DIMENSIONS[background.screen_size];
+
+        // tile_x_offset and tile_y_offset are offsets from the topleft tile. we use this to iterate through
+        // each tile.
+        for (int tile_x_offset = 0; tile_x_offset < 32 + 1; tile_x_offset++) {
+        for (int tile_y_offset = 0; tile_y_offset < 32 + 1; tile_y_offset++) {
+
+            // get the tile address and read it from memory
+            int tile_address = get_tile_address__rotation_scaling(topleft_tile_x + tile_x_offset, topleft_tile_y + tile_y_offset, tiles_per_row);
+            int tile = memory.force_read_byte(screen_base_address + tile_address);
+
+            int draw_x = tile_x_offset * 8 - tile_dx;
+            int draw_y = tile_y_offset * 8 - tile_dy;
+
+            render_tile_256_1(layer_backgrounds[background_id], tile, tile_base_address, memory.OFFSET_PALETTE_RAM, draw_x, draw_y, false, false);
         }
         }
     }
