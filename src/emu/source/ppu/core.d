@@ -381,6 +381,8 @@ private:
             int topleft_x = sign_extend(cast(ubyte) get_nth_bits(attribute_1,  0,  9), 9);
             int topleft_y = get_nth_bits(attribute_0,  0,  8);
 
+            if (scanline < topleft_y || scanline >= topleft_y + (height << 3)) continue;
+
             uint base_tile_number = cast(ushort) get_nth_bits(attribute_2, 0, 10);
             uint priority = get_nth_bits(attribute_2, 10, 11);
 
@@ -391,21 +393,19 @@ private:
             bool flipped_x = get_nth_bit(attribute_1, 12);
             bool flipped_y = get_nth_bit(attribute_1, 13);
 
-            for (int tile_x_offset = 0; tile_x_offset < width;  tile_x_offset++) {
-            for (int tile_y_offset = 0; tile_y_offset < height; tile_y_offset++) {
+            for (int tile_x_offset = 0; tile_x_offset < width; tile_x_offset++) {
 
                 // get the tile address and read it from memory
                 // int tile_address = get_tile_address(topleft_tile_x + tile_x_offset, topleft_tile_y + tile_y_offset, tile_number_increment_per_row);
-                int tile = base_tile_number + (tile_y_offset * tile_number_increment_per_row) + tile_x_offset;
+                int tile = base_tile_number + (((scanline - topleft_y) >> 3) * tile_number_increment_per_row) + tile_x_offset;
 
                 int draw_x = flipped_x ? (width  - tile_x_offset - 1) * 8 + topleft_x : tile_x_offset * 8 + topleft_x;
-                int draw_y = flipped_y ? (height - tile_y_offset - 1) * 8 + topleft_y : tile_y_offset * 8 + topleft_y;
+                int draw_y = scanline;
 
                 if (doesnt_use_color_palettes) 
-                    render_tile_256_1(layer_sprites[priority], tile, memory.OFFSET_VRAM + 0x10000, memory.OFFSET_PALETTE_RAM + 0x200, draw_x, draw_y, flipped_x, flipped_y);
+                    render_tile_256_1(layer_sprites[priority], tile, memory.OFFSET_VRAM + 0x10000, memory.OFFSET_PALETTE_RAM + 0x200, draw_x, (scanline - topleft_y) & 0b111, flipped_x, flipped_y);
                 else                                      
-                    render_tile_16_16(layer_sprites[priority], tile, memory.OFFSET_VRAM + 0x10000, memory.OFFSET_PALETTE_RAM + 0x200, draw_x, draw_y, flipped_x, flipped_y, get_nth_bits(attribute_2, 12, 16));
-            }
+                    render_tile_16_16(layer_sprites[priority], tile, memory.OFFSET_VRAM + 0x10000, memory.OFFSET_PALETTE_RAM + 0x200, draw_x, (scanline - topleft_y) & 0b111, flipped_x, flipped_y, get_nth_bits(attribute_2, 12, 16));
             }
         }
     }
