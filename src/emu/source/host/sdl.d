@@ -107,7 +107,7 @@ class GameBeanSDLHost {
     }
 
     void run() {
-        // readln();
+        readln();
         running = true;
 
         int num_batches       = this.sample_rate / this.samples_per_callback;
@@ -306,6 +306,6 @@ private:
         if (key !in KEYMAP)
             return;
         auto gba_key = to!int(KEYMAP[key]);
-        gba.memory.set_key(cast(ubyte) gba_key, pressed);
+        gba.key_input.set_key(cast(ubyte) gba_key, pressed);
     }
 }

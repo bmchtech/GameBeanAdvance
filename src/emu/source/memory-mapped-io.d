@@ -5,6 +5,7 @@ import apu;
 import dma;
 import timers;
 import interrupts;
+import keyinput;
 
 import std.stdio;
 
@@ -101,12 +102,13 @@ class MMIO {
     enum IF            = 0x4000202; //  2    R/W   Interrupt Request Flags / IRQ Acknowledge
     enum IME           = 0x4000208; //  2    R/W   Interrupt Master Enable Register
 
-    this(PPU ppu, APU apu, DMAManager dma, TimerManager timers, InterruptManager interrupt) {
+    this(PPU ppu, APU apu, DMAManager dma, TimerManager timers, InterruptManager interrupt, KeyInput keyinput) {
         this.ppu       = ppu;
         this.apu       = apu;
         this.dma       = dma;
         this.timers    = timers;
         this.interrupt = interrupt;
+        this.keyinput  = keyinput;
     }
 
     ubyte read(uint address) {
@@ -190,10 +192,10 @@ class MMIO {
             case TM3CNT_H    + 0: return timers.read_TMXCNT_H(0, 3); 
             case TM3CNT_H    + 1: return timers.read_TMXCNT_H(1, 3); 
 
-            // case KEYINPUT    + 0: return keyinput.read_KEYINPUT(); 
-            // case KEYINPUT    + 1: return keyinput.read_KEYINPUT(); 
-            // case KEYCNT      + 0: return keyinput.read_KEYCNT(); 
-            // case KEYCNT      + 1: return keyinput.read_KEYCNT(); 
+            case KEYINPUT    + 0: return keyinput.read_KEYINPUT(0); 
+            case KEYINPUT    + 1: return keyinput.read_KEYINPUT(1); 
+            case KEYCNT      + 0: return keyinput.read_KEYCNT(0); 
+            case KEYCNT      + 1: return keyinput.read_KEYCNT(1); 
 
             case IE          + 0: return interrupt.read_IE   (0); 
             case IE          + 1: return interrupt.read_IE   (1); 
@@ -392,8 +394,8 @@ class MMIO {
             case TM3CNT_H    + 0: timers.write_TMXCNT_H(0, data, 3); break;
             case TM3CNT_H    + 1: timers.write_TMXCNT_H(1, data, 3); break;
 
-            // case KEYCNT      + 0: keyinput.write_KEYCNT(0, data); break;
-            // case KEYCNT      + 1: keyinput.write_KEYCNT(1, data); break;
+            case KEYCNT      + 0: keyinput.write_KEYCNT(0, data); break;
+            case KEYCNT      + 1: keyinput.write_KEYCNT(1, data); break;
             
             case IE          + 0: interrupt.write_IE   (0, data); break;
             case IE          + 1: interrupt.write_IE   (1, data); break;
@@ -413,4 +415,5 @@ private:
     DMAManager       dma;
     TimerManager     timers;
     InterruptManager interrupt;
+    KeyInput         keyinput;
 }

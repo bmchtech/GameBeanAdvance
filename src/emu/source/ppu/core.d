@@ -89,6 +89,7 @@ public:
                       p.g == layer_backdrop.pixels[0][0].g && 
                       p.b == layer_backdrop.pixels[0][0].b)) {
                     layer_backdrop.fill(p);
+                    // writefln("Filling with %x %x %x", p.r, p.g, p.b);
                 }
                 
             }
@@ -103,7 +104,7 @@ public:
             overlay_all_layers();
             render_layer_result();
 
-            layer_backdrop      .fill_and_reset(RESET_PIXEL);
+            // layer_backdrop      .fill_and_reset(RESET_PIXEL);
             layer_backgrounds[0].fill_and_reset(RESET_PIXEL);
             layer_backgrounds[1].fill_and_reset(RESET_PIXEL);
             layer_backgrounds[2].fill_and_reset(RESET_PIXEL);
@@ -194,6 +195,7 @@ private:
     ushort dot; // the horizontal counterpart to scanlines.
     ushort scanline;
     // uint[][] pixel_priorities; // the associated priorities with each pixel.
+    
 
     static int[][] BG_TEXT_SCREENS_DIMENSIONS = [
         [1, 1],
@@ -205,6 +207,79 @@ private:
     static int[] BG_ROTATION_SCALING_TILE_DIMENSIONS = [
         16, 32, 64, 128
     ];
+
+    // a texture is a width x height set of tiles
+    struct Texture {
+        int base_tile_number;   // the tile number of the topleft tile
+        int width;              // the amount of tiles this texture has in its width
+        int height;             // the amount of tiles this texture has in its height
+        int increment_per_row;  // how much to add to the tile_number per row.
+    
+        bool scaled;
+        PMatrix p_matrix;
+        Point reference_point;
+
+        int tile_base_address;
+        int palette_base_address;
+        int palette;
+
+        bool flipped_x;
+        bool flipped_y;
+        bool double_sized;
+    }
+
+    // void render_texture_256_1(Layer layer, Texture texture, Point topleft_draw_pos) {
+    //     for (int draw_x_offset = 0; draw_x_offset < texture.width << 3; draw_x_offset++) {
+    //         Point draw_pos = Point(topleft_draw_pos.x + draw_x_offset, topleft_draw_pos.y);
+    //         if (texture.scaled) {
+    //             draw_pos = multiply_P_matrix(texture.reference_point, draw_pos, texture.p_matrix);
+    //         }
+
+    //         int tile_number = ((draw_pos.x - topleft_draw_pos.x) >> 3) + texture.increment_per_row * ((draw_pos.y - topleft_draw_pos.y) >> 3);
+
+    //         ubyte index = memory.force_read_byte(texture.tile_base_address + ((tile_number & 0x3ff) * 64) + draw_pos.y * 8 + draw_pos.x);
+    //         maybe_draw_pixel_on_layer(layer, texture.palette_base_address, index, 0, draw_pos.x, draw_pos.y, index == 0);
+    //     }
+    // }
+
+    void render_texture_16_16(Layer layer, Texture texture, Point topleft_texture_pos, Point topleft_draw_pos) {
+        int texture_bound_x_upper = texture.double_sized ? texture.width  >> 1 : texture.width;
+        int texture_bound_y_upper = texture.double_sized ? texture.height >> 1 : texture.height;
+        int texture_bound_x_lower = 0;
+        int texture_bound_y_lower = 0;
+
+        if (texture.double_sized) {
+            topleft_texture_pos.x += texture.width  >> 2;
+            topleft_texture_pos.y += texture.height >> 2;
+        }
+        for (int draw_x_offset = 0; draw_x_offset < texture.width; draw_x_offset++) {
+            Point draw_pos = Point(topleft_draw_pos.x + draw_x_offset, topleft_draw_pos.y);
+            Point texture_pos = draw_pos;
+
+            if (texture.scaled) {
+                texture_pos = multiply_P_matrix(texture.reference_point, draw_pos, texture.p_matrix);
+                if ((texture_pos.x - topleft_texture_pos.x) < texture_bound_x_lower || (texture_pos.x - topleft_texture_pos.x) >= texture_bound_x_upper ||
+                    (texture_pos.y - topleft_texture_pos.y) < texture_bound_y_lower || (texture_pos.y - topleft_texture_pos.y) >= texture_bound_y_upper)
+                    continue;
+            }
+
+            if (texture.flipped_x) texture_pos.x = (topleft_texture_pos.x + texture.width  - 1) - (texture_pos.x - topleft_texture_pos.x);
+            if (texture.flipped_y) texture_pos.y = (topleft_texture_pos.y + texture.height - 1) - (texture_pos.y - topleft_texture_pos.y);
+
+            int tile_x = ((texture_pos.x - topleft_texture_pos.x) >> 3);
+            int tile_y = ((texture_pos.y - topleft_texture_pos.y) >> 3);
+            int ofs_x  = ((texture_pos.x - topleft_texture_pos.x) & 0b111);
+            int ofs_y  = ((texture_pos.y - topleft_texture_pos.y) & 0b111);
+
+            int tile_number = tile_x + texture.increment_per_row * tile_y + texture.base_tile_number;
+
+            ubyte index = memory.force_read_byte(texture.tile_base_address + ((tile_number & 0x3ff) * 32) + ofs_y * 4 + (ofs_x / 2));
+
+            index = !(ofs_x % 2) ? index & 0xF : index >> 4;
+            index += texture.palette * 16;
+            maybe_draw_pixel_on_layer(layer, texture.palette_base_address, index, 0, draw_pos.x, draw_pos.y, (index & 0xF) == 0);
+        }
+    }
 
     int get_tile_address__text(int tile_x, int tile_y, int screens_per_row) {
         // each screen is 32 x 32 tiles. so to get the tile offset within its screen
@@ -226,26 +301,49 @@ private:
         return ((tile_y * tiles_per_row) + tile_x);
     }
 
-    void render_tile_256_1(Layer layer, int tile, int tile_base_address, int palette_base_address, int left_x, int y, bool flipped_x, bool flipped_y) {
+    void render_tile_256_1(Layer layer, int tile, int tile_base_address, int palette_base_address, int left_x, int y, int ref_x, int ref_y, PMatrix p_matrix, bool scaled, bool flipped_x, bool flipped_y) {
+        Point reference_point = Point(ref_x, ref_y);
+        
         for (int tile_x = 0; tile_x < 8; tile_x++) {
-            ubyte index = memory.force_read_byte(tile_base_address + ((tile & 0x3ff) * 64) + y * 8 + tile_x);
+            int x = left_x - tile_x;
 
             int draw_x = flipped_x ? left_x   + (7 - tile_x) : left_x + tile_x;
             int draw_y = flipped_y ? scanline + (7 -      y) : scanline;
+
+            // if (scaled) {
+            //     Point original_point = Point(x, y);
+            //     Point draw_point = multiply_P_matrix(reference_point, original_point, p_matrix);
+            //     x = draw_point.x;
+            //     y = draw_point.y;
+            // }
+
+            ubyte index = memory.force_read_byte(tile_base_address + ((tile & 0x3ff) * 64) + y * 8 + tile_x);
+            
             maybe_draw_pixel_on_layer(layer, palette_base_address, index, 0, draw_x, draw_y, index == 0);
         }
     }
 
-    void render_tile_16_16(Layer layer, int tile, int tile_base_address, int palette_base_address, int left_x, int y, bool flipped_x, bool flipped_y, int palette) {
+    void render_tile_16_16(Layer layer, int tile, int tile_base_address, int palette_base_address, int left_x, int y, int ref_x, int ref_y, PMatrix p_matrix, bool scaled, bool flipped_x, bool flipped_y, int palette) {
+        Point reference_point = Point(ref_x, ref_y);
+        
         for (int tile_x = 0; tile_x < 8; tile_x++) {
-            ubyte index = memory.force_read_byte(tile_base_address + ((tile & 0x3ff) * 32) + y * 4 + (tile_x / 2));
+            int x = left_x - tile_x;
 
             int draw_x = flipped_x ? left_x   + (7 - tile_x) : left_x + tile_x;
             int draw_y = flipped_y ? scanline + (7 -      y) : scanline;
 
+            // if (scaled) {
+            //     Point original_point = Point(x, y);
+            //     Point draw_point = multiply_P_matrix(reference_point, original_point, p_matrix);
+            //     x = draw_point.x;
+            //     y = draw_point.y;
+            // }
+
+            ubyte index = memory.force_read_byte(tile_base_address + ((tile & 0x3ff) * 32) + y * 4 + (tile_x / 2));
+
             index = (tile_x % 2 == 0) ? index & 0xF : index >> 4;
             index += palette * 16;
-            maybe_draw_pixel_on_layer(layer, palette_base_address, index, 0, draw_x, draw_y, index == 0);
+            maybe_draw_pixel_on_layer(layer, palette_base_address, index, 0, draw_x, draw_y, (index & 0xF) == 0);
         } 
     }
 
@@ -287,9 +385,16 @@ private:
             bool flipped_y = (tile >> 11) & 1;
 
             if (background.doesnt_use_color_palettes) 
-                render_tile_256_1(layer_backgrounds[background_id], tile, tile_base_address, memory.OFFSET_PALETTE_RAM, draw_x, tile_dy, flipped_x, flipped_y);
+                render_tile_256_1(layer_backgrounds[background_id], tile, tile_base_address, memory.OFFSET_PALETTE_RAM, 
+                                  draw_x, tile_dy, 
+                                  0, 0, PMatrix(0, 0, 0, 0), false,
+                                  flipped_x, flipped_y);
             else                                      
-                render_tile_16_16(layer_backgrounds[background_id], tile, tile_base_address, memory.OFFSET_PALETTE_RAM, draw_x, tile_dy, flipped_x, flipped_y, get_nth_bits(tile, 12, 16));
+                render_tile_16_16(layer_backgrounds[background_id], tile, tile_base_address, memory.OFFSET_PALETTE_RAM, 
+                                  draw_x, tile_dy, 
+                                  0, 0, PMatrix(0, 0, 0, 0), false,
+                                  flipped_x, flipped_y, 
+                                  get_nth_bits(tile, 12, 16));
         }
     }
 
@@ -329,7 +434,10 @@ private:
             int draw_x = tile_x_offset * 8 - tile_dx;
             int draw_y = scanline;
 
-            render_tile_256_1(layer_backgrounds[background_id], tile, tile_base_address, memory.OFFSET_PALETTE_RAM, draw_x, tile_dy, false, false);
+            render_tile_256_1(layer_backgrounds[background_id], tile, tile_base_address, memory.OFFSET_PALETTE_RAM, 
+                              draw_x, tile_dy, 
+                              0, 0, PMatrix(0, 0, 0, 0), false,
+                              false, false);
         }
     }
 
@@ -378,52 +486,77 @@ private:
             ubyte width  = sprite_sizes[shape][size][0] >> 3;
             ubyte height = sprite_sizes[shape][size][1] >> 3;
 
+            if (get_nth_bit(attribute_0, 9)) width  *= 2;
+            if (get_nth_bit(attribute_0, 9)) height *= 2;
+
             int topleft_x = sign_extend(cast(ubyte) get_nth_bits(attribute_1,  0,  9), 9);
             int topleft_y = get_nth_bits(attribute_0,  0,  8);
+
+            int middle_x = topleft_x + width  * 4;
+            int middle_y = topleft_y + height * 4;
 
             if (scanline < topleft_y || scanline >= topleft_y + (height << 3)) continue;
 
             uint base_tile_number = cast(ushort) get_nth_bits(attribute_2, 0, 10);
             uint priority = get_nth_bits(attribute_2, 10, 11);
 
-            int tile_number_increment_per_row = obj_character_vram_mapping ? width : 32;
+            int tile_number_increment_per_row = obj_character_vram_mapping ? (get_nth_bit(attribute_0, 9) ? width >> 1: width) : 32;
 
             bool doesnt_use_color_palettes = get_nth_bit(attribute_0, 13);
 
             bool flipped_x = get_nth_bit(attribute_1, 12);
             bool flipped_y = get_nth_bit(attribute_1, 13);
 
-            for (int tile_x_offset = 0; tile_x_offset < width; tile_x_offset++) {
+            bool scaled        = get_nth_bit(attribute_0, 8);
+            int scaling_number = get_nth_bits(attribute_1, 9, 14);
 
-                // get the tile address and read it from memory
-                // int tile_address = get_tile_address(topleft_tile_x + tile_x_offset, topleft_tile_y + tile_y_offset, tile_number_increment_per_row);
-                int tile = base_tile_number + (((scanline - topleft_y) >> 3) * tile_number_increment_per_row) + tile_x_offset;
+            PMatrix p_matrix = PMatrix(
+                convert_from_8_8f_to_double(memory.force_read_halfword(memory.OFFSET_OAM + 0x06 + 0x20 * scaling_number)),
+                convert_from_8_8f_to_double(memory.force_read_halfword(memory.OFFSET_OAM + 0x0E + 0x20 * scaling_number)),
+                convert_from_8_8f_to_double(memory.force_read_halfword(memory.OFFSET_OAM + 0x16 + 0x20 * scaling_number)),
+                convert_from_8_8f_to_double(memory.force_read_halfword(memory.OFFSET_OAM + 0x1E + 0x20 * scaling_number))
+            );
 
-                int draw_x = flipped_x ? (width  - tile_x_offset - 1) * 8 + topleft_x : tile_x_offset * 8 + topleft_x;
-                int draw_y = scanline;
+            // for (int tile_x_offset = 0; tile_x_offset < width; tile_x_offset++) {
 
-                if (doesnt_use_color_palettes) 
-                    render_tile_256_1(layer_sprites[priority], tile, memory.OFFSET_VRAM + 0x10000, memory.OFFSET_PALETTE_RAM + 0x200, draw_x, (scanline - topleft_y) & 0b111, flipped_x, flipped_y);
-                else                                      
-                    render_tile_16_16(layer_sprites[priority], tile, memory.OFFSET_VRAM + 0x10000, memory.OFFSET_PALETTE_RAM + 0x200, draw_x, (scanline - topleft_y) & 0b111, flipped_x, flipped_y, get_nth_bits(attribute_2, 12, 16));
-            }
+            //     // get the tile address and read it from memory
+            //     // int tile_address = get_tile_address(topleft_tile_x + tile_x_offset, topleft_tile_y + tile_y_offset, tile_number_increment_per_row);
+            //     int tile = base_tile_number + (((scanline - topleft_y) >> 3) * tile_number_increment_per_row) + tile_x_offset;
+
+            //     int draw_x = flipped_x ? (width  - tile_x_offset - 1) * 8 + topleft_x : tile_x_offset * 8 + topleft_x;
+            //     int draw_y = flipped_y ? (height * 8 - (scanline - topleft_y) - 1) + topleft_y: scanline;
+
+            //     if (doesnt_use_color_palettes) 
+            //         render_tile_256_1(layer_sprites[priority], tile, memory.OFFSET_VRAM + 0x10000, memory.OFFSET_PALETTE_RAM + 0x200,
+            //                           draw_x, (draw_y - topleft_y) & 0b111, 
+            //                           middle_x, middle_y, p_matrix, scaled,
+            //                           flipped_x, flipped_y);
+            //     else {           
+                    Texture texture = Texture(base_tile_number, width << 3, height << 3, tile_number_increment_per_row, 
+                                              scaled, p_matrix, Point(middle_x, middle_y),
+                                              memory.OFFSET_VRAM + 0x10000, memory.OFFSET_PALETTE_RAM + 0x200,
+                                              get_nth_bits(attribute_2, 12, 16),
+                                              flipped_x, flipped_y, get_nth_bit(attribute_0, 9));
+
+                    render_texture_16_16(layer_sprites[priority], texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline));
+                // }
+            // }
         }
     }
 
-    int scale_x_sprites(int reference_point_x, int reference_point_y, uint original_x, uint original_y, int scaling_number) {
-        double pA = convert_from_8_8f_to_double(memory.force_read_halfword(memory.OFFSET_OAM + 0x06 + 0x20 * scaling_number));
-        double pB = convert_from_8_8f_to_double(memory.force_read_halfword(memory.OFFSET_OAM + 0x0E + 0x20 * scaling_number));
-        
-        return cast(int) (pA * (original_x - reference_point_x) + pB * (reference_point_y - original_y)) + original_x;
+    struct PMatrix {
+        double pA;
+        double pB;
+        double pC;
+        double pD;
     }
 
-    int scale_y_sprites(int reference_point_x, int reference_point_y, uint original_x, uint original_y, int scaling_number) {
-        double pC = convert_from_8_8f_to_double(memory.force_read_halfword(memory.OFFSET_OAM + 0x16 + 0x20 * scaling_number));
-        double pD = convert_from_8_8f_to_double(memory.force_read_halfword(memory.OFFSET_OAM + 0x1E + 0x20 * scaling_number));
-        
-        return cast(int) (pC * (original_x - reference_point_x) + pD * (reference_point_y - original_y)) + original_x;
+    Point multiply_P_matrix(Point reference_point, Point original_point, PMatrix p_matrix) {
+        return Point(
+            cast(int) (p_matrix.pA * (original_point.x - reference_point.x) + p_matrix.pB * (original_point.y - reference_point.y)) + reference_point.x,
+            cast(int) (p_matrix.pC * (original_point.x - reference_point.x) + p_matrix.pD * (original_point.y - reference_point.y)) + reference_point.y
+        );
     }
-
     void test_render_sprites() {
         int palette = 0;
         int tile_base_address = memory.OFFSET_VRAM + 0x4000;
@@ -463,10 +596,10 @@ private:
     // }
 
     void maybe_draw_pixel_on_layer(Layer layer, uint palette_offset, uint palette_index, uint priority, uint x, uint y, bool transparent) {
-        if ((palette_index & 0xF) != 0) {
+        // if ((palette_index & 0xF) != 0) {
             // pixel_priorities[x][y] = priority;
             draw_pixel(layer, palette_offset, palette_index, priority, x, y, transparent);
-        }
+        // }
     }
 
     void draw_pixel(Layer layer, uint palette_offset, uint palette_index, uint priority, uint x, uint y, bool transparent) {
@@ -527,14 +660,15 @@ private:
         // layer_result = layer_backgrounds[1];
         Point[] changed_pixels = get_changed_pixels();
 
-        overlay_layer(layer_backdrop, layer_result, changed_pixels);
+        overlay_layer(layer_result, layer_backdrop, changed_pixels);
 
         for (int target_priority = 3; target_priority >= 0; target_priority--) {
             for (int background_id = 3; background_id >= 0; background_id--) {
                 if (backgrounds[background_id].priority == target_priority) {
                     overlay_layer(layer_result, layer_backgrounds[background_id], changed_pixels);
-                    overlay_layer(layer_result, layer_sprites    [background_id], changed_pixels);
                 }
+
+                overlay_layer(layer_result, layer_sprites[target_priority], changed_pixels);
             }
         }
     }
