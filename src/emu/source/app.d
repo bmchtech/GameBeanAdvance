@@ -4,6 +4,7 @@ import host.sdl;
 import gba;
 import commandr;
 import util;
+import keyinput;
 import std.conv;
 
 version (gperf) {
@@ -31,7 +32,9 @@ void main(string[] args) {
 
 	auto mem = new Memory();
 	writeln("init mem");
-	GBA gba = new GBA(mem);
+
+	KeyInput key_input = new KeyInput(mem);
+	GBA gba = new GBA(mem, key_input);
 	writeln("init gba");
 	gba.load_rom(a.arg("rompath"));
 	writeln("loaded rom");

@@ -198,7 +198,7 @@ class ARM7TDMI {
             // write(format("%08x |", opcode));
             
             // for (int j = 0; j < 16; j++)
-            //     write(format("%08x ", regs[j]));
+                // write(format("%08x ", regs[j]));
 
             // writeln();
         // }

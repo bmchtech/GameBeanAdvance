@@ -13,6 +13,7 @@ public {
     import timers;
     import mmio;
     import interrupts;
+    import keyinput;
 }
 
 enum CART_SIZE = 0x1000000;
@@ -43,9 +44,10 @@ public:
     DMAManager       dma_manager;
     TimerManager     timers;
     InterruptManager interrupt_manager;
+    KeyInput         key_input;
     // DirectSound  direct_sound;
 
-    this(Memory memory) {
+    this(Memory memory, KeyInput key_input) {
         this.memory            = memory;
         this.cpu               = new ARM7TDMI(memory, &bios_call);
         this.interrupt_manager = new InterruptManager(&interrupt_cpu);
@@ -53,9 +55,11 @@ public:
         this.apu               = new APU(memory, &on_fifo_empty);
         this.dma_manager       = new DMAManager(memory);
         this.timers            = new TimerManager(memory, &on_timer_overflow);
+        this.key_input         = key_input;
+
         // this.direct_sound = new DirectSound(memory);
 
-        MMIO mmio = new MMIO(ppu, apu, dma_manager, timers, interrupt_manager);
+        MMIO mmio = new MMIO(ppu, apu, dma_manager, timers, interrupt_manager, key_input);
         memory.set_mmio(mmio);
 
         this.enabled = false;
@@ -187,6 +191,18 @@ public:
                 break;
             }
 
+            case 0xA: { // ArcTan2
+                double x = ((cast(double) (cpu.regs[0] & 0x3FFF)) / 0x4000) + ((cpu.regs[0] >> 14) & 1);
+                double y = ((cast(double) (cpu.regs[1] & 0x3FFF)) / 0x4000) + ((cpu.regs[1] >> 14) & 1);
+
+                x = cpu.regs[0] >> 15 ? -x : x;
+                y = cpu.regs[1] >> 15 ? -y : y;
+
+                cpu.regs[0] = cast(ushort) (atan(y / x) * 0x8000 / PI);
+
+                cpu.cycles_remaining += 50;
+            }
+
             case 0x0B: { // CpuSet
                 uint source_address = cpu.regs[0];
                 uint dest_address   = cpu.regs[1];
@@ -247,7 +263,7 @@ public:
                     ushort scale_x = memory.read_halfword(source + 0);
                     ushort scale_y = memory.read_halfword(source + 2);
                     ushort theta   = memory.read_halfword(source + 4);
-                    // writefln("Args: %s %s %s", scale_x, scale_y, theta);
+                    writefln("Args: %s %s %s", scale_x, scale_y, theta);
                     
                     double d_scale_x = convert_from_8_8f_to_double(scale_x);
                     double d_scale_y = convert_from_8_8f_to_double(scale_y);
@@ -256,19 +272,19 @@ public:
                     // writefln("%s", theta_radians);
                     // writefln("Saving to %x with offset %x", dest, offset);
 
-                    double pA = cast(double) cos(theta_radians) /  d_scale_x;
-                    double pB = cast(double) sin(theta_radians) / -d_scale_x;
-                    double pC = cast(double) cos(theta_radians) /  d_scale_y;
-                    double pD = cast(double) sin(theta_radians) /  d_scale_y;
+                    double pA = cast(double) cos(theta_radians) *  d_scale_x;
+                    double pB = cast(double) sin(theta_radians) *  d_scale_y;
+                    double pC = cast(double) sin(theta_radians) * -d_scale_x;
+                    double pD = cast(double) cos(theta_radians) *  d_scale_y;
 
                     memory.write_halfword(dest + offset * 0, convert_from_double_to_8_8f(pA));
                     memory.write_halfword(dest + offset * 1, convert_from_double_to_8_8f(pB));
                     memory.write_halfword(dest + offset * 2, convert_from_double_to_8_8f(pC));
                     memory.write_halfword(dest + offset * 3, convert_from_double_to_8_8f(pD));
-                    // writefln("Result: %x %x %x %x", convert_from_double_to_8_8f(pA),
-                                                    // convert_from_double_to_8_8f(pB),
-                                                    // convert_from_double_to_8_8f(pC),
-                                                    // convert_from_double_to_8_8f(pD));
+                    writefln("Result: %x %x %x %x", convert_from_double_to_8_8f(pA),
+                                                    convert_from_double_to_8_8f(pB),
+                                                    convert_from_double_to_8_8f(pC),
+                                                    convert_from_double_to_8_8f(pD));
 
                     source += 6;
                     dest   += offset * 4;
