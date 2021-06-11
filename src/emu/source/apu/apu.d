@@ -93,8 +93,9 @@ private:
 
     void sample() {
         // TODO: mixing
-        short dma_sample   = 2 * cast(short) (cast(byte) dma_sounds[DirectSound.A].popped_sample);
+        short dma_sample = 2 * cast(short) (cast(byte) dma_sounds[DirectSound.A].popped_sample);
         dma_sample += bias;
+        // writefln("%x", dma_sample);
         push_to_buffer([dma_sample]);
     }
 
