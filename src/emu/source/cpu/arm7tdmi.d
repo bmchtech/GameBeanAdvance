@@ -190,6 +190,10 @@ class ARM7TDMI {
         // Logger.instance.capture_cpu();
         uint opcode = fetch();
 
+        if ((*pc & 0xFF000000) == 0) {
+            writefln("%x", *pc);
+        }
+
         // if ((*pc & 0x0F00_0000) != 0x0800_0000) {
         //     error("PC out of range!");
         // }
@@ -205,7 +209,7 @@ class ARM7TDMI {
 
         execute(opcode);
 
-        return cycles_remaining;
+        return cycles_remaining * 2;
     }
 
     uint fetch() {
@@ -302,7 +306,7 @@ class ARM7TDMI {
             return;
         }
 
-        // writefln("Interrupt! %x", *pc);
+        writefln("Interrupt! %x", *pc);
         register_file[MODE_IRQ.OFFSET + 17] = *cpsr;
 
         *cpsr |= (1 << 7); // disable interrupts for the time being...

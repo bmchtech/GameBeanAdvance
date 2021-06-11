@@ -184,7 +184,7 @@ class Memory {
         write_memory(address + 0, cast(ubyte)((value >> 0) & 0xff));
         // if ((address & 0xFFFFF000) == 0x4000000) writefln("Wrote byte %02x to %x", value, address);
         // if (address == 0x0821dbb8) writefln("Wrote byte %08x to %x", value, address);
-        if ((address & 0xFF000000) == 0x0000000) warning("ATTEMPT TO OVERWRITE BIOS!!!");
+        // if ((address & 0xFF000000) == 0x0000000) warning("ATTEMPT TO OVERWRITE BIOS!!!");
         // if ((address & 0xFF000000) == 0x6000000) writefln("Wrote byte %02x to %x", value, address);
         // writefln("Wrote byte %08x to %x", value, address);
     }
@@ -203,7 +203,7 @@ class Memory {
         write_memory(address + 1, cast(ubyte)((value >> 8) & 0xff));
         // if ((address & 0xFFFFF000) == 0x4 000000) writefln("Wrote halfword %04x to %x", value, address);
         // if (address == 0x0821dbb8) writefln("Wrote halfword %08x to %x", value, address);
-        if ((address & 0xFF000000) == 0x0000000) warning("ATTEMPT TO OVERWRITE BIOS!!!");
+        // if ((address & 0xFF000000) == 0x0000000) warning("ATTEMPT TO OVERWRITE BIOS!!!");
         // if ((address & 0xFF000000) == 0x6000000) writefln("Wrote halfword %04x to %x", value, address);
         // writefln("Wrote halfword %08x to %x", value, address);
     }
@@ -224,7 +224,7 @@ class Memory {
         write_memory(address + 3, cast(ubyte)((value >> 24) & 0xff));
         // if ((address & 0xFFFFF000) == 0x4000000) if (address != 0x040000a0) writefln("Wrote word %08x to %x", value, address);
         // if (address == 0x0821dbb8) writefln("Wrote word %08x to %x", value, address);
-        if ((address & 0xFF000000) == 0x0000000) warning("ATTEMPT TO OVERWRITE BIOS!!!");
+        // if ((address & 0xFF000000) == 0x0000000) warning("ATTEMPT TO OVERWRITE BIOS!!!");
         // if ((address & 0xFF000000) == 0x6000000) writefln("Wrote word %08x to %x", value, address);
         // writefln("Wrote word %08x to %x", value, address);
     }

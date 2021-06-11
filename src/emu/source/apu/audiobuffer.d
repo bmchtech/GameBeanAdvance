@@ -56,7 +56,6 @@ extern (C) {
                 short sample = cast(short)(audio_data.buffer[i] * 0x2A);
 
                 out_stream[i] = sample;            try {
-                //  writefln("%x", out_stream[i]);
             } catch (Exception e) {
             }
             }
