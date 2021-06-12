@@ -21,6 +21,16 @@ void nop(ushort opcode) {
     error(format("No implementation for opcode %x", opcode));
 }
 
+@LOCAL()
+uint read_word_and_rotate(Memory memory, uint address) {
+    uint value = memory.read_word(address & 0xFFFFFFFC);
+    if ((address & 0b11) == 0b01) value = ((value & 0xFF)     << 24) | (value >> 8);
+    if ((address & 0b11) == 0b10) value = ((value & 0xFFFF)   << 16) | (value >> 16);
+    if ((address & 0b11) == 0b11) value = ((value & 0xFFFFFF) << 8)  | (value >> 24);
+
+    return value;
+}
+
 // logical shift left/right
 void run_0000SABC(ushort opcode) {
     @IF(S)  //DEBUG_MESSAGE("Logical Shift Right");
@@ -558,7 +568,7 @@ void run_01001REG(ushort opcode) {
     //DEBUG_MESSAGE("PC-Relative Load");
     ubyte reg = cast(ubyte) (get_nth_bits(opcode, 8,  11));
     uint loc = (get_nth_bits(opcode, 0,  8) << 2) + ((*cpu.pc + 2) & 0xFFFFFFFC);
-    cpu.regs[reg] = cpu.memory.read_word(loc);
+    cpu.regs[reg] = read_word_and_rotate(cpu.memory, loc);
 
     cpu.cycles_remaining += 5;
 }
@@ -584,7 +594,7 @@ void run_0101LSBR(ushort opcode) {
     @IF( L  S  B) int  value = cast(uint)            (cpu.memory.read_halfword(address & 0xFFFFFFFE));
     @IF( L  S !B) uint value = cast(uint)            (cpu.memory.read_byte    (address));
     @IF( L !S  B) uint value = cast(uint)            (cpu.memory.read_halfword(address & 0xFFFFFFFE));
-    @IF( L !S !B) uint value = cast(uint)            (cpu.memory.read_word    (address & 0xFFFFFFFC));
+    @IF( L !S !B) uint value = cast(uint)            (read_word_and_rotate(cpu.memory, (address & 0xFFFFFFFC)));
     @IF(!L  S  B) int  value = cast(uint) sign_extend(cpu.memory.read_byte    (address),               8);
 
     @IF( L !S !B) if ((address & 0b11) == 0b01) value = ((value & 0xFF)     << 24) | (value >> 8);
@@ -637,7 +647,7 @@ void run_011BLOFS(ushort opcode) {
     // looking at the table above, the B bit determines the size of the store/load, and the L bit determines whether we store or load.
     @IF(!B !L) cpu.memory.write_word(cpu.regs[rn] + (immediate_value << 2), cpu.regs[rd]);
     @IF( B !L) cpu.memory.write_byte(cpu.regs[rn] + (immediate_value), cast(ubyte) (cpu.regs[rd] & 0xFF));
-    @IF(!B  L) cpu.regs[rd] = cpu.memory.read_word(cpu.regs[rn] + (immediate_value << 2));
+    @IF(!B  L) cpu.regs[rd] = read_word_and_rotate(cpu.memory, cpu.regs[rn] + (immediate_value << 2));
     @IF( B  L) cpu.regs[rd] = cpu.memory.read_byte(cpu.regs[rn] + immediate_value);
 
     cpu.cycles_remaining += 2;
@@ -672,7 +682,7 @@ void run_1001LREG(ushort opcode) {
     ubyte immediate_value = cast(ubyte) (opcode & 0xFF);
 
     // if L is set, we load. if L is not set, we store.
-    @IF(L)  cpu.regs[rd] = cpu.memory.read_word(*cpu.sp + (immediate_value << 2));
+    @IF(L)  cpu.regs[rd] = read_word_and_rotate(cpu.memory, *cpu.sp + (immediate_value << 2));
     @IF(!L) cpu.memory.write_word(*cpu.sp + (immediate_value << 2), cpu.regs[rd]);
 
     cpu.cycles_remaining += 2;
@@ -737,7 +747,7 @@ void run_1011110R(ushort opcode) {
     // loop forwards through the registers
     for (int i = 0; i < 8; i++) {
         if (get_nth_bit(register_list, i)) {
-            cpu.regs[i] = cpu.memory.read_word(*cpu.sp);
+            cpu.regs[i] = read_word_and_rotate(cpu.memory, *cpu.sp);
             *cpu.sp += 4;
             num_pushed++;
         }
@@ -745,7 +755,7 @@ void run_1011110R(ushort opcode) {
 
     // now deal with the linkage register (LR) and set it to the PC if it exists.
     if (is_lr_included) {
-        *cpu.pc = cpu.memory.read_word(*cpu.sp) & 0xFFFFFFFE;
+        *cpu.pc = read_word_and_rotate(cpu.memory, *cpu.sp) & 0xFFFFFFFE;
         *cpu.sp += 4;
     }
 
@@ -768,7 +778,7 @@ void run_11001REG(ushort opcode) {
                 update_rn = false;
             }
 
-            cpu.regs[i] = cpu.memory.read_word(current_address);
+            cpu.regs[i] = read_word_and_rotate(cpu.memory, current_address);
             current_address += 4;
             num_pushed++;
         }
@@ -822,8 +832,9 @@ void run_1101COND(ushort opcode) {
     @IF( C  O !N !D) if (!cpu.get_flag_Z() && (cpu.get_flag_N() == cpu.get_flag_V())) {
     @IF( C  O !N  D) if ( cpu.get_flag_Z() || (cpu.get_flag_N() ^  cpu.get_flag_V())) {
     @IF( C  O  N !D) if (true) { // the compiler will optimize this so it's fine
-        //DEBUG_MESSAGE("Conditional Branch Taken");
+        warning(format("Conditional Branch Taken at %x", *cpu.pc));
         *cpu.pc += (cast(byte)(opcode & 0xFF)) * 2 + 2;
+        
     } else {
         //DEBUG_MESSAGE("Conditional Branch Not Taken");
     }

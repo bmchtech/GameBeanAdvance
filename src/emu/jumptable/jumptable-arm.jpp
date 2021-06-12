@@ -423,8 +423,13 @@
 
     // S being false indicates a shift of some type
     @IF(!S !H) index = operand << shift_immediate;
-    @IF(!S  H) index = operand >> shift_immediate;
 
+    @IF(!S  H) if (shift_immediate == 0) {
+    @IF(!S  H)     index = 0;
+    @IF(!S  H) } else {
+    @IF(!S  H)     index = operand >> shift_immediate;
+    @IF(!S  H) }
+    
     // S being true but H being false indicates an arithmetic shift
     @IF( S !H) if (shift_immediate != 0) {
     @IF( S !H)     if ((operand >> 31) == 1) {
@@ -433,7 +438,7 @@
     @IF( S !H)         index = operand >> shift_immediate;
     @IF( S !H)     }
     @IF( S !H) }
-    @IF( S !H) else index = (get_nth_bit(shift_immediate, 31) == 1 ? 0xFFFFFFFF : 0x00000000);
+    @IF( S !H) else index = (get_nth_bit(operand, 31) == 1 ? 0xFFFFFFFF : 0x00000000);
 
     // S being true and H being true indicates a rotate right or a rotate right with extend.
     @IF( S  H) if (shift_immediate != 0) {
@@ -446,7 +451,6 @@
     @IF( S  H)     uint rotated_in  = get_nth_bits(operand, 1, 32); // the value that stays after the rotation
 
     @IF( S  H)     index = rotated_in | (rotated_off << 31);
-    @IF( S  H)     cpu.set_flag_C(get_nth_bit(operand, shift_immediate));
     @IF( S  H) }
 
      // P bit being set indicates offset addressing or pre-indexed addressing
@@ -742,6 +746,8 @@
 
     @IF( S) bool pc_included = get_nth_bit(opcode, 15);
 
+    bool register_in_rlist = (opcode >> get_nth_bits(opcode, 16, 20)) & 1;
+
     @IF( U) for (int i = 0;  i <  16; i++) {
     @IF(!U) for (int i = 15; i >= 0;  i--) {
 
@@ -787,7 +793,8 @@
 
     @IF(!L) cpu.cycles_remaining += num_transactions + 1;
     
-    @IF( W) cpu.regs[get_nth_bits(opcode, 16, 20)] = address;
+    @IF( W  L) if (!register_in_rlist) cpu.regs[get_nth_bits(opcode, 16, 20)] = address;
+    @IF( W !L) cpu.regs[get_nth_bits(opcode, 16, 20)] = address;
 }
 [/COMPONENT]
 
