@@ -202,7 +202,7 @@ class ARM7TDMI {
             // write(format("%08x |", opcode));
             
             // for (int j = 0; j < 16; j++)
-                // write(format("%08x ", regs[j]));
+            //     write(format("%08x ", regs[j]));
 
             // writeln();
         // }
@@ -228,7 +228,7 @@ class ARM7TDMI {
         if (get_bit_T()) {
             jumptable_thumb.jumptable[opcode >> 8](this, cast(ushort)opcode);
         } else {
-            if (should_execute((opcode & 0xF0000000) >> 28)) {
+            if (should_execute(opcode >> 28)) {
                 jumptable_arm.execute_instruction(opcode, this);
             } else {
                 cycles_remaining = 1;
