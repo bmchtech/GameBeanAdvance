@@ -71,7 +71,7 @@ CpuState produce_expected_cpu_state(char[] input_string) {
 
 void test_thumb_mode(string gba_file, string log_file, int num_instructions) {
     Memory   memory = new Memory();
-    ARM7TDMI cpu    = new ARM7TDMI(memory, null);
+    ARM7TDMI cpu    = new ARM7TDMI(memory);
 
     CpuState[] expected_output = produce_expected_cpu_states(log_file, num_instructions);
     
@@ -104,7 +104,7 @@ void test_thumb_mode(string gba_file, string log_file, int num_instructions) {
 
 void test_arm_mode(string gba_file, string log_file, int num_instructions, int start_instruction, bool b_infin_check) {
     Memory   memory = new Memory();
-    ARM7TDMI cpu    = new ARM7TDMI(memory, null);
+    ARM7TDMI cpu    = new ARM7TDMI(memory);
 
     CpuState[] expected_output = produce_expected_cpu_states(log_file, num_instructions);
     

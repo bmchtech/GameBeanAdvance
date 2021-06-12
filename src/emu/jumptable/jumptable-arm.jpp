@@ -1002,12 +1002,7 @@
 [COMPONENT SWI]
 - FORMAT:  ----1111------------------------
 {
-    // cpu.register_file[ARM7TDMI.MODE_SUPERVISOR + 14] = *pc;
-    // cpu.register_file[ARM7TDMI.MODE_SUPERVISOR + 17] = *cpsr;
-    // cpu.set_bit_T(false);
-    // TODO: DISABLE NORMAL INTERRUPTS.
-
-    cpu.bios_call(get_nth_bits(opcode, 16, 20));
+    cpu.exception(CpuException.SoftwareInterrupt);
 }
 [/COMPONENT]
 

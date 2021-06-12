@@ -2,6 +2,7 @@ module cpu.arm7tdmi;
 
 import cpu.mode;
 import cpu.state;
+import cpu.exception;
 import memory;
 import util;
 import logger;
@@ -22,11 +23,8 @@ class ARM7TDMI {
     CpuMode current_mode;
     CpuState[CPU_STATE_LOG_LENGTH] cpu_states;
 
-    void delegate(int) bios_call;
-    
-    this(Memory memory, void delegate(int) bios_call) {
+    this(Memory memory) {
         this.memory        = memory;
-        this.bios_call     = bios_call;
         this.regs          = new uint[18];
         this.register_file = new uint[18 * 6];
 
@@ -46,6 +44,59 @@ class ARM7TDMI {
         sp   = &regs[13];
         cpsr = &regs[16];
         spsr = &regs[17];
+    }
+
+    void exception(CpuException exception) {
+        // interrupts not allowed if the cpu itself has interrupts disabled.
+        if (exception == CpuException.IRQ && get_nth_bit(*cpsr, 7)) {
+            memory.write_halfword(0x4000202, memory.read_halfword(0x4000202));
+            return;
+        }
+
+        if (exception == CpuException.FIQ && get_nth_bit(*cpsr, 6)) {
+            memory.write_halfword(0x4000202, memory.read_halfword(0x4000202));
+            return;
+        }
+
+        CpuMode mode = get_mode_from_exception(exception);
+        register_file[mode.OFFSET + 14] = *pc;
+        register_file[mode.OFFSET + 17] = *cpsr;
+        set_mode(mode);
+
+        if (exception == CpuException.Reset || exception == CpuException.FIQ) {
+            *cpsr |= (1 << 6); // disable fast interrupts
+        }
+
+        *cpsr |= (1 << 7); // disable normal interrupts
+
+        *pc = get_address_from_exception(exception);
+
+        halted = false;
+        set_bit_T(false);
+    }
+
+    uint get_address_from_exception(CpuException exception) {
+        final switch (exception) {
+            case CpuException.Reset:             return 0x0000_0000;
+            case CpuException.Undefined:         return 0x0000_0004;
+            case CpuException.SoftwareInterrupt: return 0x0000_0008;
+            case CpuException.PrefetchAbort:     return 0x0000_000C;
+            case CpuException.DataAbort:         return 0x0000_0010;
+            case CpuException.IRQ:               return 0x0000_0018;
+            case CpuException.FIQ:               return 0x0000_001C;
+        }
+    }
+
+    CpuMode get_mode_from_exception(CpuException exception) {
+        final switch (exception) {
+            case CpuException.Reset:             return MODE_SUPERVISOR;
+            case CpuException.Undefined:         return MODE_UNDEFINED;
+            case CpuException.SoftwareInterrupt: return MODE_SUPERVISOR;
+            case CpuException.PrefetchAbort:     return MODE_ABORT;
+            case CpuException.DataAbort:         return MODE_ABORT;
+            case CpuException.IRQ:               return MODE_IRQ;
+            case CpuException.FIQ:               return MODE_FIQ;
+        }
     }
 
     // the register array is going to be accessed as such:
@@ -190,10 +241,6 @@ class ARM7TDMI {
         // Logger.instance.capture_cpu();
         uint opcode = fetch();
 
-        if ((*pc & 0xFF000000) == 0) {
-            writefln("%x", *pc);
-        }
-
         // if ((*pc & 0x0F00_0000) != 0x0800_0000) {
         //     error("PC out of range!");
         // }
@@ -296,27 +343,6 @@ class ARM7TDMI {
         uint result = rotated_in | (rotated_off << (32 - shift)) | (cpu.get_flag_C() << (32 - shift + 1));
         cpu.set_flag_C(get_nth_bit(value, shift));
         return result;
-    }
-
-    // interrupt_code must be one-hot
-    void interrupt() {
-        // interrupts not allowed if the cpu itself has interrupts disabled.
-        if (get_nth_bit(*cpsr, 7)) {
-            memory.write_halfword(0x4000202, memory.read_halfword(0x4000202));
-            return;
-        }
-
-        writefln("Interrupt! %x", *pc);
-        register_file[MODE_IRQ.OFFSET + 17] = *cpsr;
-
-        *cpsr |= (1 << 7); // disable interrupts for the time being...
-
-        register_file[MODE_IRQ.OFFSET + 14] = *pc;
-
-        halted = false;
-        set_mode(MODE_IRQ);
-        set_bit_T(false);
-        *pc = 0x18;
     }
 
     // an explanation of these constants is partially in here as well as cpu-mode.h

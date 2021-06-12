@@ -16,3 +16,5 @@ gamebean-emu-test-*
 
 jumptable_arm.d
 jumptable_thumb.d
+
+source/gba_bios.bin
