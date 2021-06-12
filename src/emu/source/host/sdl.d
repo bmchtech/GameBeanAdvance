@@ -298,8 +298,8 @@ private:
             SDL_Keycode.SDLK_UP : GBAKey.UP, // UP
             SDL_Keycode.SDLK_DOWN : GBAKey.DOWN, // DOWN
             SDL_Keycode.SDLK_s
-            : GBAKey.RIGHT, // R
-            SDL_Keycode.SDLK_a : GBAKey.LEFT, // L
+            : GBAKey.R, // R
+            SDL_Keycode.SDLK_a : GBAKey.L, // L
         ];
 
     void on_input(SDL_Keycode key, bool pressed) {
