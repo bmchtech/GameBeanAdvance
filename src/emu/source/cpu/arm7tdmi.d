@@ -238,7 +238,7 @@ class ARM7TDMI {
 
         cycles_remaining = 0;
 
-        // Logger.instance.capture_cpu();
+        Logger.instance.capture_cpu();
         uint opcode = fetch();
 
         // if ((*pc & 0x0F00_0000) != 0x0800_0000) {
