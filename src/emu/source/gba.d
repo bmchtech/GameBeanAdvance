@@ -49,7 +49,7 @@ public:
 
     this(Memory memory, KeyInput key_input) {
         this.memory            = memory;
-        this.cpu               = new ARM7TDMI(memory, &bios_call);
+        this.cpu               = new ARM7TDMI(memory);
         this.interrupt_manager = new InterruptManager(&interrupt_cpu);
         this.ppu               = new PPU(memory, &interrupt_manager.interrupt, &on_hblank);
         this.apu               = new APU(memory, &on_fifo_empty);
@@ -67,7 +67,7 @@ public:
         cpu.set_mode(cpu.MODE_SYSTEM);
 
         // load bios
-        ubyte[] bios = get_rom_as_bytes("source/bios.gba");
+        ubyte[] bios = get_rom_as_bytes("source/gba_bios.bin");
         cpu.memory.main[Memory.OFFSET_BIOS .. Memory.OFFSET_BIOS + bios.length] = bios[0 .. bios.length];
     }
 
@@ -113,7 +113,7 @@ public:
     }
 
     void interrupt_cpu() {
-        cpu.interrupt();
+        cpu.exception(CpuException.IRQ);
     }
 
     void on_timer_overflow(int timer_id) {

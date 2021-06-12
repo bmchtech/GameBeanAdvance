@@ -832,7 +832,7 @@ void run_1101COND(ushort opcode) {
     @IF( C  O !N !D) if (!cpu.get_flag_Z() && (cpu.get_flag_N() == cpu.get_flag_V())) {
     @IF( C  O !N  D) if ( cpu.get_flag_Z() || (cpu.get_flag_N() ^  cpu.get_flag_V())) {
     @IF( C  O  N !D) if (true) { // the compiler will optimize this so it's fine
-        warning(format("Conditional Branch Taken at %x", *cpu.pc));
+        // warning(format("Conditional Branch Taken at %x", *cpu.pc));
         *cpu.pc += (cast(byte)(opcode & 0xFF)) * 2 + 2;
         
     } else {
@@ -844,7 +844,7 @@ void run_1101COND(ushort opcode) {
 
 // software interrupt
 void run_11011111(ushort opcode) {
-    cpu.bios_call(opcode & 0xFF);
+    cpu.exception(CpuException.SoftwareInterrupt);
 }
 
 // unconditional branch
