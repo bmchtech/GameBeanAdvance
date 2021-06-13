@@ -26,17 +26,9 @@ public:
     int cycle() {
         // cycle the enabled timers
         for (int i = 0; i < 4; i++) {
-            if (timers[i].enabled) {
+            if (timers[i].enabled && !timers[i].countup) {
                 if (timers[i].cycles_till_increment == 1) {
-                    if (timers[i].timer_value == 0xFFFF) {
-                        reload_timer(i);
-                        // writefln("Reset Timer %x to %x", i, timers[i].timer_value);
-
-                        on_timer_overflow(i);
-                    } else {
-                        timers[i].timer_value++;
-                    }
-                    timers[i].cycles_till_increment = timers[i].cycles_till_increment_buffer;
+                    increment_timer(i);
                 } else {
                     timers[i].cycles_till_increment--;
                 }
@@ -54,6 +46,24 @@ public:
     void reload_timer(int timer_id) {
         timers[timer_id].timer_value           = timers[timer_id].reload_value;
         // warning(format("Reloaded timer %x to %x %x", timer_id, timers[timer_id].reload_value));
+    }
+
+    void increment_timer(int timer_id) {
+        if (timers[timer_id].timer_value == 0xFFFF) {
+            reload_timer(timer_id);
+            // writefln("Reset Timer %x to %x", i, timers[i].timer_value);
+
+            if (timer_id != 4) { // 4 total timers
+                if (timers[timer_id + 1].countup) {
+                    increment_timer(timer_id + 1);
+                }
+            }
+            on_timer_overflow(timer_id);
+        } else {
+            timers[timer_id].timer_value++;
+        }
+        
+        timers[timer_id].cycles_till_increment = timers[timer_id].cycles_till_increment_buffer;
     }
 private:
     Memory memory;
