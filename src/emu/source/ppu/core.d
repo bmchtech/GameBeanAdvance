@@ -226,6 +226,15 @@ private:
         bool double_sized;
     }
 
+    struct Window {
+        uint top;
+        uint bottom;
+        uint left;
+        uint right;
+    }
+
+    Window[2] windows;
+
     // void render_texture_256_1(Layer layer, Texture texture, Point topleft_draw_pos) {
     //     for (int draw_x_offset = 0; draw_x_offset < texture.width << 3; draw_x_offset++) {
     //         Point draw_pos = Point(topleft_draw_pos.x + draw_x_offset, topleft_draw_pos.y);
@@ -784,6 +793,31 @@ public:
             backgrounds[x].y_offset = (backgrounds[x].y_offset & 0x00FF) | (data << 8);
         }
     }
+
+    void write_WINXH(int target_byte, ubyte data, int x) {
+        if (target_byte == 0) {
+            windows[x].right = data;
+        } else { // target_byte == 1
+            windows[x].left = data;
+        }
+    }
+
+    void write_WINXV(int target_byte, ubyte data, int x) {
+        if (target_byte == 0) {
+            windows[x].bottom = data;
+        } else { // target_byte == 1
+            windows[x].top = data;
+        }
+    }
+
+    void write_WININ(int target_byte, ubyte data) {
+
+    }
+
+    void write_WINOUT(int target_byte, ubyte data) {
+        
+    }
+
     void write_BLDCNT(int target_byte, ubyte data) {
         void maybe_set_special_effect_layer(Layer layer, SpecialEffectLayer special_effect_layer, bool condition) {
             if (layer.special_effect_layer == special_effect_layer || layer.special_effect_layer == SpecialEffectLayer.None) {
@@ -888,5 +922,13 @@ public:
                        ((layer_backgrounds[2].special_effect_layer == SpecialEffectLayer.B) << 2) |
                        ((layer_backgrounds[3].special_effect_layer == SpecialEffectLayer.B) << 3);
         }
+    }
+
+    ubyte read_WININ(int target_byte) {
+        return 0;
+    }
+
+    ubyte read_WINOUT(int target_byte) {
+        return 0;
     }
 }
