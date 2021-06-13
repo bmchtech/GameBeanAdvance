@@ -43,18 +43,18 @@ public:
         int  dest_increment     = 0;
 
         switch (dma_channels[current_channel].source_addr_control) {
-            case SourceAddrMode.Increment:       source_increment =  1; break;
-            case SourceAddrMode.Decrement:       source_increment = -1; break;
-            case SourceAddrMode.Fixed:           source_increment =  0; break;
-            case SourceAddrMode.IncrementReload: source_increment =  0; break;
+            case SourceAddrMode.Increment:  source_increment =  1; break;
+            case SourceAddrMode.Decrement:  source_increment = -1; break;
+            case SourceAddrMode.Fixed:      source_increment =  0; break;
+            case SourceAddrMode.Prohibited: error("Prohibited DMA Source Addr Control Used."); break;
             default: assert(0);
         }
 
         switch (dma_channels[current_channel].dest_addr_control) {
-            case DestAddrMode.Increment:  dest_increment =  1; break;
-            case DestAddrMode.Decrement:  dest_increment = -1; break;
-            case DestAddrMode.Fixed:      dest_increment =  0; break;
-            case DestAddrMode.Prohibited: error("Prohibited DMA Dest Addr Control Used."); break;
+            case DestAddrMode.Increment:       dest_increment =  1; break;
+            case DestAddrMode.Decrement:       dest_increment = -1; break;
+            case DestAddrMode.Fixed:           dest_increment =  0; break;
+            case DestAddrMode.IncrementReload: dest_increment =  1; break;
             default: assert(0);
         }
 
@@ -103,11 +103,11 @@ public:
 
 
         if (dma_channels[current_channel].repeat) {
-            if (dma_channels[current_channel].source_addr_control == SourceAddrMode.IncrementReload) {
-                dma_channels[current_channel].source = dma_channels[current_channel].source_buf;
-            } else {
-                dma_channels[current_channel].source_buf = dma_channels[current_channel].source;
+            if (dma_channels[current_channel].dest_addr_control == DestAddrMode.IncrementReload) {
+                dma_channels[current_channel].dest = dma_channels[current_channel].dest_buf;
             }
+
+            dma_channels[current_channel].source_buf = dma_channels[current_channel].source;
 
             enable_dma(current_channel);
             // if (get_nth_bits(*dma_channels[current_channel].cnt_h, 12, 14) == 3 && (current_channel == 1 || current_channel == 2)) {
@@ -211,14 +211,14 @@ private:
         Increment       = 0b00,
         Decrement       = 0b01,
         Fixed           = 0b10,
-        IncrementReload = 0b11
+        Prohibited      = 0b11
     }
 
     enum DestAddrMode {
         Increment       = 0b00,
         Decrement       = 0b01,
         Fixed           = 0b10,
-        Prohibited      = 0b11
+        IncrementReload = 0b11
     }
 
     enum DMAStartTiming {
