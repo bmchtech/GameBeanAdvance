@@ -259,7 +259,7 @@ private:
         // by getting its high bit
         int screen_x             = (tile_x >> 5) & 1;
         int screen_y             = (tile_y >> 5) & 1;
-        int screen               = screen_x * screens_per_row + screen_y;
+        int screen               = screen_x + screen_y * screens_per_row;
 
         int tile_address_offset_within_screen = ((tile_y_within_screen * 32) + tile_x_within_screen) * 2;
         return tile_address_offset_within_screen + screen * 0x800; 
