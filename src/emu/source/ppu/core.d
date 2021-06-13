@@ -11,6 +11,11 @@ import std.typecons;
 enum SCREEN_WIDTH  = 240;
 enum SCREEN_HEIGHT = 160;
 
+struct FixedPoint {
+    int   integer;
+    ubyte fraction;
+}
+
 class PPU {
     // General information:
     // - Contains 227 scanlines, 160+ is VBLANK. VBLANK is not set on scanline 227.
@@ -233,6 +238,10 @@ private:
         uint right;
     }
 
+    double get_double_from_fixed_point(FixedPoint fp) {
+        return (cast(double) fp.integer) + ((cast(double) fp.fraction) / 256);
+    }
+
     Window[2] windows;
 
     // void render_texture_256_1(Layer layer, Texture texture, Point topleft_draw_pos) {
@@ -407,9 +416,10 @@ private:
         int tile_base_address   = memory.OFFSET_VRAM + background.character_base_block * 0x4000;
 
         // the coordinates at the topleft of the background that we are drawing
-        int topleft_x      = background.x_offset;
-        int topleft_y      = background.y_offset + scanline;
+        int topleft_x      = cast(int) (get_double_from_fixed_point(background.x_offset_rotation));
+        int topleft_y      = cast(int) (get_double_from_fixed_point(background.y_offset_rotation) + scanline);
 
+        writefln("%x %x", topleft_x, topleft_y);
         // the tile number at the topleft of the background that we are drawing
         int topleft_tile_x = topleft_x >> 3;
         int topleft_tile_y = topleft_y >> 3;
@@ -809,6 +819,55 @@ public:
             windows[x].top = data;
         }
     }
+
+    void write_BGxX(int target_byte, ubyte data, int x) {
+        final switch (target_byte) {
+            case 0b00:
+                backgrounds[x].x_offset_rotation.fraction = data;
+                break;
+            case 0b01:
+                backgrounds[x].x_offset_rotation.integer &= 0xFFFFFF00;
+                backgrounds[x].x_offset_rotation.integer |= data;
+                break;
+            case 0b10:
+                backgrounds[x].x_offset_rotation.integer &= 0xFFFF00FF;
+                backgrounds[x].x_offset_rotation.integer |= data << 8;
+                break;
+            case 0b11:
+                backgrounds[x].x_offset_rotation.integer &= 0xFFF8FFFF;
+                backgrounds[x].x_offset_rotation.integer |= (data & 0b111) << 16;
+
+                if ((data >> 3) ^ (backgrounds[x].x_offset_rotation.integer < 0)) {
+                    backgrounds[x].x_offset_rotation.integer *= -1;
+                } 
+                break;
+        }
+    }
+
+    void write_BGxY(int target_byte, ubyte data, int x) {
+        final switch (target_byte) {
+            case 0b00:
+                backgrounds[x].y_offset_rotation.fraction = data;
+                break;
+            case 0b01:
+                backgrounds[x].y_offset_rotation.integer &= 0xFFFFFF00;
+                backgrounds[x].y_offset_rotation.integer |= data;
+                break;
+            case 0b10:
+                backgrounds[x].y_offset_rotation.integer &= 0xFFFF00FF;
+                backgrounds[x].y_offset_rotation.integer |= data << 8;
+                break;
+            case 0b11:
+                backgrounds[x].y_offset_rotation.integer &= 0xFFF8FFFF;
+                backgrounds[x].y_offset_rotation.integer |= (data & 0b111) << 16;
+
+                if ((data >> 3) ^ (backgrounds[x].y_offset_rotation.integer < 0)) {
+                    backgrounds[x].y_offset_rotation.integer *= -1;
+                } 
+                break;
+        }
+    }
+
 
     void write_WININ(int target_byte, ubyte data) {
 
