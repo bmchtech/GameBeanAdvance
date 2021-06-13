@@ -106,9 +106,15 @@ public:
 
                 // are we enabling the timer?
                 if (!timers[x].enabled && get_nth_bit(data, 7)) {
+                    writefln("Enabled timer %x", x);
                     reload_timer(x);
                     timers[x].cycles_till_increment = timers[x].cycles_till_increment_buffer;
                     timers[x].enabled = true;
+                }
+
+                if (!get_nth_bit(data, 7)) {
+                    writefln("Disabled timer %x", x);
+                    timers[x].enabled = false;
                 }
 
                 break;
