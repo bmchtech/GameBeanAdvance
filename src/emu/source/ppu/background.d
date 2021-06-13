@@ -24,6 +24,9 @@ struct Background {
     ushort transformation_dmy;
     uint   reference_x;
     uint   reference_y;
+
+    FixedPoint x_offset_rotation;
+    FixedPoint y_offset_rotation; 
 }
 
 static Background[] backgrounds;
