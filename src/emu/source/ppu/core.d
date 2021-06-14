@@ -76,6 +76,9 @@ public:
         if (dot > 307) { // 960 = 240 * 4 = screen_width * cycles_per_pixel
             dot = 0;
             scanline++;
+            if (vcounter_irq_enabled && scanline == vcount_lyc) {
+                interrupt_cpu(Interrupt.LCD_VCOUNTER_MATCH);
+            }
 
             if (scanline > 227) {
                 scanline = 0;
@@ -102,7 +105,7 @@ public:
         // set vblank or hblank accordingly
         if (scanline == 160 && dot == 0) { // are we in vblank?
             vblank = true;
-            if (vblank_irq_enabled) interrupt_cpu(INTERRUPT.LCD_VBLANK);
+            if (vblank_irq_enabled) interrupt_cpu(Interrupt.LCD_VBLANK);
 
             apply_special_effects();
             overlay_all_layers();
@@ -122,7 +125,7 @@ public:
 
         if (dot == 240 && !vblank) {
             hblank = true;
-            if (hblank_irq_enabled) interrupt_cpu(INTERRUPT.LCD_HBLANK);
+            if (hblank_irq_enabled) interrupt_cpu(Interrupt.LCD_HBLANK);
             on_hblank();
         }
         
