@@ -3,7 +3,7 @@ module interrupts;
 import std.stdio;
 
 // set up the possible interrupts
-enum INTERRUPT {
+enum Interrupt {
     LCD_VBLANK           = 1,
     LCD_HBLANK           = 2,
     LCD_VCOUNTER_MATCH   = 4,
@@ -30,6 +30,7 @@ class InterruptManager {
         // writefln("Interrupt requested: %x %x %x %x", interrupt_code, interrupt_enable, interrupt_master_enable, interrupt_request);
         if (!(interrupt_master_enable & 0x1)) return; // if interrupts are disabled globally, ignore.
 
+        writefln("Received interrupt with code %x", interrupt_code);
         // is this specific interrupt enabled
         if (interrupt_enable & interrupt_code) {
             interrupt_request |= interrupt_code;

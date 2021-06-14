@@ -49,6 +49,7 @@ class ARM7TDMI {
     void exception(CpuException exception) {
         // interrupts not allowed if the cpu itself has interrupts disabled.
         if (exception == CpuException.IRQ && get_nth_bit(*cpsr, 7)) {
+            writefln("Ignoring exception.");
             memory.write_halfword(0x4000202, memory.read_halfword(0x4000202));
             return;
         }
@@ -63,11 +64,11 @@ class ARM7TDMI {
         register_file[mode.OFFSET + 17] = *cpsr;
         set_mode(mode);
 
+        *cpsr |= (1 << 7); // disable normal interrupts
+
         if (exception == CpuException.Reset || exception == CpuException.FIQ) {
             *cpsr |= (1 << 6); // disable fast interrupts
         }
-
-        *cpsr |= (1 << 7); // disable normal interrupts
 
         *pc = get_address_from_exception(exception);
 
