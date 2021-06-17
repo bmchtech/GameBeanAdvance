@@ -844,6 +844,7 @@ void run_1101COND(ushort opcode) {
 
 // software interrupt
 void run_11011111(ushort opcode) {
+    // warning(format("SWI: %x", opcode));
     cpu.exception(CpuException.SoftwareInterrupt);
 }
 

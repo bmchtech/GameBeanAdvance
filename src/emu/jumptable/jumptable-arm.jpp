@@ -1002,6 +1002,7 @@
 [COMPONENT SWI]
 - FORMAT:  ----1111------------------------
 {
+    warning(format("SWI: %x", opcode));
     cpu.exception(CpuException.SoftwareInterrupt);
 }
 [/COMPONENT]

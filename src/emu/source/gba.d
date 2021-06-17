@@ -112,8 +112,8 @@ public:
         idle_cycles += dma_manager.handle_dma();
     }
 
-    void interrupt_cpu() {
-        cpu.exception(CpuException.IRQ);
+    bool interrupt_cpu() {
+        return cpu.exception(CpuException.IRQ);
     }
 
     void on_timer_overflow(int timer_id) {

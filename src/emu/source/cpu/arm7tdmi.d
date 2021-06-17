@@ -46,21 +46,25 @@ class ARM7TDMI {
         spsr = &regs[17];
     }
 
-    void exception(CpuException exception) {
-        // interrupts not allowed if the cpu itself has interrupts disabled.
-        if (exception == CpuException.IRQ && get_nth_bit(*cpsr, 7)) {
-            writefln("Ignoring exception.");
-            memory.write_halfword(0x4000202, memory.read_halfword(0x4000202));
-            return;
-        }
+    uint num_log = 0;
 
-        if (exception == CpuException.FIQ && get_nth_bit(*cpsr, 6)) {
-            memory.write_halfword(0x4000202, memory.read_halfword(0x4000202));
-            return;
+    // returns true if the exception is accepted (or, excepted :P)
+    bool exception(CpuException exception) {
+        // interrupts not allowed if the cpu itself has interrupts disabled.
+        if ((exception == CpuException.IRQ && get_nth_bit(*cpsr, 7)) ||
+            (exception == CpuException.FIQ && get_nth_bit(*cpsr, 6))) {
+            return false;
         }
 
         CpuMode mode = get_mode_from_exception(exception);
+        // writefln("Interrupt! Setting LR to %x", *pc);
+
         register_file[mode.OFFSET + 14] = *pc;
+        if (exception == CpuException.IRQ) {
+            // num_log += 30;
+            register_file[mode.OFFSET + 14] += 4; // in a SWI, the linkage register must point to the next instruction + 4
+        }
+
         register_file[mode.OFFSET + 17] = *cpsr;
         set_mode(mode);
 
@@ -74,6 +78,8 @@ class ARM7TDMI {
 
         halted = false;
         set_bit_T(false);
+
+        return true;
     }
 
     uint get_address_from_exception(CpuException exception) {
@@ -162,6 +168,7 @@ class ARM7TDMI {
 
         // bool old_bit_T = get_bit_T();
         // set_bit_T(old_bit_T);
+        // writefln("Linkage: %x", register_file[new_mode.OFFSET + 14]);
 
         *cpsr = (*cpsr & 0xFFFFFFE0) | new_mode.CPSR_ENCODING;
         current_mode = new_mode;
@@ -240,20 +247,25 @@ class ARM7TDMI {
         cycles_remaining = 0;
 
         Logger.instance.capture_cpu();
-        uint opcode = fetch();
 
         // if ((*pc & 0x0F00_0000) != 0x0800_0000) {
         //     error("PC out of range!");
         // }
 
-        // if ((*pc & 0xFF000000) == 0x00000000) {
-            // write(format("%08x |", opcode));
-            
-            // for (int j = 0; j < 16; j++)
-            //     write(format("%08x ", regs[j]));
+        if (memory.force_read_halfword(0x4000202) && !get_nth_bit(*cpsr, 7)) {
+            exception(CpuException.IRQ);
+        }
 
-            // writeln();
-        // }
+        uint opcode = fetch();
+        if (num_log > 0) {
+            num_log--;
+            write(format("%08x |", opcode));
+            
+            for (int j = 0; j < 16; j++)
+                write(format("%08x ", regs[j]));
+
+            writeln();
+        }
 
         execute(opcode);
 
