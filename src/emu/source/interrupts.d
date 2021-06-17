@@ -21,25 +21,22 @@ enum Interrupt {
 }
 
 class InterruptManager {
-    this(void delegate() interrupt_cpu) {
+    this(bool delegate() interrupt_cpu) {
         this.interrupt_cpu = interrupt_cpu;
     }
 
     // interrupt_code must be one-hot
     void interrupt(uint interrupt_code) {
-        // writefln("Interrupt requested: %x %x %x %x", interrupt_code, interrupt_enable, interrupt_master_enable, interrupt_request);
         if (!(interrupt_master_enable & 0x1)) return; // if interrupts are disabled globally, ignore.
 
-        writefln("Received interrupt with code %x", interrupt_code);
         // is this specific interrupt enabled
         if (interrupt_enable & interrupt_code) {
             interrupt_request |= interrupt_code;
-            interrupt_cpu();
         }
     }
 
 private:
-    void delegate() interrupt_cpu;
+    bool delegate() interrupt_cpu;
 
 // .......................................................................................................................
 // .RRRRRRRRRRR...EEEEEEEEEEEE....GGGGGGGGG....IIII...SSSSSSSSS...TTTTTTTTTTTTT.EEEEEEEEEEEE..RRRRRRRRRRR....SSSSSSSSS....
@@ -78,6 +75,7 @@ public:
     }
 
     void write_IME(int target_byte, ubyte data) {
+        // writefln("Setting IME to %x %x", data, target_byte);
         final switch (target_byte) {
             case 0b0: interrupt_master_enable = data & 1; break;
             case 0b1: break;

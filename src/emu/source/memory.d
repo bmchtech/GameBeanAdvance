@@ -206,6 +206,8 @@ class Memory {
         // if ((address & 0xFF000000) == 0x0000000) warning("ATTEMPT TO OVERWRITE BIOS!!!");
         // if ((address & 0xFF000000) == 0x6000000) writefln("Wrote halfword %04x to %x", value, address);
         // writefln("Wrote halfword %08x to %x", value, address);
+
+        // if (address == 0x0500_0000) writefln("%x", value);
     }
 
     void write_word(uint address, uint value) {

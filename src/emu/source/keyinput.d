@@ -2,6 +2,8 @@ module keyinput;
 
 import memory;
 
+import std.stdio;
+
 class KeyInput {
     Memory memory;
 
@@ -22,6 +24,7 @@ class KeyInput {
     }
 
     ubyte read_KEYINPUT(int target_byte) {
+        writefln("Reading from INP at %x", target_byte);
         if (target_byte == 0) {
             return (keyinput & 0x00FF) >> 0;
         } else {

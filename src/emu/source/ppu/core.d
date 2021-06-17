@@ -72,6 +72,7 @@ public:
 
     void update_dot_and_scanline() {
         // update dot and scanline
+        // writefln("%x", scanline);
         dot++;
         if (dot > 307) { // 960 = 240 * 4 = screen_width * cycles_per_pixel
             dot = 0;
@@ -90,15 +91,6 @@ public:
                 // for (int y = 0; y < 160; y++)
                     // pixel_priorities[x][y] = 100;
                 
-                ushort backdrop_color = memory.force_read_halfword(memory.OFFSET_PALETTE_RAM);
-                Pixel p = get_pixel_from_color(backdrop_color, 0, false);
-                if (!(p.r == layer_backdrop.pixels[0][0].r && 
-                      p.g == layer_backdrop.pixels[0][0].g && 
-                      p.b == layer_backdrop.pixels[0][0].b)) {
-                    layer_backdrop.fill(p);
-                    writefln("Filling with %x %x %x", p.r, p.g, p.b);
-                }
-                
             }
         }
 
@@ -111,7 +103,7 @@ public:
             overlay_all_layers();
             render_layer_result();
 
-            // layer_backdrop      .fill_and_reset(RESET_PIXEL);
+            layer_backdrop      .fill_and_reset(RESET_PIXEL);
             layer_backgrounds[0].fill_and_reset(RESET_PIXEL);
             layer_backgrounds[1].fill_and_reset(RESET_PIXEL);
             layer_backgrounds[2].fill_and_reset(RESET_PIXEL);
@@ -123,7 +115,7 @@ public:
             layer_result        .fill_and_reset(RESET_PIXEL);
         }
 
-        if (dot == 240 && !vblank) {
+        if (dot == 240) {
             hblank = true;
             if (hblank_irq_enabled) interrupt_cpu(Interrupt.LCD_HBLANK);
             on_hblank();
@@ -147,6 +139,13 @@ public:
         render();
     }
 
+    void calculate_backdrop() {
+        ushort backdrop_color = memory.force_read_halfword(memory.OFFSET_PALETTE_RAM);
+        Pixel p = get_pixel_from_color(backdrop_color, 0, false);
+
+        for (int x = 0; x < 240; x++) layer_backdrop.pixels[x][scanline] = p;
+    }
+
     void render() {
         switch (bg_mode) {
             case 0: 
@@ -154,6 +153,7 @@ public:
                 render_background__text(1);
                 render_background__text(2);
                 render_background__text(3);
+                calculate_backdrop();
                 render_sprites();
                 break;
 
@@ -161,6 +161,7 @@ public:
                 render_background__text(0);
                 render_background__text(1);
                 render_background__rotation_scaling(2);
+                calculate_backdrop();
                 render_sprites();
                 break;
 
@@ -422,7 +423,6 @@ private:
         int topleft_x      = cast(int) (get_double_from_fixed_point(background.x_offset_rotation));
         int topleft_y      = cast(int) (get_double_from_fixed_point(background.y_offset_rotation) + scanline);
 
-        writefln("%x %x", topleft_x, topleft_y);
         // the tile number at the topleft of the background that we are drawing
         int topleft_tile_x = topleft_x >> 3;
         int topleft_tile_y = topleft_y >> 3;
@@ -688,7 +688,7 @@ private:
             }
         }
 
-        return layer_backdrop.pixels[0][0];
+        return layer_backdrop.pixels[x][y];
     }
 
     // void overlay_layer(Layer target_layer, Layer overlaying_layer) {
