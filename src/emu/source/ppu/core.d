@@ -140,7 +140,7 @@ public:
     }
 
     void calculate_backdrop() {
-        ushort backdrop_color = memory.force_read_halfword(memory.OFFSET_PALETTE_RAM);
+        ushort backdrop_color = (cast(ushort*) memory.palette_ram)[0];
         Pixel p = get_pixel_from_color(backdrop_color, 0, false);
 
         for (int x = 0; x < 240; x++) layer_backdrop.pixels[x][scanline] = p;
@@ -184,8 +184,8 @@ public:
 
                 for (uint x = 0; x < 240; x++) {
                     // the index in palette ram that we need to look into is then found in the base frame.
-                    uint index = memory.force_read_byte(base_frame_address + (x + scanline * 240));
-                    draw_pixel(layer_backgrounds[0], memory.OFFSET_PALETTE_RAM, index, 0, x, scanline, false);
+                    uint index = memory.read_byte(base_frame_address + (x + scanline * 240));
+                    draw_pixel(layer_backgrounds[0], 0, index, 0, x, scanline, false);
                 }
 
                 break;
@@ -257,7 +257,7 @@ private:
 
     //         int tile_number = ((draw_pos.x - topleft_draw_pos.x) >> 3) + texture.increment_per_row * ((draw_pos.y - topleft_draw_pos.y) >> 3);
 
-    //         ubyte index = memory.force_read_byte(texture.tile_base_address + ((tile_number & 0x3ff) * 64) + draw_pos.y * 8 + draw_pos.x);
+    //         ubyte index = memory.read_byte(texture.tile_base_address + ((tile_number & 0x3ff) * 64) + draw_pos.y * 8 + draw_pos.x);
     //         maybe_draw_pixel_on_layer(layer, texture.palette_base_address, index, 0, draw_pos.x, draw_pos.y, index == 0);
     //     }
     // }
@@ -289,15 +289,15 @@ private:
             for (int tile_x = 0; tile_x < 8; tile_x++) {
                 int x = left_x - tile_x;
 
-                int draw_x = flipped_x ? left_x   + (7 - tile_x) : left_x + tile_x;
-                int draw_y = flipped_y ? scanline + (7 -      y) : scanline;
+                int draw_x = flipped_x ? left_x    + (7 - tile_x) : left_x + tile_x;
+                int draw_y = flipped_y ? (scanline - y) + (7 - y) : scanline;
 
                 static if (bpp8) {
-                    ubyte index = memory.force_read_byte(tile_base_address + ((tile & 0x3ff) * 64) + y * 8 + tile_x);
+                    ubyte index = memory.read_byte(tile_base_address + ((tile & 0x3ff) * 64) + y * 8 + tile_x);
                 
                     maybe_draw_pixel_on_layer(layer, palette_base_address, index, 0, draw_x, draw_y, index == 0);
                 } else {
-                    ubyte index = memory.force_read_byte(tile_base_address + ((tile & 0x3ff) * 32) + y * 4 + (tile_x / 2));
+                    ubyte index = memory.read_byte(tile_base_address + ((tile & 0x3ff) * 32) + y * 4 + (tile_x / 2));
 
                     index = (tile_x % 2 == 0) ? index & 0xF : index >> 4;
                     index += palette * 16;
@@ -338,11 +338,11 @@ private:
                 int tile_number = tile_x + texture.increment_per_row * tile_y + texture.base_tile_number;
 
                 static if (bpp8) {
-                    ubyte index = memory.force_read_byte(texture.tile_base_address + ((tile_number & 0x3ff) * 64) + ofs_y * 8 + ofs_x);
+                    ubyte index = memory.read_byte(texture.tile_base_address + ((tile_number & 0x3ff) * 64) + ofs_y * 8 + ofs_x);
                     
                     maybe_draw_pixel_on_layer(layer, texture.palette_base_address, index, 0, draw_pos.x, draw_pos.y, index == 0);
                 } else {
-                    ubyte index = memory.force_read_byte(texture.tile_base_address + ((tile_number & 0x3ff) * 32) + ofs_y * 4 + (ofs_x / 2));
+                    ubyte index = memory.read_byte(texture.tile_base_address + ((tile_number & 0x3ff) * 32) + ofs_y * 4 + (ofs_x / 2));
 
                     index = !(ofs_x % 2) ? index & 0xF : index >> 4;
                     index += texture.palette * 16;
@@ -382,7 +382,7 @@ private:
 
             // get the tile address and read it from memory
             int tile_address = get_tile_address__text(topleft_tile_x + tile_x_offset, topleft_tile_y, BG_TEXT_SCREENS_DIMENSIONS[background.screen_size][0]);
-            int tile = memory.force_read_halfword(screen_base_address + tile_address);
+            int tile = memory.read_halfword(screen_base_address + tile_address);
 
             int draw_x = tile_x_offset * 8 - tile_dx;
             int draw_y = scanline;
@@ -393,14 +393,14 @@ private:
             // yes this looks stupid. and it is.
             if (background.doesnt_use_color_palettes) {
                 Render!(true).tile(
-                        layer_backgrounds[background_id], tile, tile_base_address, memory.OFFSET_PALETTE_RAM, 
+                        layer_backgrounds[background_id], tile, tile_base_address, 0, 
                         draw_x, tile_dy, 
                         0, 0, PMatrix(0, 0, 0, 0), false,
                         flipped_x, flipped_y, 
                         get_nth_bits(tile, 12, 16));
             } else {
                 Render!(false).tile(
-                        layer_backgrounds[background_id], tile, tile_base_address, memory.OFFSET_PALETTE_RAM, 
+                        layer_backgrounds[background_id], tile, tile_base_address, 0, 
                         draw_x, tile_dy, 
                         0, 0, PMatrix(0, 0, 0, 0), false,
                         flipped_x, flipped_y, 
@@ -441,12 +441,12 @@ private:
 
             // get the tile address and read it from memory
             int tile_address = get_tile_address__rotation_scaling(topleft_tile_x + tile_x_offset, topleft_tile_y, tiles_per_row);
-            int tile = memory.force_read_byte(screen_base_address + tile_address);
+            int tile = memory.read_byte(screen_base_address + tile_address);
 
             int draw_x = tile_x_offset * 8 - tile_dx;
             int draw_y = scanline;
 
-            Render!(true).tile(layer_backgrounds[background_id], tile, tile_base_address, memory.OFFSET_PALETTE_RAM, 
+            Render!(true).tile(layer_backgrounds[background_id], tile, tile_base_address, 0, 
                                draw_x, tile_dy, 
                                0, 0, PMatrix(0, 0, 0, 0), false,
                                false, false, get_nth_bits(tile, 12, 16));
@@ -482,15 +482,15 @@ private:
         for (int sprite = 127; sprite >= 0; sprite--) {
             // first of all, we need to figure out if we render this sprite in the first place.
             // so, we collect a bunch of info that'll help us figure that out.
-            ushort attribute_0 = memory.force_read_halfword(memory.OFFSET_OAM + sprite * 8 + 0);
+            ushort attribute_0 = memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 0);
 
             // is this sprite even enabled
             if (get_nth_bits(attribute_0, 8, 10) == 0b10) continue;
 
             // it is enabled? great. let's get the other two attributes and collect some
             // relevant information.
-            int attribute_1 = memory.force_read_halfword(memory.OFFSET_OAM + sprite * 8 + 2);
-            int attribute_2 = memory.force_read_halfword(memory.OFFSET_OAM + sprite * 8 + 4);
+            int attribute_1 = memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 2);
+            int attribute_2 = memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 4);
 
             int size   = get_nth_bits(attribute_1, 14, 16);
             int shape  = get_nth_bits(attribute_0, 14, 16);
@@ -523,10 +523,10 @@ private:
             int scaling_number = get_nth_bits(attribute_1, 9, 14);
 
             PMatrix p_matrix = PMatrix(
-                convert_from_8_8f_to_double(memory.force_read_halfword(memory.OFFSET_OAM + 0x06 + 0x20 * scaling_number)),
-                convert_from_8_8f_to_double(memory.force_read_halfword(memory.OFFSET_OAM + 0x0E + 0x20 * scaling_number)),
-                convert_from_8_8f_to_double(memory.force_read_halfword(memory.OFFSET_OAM + 0x16 + 0x20 * scaling_number)),
-                convert_from_8_8f_to_double(memory.force_read_halfword(memory.OFFSET_OAM + 0x1E + 0x20 * scaling_number))
+                convert_from_8_8f_to_double(memory.read_halfword(memory.OFFSET_OAM + 0x06 + 0x20 * scaling_number)),
+                convert_from_8_8f_to_double(memory.read_halfword(memory.OFFSET_OAM + 0x0E + 0x20 * scaling_number)),
+                convert_from_8_8f_to_double(memory.read_halfword(memory.OFFSET_OAM + 0x16 + 0x20 * scaling_number)),
+                convert_from_8_8f_to_double(memory.read_halfword(memory.OFFSET_OAM + 0x1E + 0x20 * scaling_number))
             );
 
             // for (int tile_x_offset = 0; tile_x_offset < width; tile_x_offset++) {
@@ -571,7 +571,7 @@ private:
             for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
                 // 16 / 16
-                ubyte index = memory.force_read_byte(tile_base_address + (tile_number * 32) + (y * 4) + (x / 2));
+                ubyte index = memory.read_byte(tile_base_address + (tile_number * 32) + (y * 4) + (x / 2));
                 index += palette * 32;
                 if (x % 2 == 0) {
                     index &= 0xF;
@@ -580,10 +580,10 @@ private:
                 }
 
                 // 256 / 256
-                // ubyte index = memory.force_read_byte(tile_base_address + (tile_number * 64) + y * 8 + x);
+                // ubyte index = memory.read_byte(tile_base_address + (tile_number * 64) + y * 8 + x);
 
                 // // and we grab two pixels from palette ram and interpret them as 15bit highcolor.
-                maybe_draw_pixel_on_layer(layer_sprites[0], memory.OFFSET_PALETTE_RAM + 0x200, index & 0xF, 0, col * 8 + x, row * 8 + y, false);
+                maybe_draw_pixel_on_layer(layer_sprites[0], 0x200, index & 0xF, 0, col * 8 + x, row * 8 + y, false);
             }    
             }
         }
@@ -607,7 +607,7 @@ private:
     }
 
     void draw_pixel(Layer layer, uint palette_offset, uint palette_index, uint priority, uint x, uint y, bool transparent) {
-        ushort color = memory.force_read_halfword(palette_offset + palette_index * 2);
+        ushort color = (cast(ushort*) memory.palette_ram)[(palette_offset + palette_index * 2) & 0x1ffff];
         // warning(format("%x", palette_offset));
         if (x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT) return;
 
