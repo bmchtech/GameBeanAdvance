@@ -13,6 +13,10 @@ import jumptable_thumb;
 import std.stdio;
 import std.conv;
 
+version (LDC) {
+    import ldc.intrinsics;
+}
+
 enum CPU_STATE_LOG_LENGTH = 1;
 
 class ARM7TDMI {
@@ -170,8 +174,14 @@ class ARM7TDMI {
         // set_bit_T(old_bit_T);
         // writefln("Linkage: %x", register_file[new_mode.OFFSET + 14]);
 
+        bool had_interrupts_disabled = (*cpsr >> 7) & 1;
+
         *cpsr = (*cpsr & 0xFFFFFFE0) | new_mode.CPSR_ENCODING;
         current_mode = new_mode;
+
+        if (had_interrupts_disabled && (*cpsr >> 7) && memory.read_halfword(0x4000202)) {
+            exception(CpuException.IRQ);
+        }
     }
 
     // reads the CPSR and figures out what the current mode is. then, it updates it using new_mode.
@@ -246,15 +256,15 @@ class ARM7TDMI {
 
         cycles_remaining = 0;
 
-        Logger.instance.capture_cpu();
+        // Logger.instance.capture_cpu();
 
         // if ((*pc & 0x0F00_0000) != 0x0800_0000) {
         //     error("PC out of range!");
         // }
 
-        if (memory.force_read_halfword(0x4000202) && !get_nth_bit(*cpsr, 7)) {
-            exception(CpuException.IRQ);
-        }
+        // if ( && !get_nth_bit(*cpsr, 7)) {
+            // exception(CpuException.IRQ);
+        // }
 
         uint opcode = fetch();
         if (num_log > 0) {
@@ -274,11 +284,11 @@ class ARM7TDMI {
 
     uint fetch() {
         if (get_bit_T()) { // thumb mode: grab a halfword and return it
-            uint opcode = cast(uint) memory.read_halfword(*pc & 0xFFFFFFFE);
+            uint opcode = cast(uint) memory.Aligned!(ushort).read(*pc & 0xFFFFFFFE);
             *pc += 2;
             return opcode;
         } else {           // arm mode: grab a word and return it
-            uint opcode = memory.read_word(*pc & 0xFFFFFFFE);
+            uint opcode = memory.Aligned!(uint).read(*pc & 0xFFFFFFFC);
             *pc += 4;
             return opcode;
         }
@@ -297,6 +307,10 @@ class ARM7TDMI {
     }
 
     bool should_execute(int cond) {
+        version (LDC) {
+            cast (void) llvm_expect(cond, 0b1110);
+        }
+
         if (cond == 0b1110) {
             return true;
         }
