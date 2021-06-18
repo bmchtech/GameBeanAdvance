@@ -68,7 +68,7 @@ public:
 
         // load bios
         ubyte[] bios = get_rom_as_bytes("source/gba_bios.bin");
-        cpu.memory.main[Memory.OFFSET_BIOS .. Memory.OFFSET_BIOS + bios.length] = bios[0 .. bios.length];
+        cpu.memory.bios[0 .. bios.length] = bios[0 .. bios.length];
     }
 
     void set_internal_sample_rate(uint sample_rate) {
@@ -77,9 +77,9 @@ public:
     
     void load_rom(string rom_name) {
         ubyte[] rom = get_rom_as_bytes(rom_name);
-        cpu.memory.main[Memory.OFFSET_ROM_1 .. Memory.OFFSET_ROM_1 + rom.length] = rom[0 .. rom.length];
+        cpu.memory.rom[0 ..  rom.length] = rom[0 .. rom.length];
 
-        *cpu.pc = memory.OFFSET_ROM_1;
+        *cpu.pc = 0x0800_0000;
         enabled = true; 
     }
  
