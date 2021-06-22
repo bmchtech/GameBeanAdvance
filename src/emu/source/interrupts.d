@@ -32,6 +32,7 @@ class InterruptManager {
         // is this specific interrupt enabled
         if (interrupt_enable & interrupt_code) {
             interrupt_request |= interrupt_code;
+            interrupt_cpu();
         }
     }
 

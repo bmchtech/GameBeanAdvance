@@ -298,39 +298,7 @@ class ARM7TDMI {
         if (get_bit_T()) {
             jumptable_thumb.jumptable[opcode >> 8](this, cast(ushort)opcode);
         } else {
-            if (should_execute(opcode >> 28)) {
-                jumptable_arm.execute_instruction(opcode, this);
-            } else {
-                cycles_remaining = 1;
-            }
-        }
-    }
-
-    bool should_execute(int cond) {
-        version (LDC) {
-            cast (void) llvm_expect(cond, 0b1110);
-        }
-
-        if (cond == 0b1110) {
-            return true;
-        }
-
-        switch (cond) {
-            case 0b0000: return  get_flag_Z(); 
-            case 0b0001: return !get_flag_Z(); 
-            case 0b0010: return  get_flag_C(); 
-            case 0b0011: return !get_flag_C(); 
-            case 0b0100: return  get_flag_N(); 
-            case 0b0101: return !get_flag_N(); 
-            case 0b0110: return  get_flag_V(); 
-            case 0b0111: return !get_flag_V(); 
-            case 0b1000: return  get_flag_C() && !get_flag_Z(); 
-            case 0b1001: return !get_flag_C() ||  get_flag_Z(); 
-            case 0b1010: return  get_flag_N() ==  get_flag_V(); 
-            case 0b1011: return  get_flag_N() !=  get_flag_V(); 
-            case 0b1100: return !get_flag_Z() &&  (get_flag_N() == get_flag_V()); 
-            case 0b1101: return  get_flag_Z() ||  (get_flag_N() != get_flag_V()); 
-            default:     return false;
+            jumptable_arm.execute_instruction(opcode, this);
         }
     }
     
