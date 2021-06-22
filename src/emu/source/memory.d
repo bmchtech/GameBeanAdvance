@@ -124,35 +124,29 @@ class Memory {
     // }
 
     ubyte read_byte(uint address) {
-        return read_memory(address);
+        return Aligned!(ubyte).read(address);
     }
 
     ushort read_halfword(uint address) {    
-        return (cast(ushort) read_memory(address + 0) << 0) | 
-               (cast(ushort) read_memory(address + 1) << 8);
+        // compiler is a dumdum, i originally had (address + 0) << 0 for clarity
+        // and for some reason the add / shl appear in the asm output
+        return Aligned!(ushort).read(address);
     }
 
     uint read_word(uint address) {
-        return (cast(uint) read_memory(address + 0) << 0)  |
-               (cast(uint) read_memory(address + 1) << 8)  |
-               (cast(uint) read_memory(address + 2) << 16) | 
-               (cast(uint) read_memory(address + 3) << 24);
+        return Aligned!(uint).read(address);
     }
 
     void write_byte(uint address, ubyte value) {
-        write_memory(address, value);
+        return Aligned!(ubyte).write(address, value);
     }
 
     void write_halfword(uint address, ushort value) {
-        write_memory(address + 0, cast(ubyte)((value >> 0) & 0xff));
-        write_memory(address + 1, cast(ubyte)((value >> 8) & 0xff));
+        return Aligned!(ushort).write(address, value);
     }
 
     void write_word(uint address, uint value) {
-        write_memory(address + 0, cast(ubyte)((value >> 0)  & 0xff));
-        write_memory(address + 1, cast(ubyte)((value >> 8)  & 0xff));
-        write_memory(address + 2, cast(ubyte)((value >> 16) & 0xff));
-        write_memory(address + 3, cast(ubyte)((value >> 24) & 0xff));
+        return Aligned!(uint).write(address, value);
     }
 
     ubyte read_memory(uint address) {
@@ -195,65 +189,55 @@ class Memory {
     // don't use for mmio yet
     template Aligned(T) {
         T read(uint address) {
-                 static if (is(T == uint))   uint shift = 2;
-            else static if (is(T == ushort)) uint shift = 1;
-            else static if (is(T == ubyte))  uint shift = 0;
-            else static assert(0, "Invalid read type given: expected uint, ushort, or ubyte");
-
             switch ((address >> 24) & 0xF) {
-                case REGION_BIOS:         return ((cast(T*) bios       ) [(address & (SIZE_BIOS        - 1)) >> shift]); // incorrect - implement properly later
+                case REGION_BIOS:         return *((cast(T*) (&bios[0]        + (address & (SIZE_BIOS        - 1))))); // incorrect - implement properly later
                 case 0x1:                 return 0x0; // nothing is mapped here
-                case REGION_WRAM_BOARD:   return ((cast(T*) wram_board ) [(address & (SIZE_WRAM_BOARD  - 1)) >> shift]);
-                case REGION_WRAM_CHIP:    return ((cast(T*) wram_chip  ) [(address & (SIZE_WRAM_CHIP   - 1)) >> shift]);
-                case REGION_PALETTE_RAM:  return ((cast(T*) palette_ram) [(address & (SIZE_PALETTE_RAM - 1)) >> shift]);
-                case REGION_VRAM:         return ((cast(T*) vram       ) [(address & (SIZE_VRAM        - 1)) >> shift]);
-                case REGION_OAM:          return ((cast(T*) oam        ) [(address & (SIZE_OAM         - 1)) >> shift]);
+                case REGION_WRAM_BOARD:   return *((cast(T*) (&wram_board[0]  + (address & (SIZE_WRAM_BOARD  - 1)))));
+                case REGION_WRAM_CHIP:    return *((cast(T*) (&wram_chip[0]   + (address & (SIZE_WRAM_CHIP   - 1)))));
+                case REGION_PALETTE_RAM:  return *((cast(T*) (&palette_ram[0] + (address & (SIZE_PALETTE_RAM - 1)))));
+                case REGION_VRAM:         return *((cast(T*) (&vram[0]        + (address & (SIZE_VRAM        - 1)))));
+                case REGION_OAM:          return *((cast(T*) (&oam[0]         + (address & (SIZE_OAM         - 1)))));
 
-                case REGION_IO_REGISTERS: 
-                    // static if (is(T == uint)) return 
-                    //     (cast(uint) mmio.read(address + 0) << 0)  |
-                    //     (cast(uint) mmio.read(address + 1) << 8)  |
-                    //     (cast(uint) mmio.read(address + 2) << 16) | 
-                    //     (cast(uint) mmio.read(address + 3) << 24);
-                    // static if (is(T == ushort)) return 
-                    //     (cast(ushort) mmio.read(address + 0) << 0)  |
-                    //     (cast(ushort) mmio.read(address + 1) << 8);
-                    // static if (is(T == ubyte))  return mmio.read(address);
+                case REGION_IO_REGISTERS:
+                    static if (is(T == uint)) return 
+                        (cast(uint) mmio.read(address + 0) << 0)  |
+                        (cast(uint) mmio.read(address + 1) << 8)  |
+                        (cast(uint) mmio.read(address + 2) << 16) | 
+                        (cast(uint) mmio.read(address + 3) << 24);
+                    static if (is(T == ushort)) return 
+                        (cast(ushort) mmio.read(address + 0) << 0)  |
+                        (cast(ushort) mmio.read(address + 1) << 8);
+                    static if (is(T == ubyte))  return mmio.read(address);
 
                 default:
                     // this is on its own because when waitstates are implemented, this is going
                     // to get a lot more complicated
-                    return (cast(T*) rom) [(address & (SIZE_ROM - 1)) >> shift];
+                    return *((cast(T*) (&rom[0] + (address & (SIZE_ROM - 1)))));
             }
         }
 
         void write(uint address, T value) {
-                 static if (is(T == uint))   uint shift = 2;
-            else static if (is(T == ushort)) uint shift = 1;
-            else static if (is(T == ubyte))  uint shift = 0;
-            else static assert(0, "Invalid read type given: expected uint, ushort, or ubyte");
-
             switch ((address >> 24) & 0xF) {
                 case REGION_BIOS:         break; // incorrect - implement properly later
                 case 0x1:                 break; // nothing is mapped here
-                case REGION_WRAM_BOARD:   ((cast(T*) wram_board ) [(address & (SIZE_WRAM_BOARD  - 1)) >> shift]) = value; break;
-                case REGION_WRAM_CHIP:    ((cast(T*) wram_chip  ) [(address & (SIZE_WRAM_CHIP   - 1)) >> shift]) = value; break;
-                case REGION_PALETTE_RAM:  ((cast(T*) palette_ram) [(address & (SIZE_PALETTE_RAM - 1)) >> shift]) = value; break;
-                case REGION_VRAM:         ((cast(T*) vram       ) [(address & (SIZE_VRAM        - 1)) >> shift]) = value; break;
-                case REGION_OAM:          ((cast(T*) oam        ) [(address & (SIZE_OAM         - 1)) >> shift]) = value; break;
+                case REGION_WRAM_BOARD:   *(cast(T*) (&wram_board[0]  + (address & (SIZE_WRAM_BOARD  - 1)))) = value; break;
+                case REGION_WRAM_CHIP:    *(cast(T*) (&wram_chip[0]   + (address & (SIZE_WRAM_CHIP   - 1)))) = value; break;
+                case REGION_PALETTE_RAM:  *(cast(T*) (&palette_ram[0] + (address & (SIZE_PALETTE_RAM - 1)))) = value; break;
+                case REGION_VRAM:         *(cast(T*) (&vram[0]        + (address & (SIZE_VRAM        - 1)))) = value; break;
+                case REGION_OAM:          *(cast(T*) (&oam[0]         + (address & (SIZE_OAM         - 1)))) = value; break;
 
                 case REGION_IO_REGISTERS:
-                    // static if (is(T == uint)) {  
-                    //     mmio.write(address | 0, (value >>  0) & 0xFF);
-                    //     mmio.write(address | 1, (value >>  8) & 0xFF);
-                    //     mmio.write(address | 2, (value >> 16) & 0xFF); 
-                    //     mmio.write(address | 3, (value >> 24) & 0xFF);
-                    // } else static if (is(T == ushort)) { 
-                    //     mmio.write(address | 0, (value >>  0) & 0xFF);
-                    //     mmio.write(address | 1, (value >>  8) & 0xFF);
-                    // } else static if (is(T == ubyte))  {
-                    //     mmio.write(address, value);
-                    // }
+                    static if (is(T == uint)) {  
+                        mmio.write(address + 0, (value >>  0) & 0xFF);
+                        mmio.write(address + 1, (value >>  8) & 0xFF);
+                        mmio.write(address + 2, (value >> 16) & 0xFF); 
+                        mmio.write(address + 3, (value >> 24) & 0xFF);
+                    } else static if (is(T == ushort)) { 
+                        mmio.write(address + 0, (value >>  0) & 0xFF);
+                        mmio.write(address + 1, (value >>  8) & 0xFF);
+                    } else static if (is(T == ubyte))  {
+                        mmio.write(address, value);
+                    }
 
                     break;
 

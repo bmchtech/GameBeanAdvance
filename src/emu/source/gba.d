@@ -95,11 +95,6 @@ public:
         apu.cycle();
         
         ppu.cycle();
-
-        timers.cycle();
-        timers.cycle();
-        timers.cycle();
-        timers.cycle();
     }
 
     void maybe_cycle_cpu() {
@@ -110,6 +105,7 @@ public:
 
         idle_cycles += cpu.cycle();
         idle_cycles += dma_manager.handle_dma();
+        timers.cycle(idle_cycles);
     }
 
     bool interrupt_cpu() {

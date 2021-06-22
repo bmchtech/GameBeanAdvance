@@ -607,7 +607,7 @@ private:
     }
 
     void draw_pixel(Layer layer, uint palette_offset, uint palette_index, uint priority, uint x, uint y, bool transparent) {
-        ushort color = (cast(ushort*) memory.palette_ram)[(palette_offset + palette_index * 2) & 0x1ffff];
+        ushort color = (cast(ushort*) memory.palette_ram)[((palette_offset + palette_index * 2) & 0x1ffff) >> 1];
         // warning(format("%x", palette_offset));
         if (x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT) return;
 

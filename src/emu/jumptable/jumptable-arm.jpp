@@ -14,6 +14,7 @@
 [RULE ADD_ADC]
 - INCLUDE: ----00-010----------------------
 - EXCLUDE: ------0-----------------1--1----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: ADDRESSING_MODE_1
 - COMPONENT: ADD_ADC
 - COMPONENT: DATA_WRITEBACK
@@ -22,6 +23,7 @@
 [RULE AND]
 - INCLUDE: ----00-0000---------------------
 - EXCLUDE: ------0-----------------1--1----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: ADDRESSING_MODE_1
 - COMPONENT: AND
 - COMPONENT: DATA_WRITEBACK
@@ -30,6 +32,7 @@
 [RULE BIC]
 - INCLUDE: ----00-1110---------------------
 - EXCLUDE: ------0-----------------1--1----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: ADDRESSING_MODE_1
 - COMPONENT: BIC
 - COMPONENT: DATA_WRITEBACK
@@ -37,17 +40,20 @@
 
 [RULE B_BL]
 - INCLUDE: ----101-------------------------
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: B_BL
 [/RULE]
 
 [RULE BX]
 - INCLUDE: ----00010010------------0001----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: BX
 [/RULE]
 
 [RULE CMN]
 - INCLUDE: ----00-10111--------------------
 - EXCLUDE: ------0-----------------1--1----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: ADDRESSING_MODE_1
 - COMPONENT: CMN
 [/RULE]
@@ -55,6 +61,7 @@
 [RULE CMP]
 - INCLUDE: ----00-10101--------------------
 - EXCLUDE: ------0-----------------1--1----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: ADDRESSING_MODE_1
 - COMPONENT: CMP
 [/RULE]
@@ -62,6 +69,7 @@
 [RULE EOR]
 - INCLUDE: ----00-0001---------------------
 - EXCLUDE: ------0-----------------1--1----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: ADDRESSING_MODE_1
 - COMPONENT: EOR
 - COMPONENT: DATA_WRITEBACK
@@ -69,11 +77,13 @@
 
 [RULE LDM_STM]
 - INCLUDE: ----100-------------------------
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: LDM_STM
 [/RULE]
 
 [RULE LDR]
 - INCLUDE: ----01---0-1--------------------
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: ADDRESSING_MODE_2
 - COMPONENT: LDR
 - COMPONENT: ADDR_WRITEBACK
@@ -81,6 +91,7 @@
 
 [RULE LDRB]
 - INCLUDE: ----01---1-1--------------------
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: ADDRESSING_MODE_2
 - COMPONENT: LDRB
 - COMPONENT: ADDR_WRITEBACK
@@ -88,6 +99,7 @@
 
 [RULE LDRH]
 - INCLUDE: ----000----1------------1011----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: ADDRESSING_MODE_3
 - COMPONENT: LDRH
 - COMPONENT: ADDR_WRITEBACK
@@ -95,6 +107,7 @@
 
 [RULE LDRSB]
 - INCLUDE: ----000----1------------1101----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: ADDRESSING_MODE_3
 - COMPONENT: LDRSB
 - COMPONENT: ADDR_WRITEBACK
@@ -102,6 +115,7 @@
 
 [RULE LDRSH]
 - INCLUDE: ----000----1------------1111----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: ADDRESSING_MODE_3
 - COMPONENT: LDRSH
 - COMPONENT: ADDR_WRITEBACK
@@ -109,12 +123,14 @@
 
 [RULE MUL_MLA]
 - INCLUDE: ----000000--------------1001----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: MUL_MLA
 [/RULE]
 
 [RULE MOV_MVN]
 - INCLUDE: ----00-11-1---------------------
 - EXCLUDE: ------0-----------------1--1----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: ADDRESSING_MODE_1
 - COMPONENT: MOV_MVN
 - COMPONENT: DATA_WRITEBACK
@@ -122,22 +138,26 @@
 
 [RULE MRS]
 - INCLUDE: ----00010-00------------0000----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: MRS
 [/RULE]
 
 [RULE MSR_IMM]
 - INCLUDE: ----00110-10--------------------
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: MSR
 [/RULE]
 
 [RULE MSR_REG]
 - INCLUDE: ----00010-10--------------------
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: MSR
 [/RULE]
 
 [RULE ORR]
 - INCLUDE: ----00-1100---------------------
 - EXCLUDE: ------0-----------------1--1----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: ADDRESSING_MODE_1
 - COMPONENT: ORR
 - COMPONENT: DATA_WRITEBACK
@@ -146,6 +166,7 @@
 [RULE RSB_RSC_SBC_SUB]
 - INCLUDE: ----00-0-1----------------------
 - EXCLUDE: ------0-----------------1--1----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: ADDRESSING_MODE_1
 - COMPONENT: RSB_RSC_SBC_SUB
 - COMPONENT: DATA_WRITEBACK
@@ -153,16 +174,19 @@
 
 [RULE SMLAL]
 - INCLUDE: ----0000111-------------1001----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: SMLAL
 [/RULE]
 
 [RULE SMULL]
 - INCLUDE: ----0000110-------------1001----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: SMULL
 [/RULE]
 
 [RULE STR]
 - INCLUDE: ----01---0-0--------------------
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: ADDRESSING_MODE_2
 - COMPONENT: STR
 - COMPONENT: ADDR_WRITEBACK
@@ -170,6 +194,7 @@
 
 [RULE STRB]
 - INCLUDE: ----01---1-0--------------------
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: ADDRESSING_MODE_2
 - COMPONENT: STRB
 - COMPONENT: ADDR_WRITEBACK
@@ -177,6 +202,7 @@
 
 [RULE STRH]
 - INCLUDE: ----000----0------------1011----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: ADDRESSING_MODE_3
 - COMPONENT: STRH
 - COMPONENT: ADDR_WRITEBACK
@@ -184,22 +210,26 @@
 
 [RULE SWI]
 - INCLUDE: ----1111------------------------
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: SWI
 [/RULE]
 
 [RULE SWP]
 - INCLUDE: ----00010000------------1001----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: SWP
 [/RULE]
 
 [RULE SWPB]
 - INCLUDE: ----00010100------------1001----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: SWPB
 [/RULE]
 
 [RULE TEQ]
 - INCLUDE: ----00-1001---------------------
 - EXCLUDE: ------0-----------------1--1----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: ADDRESSING_MODE_1
 - COMPONENT: EOR
 [/RULE]
@@ -207,19 +237,44 @@
 [RULE TST]
 - INCLUDE: ----00-1000---------------------
 - EXCLUDE: ------0-----------------1--1----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: ADDRESSING_MODE_1
 - COMPONENT: AND
 [/RULE]
 
 [RULE UMLAL]
 - INCLUDE: ----0000101-------------1001----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: UMLAL
 [/RULE]
 
 [RULE UMULL]
 - INCLUDE: ----0000100-------------1001----
+- COMPONENT: INSTRUCTION_CONDITION
 - COMPONENT: UMULL
 [/RULE]
+
+[COMPONENT INSTRUCTION_CONDITION]
+- FORMAT:  COND----------------------------
+{
+    @IF(!C !O !N !D) if (!cpu.get_flag_Z()) return;
+    @IF(!C !O !N  D) if ( cpu.get_flag_Z()) return;
+    @IF(!C !O  N !D) if (!cpu.get_flag_C()) return;
+    @IF(!C !O  N  D) if ( cpu.get_flag_C()) return;
+    @IF(!C  O !N !D) if (!cpu.get_flag_N()) return;
+    @IF(!C  O !N  D) if ( cpu.get_flag_N()) return;
+    @IF(!C  O  N !D) if (!cpu.get_flag_V()) return;
+    @IF(!C  O  N  D) if ( cpu.get_flag_V()) return;
+    @IF( C !O !N !D) if (!cpu.get_flag_C() ||  cpu.get_flag_Z()) return;
+    @IF( C !O !N  D) if ( cpu.get_flag_C() && !cpu.get_flag_Z()) return;
+    @IF( C !O  N !D) if ( cpu.get_flag_N() !=  cpu.get_flag_V()) return;
+    @IF( C !O  N  D) if ( cpu.get_flag_N() ==  cpu.get_flag_V()) return;
+    @IF( C  O !N !D) if ( cpu.get_flag_Z() || (cpu.get_flag_N() != cpu.get_flag_V())) return;
+    @IF( C  O !N  D) if (!cpu.get_flag_Z() && (cpu.get_flag_N() == cpu.get_flag_V())) return;
+    // no checks in the true case (COND == 0xE)
+    @IF( C  O  N  D) error("Opcode has COND == 0xF");
+}
+[/COMPONENT]
 
 [COMPONENT ADDRESSING_MODE_1]
 - FORMAT:  ----001-------------------------

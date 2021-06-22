@@ -23,14 +23,14 @@ public:
         ];
     }
 
-    int cycle() {
+    int cycle(int n) {
         // cycle the enabled timers
         for (int i = 0; i < 4; i++) {
             if (timers[i].enabled && !timers[i].countup) {
-                if (timers[i].cycles_till_increment == 1) {
+                if (timers[i].cycles_till_increment < 1) {
                     increment_timer(i);
                 } else {
-                    timers[i].cycles_till_increment--;
+                    timers[i].cycles_till_increment -= n;
                 }
             }
         }
@@ -74,7 +74,7 @@ private:
     struct Timer {
         ushort  reload_value;
         ushort  timer_value;
-        uint    cycles_till_increment;
+        int     cycles_till_increment;
         uint    cycles_till_increment_buffer;
         uint    cycles_till_increment_buffer_index;
         bool    enabled;
