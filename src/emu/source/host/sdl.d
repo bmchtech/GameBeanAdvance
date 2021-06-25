@@ -111,7 +111,7 @@ class GameBeanSDLHost {
         running = true;
 
         int num_batches       = this.sample_rate / this.samples_per_callback;
-        enum cycles_per_second = 16_780_000 / 4;
+        enum cycles_per_second = 16_780_000;
         this.cycles_per_batch  = 2 * cycles_per_second / num_batches;
         writefln("%d batches per second, %d batches per cycle.", num_batches, cycles_per_batch);
         writefln("sample rate: %d, samples_per_callback: %d", sample_rate, samples_per_callback);
@@ -174,9 +174,7 @@ class GameBeanSDLHost {
             audio_data.mutex.lock();
                 if (audio_data.buffer_offset < samples_per_callback * 3) {
                     // writefln("Cycling");
-                    for (int i = 0; i < cycles_per_batch; i++) {
-                        gba.cycle();
-                    }
+                    gba.cycle_at_least_n_times(cycles_per_batch);
                     // gba_batch_enable = false;
                     cycles_since_last_log += cycles_per_batch;
                     // writefln("Cycled");

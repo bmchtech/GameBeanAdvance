@@ -3,6 +3,7 @@ module apu.apu;
 import apu;
 import memory;
 import util;
+import scheduler;
 
 import std.stdio;
 
@@ -15,7 +16,9 @@ class APU {
 
 public:
 
-    this(Memory memory, void delegate(DirectSound) on_fifo_empty) {
+    Scheduler scheduler;
+
+    this(Memory memory, Scheduler scheduler, void delegate(DirectSound) on_fifo_empty) {
         dma_sounds = [
             DMASound(0, false, false, 0, 0, new Fifo!ubyte(FIFO_SIZE, 0)),
             DMASound(0, false, false, 0, 0, new Fifo!ubyte(FIFO_SIZE, 0))
@@ -29,16 +32,8 @@ public:
         // this.audio_buffer            = new ubyte[sample_size * 8];
         this.audio_buffer_size       = 0;
         this.bias                    = 0x200;
-    }
 
-    void cycle() {
-        if (cycles_till_next_sample > 1) {
-            cycles_till_next_sample--;
-            return;
-        }
-
-        cycles_till_next_sample = sample_rate;
-        sample();
+        this.scheduler = scheduler;
     }
 
     void on_timer_overflow(int timer_id) {
@@ -52,6 +47,7 @@ public:
 
     void set_internal_sample_rate(uint sample_rate) {
         this.sample_rate = sample_rate;
+        scheduler.add_event(&sample, sample_rate);
     }
 
 private:
@@ -96,7 +92,9 @@ private:
         short dma_sample = 2 * cast(short) (cast(byte) dma_sounds[DirectSound.A].popped_sample);
         dma_sample += bias;
         // writefln("%x", dma_sample);
-        push_to_buffer([dma_sample]);
+        // push_to_buffer([dma_sample]);
+
+        scheduler.add_event(&sample, sample_rate);
     }
 
 // .......................................................................................................................

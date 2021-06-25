@@ -1,40 +1,90 @@
 module scheduler;
 
-import std.container : DList;
+import util;
 
-struct ScheduleItem {
-    void delegate() callback();
+import std.stdio;
+
+struct Event {
+    void delegate() callback;
     int             num_cycles;
+
+    Event*          next;
 }
 
 class Scheduler {
-    DList!(ScheduleItem) schedule;
+    Event* head;
 
     this() {
-        schedule = new DList!(ScheduleItem);
+        head = null;
     }
 
-    void add_schedule_item(void delegate() callback, int num_cycles) {
-        ScheduleItem current_item = schedule.front();
+    void add_event(void delegate() callback, int num_cycles) {
+        // writefln("Adding an event %d cycles away", num_cycles);
 
-        while (current_item != null) {
-            if (num_cycles >= current_item.num_cycles) {
-                num_cycles -= current_item(num_cycles);
+        Event* event = new Event(callback, num_cycles, null);
+        if (head == null) {
+            head = event;
+
+            print_schedule();
+            return;
+        }
+
+        Event* ptr  = head;
+        Event* after = null;
+
+        while (ptr != null) {
+            if (event.num_cycles > ptr.num_cycles) {
+                event.num_cycles -= ptr.num_cycles;
+                after = ptr;
             } else {
                 break;
             }
+
+            ptr = ptr.next;
         }
 
-        ScheduleItem new_item = ScheduleItem(callback, num_cycles);
-
-        if (current_item == null) {
-            schedule.insertAfter(schedule.back(), new_item);
+        if (after == null) {
+            insert_before_head(event);
         } else {
-            schedule.insertBefore(current_item, new_item);
+            insert_after(after, event);
+        }
+
+        // print_schedule();
+    }
+
+    void print_schedule() {
+        writefln("Schedule:");
+        Event* ptr = head;
+        while (ptr != null) {
+            writefln("%d", ptr.num_cycles);
+            ptr = ptr.next;
         }
     }
 
-    ScheduleItem remove_schedule_item() {
-        return schedule.removeFront();
+    void insert_before_head(Event* event) {
+        head.num_cycles -= event.num_cycles;
+
+        event.next = head;
+        head = event;
+    }
+
+    void insert_after(Event* after, Event* event) {
+        if (after.next == null) {
+            after.next = event;
+        } else {
+            event.next = after.next;
+            after.next = event;
+
+            event.next.num_cycles -= event.num_cycles;
+        }
+    }
+
+    Event remove_schedule_item() {
+        if (head == null) error("Scheduler ran dry.");
+
+        Event* ret = head;
+        head = head.next;
+
+        return *ret;
     }
 }

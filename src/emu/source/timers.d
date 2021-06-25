@@ -6,12 +6,17 @@ import util;
 import std.stdio;
 
 import apu;
+import gba;
+import scheduler;
 
 class TimerManager {
 public:
     void delegate(int) on_timer_overflow;
 
-    this(Memory memory, void delegate(int) on_timer_overflow) {
+    Scheduler scheduler;
+    GBA gba;
+
+    this(Memory memory, Scheduler scheduler, GBA gba, void delegate(int) on_timer_overflow) {
         this.memory            = memory;
         this.on_timer_overflow = on_timer_overflow;
 
@@ -21,65 +26,51 @@ public:
             Timer(0, 0, 0, 0, false),
             Timer(0, 0, 0, 0, false)
         ];
-    }
 
-    int cycle(int n) {
-        // cycle the enabled timers
-        for (int i = 0; i < 4; i++) {
-            if (timers[i].enabled && !timers[i].countup) {
-                if (timers[i].cycles_till_increment < 1) {
-                    increment_timer(i);
-                } else {
-                    timers[i].cycles_till_increment -= n;
-                }
-            }
-        }
-
-        // // overwrite the reload values
-        // for (int i = 0; i < 4; i++) {
-        //     *timers[i].cnt_l = timers[i].timer_value;
-        // }
-
-        return 0;
+        this.scheduler = scheduler;
+        this.gba       = gba;
     }
 
     void reload_timer(int timer_id) {
-        timers[timer_id].timer_value           = timers[timer_id].reload_value;
-        // warning(format("Reloaded timer %x to %x %x", timer_id, timers[timer_id].reload_value));
+        if (!timers[timer_id].enabled) return;
+
+        timers[timer_id].value = timers[timer_id].reload_value;
+        scheduler.add_event(() => timer_overflow(timer_id), (0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment);
+
+        timers[timer_id].timestamp = gba.num_cycles;
     }
 
-    void increment_timer(int timer_id) {
-        if (timers[timer_id].timer_value == 0xFFFF) {
-            reload_timer(timer_id);
-            // writefln("Reset Timer %x to %x", i, timers[i].timer_value);
-
-            if (timer_id != 4) { // 4 total timers
-                if (timers[timer_id + 1].countup) {
-                    increment_timer(timer_id + 1);
-                }
-            }
-            on_timer_overflow(timer_id);
-        } else {
-            timers[timer_id].timer_value++;
-        }
-        
-        timers[timer_id].cycles_till_increment = timers[timer_id].cycles_till_increment_buffer;
+    void timer_overflow(int x) {
+        reload_timer(x);
+        on_timer_overflow(x);  
     }
+
+    ushort calculate_timer_value(int x) {
+        // am i enabled? if not just return without calculation
+        if (!timers[x].enabled) return timers[x].value;
+
+        // how many clock cycles has it been since we've been enabled?
+        ulong cycles_elapsed = timers[x].timestamp - gba.num_cycles;
+
+        // use timer increments to get the relevant bits, and mod by the reload value
+        return cast(ushort) (cycles_elapsed >> timers[x].increment);
+    }
+    
 private:
     Memory memory;
     Timer[4] timers;
 
-    uint[4] increments = [1, 64, 256, 1024];
+    uint[4] increment_shifts = [1, 6, 8, 10];
 
     struct Timer {
         ushort  reload_value;
-        ushort  timer_value;
-        int     cycles_till_increment;
-        uint    cycles_till_increment_buffer;
-        uint    cycles_till_increment_buffer_index;
+        ushort  value;
+        int     increment;
         bool    enabled;
         bool    countup;
         bool    irq_enable;
+
+        ulong   timestamp;
     }
 
     //.......................................................................................................................
@@ -109,22 +100,21 @@ public:
     void write_TMXCNT_H(int target_byte, ubyte data, int x) {
         final switch (target_byte) {
             case 0b0: 
-                timers[x].cycles_till_increment_buffer       = increments[get_nth_bits(data, 0, 2)];
-                timers[x].cycles_till_increment_buffer_index = get_nth_bits(data, 0, 2);
-                timers[x].countup                            = get_nth_bit (data, 2);
-                timers[x].irq_enable                         = get_nth_bit (data, 6);
+                timers[x].increment  = increment_shifts[get_nth_bits(data, 0, 2)];
+                timers[x].countup    = get_nth_bit (data, 2);
+                timers[x].irq_enable = get_nth_bit (data, 6);
 
                 // are we enabling the timer?
                 if (!timers[x].enabled && get_nth_bit(data, 7)) {
                     writefln("Enabled timer %x", x);
-                    reload_timer(x);
-                    timers[x].cycles_till_increment = timers[x].cycles_till_increment_buffer;
                     timers[x].enabled = true;
+                    reload_timer(x);
                 }
 
                 if (!get_nth_bit(data, 7)) {
                     writefln("Disabled timer %x", x);
                     timers[x].enabled = false;
+                    timers[x].value   = calculate_timer_value(x);
                 }
 
                 break;
@@ -134,19 +124,21 @@ public:
     }
 
     ubyte read_TMXCNT_L(int target_byte, int x) {
+        timers[x].value = calculate_timer_value(x);
+        
         final switch (target_byte) {
-            case 0b0: return             (timers[x].timer_value & 0x00FF) >> 0;
-            case 0b1: return cast(ubyte) (timers[x].timer_value & 0xFF00) >> 4;
+            case 0b0: return             (timers[x].value & 0x00FF) >> 0;
+            case 0b1: return cast(ubyte) (timers[x].value & 0xFF00) >> 4;
         }
     }
 
     ubyte read_TMXCNT_H(int target_byte, int x) {
         final switch (target_byte) {
             case 0b0: 
-                return cast(ubyte) ((timers[x].cycles_till_increment_buffer_index << 0) | 
-                                    (timers[x].countup                            << 2) |
-                                    (timers[x].irq_enable                         << 6) |
-                                    (timers[x].enabled                            << 7));
+                return cast(ubyte) ((timers[x].increment  << 0) | 
+                                    (timers[x].countup    << 2) |
+                                    (timers[x].irq_enable << 6) |
+                                    (timers[x].enabled    << 7));
             case 0b1: 
                 return 0;
         }

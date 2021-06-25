@@ -4,6 +4,7 @@ import memory;
 import util;
 import ppu;
 import interrupts;
+import scheduler;
 
 import std.stdio;
 import std.typecons;
@@ -24,7 +25,7 @@ class PPU {
 
 public:
     void delegate(uint) interrupt_cpu;
-    void delegate()     on_hblank;
+    void delegate()     on_hblank_callback;
     
     enum Pixel RESET_PIXEL = Pixel(0, 0, 0, 0, true);
 
@@ -39,12 +40,14 @@ public:
 
     Pixel[SCREEN_WIDTH][SCREEN_HEIGHT] screen;
 
-    this(Memory memory, void delegate(uint) interrupt_cpu, void delegate() on_hblank) {
-        this.memory        = memory;
-        this.interrupt_cpu = interrupt_cpu;
-        this.on_hblank     = on_hblank;
-        dot                = 0;
-        scanline           = 0;
+    Scheduler scheduler;
+
+    this(Memory memory, Scheduler scheduler, void delegate(uint) interrupt_cpu, void delegate() on_hblank_callback) {
+        this.memory             = memory;
+        this.interrupt_cpu      = interrupt_cpu;
+        this.on_hblank_callback = on_hblank_callback;
+        dot                     = 0;
+        scanline                = 0;
 
         layer_backdrop       = new Layer();
         layer_backgrounds[0] = new Layer();
@@ -67,76 +70,60 @@ public:
         layers[7] = layer_sprites[2];
         layers[8] = layer_sprites[3];
 
+        this.scheduler = scheduler;
+        scheduler.add_event(&on_hblank_start, 240 * 4);
+        scheduler.add_event(&on_vblank_start, 308 * 160 * 4);
+
         background_init(memory);
     }
 
-    void update_dot_and_scanline() {
-        // update dot and scanline
-        // writefln("%x", scanline);
-        dot++;
-        if (dot > 307) { // 960 = 240 * 4 = screen_width * cycles_per_pixel
-            dot = 0;
-            scanline++;
-            if (vcounter_irq_enabled && scanline == vcount_lyc) {
-                interrupt_cpu(Interrupt.LCD_VCOUNTER_MATCH);
-            }
+    void on_hblank_start() {
+        hblank = true;
+        if (hblank_irq_enabled) interrupt_cpu(Interrupt.LCD_HBLANK);
+        on_hblank_callback();
+        if (scanline < 160) render();
 
-            if (scanline > 227) {
-                scanline = 0;
-                vblank = false;
-                memory.has_updated = true;
-
-                // 100 should be more than big enough
-                // for (int x = 0; x < 240; x++)
-                // for (int y = 0; y < 160; y++)
-                    // pixel_priorities[x][y] = 100;
-                
-            }
-        }
-
-        // set vblank or hblank accordingly
-        if (scanline == 160 && dot == 0) { // are we in vblank?
-            vblank = true;
-            if (vblank_irq_enabled) interrupt_cpu(Interrupt.LCD_VBLANK);
-
-            apply_special_effects();
-            overlay_all_layers();
-            render_layer_result();
-
-            layer_backdrop      .fill_and_reset(RESET_PIXEL);
-            layer_backgrounds[0].fill_and_reset(RESET_PIXEL);
-            layer_backgrounds[1].fill_and_reset(RESET_PIXEL);
-            layer_backgrounds[2].fill_and_reset(RESET_PIXEL);
-            layer_backgrounds[3].fill_and_reset(RESET_PIXEL);
-            layer_sprites[0]    .fill_and_reset(RESET_PIXEL);
-            layer_sprites[1]    .fill_and_reset(RESET_PIXEL);
-            layer_sprites[2]    .fill_and_reset(RESET_PIXEL);
-            layer_sprites[3]    .fill_and_reset(RESET_PIXEL);
-            layer_result        .fill_and_reset(RESET_PIXEL);
-        }
-
-        if (dot == 240) {
-            hblank = true;
-            if (hblank_irq_enabled) interrupt_cpu(Interrupt.LCD_HBLANK);
-            on_hblank();
-        }
-        
-        if (dot == 0) {
-            hblank = false;
-        }
+        scheduler.add_event(&on_hblank_end, 68 * 4);
     }
 
-    void cycle() {
-        update_dot_and_scanline();
-        
-        // if we are hblank or vblank then we do not draw anything
-        if (vblank || hblank) {
-            return;
+    void on_hblank_end() {
+        if (vcounter_irq_enabled && scanline == vcount_lyc) {
+            interrupt_cpu(Interrupt.LCD_VCOUNTER_MATCH);
         }
 
-        // only begin rendering if we are on the first cycle
-        if (dot != 0) return;
-        render();
+        hblank = false;
+        scanline++;
+
+        scheduler.add_event(&on_hblank_start, 240 * 4);
+    }
+
+    void on_vblank_start() {
+        vblank = true;
+        if (vblank_irq_enabled) interrupt_cpu(Interrupt.LCD_VBLANK);
+
+        apply_special_effects();
+        overlay_all_layers();
+        render_layer_result();
+
+        layer_backdrop      .fill_and_reset(RESET_PIXEL);
+        layer_backgrounds[0].fill_and_reset(RESET_PIXEL);
+        layer_backgrounds[1].fill_and_reset(RESET_PIXEL);
+        layer_backgrounds[2].fill_and_reset(RESET_PIXEL);
+        layer_backgrounds[3].fill_and_reset(RESET_PIXEL);
+        layer_sprites[0]    .fill_and_reset(RESET_PIXEL);
+        layer_sprites[1]    .fill_and_reset(RESET_PIXEL);
+        layer_sprites[2]    .fill_and_reset(RESET_PIXEL);
+        layer_sprites[3]    .fill_and_reset(RESET_PIXEL);
+        layer_result        .fill_and_reset(RESET_PIXEL);
+
+        scheduler.add_event(&on_vblank_end, 308 * 68 * 4);
+    }
+
+    void on_vblank_end() {
+        scanline = 0;
+        vblank = false;
+
+        scheduler.add_event(&on_vblank_start, 308 * 160 * 4);
     }
 
     void calculate_backdrop() {
