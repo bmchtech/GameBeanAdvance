@@ -105,16 +105,16 @@ public:
         overlay_all_layers();
         render_layer_result();
 
-        layer_backdrop      .fill_and_reset(RESET_PIXEL);
-        layer_backgrounds[0].fill_and_reset(RESET_PIXEL);
-        layer_backgrounds[1].fill_and_reset(RESET_PIXEL);
-        layer_backgrounds[2].fill_and_reset(RESET_PIXEL);
-        layer_backgrounds[3].fill_and_reset(RESET_PIXEL);
-        layer_sprites[0]    .fill_and_reset(RESET_PIXEL);
-        layer_sprites[1]    .fill_and_reset(RESET_PIXEL);
-        layer_sprites[2]    .fill_and_reset(RESET_PIXEL);
-        layer_sprites[3]    .fill_and_reset(RESET_PIXEL);
-        layer_result        .fill_and_reset(RESET_PIXEL);
+        // layer_backdrop      .fill_and_reset(RESET_PIXEL);
+        // layer_backgrounds[0].fill_and_reset(RESET_PIXEL);
+        // layer_backgrounds[1].fill_and_reset(RESET_PIXEL);
+        // layer_backgrounds[2].fill_and_reset(RESET_PIXEL);
+        // layer_backgrounds[3].fill_and_reset(RESET_PIXEL);
+        layer_sprites[0].reset();
+        layer_sprites[1].reset();
+        layer_sprites[2].reset();
+        layer_sprites[3].reset();
+        // layer_result        .fill_and_reset(RESET_PIXEL);
 
         scheduler.add_event(&on_vblank_end, 308 * 68 * 4);
     }
@@ -668,7 +668,7 @@ private:
             if (!p.transparent) return p;
 
             for (int background_id = 0; background_id < 4; background_id++) {
-                if (backgrounds[background_id].priority == target_priority) {
+                if (backgrounds[background_id].enabled && backgrounds[background_id].priority == target_priority) {
                     p = layer_backgrounds[background_id].pixels[x][y];
                     if (!p.transparent) return p;
                 }
