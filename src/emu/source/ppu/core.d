@@ -29,14 +29,7 @@ public:
     
     enum Pixel RESET_PIXEL = Pixel(0, 0, 0, 0, true);
 
-    // alias Layer = Typedef!(Pixel[SCREEN_WIDTH][SCREEN_HEIGHT]);
-
-    Layer[9] layers; // for iteration
-
-    Layer     layer_backdrop;
-    Layer[4]  layer_backgrounds;
-    Layer[4]  layer_sprites;
-    Layer     layer_result;
+    Canvas canvas;
 
     Pixel[SCREEN_WIDTH][SCREEN_HEIGHT] screen;
 
@@ -49,26 +42,7 @@ public:
         dot                     = 0;
         scanline                = 0;
 
-        layer_backdrop       = new Layer();
-        layer_backgrounds[0] = new Layer();
-        layer_backgrounds[1] = new Layer();
-        layer_backgrounds[2] = new Layer();
-        layer_backgrounds[3] = new Layer();
-        layer_sprites    [0] = new Layer();
-        layer_sprites    [1] = new Layer();
-        layer_sprites    [2] = new Layer();
-        layer_sprites    [3] = new Layer();
-        layer_result         = new Layer();
-
-        layers[0] = layer_backdrop;
-        layers[1] = layer_backgrounds[0];
-        layers[2] = layer_backgrounds[1];
-        layers[3] = layer_backgrounds[2];
-        layers[4] = layer_backgrounds[3];
-        layers[5] = layer_sprites[0];
-        layers[6] = layer_sprites[1];
-        layers[7] = layer_sprites[2];
-        layers[8] = layer_sprites[3];
+        canvas = new Canvas();
 
         this.scheduler = scheduler;
         scheduler.add_event(&on_hblank_start, 240 * 4);
@@ -101,27 +75,17 @@ public:
         vblank = true;
         if (vblank_irq_enabled) interrupt_cpu(Interrupt.LCD_VBLANK);
 
-        apply_special_effects();
-        overlay_all_layers();
-        render_layer_result();
-
-        // layer_backdrop      .fill_and_reset(RESET_PIXEL);
-        // layer_backgrounds[0].fill_and_reset(RESET_PIXEL);
-        // layer_backgrounds[1].fill_and_reset(RESET_PIXEL);
-        // layer_backgrounds[2].fill_and_reset(RESET_PIXEL);
-        // layer_backgrounds[3].fill_and_reset(RESET_PIXEL);
-        layer_sprites[0].reset();
-        layer_sprites[1].reset();
-        layer_sprites[2].reset();
-        layer_sprites[3].reset();
-        // layer_result        .fill_and_reset(RESET_PIXEL);
-
+        canvas.consolidate(31, 0);
+        render_canvas();
+        
         scheduler.add_event(&on_vblank_end, 308 * 68 * 4);
     }
 
     void on_vblank_end() {
         scanline = 0;
         vblank = false;
+        
+        canvas.reset();
 
         scheduler.add_event(&on_vblank_start, 308 * 160 * 4);
     }
@@ -130,33 +94,44 @@ public:
         ushort backdrop_color = (cast(ushort*) memory.palette_ram)[0];
         Pixel p = get_pixel_from_color(backdrop_color, 0, false);
 
-        for (int x = 0; x < 240; x++) layer_backdrop.pixels[x][scanline] = p;
+        for (int x = 0; x < 240; x++) canvas.set_pixel(x, scanline, p, Layer.BACKDROP);
     }
 
     void render() {
         switch (bg_mode) {
             case 0: 
-                render_background__text(0);
-                render_background__text(1);
-                render_background__text(2);
-                render_background__text(3);
+                render_sprites(0);
+                render_background(0);
+                render_sprites(1);
+                render_background(1);
+                render_sprites(2);
+                render_background(2);
+                render_sprites(3);
+                render_background(3);
                 calculate_backdrop();
-                render_sprites();
                 break;
 
             case 1:
-                render_background__text(0);
-                render_background__text(1);
-                render_background__rotation_scaling(2);
+                render_sprites(0);
+                render_background(0);
+                render_sprites(1);
+                render_background(1);
+                render_sprites(2);
+                render_background(2);
+                render_sprites(3);
+                render_background(3);
                 calculate_backdrop();
-                render_sprites();
                 break;
 
             case 3: {
                 // in mode 3, the dot and scanline (x and y) simply tell us where to read from in VRAM. The colors
                 // are stored directly, so we just read from VRAM and interpret as a 15bit highcolor
-                for (uint x = 0; x < 240; x++) 
-                    draw_pixel(layer_backgrounds[3], memory.OFFSET_VRAM, x + scanline * 240, 0, x, scanline, false);
+                for (uint x = 0; x < 240; x++) {
+                    ushort color = memory.read_halfword(memory.OFFSET_VRAM + (x + scanline * 240) * 2);
+                    canvas.set_pixel(x, scanline, get_pixel_from_color(color, 0, 0), Layer.BACKDROP);
+                }
+                    // writefln("%x", memory.read_halfword(memory.OFFSET_VRAM + (0 + 200 * 240) * 2));
+                // writefln("%x %x %x", memory.read_halfword(memory.OFFSET_VRAM + (0 + scanline * 240) * 2), memory.read_halfword(memory.OFFSET_VRAM + (120 * 230 * 2)), memory.vram[120 * 230 * 2]);
 
                 // writefln("c: %x", layer_backgrounds[0][0][0].r);
                 break;
@@ -172,7 +147,7 @@ public:
                 for (uint x = 0; x < 240; x++) {
                     // the index in palette ram that we need to look into is then found in the base frame.
                     uint index = memory.read_byte(base_frame_address + (x + scanline * 240));
-                    draw_pixel(layer_backgrounds[0], 0, index, 0, x, scanline, false);
+                    draw_pixel(Layer.BACKDROP, 0, index, 0, x, scanline, false);
                 }
 
                 break;
@@ -339,7 +314,17 @@ private:
         }
     }
 
+    void render_background(uint priority) {
+        for (int i = 0; i < 4; i++) {
+            Background background = backgrounds[i];
+            if (background.priority != priority || !background.enabled) continue;
 
+            final switch (background.mode) {
+                case BackgroundMode.TEXT:             render_background__text(i);             break;
+                case BackgroundMode.ROTATION_SCALING: render_background__rotation_scaling(i); break;
+            }
+        }
+    }
     void render_background__text(uint background_id) {
         // do we even render?
         Background background = backgrounds[background_id];
@@ -380,24 +365,25 @@ private:
             // yes this looks stupid. and it is.
             if (background.doesnt_use_color_palettes) {
                 Render!(true).tile(
-                        layer_backgrounds[background_id], tile, tile_base_address, 0, 
+                        Layer.A, tile, tile_base_address, 0, 
                         draw_x, tile_dy, 
                         0, 0, PMatrix(0, 0, 0, 0), false,
                         flipped_x, flipped_y, 
                         get_nth_bits(tile, 12, 16));
             } else {
                 Render!(false).tile(
-                        layer_backgrounds[background_id], tile, tile_base_address, 0, 
+                        Layer.A, tile, tile_base_address, 0, 
                         draw_x, tile_dy, 
                         0, 0, PMatrix(0, 0, 0, 0), false,
                         flipped_x, flipped_y, 
                         get_nth_bits(tile, 12, 16));
             }
-
         }
     }
 
     void render_background__rotation_scaling(uint background_id) {
+        // writefln("Rendering this shit");
+
         // do we even render?
         Background background = backgrounds[background_id];
         if (!background.enabled) return;
@@ -433,7 +419,7 @@ private:
             int draw_x = tile_x_offset * 8 - tile_dx;
             int draw_y = scanline;
 
-            Render!(true).tile(layer_backgrounds[background_id], tile, tile_base_address, 0, 
+            Render!(true).tile(Layer.A, tile, tile_base_address, 0, 
                                draw_x, tile_dy, 
                                0, 0, PMatrix(0, 0, 0, 0), false,
                                false, false, get_nth_bits(tile, 12, 16));
@@ -464,9 +450,11 @@ private:
         ]
     ];
 
-    void render_sprites() {
+    void render_sprites(int given_priority) {
         // Very useful guide for attributes! https://problemkaputt.de/gbatek.htm#lcdobjoamattributes
-        for (int sprite = 127; sprite >= 0; sprite--) {
+        for (int sprite = 0; sprite <= 127; sprite++) {
+            if (get_nth_bits(memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 4), 10, 11) != given_priority) continue;
+
             // first of all, we need to figure out if we render this sprite in the first place.
             // so, we collect a bunch of info that'll help us figure that out.
             ushort attribute_0 = memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 0);
@@ -531,7 +519,7 @@ private:
                                         get_nth_bits(attribute_2, 12, 16),
                                         flipped_x, flipped_y, get_nth_bit(attribute_0, 9));
 
-            Render!(false).texture(layer_sprites[priority], texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline));
+            Render!(false).texture(Layer.A, texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline));
         }
     }
 
@@ -548,43 +536,6 @@ private:
             cast(int) (p_matrix.pC * (original_point.x - reference_point.x) + p_matrix.pD * (original_point.y - reference_point.y)) + reference_point.y
         );
     }
-    void test_render_sprites() {
-        int palette = 0;
-        int tile_base_address = memory.OFFSET_VRAM + 0x4000;
-        for (int tile_number = 0; tile_number < 10; tile_number++) {
-            int col = tile_number / 10;
-            int row = tile_number % 10;
-
-            for (int x = 0; x < 8; x++) {
-            for (int y = 0; y < 8; y++) {
-                // 16 / 16
-                ubyte index = memory.read_byte(tile_base_address + (tile_number * 32) + (y * 4) + (x / 2));
-                index += palette * 32;
-                if (x % 2 == 0) {
-                    index &= 0xF;
-                } else {
-                    index >>= 4;
-                }
-
-                // 256 / 256
-                // ubyte index = memory.read_byte(tile_base_address + (tile_number * 64) + y * 8 + x);
-
-                // // and we grab two pixels from palette ram and interpret them as 15bit highcolor.
-                maybe_draw_pixel_on_layer(layer_sprites[0], 0x200, index & 0xF, 0, col * 8 + x, row * 8 + y, false);
-            }    
-            }
-        }
-    }
-
-    // void test_render_palette() {
-    //     for (int i = 0; i < 256; i++) {
-    //         for (int x = 0; x < 4; x++) {
-    //         for (int y = 0; y < 4; y++) {
-    //             draw_pixel(memory.OFFSET_PALETTE_RAM, i, (i % 16) * 4 + x, (i / 16) * 4 + y);
-    //         }
-    //         }
-    //     }
-    // }
 
     void maybe_draw_pixel_on_layer(Layer layer, uint palette_offset, uint palette_index, uint priority, uint x, uint y, bool transparent) {
         if (!transparent) {
@@ -598,102 +549,43 @@ private:
         // warning(format("%x", palette_offset));
         if (x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT) return;
 
-        layer.set_pixel(x, y, get_pixel_from_color(color, priority, transparent));
-        // writefln("c: %x", (*layer)[0][0].r);
-        // writefln("d: %x", (*layer_backgrounds[0])[0][0].r);
+        canvas.set_pixel(x, y, get_pixel_from_color(color, priority, transparent), layer);
     }
-
-    void apply_special_effects() {
-        final switch (special_effect) {
-            case SpecialEffect.None:
-                return;
-
-            case SpecialEffect.Alpha:
-                warning("Alpha blending not implemented yet.");
-                break;
-            
-            case SpecialEffect.BrightnessIncrease:
-                for (int layer = 0; layer < layers.length; layer++) {
-                    if (layers[layer].special_effect_layer == SpecialEffectLayer.A) {
-                        for (int x = 0; x < SCREEN_WIDTH;  x++) {
-                        for (int y = 0; y < SCREEN_HEIGHT; y++) {
-                            Pixel target_pixel = layers[layer].pixels[x][y];
-                            target_pixel.r += cast(ubyte) (((31 - target_pixel.r) * evy_coeff) >> 4);
-                            target_pixel.g += cast(ubyte) (((31 - target_pixel.g) * evy_coeff) >> 4);
-                            target_pixel.b += cast(ubyte) (((31 - target_pixel.b) * evy_coeff) >> 4);
-                            layers[layer].pixels[x][y] = target_pixel;
-                        }
-                        }
-                    }
-                }
-                break;
-            
-            case SpecialEffect.BrightnessDecrease:
-                for (int layer = 0; layer < layers.length; layer++) {
-                    if (layers[layer].special_effect_layer == SpecialEffectLayer.A) {
-                        for (int x = 0; x < SCREEN_WIDTH;  x++) {
-                        for (int y = 0; y < SCREEN_HEIGHT; y++) {
-                            Pixel target_pixel = layers[layer].pixels[x][y];
-                            target_pixel.r -= cast(ubyte) (((target_pixel.r) * evy_coeff) >> 4);
-                            target_pixel.g -= cast(ubyte) (((target_pixel.g) * evy_coeff) >> 4);
-                            target_pixel.b -= cast(ubyte) (((target_pixel.b) * evy_coeff) >> 4);
-                            layers[layer].pixels[x][y] = target_pixel;
-                        }
-                        }
-                    }
-                }
-                break;
-
-        }
-    }
-
-    void overlay_all_layers() {
-        // layer_result = layer_backgrounds[1];
-
-        // overlay_layer(layer_result, layer_backdrop, changed_pixels);
-
+    void render_canvas() {
         for (int x = 0; x < SCREEN_WIDTH;  x++) {
         for (int y = 0; y < SCREEN_HEIGHT; y++) {
-            Pixel p = get_first_visible_pixel(x, y);
-            layer_result.pixels[x][y] = p;
+            memory.set_rgb(x, y, cast(ubyte) (canvas.pixels_output[x][y].r << 3), 
+                                 cast(ubyte) (canvas.pixels_output[x][y].g << 3), 
+                                 cast(ubyte) (canvas.pixels_output[x][y].b << 3));
         }
         }
     }
 
-    Pixel get_first_visible_pixel(int x, int y) {
-        Pixel p;
+    void update_bg_mode() {
+        switch (bg_mode) {
+            case 0:
+                backgrounds[0].mode = BackgroundMode.TEXT;
+                backgrounds[1].mode = BackgroundMode.TEXT;
+                backgrounds[2].mode = BackgroundMode.TEXT;
+                backgrounds[3].mode = BackgroundMode.TEXT;
+                break;
 
-        for (int target_priority = 0; target_priority < 4; target_priority++) {
-            p = layer_sprites[target_priority].pixels[x][y];
-            if (!p.transparent) return p;
+            case 1:
+                backgrounds[0].mode = BackgroundMode.TEXT;
+                backgrounds[1].mode = BackgroundMode.TEXT;
+                backgrounds[2].mode = BackgroundMode.ROTATION_SCALING;
+                backgrounds[3].mode = BackgroundMode.ROTATION_SCALING;
+                break;
 
-            for (int background_id = 0; background_id < 4; background_id++) {
-                if (backgrounds[background_id].enabled && backgrounds[background_id].priority == target_priority) {
-                    p = layer_backgrounds[background_id].pixels[x][y];
-                    if (!p.transparent) return p;
-                }
-            }
-        }
-
-        return layer_backdrop.pixels[x][y];
-    }
-
-    // void overlay_layer(Layer target_layer, Layer overlaying_layer) {
-    //     for (int i = 0; i < changed_pixels.length; i++) {
-    //         Point p = changed_pixels[i];
-    //         if (!overlaying_layer.pixels[p.x][p.y].transparent) {
-    //             target_layer.pixels[p.x][p.y] = overlaying_layer.pixels[p.x][p.y];
-    //         }
-    //     }
-    // }
-
-    void render_layer_result() {
-        for (int x = 0; x < SCREEN_WIDTH;  x++) {
-        for (int y = 0; y < SCREEN_HEIGHT; y++) {
-            memory.set_rgb(x, y, cast(ubyte) (layer_result.pixels[x][y].r << 3), 
-                                 cast(ubyte) (layer_result.pixels[x][y].g << 3), 
-                                 cast(ubyte) (layer_result.pixels[x][y].b << 3));
-        }
+            case 2:
+                backgrounds[0].mode = BackgroundMode.ROTATION_SCALING;
+                backgrounds[1].mode = BackgroundMode.ROTATION_SCALING;
+                backgrounds[2].mode = BackgroundMode.ROTATION_SCALING;
+                backgrounds[3].mode = BackgroundMode.ROTATION_SCALING;
+                break;
+        
+            default:
+                break;
         }
     }
 
@@ -744,6 +636,7 @@ public:
             hblank_interval_free       = get_nth_bit (data, 5);
             obj_character_vram_mapping = get_nth_bit (data, 6);
             forced_blank               = get_nth_bit (data, 7);
+            update_bg_mode();
         } else { // target_byte == 1
             backgrounds[0].enabled     = get_nth_bit (data, 0);
             backgrounds[1].enabled     = get_nth_bit (data, 1);
@@ -868,32 +761,32 @@ public:
     }
 
     void write_BLDCNT(int target_byte, ubyte data) {
-        void maybe_set_special_effect_layer(Layer layer, SpecialEffectLayer special_effect_layer, bool condition) {
-            if (layer.special_effect_layer == special_effect_layer || layer.special_effect_layer == SpecialEffectLayer.None) {
-                layer.special_effect_layer = condition ? special_effect_layer : SpecialEffectLayer.None;
-            }
-        }
+    //     void maybe_set_special_effect_layer(Layer layer, SpecialEffectLayer special_effect_layer, bool condition) {
+    //         if (layer.special_effect_layer == special_effect_layer || layer.special_effect_layer == SpecialEffectLayer.None) {
+    //             layer.special_effect_layer = condition ? special_effect_layer : SpecialEffectLayer.None;
+    //         }
+    //     }
         
-        final switch (target_byte) {
-            case 0b0:
-                maybe_set_special_effect_layer(layer_backgrounds[0], SpecialEffectLayer.A, get_nth_bit(data, 0));
-                maybe_set_special_effect_layer(layer_backgrounds[1], SpecialEffectLayer.A, get_nth_bit(data, 1));
-                maybe_set_special_effect_layer(layer_backgrounds[2], SpecialEffectLayer.A, get_nth_bit(data, 2));
-                maybe_set_special_effect_layer(layer_backgrounds[3], SpecialEffectLayer.A, get_nth_bit(data, 3));
-                // TODO: OBJ BLENDING
-                maybe_set_special_effect_layer(layer_backdrop      , SpecialEffectLayer.A, get_nth_bit(data, 5));
-                special_effect = cast(SpecialEffect) get_nth_bits(data, 6, 8);
+    //     final switch (target_byte) {
+    //         case 0b0:
+    //             maybe_set_special_effect_layer(layer_backgrounds[0], SpecialEffectLayer.A, get_nth_bit(data, 0));
+    //             maybe_set_special_effect_layer(layer_backgrounds[1], SpecialEffectLayer.A, get_nth_bit(data, 1));
+    //             maybe_set_special_effect_layer(layer_backgrounds[2], SpecialEffectLayer.A, get_nth_bit(data, 2));
+    //             maybe_set_special_effect_layer(layer_backgrounds[3], SpecialEffectLayer.A, get_nth_bit(data, 3));
+    //             // TODO: OBJ BLENDING
+    //             maybe_set_special_effect_layer(layer_backdrop      , SpecialEffectLayer.A, get_nth_bit(data, 5));
+    //             special_effect = cast(SpecialEffect) get_nth_bits(data, 6, 8);
 
-                break;
-            case 0b1:
-                maybe_set_special_effect_layer(layer_backgrounds[0], SpecialEffectLayer.B, get_nth_bit(data, 0));
-                maybe_set_special_effect_layer(layer_backgrounds[1], SpecialEffectLayer.B, get_nth_bit(data, 1));
-                maybe_set_special_effect_layer(layer_backgrounds[2], SpecialEffectLayer.B, get_nth_bit(data, 2));
-                maybe_set_special_effect_layer(layer_backgrounds[3], SpecialEffectLayer.B, get_nth_bit(data, 3));
-                // TODO: OBJ BLENDING
-                maybe_set_special_effect_layer(layer_backdrop      , SpecialEffectLayer.B, get_nth_bit(data, 5));
-                break;
-        }
+    //             break;
+    //         case 0b1:
+    //             maybe_set_special_effect_layer(layer_backgrounds[0], SpecialEffectLayer.B, get_nth_bit(data, 0));
+    //             maybe_set_special_effect_layer(layer_backgrounds[1], SpecialEffectLayer.B, get_nth_bit(data, 1));
+    //             maybe_set_special_effect_layer(layer_backgrounds[2], SpecialEffectLayer.B, get_nth_bit(data, 2));
+    //             maybe_set_special_effect_layer(layer_backgrounds[3], SpecialEffectLayer.B, get_nth_bit(data, 3));
+    //             // TODO: OBJ BLENDING
+    //             maybe_set_special_effect_layer(layer_backdrop      , SpecialEffectLayer.B, get_nth_bit(data, 5));
+    //             break;
+    //     }
     }
 
     void write_BLDY(int target_byte, ubyte data) {
@@ -957,20 +850,21 @@ public:
     }
 
     ubyte read_BLDCNT(int target_byte) {
-        final switch (target_byte) {
-            case 0b0:
-                return ((layer_backgrounds[0].special_effect_layer == SpecialEffectLayer.A) << 0) |
-                       ((layer_backgrounds[1].special_effect_layer == SpecialEffectLayer.A) << 1) |
-                       ((layer_backgrounds[2].special_effect_layer == SpecialEffectLayer.A) << 2) |
-                       ((layer_backgrounds[3].special_effect_layer == SpecialEffectLayer.A) << 3) |
-                       (((cast(int) special_effect) & 0b11)                                 << 4);
+    //     final switch (target_byte) {
+    //         case 0b0:
+    //             return ((layer_backgrounds[0].special_effect_layer == SpecialEffectLayer.A) << 0) |
+    //                    ((layer_backgrounds[1].special_effect_layer == SpecialEffectLayer.A) << 1) |
+    //                    ((layer_backgrounds[2].special_effect_layer == SpecialEffectLayer.A) << 2) |
+    //                    ((layer_backgrounds[3].special_effect_layer == SpecialEffectLayer.A) << 3) |
+    //                    (((cast(int) special_effect) & 0b11)                                 << 4);
                        
-            case 0b1:
-                return ((layer_backgrounds[0].special_effect_layer == SpecialEffectLayer.B) << 0) |
-                       ((layer_backgrounds[1].special_effect_layer == SpecialEffectLayer.B) << 1) |
-                       ((layer_backgrounds[2].special_effect_layer == SpecialEffectLayer.B) << 2) |
-                       ((layer_backgrounds[3].special_effect_layer == SpecialEffectLayer.B) << 3);
-        }
+    //         case 0b1:
+    //             return ((layer_backgrounds[0].special_effect_layer == SpecialEffectLayer.B) << 0) |
+    //                    ((layer_backgrounds[1].special_effect_layer == SpecialEffectLayer.B) << 1) |
+    //                    ((layer_backgrounds[2].special_effect_layer == SpecialEffectLayer.B) << 2) |
+    //                    ((layer_backgrounds[3].special_effect_layer == SpecialEffectLayer.B) << 3);
+    //     }
+        return 0x0;
     }
 
     ubyte read_WININ(int target_byte) {

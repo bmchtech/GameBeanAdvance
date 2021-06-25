@@ -14,4 +14,6 @@ Pixel get_pixel_from_color(ushort color, uint priority, bool transparent) {
                  (color >> 10) & 0x1F,
                  priority,
                  transparent);
+    
+    
 }

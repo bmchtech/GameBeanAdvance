@@ -27,15 +27,22 @@ struct Background {
 
     FixedPoint x_offset_rotation;
     FixedPoint y_offset_rotation; 
+
+    BackgroundMode mode;
+}
+
+enum BackgroundMode {
+    TEXT,
+    ROTATION_SCALING
 }
 
 static Background[] backgrounds;
 
 void background_init(Memory memory) {
     backgrounds = [
-        Background(0, 0, false, false, 0, false, 0, 0, 0, false, 0, 0, 0, 0, 0, 0),
-        Background(0, 0, false, false, 0, false, 0, 0, 0, false, 0, 0, 0, 0, 0, 0),
-        Background(0, 0, false, false, 0, false, 0, 0, 0, false, 0, 0, 0, 0, 0, 0),
-        Background(0, 0, false, false, 0, false, 0, 0, 0, false, 0, 0, 0, 0, 0, 0)
+        Background(),
+        Background(),
+        Background(),
+        Background()
     ];
 }
