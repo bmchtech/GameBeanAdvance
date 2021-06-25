@@ -2,7 +2,7 @@ module ppu;
 
 public {
     import ppu.background;
-    import ppu.layer;
+    import ppu.canvas;
     import ppu.pixel;
     import ppu.core;
     import ppu.effects;
