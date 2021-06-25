@@ -253,6 +253,7 @@ class ARM7TDMI {
 
     int cycle() {
         if (halted) return 0;
+        // writefln("1");
 
         cycles_remaining = 0;
 
@@ -300,6 +301,14 @@ class ARM7TDMI {
         } else {
             jumptable_arm.execute_instruction(opcode, this);
         }
+    }
+
+    void enable() {
+        halted = false;
+    }
+
+    void disable() {
+        halted = true;
     }
     
     pragma(inline) uint ASR(uint value, ubyte shift) {

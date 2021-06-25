@@ -3,6 +3,8 @@ module gba;
 import std.math;
 import std.stdio;
 
+import scheduler;
+
 public {
     import memory;
     import ppu;
@@ -47,14 +49,21 @@ public:
     KeyInput         key_input;
     // DirectSound  direct_sound;
 
+    Scheduler        scheduler;
+
+    // 2 ^ 64 can last for up to 3000 years
+    ulong num_cycles = 0;
+
     this(Memory memory, KeyInput key_input) {
+        scheduler = new Scheduler();
+
         this.memory            = memory;
         this.cpu               = new ARM7TDMI(memory);
         this.interrupt_manager = new InterruptManager(&interrupt_cpu);
-        this.ppu               = new PPU(memory, &interrupt_manager.interrupt, &on_hblank);
-        this.apu               = new APU(memory, &on_fifo_empty);
+        this.ppu               = new PPU(memory, scheduler, &interrupt_manager.interrupt, &on_hblank);
+        this.apu               = new APU(memory, scheduler, &on_fifo_empty);
         this.dma_manager       = new DMAManager(memory);
-        this.timers            = new TimerManager(memory, &on_timer_overflow);
+        this.timers            = new TimerManager(memory, scheduler, this, &on_timer_overflow);
         this.key_input         = key_input;
 
         // this.direct_sound = new DirectSound(memory);
@@ -83,18 +92,25 @@ public:
         enabled = true; 
     }
  
-    void cycle() {
-        maybe_cycle_cpu();
-        maybe_cycle_cpu();
-        maybe_cycle_cpu();
-        maybe_cycle_cpu();
+    int extra_cycles = 0;
 
-        apu.cycle();
-        apu.cycle();
-        apu.cycle();
-        apu.cycle();
-        
-        ppu.cycle();
+    void cycle_at_least_n_times(int n) {
+        int times_cycled = extra_cycles;
+
+        while (times_cycled < n) {
+            Event event = scheduler.remove_schedule_item();
+            // writefln("Cycling %x times", event.num_cycles);
+            
+            for (int i = 0; i < event.num_cycles; i++) {
+                maybe_cycle_cpu();
+                num_cycles++;
+            }
+
+            event.callback();
+            times_cycled += event.num_cycles;
+        }
+
+        extra_cycles = times_cycled - n;
     }
 
     void maybe_cycle_cpu() {
@@ -105,7 +121,7 @@ public:
 
         idle_cycles += cpu.cycle();
         idle_cycles += dma_manager.handle_dma();
-        timers.cycle(idle_cycles);
+        // timers.cycle(idle_cycles);
     }
 
     bool interrupt_cpu() {
