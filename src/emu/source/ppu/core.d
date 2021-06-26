@@ -27,7 +27,7 @@ public:
     void delegate(uint) interrupt_cpu;
     void delegate()     on_hblank_callback;
     
-    enum Pixel RESET_PIXEL = Pixel(0, 0, 0, 0, true);
+    enum Pixel RESET_PIXEL = Pixel(0, 0, 0);
 
     Canvas canvas;
 
@@ -42,7 +42,7 @@ public:
         dot                     = 0;
         scanline                = 0;
 
-        canvas = new Canvas();
+        canvas = new Canvas(memory);
 
         this.scheduler = scheduler;
         scheduler.add_event(&on_hblank_start, 240 * 4);
@@ -91,10 +91,7 @@ public:
     }
 
     void calculate_backdrop() {
-        ushort backdrop_color = (cast(ushort*) memory.palette_ram)[0];
-        Pixel p = get_pixel_from_color(backdrop_color, 0, false);
-
-        for (int x = 0; x < 240; x++) canvas.set_pixel(x, scanline, p, Layer.BACKDROP);
+        for (int x = 0; x < 240; x++) canvas.draw(x, scanline, memory.OFFSET_PALETTE_RAM, Layer.BACKDROP);
     }
 
     void render() {
@@ -128,7 +125,7 @@ public:
                 // are stored directly, so we just read from VRAM and interpret as a 15bit highcolor
                 for (uint x = 0; x < 240; x++) {
                     ushort color = memory.read_halfword(memory.OFFSET_VRAM + (x + scanline * 240) * 2);
-                    canvas.set_pixel(x, scanline, get_pixel_from_color(color, 0, 0), Layer.BACKDROP);
+                    canvas.draw(x, scanline, memory.OFFSET_VRAM + (x + scanline * 240), Layer.BACKDROP);
                 }
                     // writefln("%x", memory.read_halfword(memory.OFFSET_VRAM + (0 + 200 * 240) * 2));
                 // writefln("%x %x %x", memory.read_halfword(memory.OFFSET_VRAM + (0 + scanline * 240) * 2), memory.read_halfword(memory.OFFSET_VRAM + (120 * 230 * 2)), memory.vram[120 * 230 * 2]);
@@ -515,7 +512,7 @@ private:
          
             Texture texture = Texture(base_tile_number, width << 3, height << 3, tile_number_increment_per_row, 
                                         scaled, p_matrix, Point(middle_x, middle_y),
-                                        memory.OFFSET_VRAM + 0x10000, memory.OFFSET_PALETTE_RAM + 0x200,
+                                        memory.OFFSET_VRAM + 0x10000, 0x200,
                                         get_nth_bits(attribute_2, 12, 16),
                                         flipped_x, flipped_y, get_nth_bit(attribute_0, 9));
 
@@ -545,11 +542,10 @@ private:
     }
 
     void draw_pixel(Layer layer, uint palette_offset, uint palette_index, uint priority, uint x, uint y, bool transparent) {
-        ushort color = (cast(ushort*) memory.palette_ram)[((palette_offset + palette_index * 2) & 0x1ffff) >> 1];
         // warning(format("%x", palette_offset));
         if (x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT) return;
 
-        canvas.set_pixel(x, y, get_pixel_from_color(color, priority, transparent), layer);
+        canvas.draw(x, y, memory.OFFSET_PALETTE_RAM + palette_offset + palette_index * 2, layer);
     }
     void render_canvas() {
         for (int x = 0; x < SCREEN_WIDTH;  x++) {
