@@ -54,8 +54,9 @@ public:
     void on_hblank_start() {
         hblank = true;
         if (hblank_irq_enabled) interrupt_cpu(Interrupt.LCD_HBLANK);
-        on_hblank_callback();
         if (scanline < 160) render();
+
+        if (!vblank) on_hblank_callback();
 
         scheduler.add_event(&on_hblank_end, 68 * 4);
     }
@@ -142,7 +143,7 @@ public:
 
 
                 for (uint x = 0; x < 240; x++) {
-                    // the index in palette ram that we need to look into is then found in the base frame.
+                    // the index in palette ram that we need to lookinto  is then found in the base frame.
                     uint index = memory.read_byte(base_frame_address + (x + scanline * 240));
                     draw_pixel(Layer.BACKDROP, 0, index, 0, x, scanline, false);
                 }

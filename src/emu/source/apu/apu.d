@@ -34,6 +34,8 @@ public:
         this.bias                    = 0x200;
 
         this.scheduler = scheduler;
+
+        
     }
 
     void on_timer_overflow(int timer_id) {
@@ -92,7 +94,7 @@ private:
         short dma_sample = 2 * cast(short) (cast(byte) dma_sounds[DirectSound.A].popped_sample);
         dma_sample += bias;
         // writefln("%x", dma_sample);
-        // push_to_buffer([dma_sample]);
+        push_to_buffer([dma_sample]);
 
         scheduler.add_event(&sample, sample_rate);
     }
@@ -162,6 +164,32 @@ public:
 
             case 0b1:
                 break; // TODO
+        }
+    }
+
+    ubyte read_SOUNDCNT_H(int target_byte) {
+        final switch (target_byte) {
+            case 0b0:
+                return cast(ubyte) ((sound_1_4_volume                 << 0) |
+                                    (dma_sounds[DirectSound.A].volume << 2) |
+                                    (dma_sounds[DirectSound.A].volume << 3));
+                
+            case 0b1:
+                return cast(ubyte) ((dma_sounds[DirectSound.A].enabled_right << 0) |
+                                    (dma_sounds[DirectSound.A].enabled_left  << 1) |
+                                    (dma_sounds[DirectSound.A].timer_select  << 3) |
+                                    (dma_sounds[DirectSound.B].enabled_right << 4) |
+                                    (dma_sounds[DirectSound.B].enabled_left  << 5) |
+                                    (dma_sounds[DirectSound.B].timer_select  << 6));
+        } 
+    }
+
+    ubyte read_SOUNDBIAS(int target_byte) {
+        final switch (target_byte) {
+            case 0b0:
+                return (bias & 0x00FF) >> 0;
+            case 0b1:
+                return (bias & 0xFF00) >> 8;
         }
     }
 }

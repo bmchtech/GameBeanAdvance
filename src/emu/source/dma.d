@@ -92,8 +92,8 @@ public:
             }
         }
 
-        dma_channels[current_channel].source += source_offset;
-        dma_channels[current_channel].dest   += dest_offset;
+        dma_channels[current_channel].source_buf += source_offset;
+        dma_channels[current_channel].dest_buf   += dest_offset;
         
         idle_cycles += bytes_to_transfer * 2;
 
@@ -106,8 +106,6 @@ public:
             if (dma_channels[current_channel].dest_addr_control == DestAddrMode.IncrementReload) {
                 dma_channels[current_channel].dest = dma_channels[current_channel].dest_buf;
             }
-
-            dma_channels[current_channel].source_buf = dma_channels[current_channel].source;
 
             enable_dma(current_channel);
             // if (get_nth_bits(*dma_channels[current_channel].cnt_h, 12, 14) == 3 && (current_channel == 1 || current_channel == 2)) {
@@ -271,13 +269,14 @@ public:
     }
 
     void write_DMAXCNT_H(int target_byte, ubyte data, int x) {
+        // writefln("RAW: %x %x %x", target_byte, x, data);
         final switch (target_byte) {
             case 0b00:
                 dma_channels[x].dest_addr_control   = cast(DestAddrMode) get_nth_bits(data, 5, 7);
-                dma_channels[x].source_addr_control = cast(SourceAddrMode) ((get_nth_bit(data, 7) << 0) | (dma_channels[x].source_addr_control & 0x10));
+                dma_channels[x].source_addr_control = cast(SourceAddrMode) ((get_nth_bit(data, 7) << 0) | (dma_channels[x].source_addr_control & 0b10));
                 break;
             case 0b01:
-                dma_channels[x].source_addr_control = cast(SourceAddrMode) ((get_nth_bit (data, 0) << 1) | (dma_channels[x].source_addr_control & 0x01));
+                dma_channels[x].source_addr_control = cast(SourceAddrMode) ((get_nth_bit (data, 0) << 1) | (dma_channels[x].source_addr_control & 0b01));
                 dma_channels[x].repeat              =  get_nth_bit (data, 1);
                 dma_channels[x].transferring_words  =  get_nth_bit (data, 2);
                 dma_channels[x].gamepak_drq         =  get_nth_bit (data, 3);
@@ -290,6 +289,7 @@ public:
                 }
                 break;
         }
+        writefln("%x", dma_channels[x].source_addr_control);
     }
 
     ubyte read_DMAXCNT_H(int target_byte, int x) {
