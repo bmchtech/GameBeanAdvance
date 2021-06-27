@@ -172,13 +172,13 @@ class GameBeanSDLHost {
             }
 
             audio_data.mutex.lock();
-                // if (audio_data.buffer_offset < samples_per_callback * 3) {
+                if (audio_data.buffer_offset < samples_per_callback * 3) {
                     // writefln("Cycling");
                     gba.cycle_at_least_n_times(cycles_per_batch);
                     // gba_batch_enable = false;
                     cycles_since_last_log += cycles_per_batch;
                     // writefln("Cycled");
-                // }
+                }
             audio_data.mutex.unlock();
 
         //     // writefln("NSEC: %s  |  %s OF %s", total_time.total!"nsecs", clockfor_log, nsec_per_log);
