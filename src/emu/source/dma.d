@@ -68,8 +68,8 @@ public:
         //          current_channel,
         //          bytes_to_transfer,
         //          dma_channels[current_channel].transferring_words ? "words" : "halfwords",
-        //          dma_channels[current_channel].source,
-        //          dma_channels[current_channel].dest,
+        //          dma_channels[current_channel].source_buf,
+        //          dma_channels[current_channel].dest_buf,
         //          read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
 
         if (dma_channels[current_channel].transferring_words) {
@@ -148,6 +148,11 @@ public:
         return idle_cycles;
     }
 
+    void initialize_dma(int dma_id) {
+        dma_channels[dma_id].source_buf = dma_channels[dma_id].source & (dma_channels[dma_id].transferring_words ? ~3 : ~1);
+        dma_channels[dma_id].dest_buf   = dma_channels[dma_id].dest   & (dma_channels[dma_id].transferring_words ? ~3 : ~1);
+    }
+
     void enable_dma(int dma_id) {
         dma_channels[dma_id].num_units = dma_channels[dma_id].num_units & 0x0FFFFFFF;
         if (dma_id == 3) dma_channels[dma_id].num_units &= 0x07FFFFFF;
@@ -159,8 +164,6 @@ public:
             dma_channels[dma_id].dest_addr_control  = DestAddrMode.Fixed;
         }
 
-        dma_channels[dma_id].source_buf       = dma_channels[dma_id].source & (dma_channels[dma_id].transferring_words ? ~3 : ~1);
-        dma_channels[dma_id].dest_buf         = dma_channels[dma_id].dest   & (dma_channels[dma_id].transferring_words ? ~3 : ~1);
         dma_channels[dma_id].size_buf         = dma_channels[dma_id].num_units;
         dma_channels[dma_id].waiting_to_start = dma_channels[dma_id].dma_start_timing == DMAStartTiming.Immediately;
 
@@ -285,11 +288,11 @@ public:
                 dma_channels[x].enabled             =  get_nth_bit (data, 7);
 
                 if (get_nth_bit(data, 7)) {
+                    initialize_dma(x);
                     enable_dma(x);
                 }
                 break;
         }
-        writefln("%x", dma_channels[x].source_addr_control);
     }
 
     ubyte read_DMAXCNT_H(int target_byte, int x) {

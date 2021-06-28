@@ -6,6 +6,7 @@ import std.math;
 import util;
 
 import core.sync.mutex;
+import core.stdc.string;
 
 // audiobuffer provides a way of adding sound to the buffer that the gba can use
 // the callback function callback() must be connected to sdl for this to function
@@ -41,27 +42,27 @@ extern (C) {
         // writefln("call");
 
         short* out_stream = cast(short*) stream;
+        memset(out_stream, 0, len);
         
         audio_data.mutex.lock_nothrow();
 
             // try { writefln("Details: %x %x", len, audio_data.buffer_offset);} catch (Exception e) {}
 
             if (len > audio_data.buffer_offset) {
-                // try { warning("Emulator too slow!"); } catch (Exception e) {}
+                try { warning("Emulator too slow!"); } catch (Exception e) {}
             }
 
-            len = (len > audio_data.buffer_offset ? audio_data.buffer_offset : len);
-
+            len = (len > (audio_data.buffer_offset * 2) ? (audio_data.buffer_offset * 2) : len);
             for (int i = 0; i < len / 2; i++) {
-                short sample = cast(short)(audio_data.buffer[i] * 0x2A);
+                short sample = cast(short) (audio_data.buffer[i] * 0x2A);
+                audio_data.buffer[i] = 0;
+                out_stream[i] = sample;
 
-                out_stream[i] = sample;            try {
-            } catch (Exception e) {
-            }
+                // try { writefln("%x", out_stream[i]); } catch (Exception e) {}
             }
 
-            for (int i = 0; i < audio_data.buffer_offset - len; i++) {
-                audio_data.buffer[i] = audio_data.buffer[i + len];
+            for (int i = 0; i < audio_data.buffer_offset - (len / 2); i++) {
+                audio_data.buffer[i] = audio_data.buffer[i + (len / 2)];
             }
 
             audio_data.buffer_offset -= len / 2;
