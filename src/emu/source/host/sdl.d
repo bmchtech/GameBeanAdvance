@@ -99,7 +99,7 @@ class GameBeanSDLHost {
             writefln("[SDL] Audio driver: %s\n", SDL_GetCurrentAudioDriver());
         }
 
-        gba.set_internal_sample_rate(16_000_000 / received.freq);
+        gba.set_internal_sample_rate(16_780_000 / received.freq);
         this.sample_rate          = received.freq;
         this.samples_per_callback = received.samples;
 
@@ -112,7 +112,7 @@ class GameBeanSDLHost {
 
         int num_batches       = this.sample_rate / this.samples_per_callback;
         enum cycles_per_second = 16_780_000;
-        this.cycles_per_batch  = 2 * cycles_per_second / num_batches;
+        this.cycles_per_batch  = cycles_per_second / num_batches;
         writefln("%d batches per second, %d batches per cycle.", num_batches, cycles_per_batch);
         writefln("sample rate: %d, samples_per_callback: %d", sample_rate, samples_per_callback);
 

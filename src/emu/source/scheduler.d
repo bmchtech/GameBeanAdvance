@@ -9,6 +9,7 @@ struct Event {
     int             num_cycles;
 
     Event*          next;
+    Event*          prev;
 }
 
 class Scheduler {
@@ -18,15 +19,13 @@ class Scheduler {
         head = null;
     }
 
-    void add_event(void delegate() callback, int num_cycles) {
+    Event* add_event(void delegate() callback, int num_cycles) {
         // writefln("Adding an event %d cycles away", num_cycles);
 
-        Event* event = new Event(callback, num_cycles, null);
+        Event* event = new Event(callback, num_cycles, null, null);
         if (head == null) {
             head = event;
-
-            print_schedule();
-            return;
+            return event;
         }
 
         Event* ptr  = head;
@@ -49,7 +48,21 @@ class Scheduler {
             insert_after(after, event);
         }
 
-        // print_schedule();
+        return event;
+    }
+
+    void remove_event(Event* event) {
+        if (event.prev != null) {
+            event.prev.next = event.next;
+        } else {
+            head = event.next;
+        }
+
+        if (event.next != null) {
+            event.next.prev = event.prev;
+        }
+
+        event.destroy();
     }
 
     void print_schedule() {
@@ -65,15 +78,20 @@ class Scheduler {
         head.num_cycles -= event.num_cycles;
 
         event.next = head;
+        head.prev = event;
         head = event;
     }
 
     void insert_after(Event* after, Event* event) {
         if (after.next == null) {
             after.next = event;
+            event.prev = after;
+
         } else {
             event.next = after.next;
+            after.next.prev = event;
             after.next = event;
+            event.prev = after;
 
             event.next.num_cycles -= event.num_cycles;
         }

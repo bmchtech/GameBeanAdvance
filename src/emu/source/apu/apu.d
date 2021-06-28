@@ -31,7 +31,7 @@ public:
         // should be big enough
         // this.audio_buffer            = new ubyte[sample_size * 8];
         this.audio_buffer_size       = 0;
-        this.bias                    = 0x200;
+        this.bias                    = 0x100;
 
         this.scheduler = scheduler;
 
@@ -78,8 +78,10 @@ private:
     void pop_one_sample(DirectSound fifo_type) {
         if (dma_sounds[fifo_type].fifo.size != 0) {
             dma_sounds[fifo_type].popped_sample = dma_sounds[fifo_type].fifo.pop();
-            // writefln("%x", value);
+            // writefln("%x", dma_sounds[fifo_type].popped_sample);
             // push_to_buffer([value]);
+        } else {
+            dma_sounds[fifo_type].popped_sample = 0;
         }
 
         if (dma_sounds[fifo_type].fifo.size <= FIFO_FULL_THRESHOLD) {
@@ -91,9 +93,10 @@ private:
 
     void sample() {
         // TODO: mixing
-        short dma_sample = 2 * cast(short) (cast(byte) dma_sounds[DirectSound.A].popped_sample);
-        dma_sample += bias;
-        // writefln("%x", dma_sample);
+        short dma_sample = 2 * cast(short) (cast(byte) dma_sounds[DirectSound.A].popped_sample);        short dma_sample = 2 * cast(short) (cast(byte) dma_sounds[DirectSound.A].popped_sample);
+
+        dma_sample += bias * 2;
+        // writefln("Mixing: %x %x", dma_sample, sample_rate);
         push_to_buffer([dma_sample]);
 
         scheduler.add_event(&sample, sample_rate);
@@ -159,12 +162,15 @@ public:
     void write_SOUNDBIAS(int target_byte, ubyte data) {
         final switch (target_byte) {
             case 0b0:
-                bias = (bias & 0x100) | data;
+                bias = cast(short) ((bias & 0x180) | get_nth_bits(data, 1, 8));
                 break;
 
             case 0b1:
+                bias = cast(short) ((bias & 0x7F) | (get_nth_bits(data, 0, 2) << 7));
                 break; // TODO
         }
+
+        writefln("BIAS: %x", bias);
     }
 
     ubyte read_SOUNDCNT_H(int target_byte) {

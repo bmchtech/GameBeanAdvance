@@ -3,8 +3,6 @@ module timers;
 import memory;
 import util;
 
-import std.stdio;
-
 import apu;
 import gba;
 import scheduler;
@@ -21,10 +19,10 @@ public:
         this.on_timer_overflow = on_timer_overflow;
 
         timers = [
-            Timer(0, 0, 0, 0, false),
-            Timer(0, 0, 0, 0, false),
-            Timer(0, 0, 0, 0, false),
-            Timer(0, 0, 0, 0, false)
+            Timer(),
+            Timer(),
+            Timer(),
+            Timer()
         ];
 
         this.scheduler = scheduler;
@@ -32,10 +30,12 @@ public:
     }
 
     void reload_timer(int timer_id) {
+        // check for cancellation
         if (!timers[timer_id].enabled) return;
 
         timers[timer_id].value = timers[timer_id].reload_value;
-        scheduler.add_event(() => timer_overflow(timer_id), (0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment);
+        // warning(format("%x TS: %x. Scheduling another at %x", timer_id, gba.num_cycles, gba.num_cycles + ((0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment)));
+        timers[timer_id].timer_event = scheduler.add_event(() => timer_overflow(timer_id), (0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment);
 
         timers[timer_id].timestamp = gba.num_cycles;
     }
@@ -60,7 +60,7 @@ private:
     Memory memory;
     Timer[4] timers;
 
-    uint[4] increment_shifts = [1, 6, 8, 10];
+    uint[4] increment_shifts = [0, 6, 8, 10];
 
     struct Timer {
         ushort  reload_value;
@@ -71,6 +71,8 @@ private:
         bool    irq_enable;
 
         ulong   timestamp;
+
+        Event*  timer_event;
     }
 
     //.......................................................................................................................
@@ -106,13 +108,13 @@ public:
 
                 // are we enabling the timer?
                 if (!timers[x].enabled && get_nth_bit(data, 7)) {
-                    writefln("Enabled timer %x", x);
                     timers[x].enabled = true;
+
+                    if (timers[x].timer_event != null) scheduler.remove_event(timers[x].timer_event);
                     reload_timer(x);
                 }
 
                 if (!get_nth_bit(data, 7)) {
-                    writefln("Disabled timer %x", x);
                     timers[x].enabled = false;
                     timers[x].value   = calculate_timer_value(x);
                 }
