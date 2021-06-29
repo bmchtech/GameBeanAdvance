@@ -78,7 +78,6 @@ private:
     void pop_one_sample(DirectSound fifo_type) {
         if (dma_sounds[fifo_type].fifo.size != 0) {
             dma_sounds[fifo_type].popped_sample = dma_sounds[fifo_type].fifo.pop();
-            // writefln("Popping for %s", fifo_type == DirectSound.A ? "A" : )
             // writefln("%x", dma_sounds[fifo_type].popped_sample);
             // push_to_buffer([value]);
         } else {
@@ -98,7 +97,7 @@ private:
         short dma_sample_B = 2 * cast(short) (cast(byte) dma_sounds[DirectSound.B].popped_sample);
         
         short mixed_sample = cast(short) (dma_sample_A + dma_sample_B + bias * 2);
-        // writefln("Mixing: %x %x", mixed_sample, sample_rate);
+        writefln("Mixing: %x %x", dma_sounds[DirectSound.A].popped_sample, dma_sounds[DirectSound.B].popped_sample);
         push_to_buffer([mixed_sample]);
 
         scheduler.add_event(&sample, sample_rate);
