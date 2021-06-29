@@ -50,10 +50,12 @@ class ARM7TDMI {
         spsr = &regs[17];
     }
 
-    uint num_log = 0;
+    ulong num_log = 0;
 
     // returns true if the exception is accepted (or, excepted :P)
-    bool exception(CpuException exception) {
+    bool exception(const CpuException exception) {
+        halted = false;
+
         // interrupts not allowed if the cpu itself has interrupts disabled.
         if ((exception == CpuException.IRQ && get_nth_bit(*cpsr, 7)) ||
             (exception == CpuException.FIQ && get_nth_bit(*cpsr, 6))) {
@@ -84,6 +86,10 @@ class ARM7TDMI {
         set_bit_T(false);
 
         return true;
+    }
+
+    void halt() {
+        halted = true;
     }
 
     uint get_address_from_exception(CpuException exception) {

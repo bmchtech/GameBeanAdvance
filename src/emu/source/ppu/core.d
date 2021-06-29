@@ -612,7 +612,7 @@ private:
     bool forced_blank;
 
     // DISPSTAT
-    bool  vblank;
+    public bool  vblank;
     bool  hblank;
     bool  vblank_irq_enabled;
     bool  hblank_irq_enabled;

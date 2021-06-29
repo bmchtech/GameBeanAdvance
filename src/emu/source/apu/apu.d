@@ -78,6 +78,7 @@ private:
     void pop_one_sample(DirectSound fifo_type) {
         if (dma_sounds[fifo_type].fifo.size != 0) {
             dma_sounds[fifo_type].popped_sample = dma_sounds[fifo_type].fifo.pop();
+            // writefln("Popping for %s", fifo_type == DirectSound.A ? "A" : )
             // writefln("%x", dma_sounds[fifo_type].popped_sample);
             // push_to_buffer([value]);
         } else {
@@ -93,11 +94,12 @@ private:
 
     void sample() {
         // TODO: mixing
-        short dma_sample = 2 * cast(short) (cast(byte) dma_sounds[DirectSound.A].popped_sample);        short dma_sample = 2 * cast(short) (cast(byte) dma_sounds[DirectSound.A].popped_sample);
-
-        dma_sample += bias * 2;
-        // writefln("Mixing: %x %x", dma_sample, sample_rate);
-        push_to_buffer([dma_sample]);
+        short dma_sample_A = 2 * cast(short) (cast(byte) dma_sounds[DirectSound.A].popped_sample);
+        short dma_sample_B = 2 * cast(short) (cast(byte) dma_sounds[DirectSound.B].popped_sample);
+        
+        short mixed_sample = cast(short) (dma_sample_A + dma_sample_B + bias * 2);
+        // writefln("Mixing: %x %x", mixed_sample, sample_rate);
+        push_to_buffer([mixed_sample]);
 
         scheduler.add_event(&sample, sample_rate);
     }
@@ -151,7 +153,7 @@ public:
                 }
 
                 break;
-        } 
+        }
     }
 
     void write_FIFO(ubyte data, DirectSound fifo_type) {
@@ -169,8 +171,6 @@ public:
                 bias = cast(short) ((bias & 0x7F) | (get_nth_bits(data, 0, 2) << 7));
                 break; // TODO
         }
-
-        writefln("BIAS: %x", bias);
     }
 
     ubyte read_SOUNDCNT_H(int target_byte) {
@@ -178,7 +178,7 @@ public:
             case 0b0:
                 return cast(ubyte) ((sound_1_4_volume                 << 0) |
                                     (dma_sounds[DirectSound.A].volume << 2) |
-                                    (dma_sounds[DirectSound.A].volume << 3));
+                                    (dma_sounds[DirectSound.B].volume << 3));
                 
             case 0b1:
                 return cast(ubyte) ((dma_sounds[DirectSound.A].enabled_right << 0) |
