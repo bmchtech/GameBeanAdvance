@@ -1,5 +1,6 @@
 module mmio;
 
+import gba;
 import ppu;
 import apu;
 import dma;
@@ -102,7 +103,10 @@ class MMIO {
     enum IF            = 0x4000202; //  2    R/W   Interrupt Request Flags / IRQ Acknowledge
     enum IME           = 0x4000208; //  2    R/W   Interrupt Master Enable Register
 
-    this(PPU ppu, APU apu, DMAManager dma, TimerManager timers, InterruptManager interrupt, KeyInput keyinput) {
+    enum HALTCNT       = 0x4000301; //  1      W   Undocumented - Power Down Control
+
+    this(GBA gba, PPU ppu, APU apu, DMAManager dma, TimerManager timers, InterruptManager interrupt, KeyInput keyinput) {
+        this.gba       = gba;
         this.ppu       = ppu;
         this.apu       = apu;
         this.dma       = dma;
@@ -404,12 +408,15 @@ class MMIO {
             case IME         + 0: interrupt.write_IME  (0, data); break;
             case IME         + 1: interrupt.write_IME  (1, data); break;
 
+
+            case HALTCNT     + 0: gba.write_HALTCNT    (data); break;
             default: break;
         }
     }
 
 
 private:
+    GBA              gba;
     PPU              ppu;
     APU              apu;
     DMAManager       dma;

@@ -190,7 +190,8 @@ class Memory {
                 case REGION_OAM:          *(cast(T*) (&oam[0]         + (address & (SIZE_OAM         - 1)))) = value; break;
 
                 case REGION_IO_REGISTERS:
-                    static if (is(T == uint)) {  
+                    static if (is(T == uint)) {
+                        // writefln("%x", value);
                         mmio.write(address + 0, (value >>  0) & 0xFF);
                         mmio.write(address + 1, (value >>  8) & 0xFF);
                         mmio.write(address + 2, (value >> 16) & 0xFF); 

@@ -68,7 +68,7 @@ public:
 
         // this.direct_sound = new DirectSound(memory);
 
-        MMIO mmio = new MMIO(ppu, apu, dma_manager, timers, interrupt_manager, key_input);
+        MMIO mmio = new MMIO(this, ppu, apu, dma_manager, timers, interrupt_manager, key_input);
         memory.set_mmio(mmio);
 
         this.enabled = false;
@@ -96,7 +96,7 @@ public:
 
     void cycle_at_least_n_times(int n) {
         int times_cycled = extra_cycles;
-
+        
         while (times_cycled < n) {
             Event event = scheduler.remove_schedule_item();
             // writefln("Cycling %x times", event.num_cycles);
@@ -139,6 +139,17 @@ public:
 
     void on_hblank() {
         dma_manager.on_hblank();
+    }
+
+    // is this sketchy code? it might be... but its 1 am
+    // TODO: fix sketchy code
+    void write_HALTCNT(ubyte data) {
+        if (get_nth_bit(data, 7)) {
+            // idk figure out stopping
+        } else {
+            // halt
+            cpu.halt();
+        }
     }
 
     bool enabled;
