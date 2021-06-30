@@ -185,7 +185,7 @@ public:
             case DirectSound.B: destination_address = MMIO.FIFO_B; break;
         }
 
-        for (int i = 0; i < 4; i++) { // only check channels 1 and 2, theyre the only ones capable of audio fifo
+        for (int i = 0; i < 4; i++) {
             if (dma_channels[i].dest == destination_address && is_dma_channel_fifo(i)) {
                 start_dma_channel(i);
             }

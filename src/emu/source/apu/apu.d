@@ -40,7 +40,7 @@ public:
 
     void on_timer_overflow(int timer_id) {
         for (int i = 0; i < dma_sounds.length; i++) {
-            // writefln("%x", dma_sounds[i].timer_select);
+            // writefln("%x %x", i, dma_sounds[i].timer_select);
             if (dma_sounds[i].timer_select == timer_id && (dma_sounds[i].enabled_left || dma_sounds[i].enabled_right)) {
                 pop_one_sample(cast(DirectSound) i);
             }
@@ -104,7 +104,7 @@ private:
         mixed_sample_R += bias * 2;
         
         // short mixed_sample = cast(short) (dma_sample_A + dma_sample_B + bias * 2);
-        // writefln("Mixing: %x %x", dma_sounds[DirectSound.A].popped_sample, dma_sounds[DirectSound.B].popped_sample);
+        // writefln("Mixing: %x %x", mixed_sample_L, mixed_sample_R);
         push_to_buffer(Channel.L, [mixed_sample_L]);
         push_to_buffer(Channel.R, [mixed_sample_R]);
 
