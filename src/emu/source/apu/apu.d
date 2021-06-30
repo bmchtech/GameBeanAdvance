@@ -92,13 +92,21 @@ private:
     DMASound[2] dma_sounds;
 
     void sample() {
-        // TODO: mixing
-        short dma_sample_A = 2 * cast(short) (cast(byte) dma_sounds[DirectSound.A].popped_sample);
-        short dma_sample_B = 2 * cast(short) (cast(byte) dma_sounds[DirectSound.B].popped_sample);
+        short mixed_sample_L;
+        short mixed_sample_R;
+
+        if (dma_sounds[DirectSound.A].enabled_left ) mixed_sample_L += (cast(byte) dma_sounds[DirectSound.A].popped_sample);
+        if (dma_sounds[DirectSound.A].enabled_right) mixed_sample_R += (cast(byte) dma_sounds[DirectSound.A].popped_sample);
+        if (dma_sounds[DirectSound.B].enabled_left ) mixed_sample_L += (cast(byte) dma_sounds[DirectSound.B].popped_sample);
+        if (dma_sounds[DirectSound.B].enabled_right) mixed_sample_R += (cast(byte) dma_sounds[DirectSound.B].popped_sample);
+
+        mixed_sample_L += bias * 2;
+        mixed_sample_R += bias * 2;
         
-        short mixed_sample = cast(short) (dma_sample_A + dma_sample_B + bias * 2);
-        writefln("Mixing: %x %x", dma_sounds[DirectSound.A].popped_sample, dma_sounds[DirectSound.B].popped_sample);
-        push_to_buffer([mixed_sample]);
+        // short mixed_sample = cast(short) (dma_sample_A + dma_sample_B + bias * 2);
+        // writefln("Mixing: %x %x", dma_sounds[DirectSound.A].popped_sample, dma_sounds[DirectSound.B].popped_sample);
+        push_to_buffer(Channel.L, [mixed_sample_L]);
+        push_to_buffer(Channel.R, [mixed_sample_R]);
 
         scheduler.add_event(&sample, sample_rate);
     }

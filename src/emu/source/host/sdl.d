@@ -73,7 +73,7 @@ class GameBeanSDLHost {
         /* Set the audio format */
         wanted.freq = 44100;
         wanted.format = AUDIO_S16LSB;
-        wanted.channels = 1;    /* 1 = mono, 2 = stereo */
+        wanted.channels = 2;    /* 1 = mono, 2 = stereo */
         wanted.samples = 1024;  /* Good low-latency value for callback */
         wanted.callback = &apu.audiobuffer.callback;
         wanted.userdata = apu.audiobuffer.get_audio_data();
@@ -172,7 +172,7 @@ class GameBeanSDLHost {
             }
 
             audio_data.mutex.lock();
-                if (audio_data.buffer_offset < samples_per_callback * 3) {
+                if (audio_data.buffer[0].offset < samples_per_callback * 3) {
                     // writefln("Cycling");
                     gba.cycle_at_least_n_times(cycles_per_batch);
                     // gba_batch_enable = false;
