@@ -263,7 +263,9 @@ class ARM7TDMI {
 
         cycles_remaining = 0;
 
-        // Logger.instance.capture_cpu();
+        // if (memory.read_word(0x0300_1600) != 0) num_log += 100_000;
+
+        Logger.instance.capture_cpu();
 
         // if ((*pc & 0x0F00_0000) != 0x0800_0000) {
         //     error("PC out of range!");

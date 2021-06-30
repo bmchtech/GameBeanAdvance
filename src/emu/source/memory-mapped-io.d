@@ -208,7 +208,7 @@ class MMIO {
             case IME         + 0: return interrupt.read_IME  (0); 
             case IME         + 1: return interrupt.read_IME  (1); 
 
-            default: return 0;
+            default: error(format("MMIO Register %x accessed; doesn't exist.", address)); return 0;
         }
     }
 
@@ -410,7 +410,7 @@ class MMIO {
 
 
             case HALTCNT     + 0: gba.write_HALTCNT    (data); break;
-            default: break;
+            default: error(format("MMIO Register %x accessed; doesn't exist.", address);
         }
     }
 

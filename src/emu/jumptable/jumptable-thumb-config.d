@@ -18,7 +18,10 @@
 
 @DEFAULT()
 void nop(ushort opcode) {
-    error(format("No implementation for opcode %x", opcode));
+    // yes. making this a warning instead of an error looks stupid
+    // but some games literally try to run undefined instructions
+    // so what can i do.
+    warning(format("No implementation for opcode %x", opcode));
 }
 
 @LOCAL()
