@@ -34,8 +34,7 @@ $(LOG_DIR)/thumb-simple.log: $(SRC_DIR)/thumb-simple.S
 	gbafix $(BIN_DIR)/thumb-simple.gba
 
 # generate the instruction logs
-	-visualboyadvance-m $(BIN_DIR)/thumb-simple.gba 200300 > file 2>/dev/null |:
-	@rm file
+	NanoBoyAdvance --num_instructions 200300 $(BIN_DIR)/thumb-simple.gba
 	@sed -n -i.bak -e '196634,200300p' out.log
 	@rm out.log.bak
 	mv out.log $(LOG_DIR)/thumb-simple.log
@@ -54,8 +53,7 @@ $(LOG_DIR)/arm-addressing-mode-1.log: $(SRC_DIR)/arm-addressing-mode-1.S
 	gbafix $(BIN_DIR)/arm-addressing-mode-1.gba
 
 # generate the instruction logs
-	-visualboyadvance-m $(BIN_DIR)/arm-addressing-mode-1.gba 197924 > file 2>/dev/null |:
-	@rm file
+	NanoBoyAdvance --num_instructions 197924 $(BIN_DIR)/arm-addressing-mode-1.gba 
 	@sed -n -i.bak -e '196634,197924p' out.log
 	@rm out.log.bak
 	mv out.log $(LOG_DIR)/arm-addressing-mode-1.log
@@ -74,8 +72,7 @@ $(LOG_DIR)/arm-addressing-mode-2.log: $(SRC_DIR)/arm-addressing-mode-2.S
 	gbafix $(BIN_DIR)/arm-addressing-mode-2.gba
 
 # generate the instruction logs
-	-visualboyadvance-m $(BIN_DIR)/arm-addressing-mode-2.gba 197924 > file 2>/dev/null |:
-	@rm file
+	NanoBoyAdvance --num_instructions 197924 $(BIN_DIR)/arm-addressing-mode-2.gba 
 	@sed -n -i.bak -e '196634,197924p' out.log
 	@rm out.log.bak
 	mv out.log $(LOG_DIR)/arm-addressing-mode-2.log
@@ -94,8 +91,7 @@ $(LOG_DIR)/arm-addressing-mode-3.log: $(SRC_DIR)/arm-addressing-mode-3.S
 	gbafix $(BIN_DIR)/arm-addressing-mode-3.gba
 
 # generate the instruction logs
-	-visualboyadvance-m $(BIN_DIR)/arm-addressing-mode-3.gba 197924 > file 2>/dev/null |:
-	@rm file
+	NanoBoyAdvance --num_instructions 197924 $(BIN_DIR)/arm-addressing-mode-3.gba
 	@sed -n -i.bak -e '196634,197924p' out.log
 	@rm out.log.bak
 	mv out.log $(LOG_DIR)/arm-addressing-mode-3.log
@@ -114,8 +110,7 @@ $(LOG_DIR)/arm-opcodes.log: $(SRC_DIR)/arm-opcodes.S
 	gbafix $(BIN_DIR)/arm-opcodes.gba
 
 # generate the instruction logs
-	-visualboyadvance-m $(BIN_DIR)/arm-opcodes.gba 198634 > file 2>/dev/null |:
-	@rm file
+	NanoBoyAdvance --num_instructions 198634 $(BIN_DIR)/arm-opcodes.gba 
 	@sed -n -i.bak -e '196634,198634p' out.log
 	@rm out.log.bak
 	mv out.log $(LOG_DIR)/arm-opcodes.log
