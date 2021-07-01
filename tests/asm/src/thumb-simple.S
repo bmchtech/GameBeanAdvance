@@ -475,6 +475,12 @@ tests:
 
 @ ASR #2 tests (shift < 32)
 			
+			LDR   r0, [r7, #0x18]
+			MOV   r1, #0x1
+			LSL   r1, #0x8
+			ASR   r0, r1
+			BL    flagcheck
+			
 			LDR   r0, [r7, #0x14]
 			LDR   r1, [r7, #0x4]
 			ASR   r0, r1
@@ -482,6 +488,11 @@ tests:
 			
 			LDR   r0, [r7, #0x18]
 			LDR   r1, [r7, #0x28]
+			ASR   r0, r1
+			BL    flagcheck
+			
+			LDR   r0, [r7, #0x18]
+			MOV   r1, #0x4
 			ASR   r0, r1
 			BL    flagcheck
 			
@@ -2009,6 +2020,11 @@ mul_start:
 			LDR   r1, [r7, #0x18]
 			TST   r0, r1
 			BL    flagcheck
+
+			MOV   r0, #0x19
+			LDRSH r2, [r7, r0]
+			MOV   r0, #0x18
+			LDRSH r2, [r7, r0]
 
 infin:
 			B     infin
