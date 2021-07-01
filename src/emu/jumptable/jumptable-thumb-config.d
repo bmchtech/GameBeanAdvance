@@ -329,6 +329,7 @@ void run_01000001(ushort opcode) {
             ubyte low_byte = cast(ubyte) (cpu.regs[rm] & 0xFF);
             if (low_byte < 32 && low_byte != 0) {
                 cpu.set_flag_C(get_nth_bit(cpu.regs[rd], low_byte - 1));
+                warning(format("%x, %x %x", cpu.regs[rd], low_byte, cpu.regs[rd] >> low_byte));
                 // arithmetic shift requires us to cast to signed int first, then back to unsigned to store in registers.
                 cpu.regs[rd] = cast(uint) ((cast(int) cpu.regs[rd]) >> cpu.regs[rm]);
             } else if (low_byte >= 32) {
@@ -796,6 +797,7 @@ void run_11001REG(ushort opcode) {
 
 // multiple store
 void run_11000REG(ushort opcode) {
+    warning(format("STMIA"));
     //DEBUG_MESSAGE("Multiple Store (STMIA)");
     uint* start_address = &cpu.regs[0] + get_nth_bits(opcode, 8, 11);
     ubyte   register_list = cast(ubyte) get_nth_bits(opcode, 0, 8);
