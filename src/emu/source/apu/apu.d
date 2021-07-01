@@ -135,6 +135,38 @@ private:
     short bias;
 
 public:
+
+    // void write_SOUND2CNT_L(int target_byte, ubyte data) {
+    //     final switch (target_byte) {
+    //         case 0b0:
+    //             channel_tone.length             = (cast(float) (64 - get_nth_bits(data, 0, 6))) / 256.0;
+    //             channel_tone.duty               = tone_duty_table[get_nth_bits(data, 6, 8)];
+    //             break;
+
+    //         case 0b1:
+    //             channel_tone.envelope           = (cast(float) (get_nth_bits(data, 0, 3))) / 64.0;
+    //             channel_tone.envelope_direction = get_nth_bit(data, 3) ? EnvelopeDirection.DECREASING : EnvelopeDirection.INCREASING;
+    //             channel_tone.initial_volume     = get_nth_bits(data, 4, 8);
+    //             break;
+    //     }
+    // }
+
+    // void write_SOUND2CNT_H(int target_byte, ubyte data) {
+    //     final switch (target_byte) {
+    //         case 0b0:
+    //             channel_tone.frequency_raw        = get_nth_bits(data, 0, 8) | channel_tone.frequency_raw & ~0xFF;
+    //             break;
+            
+    //         case 0b1:
+    //             channel_tone.frequency_raw        = (get_nth_bits(data, 0, 2) << 8) | (channel_tone.frequency_raw & 0xFF);
+    //             channel_tone.stop_upon_completion = get_nth_bit(data, 14);   
+                
+    //             if (get_nth_bit(data, 15)) restart_channel_tone();
+    //     }
+        
+    //     channel_tone.frequency = 131072 / (2048 - channel_tone.frequency_raw);
+    // }
+    
     void write_SOUNDCNT_H(int target_byte, ubyte data) {
         final switch (target_byte) {
             case 0b0:

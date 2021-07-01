@@ -40,7 +40,7 @@ void check_cpu_state(CpuState expected, CpuState actual, string error_message) {
 
     assert_print_cpu_state( expected.type           ==  actual.type,           expected, actual, error_message);
     assert_print_cpu_state( expected.opcode         ==  actual.opcode,         expected, actual, error_message);
-    assert_print_cpu_state((expected.mode & 0x1F)   == (actual.mode & 0x1F),   expected, actual, error_message);
+    // assert_print_cpu_state((expected.mode & 0x1F)   == (actual.mode & 0x1F),   expected, actual, error_message);
     assert_print_cpu_state( expected.mem_0x03000003 ==  actual.mem_0x03000003, expected, actual, error_message);
 }
 
@@ -60,11 +60,11 @@ CpuState produce_expected_cpu_state(char[] input_string) {
 
     state.type           = tokens[0] == "ARM" ? CpuType.ARM : CpuType.THUMB;
     state.opcode         = to!uint(tokens[1][2..$],  16);
-    state.mode           = to!uint(tokens[18], 16);
-    state.mem_0x03000003 = to!uint(tokens[19], 16);
+    state.mode           = 0;
+    state.mem_0x03000003 = to!uint(tokens[18], 16);
 
     for (int i = 0; i < 16; i++) state.regs[i] = to!uint(tokens[i + 2], 16);
-    state.regs[15] -= state.type == CpuType.ARM ? 4 : 2;
+    state.regs[15] -= state.type == CpuType.ARM ? 8 : 4;
 
     return state;
 }
@@ -83,6 +83,8 @@ void test_thumb_mode(string gba_file, string log_file, int num_instructions) {
 
     bool wasPreviousInstructionARM = true; // if so, we reset the CPU's state
     for (int i = 0; i < num_instructions - 1; i++) {
+        // print_cpu_state(get_cpu_state(cpu));
+
         if (expected_output[i].type == CpuType.THUMB) {
             if (wasPreviousInstructionARM) {
                 cpu.set_bit_T(true);

@@ -103,6 +103,7 @@ class MMIO {
     enum IF            = 0x4000202; //  2    R/W   Interrupt Request Flags / IRQ Acknowledge
     enum IME           = 0x4000208; //  2    R/W   Interrupt Master Enable Register
 
+    enum WAITCNT       = 0x4000204; //  2    R/W   Game Pak Waitstate Control
     enum HALTCNT       = 0x4000301; //  1      W   Undocumented - Power Down Control
 
     this(GBA gba, PPU ppu, APU apu, DMAManager dma, TimerManager timers, InterruptManager interrupt, KeyInput keyinput) {
@@ -160,8 +161,8 @@ class MMIO {
             // case SOUND4CNT_L + 1: return apu.read_SOUND4CNT_L(); 
             // case SOUND4CNT_H + 0: return apu.read_SOUND4CNT_H(); 
             // case SOUND4CNT_H + 1: return apu.read_SOUND4CNT_H(); 
-            // case SOUNDCNT_L  + 0: return apu.read_SOUNDCNT_L(); 
-            // case SOUNDCNT_L  + 1: return apu.read_SOUNDCNT_L(); 
+            case SOUNDCNT_L  + 0: return 0; // TODO: return apu.read_SOUNDCNT_L(); 
+            case SOUNDCNT_L  + 1: return 0; //       return apu.read_SOUNDCNT_L(); 
             case SOUNDCNT_H  + 0: return apu.read_SOUNDCNT_H(0); 
             case SOUNDCNT_H  + 1: return apu.read_SOUNDCNT_H(1); 
             // case SOUNDCNT_X  + 0: return apu.read_SOUNDCNT_X(0); 
@@ -208,7 +209,10 @@ class MMIO {
             case IME         + 0: return interrupt.read_IME  (0); 
             case IME         + 1: return interrupt.read_IME  (1); 
 
-            default: error(format("MMIO Register %x accessed; doesn't exist.", address)); return 0;
+            case WAITCNT     + 0: return 0; // TODO
+            case WAITCNT     + 1: return 0;
+
+            default: warning(format("MMIO Register %x read from; doesn't exist.", address)); return 0;
         }
     }
 
@@ -315,8 +319,8 @@ class MMIO {
             // case SOUND4CNT_L + 1: apu.write_SOUND4CNT_L(); break; 
             // case SOUND4CNT_H + 0: apu.write_SOUND4CNT_H(); break; 
             // case SOUND4CNT_H + 1: apu.write_SOUND4CNT_H(); break; 
-            // case SOUNDCNT_L  + 0: apu.write_SOUNDCNT_L (0, data); break; 
-            // case SOUNDCNT_L  + 1: apu.write_SOUNDCNT_L (1, data); break; 
+            case SOUNDCNT_L  + 0: break; // TODO: apu.write_SOUNDCNT_L (0, data); break; 
+            case SOUNDCNT_L  + 1: break; //       apu.write_SOUNDCNT_L (1, data); break; 
             case SOUNDCNT_H  + 0: apu.write_SOUNDCNT_H (0, data); break; 
             case SOUNDCNT_H  + 1: apu.write_SOUNDCNT_H (1, data); break; 
             // case SOUNDCNT_X  + 0: apu.write_SOUNDCNT_X (0, data); break; 
@@ -408,9 +412,11 @@ class MMIO {
             case IME         + 0: interrupt.write_IME  (0, data); break;
             case IME         + 1: interrupt.write_IME  (1, data); break;
 
-
+            case WAITCNT     + 0: break; // TODO
+            case WAITCNT     + 1: break;
             case HALTCNT     + 0: gba.write_HALTCNT    (data); break;
-            default: error(format("MMIO Register %x accessed; doesn't exist.", address);
+
+            default: warning(format("MMIO Register %x written to with value %x; doesn't exist.", address, data));
         }
     }
 
