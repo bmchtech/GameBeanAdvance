@@ -118,10 +118,12 @@ void test_arm_mode(string gba_file, string log_file, int num_instructions, int s
     cpu.set_mode(cpu.MODE_SYSTEM);
 
     for (int i = 0; i < num_instructions - 1; i++) {
+        // print_cpu_state(get_cpu_state(cpu));
+
         // ARM instructions won't be run until log #190 is passed (the ARM that occurs before then is needless 
         // busywork as far as these tests are concerned, and make it harder to unit test the emulator).
         if (i == start_instruction) {
-            cpu.set_bit_T(false);
+            // cpu.set_bit_T(false);
             *cpu.cpsr = (*cpu.cpsr & 0x00FFFFFFFF) | 0x60000000; // theres a bit of arm instructions that edit the CPSR that we skip, so let's manually set it.
         }
 
@@ -144,23 +146,23 @@ void test_arm_mode(string gba_file, string log_file, int num_instructions, int s
 
 @("tests-thumb") 
 unittest {
-    test_thumb_mode("../../tests/asm/bin/thumb-simple.gba", "../../tests/asm/logs/thumb-simple.log", 3666);
+    test_thumb_mode("../../tests/asm/bin/thumb-simple.gba", "../../tests/asm/logs/thumb-simple.log", 3866);
 }
 
-// @("tests-arm-addressing-mode-1") 
-// unittest {
-//     test_arm_mode("../../tests/asm/bin/arm-addressing-mode-1.gba", "../../tests/asm/logs/arm-addressing-mode-1.log", 1290, 216, true);
-// }
+@("tests-arm-addressing-mode-1") 
+unittest {
+    test_arm_mode("../../tests/asm/bin/arm-addressing-mode-1.gba", "../../tests/asm/logs/arm-addressing-mode-1.log", 1290, 216, true);
+}
 
-// @("tests-arm-addressing-mode-2") 
-// unittest {
-//     test_arm_mode("../../tests/asm/bin/arm-addressing-mode-2.gba", "../../tests/asm/logs/arm-addressing-mode-2.log", 1290, 212, true);
-// }
+@("tests-arm-addressing-mode-2") 
+unittest {
+    test_arm_mode("../../tests/asm/bin/arm-addressing-mode-2.gba", "../../tests/asm/logs/arm-addressing-mode-2.log", 1290, 212, true);
+}
 
-// @("tests-arm-addressing-mode-3") 
-// unittest {
-//     test_arm_mode("../../tests/asm/bin/arm-addressing-mode-3.gba", "../../tests/asm/logs/arm-addressing-mode-3.log", 1290, 212, true);
-// }
+@("tests-arm-addressing-mode-3") 
+unittest {
+    test_arm_mode("../../tests/asm/bin/arm-addressing-mode-3.gba", "../../tests/asm/logs/arm-addressing-mode-3.log", 1290, 212, true);
+}
 
 // @("tests-arm-opcodes") 
 // unittest {

@@ -329,9 +329,8 @@ void run_01000001(ushort opcode) {
             ubyte low_byte = cast(ubyte) (cpu.regs[rm] & 0xFF);
             if (low_byte < 32 && low_byte != 0) {
                 cpu.set_flag_C(get_nth_bit(cpu.regs[rd], low_byte - 1));
-                warning(format("%x, %x %x", cpu.regs[rd], low_byte, cpu.regs[rd] >> low_byte));
                 // arithmetic shift requires us to cast to signed int first, then back to unsigned to store in registers.
-                cpu.regs[rd] = cast(uint) ((cast(int) cpu.regs[rd]) >> cpu.regs[rm]);
+                cpu.regs[rd] = cast(uint) ((cast(int) cpu.regs[rd]) >> low_byte);
             } else if (low_byte >= 32) {
                 cpu.set_flag_C(cpu.regs[rd] >> 31);
                 if (cpu.get_flag_C()) {
@@ -560,6 +559,7 @@ void run_01000110(ushort opcode) {
 // branch exchange
 void run_01000111(ushort opcode) {
    uint pointer = cpu.regs[get_nth_bits(opcode, 3, 7)];
+//    warning(format("%x %x", pointer, get_nth_bits(opcode, 3, 7)));
    if (get_nth_bits(opcode, 3, 7) == 15) pointer += 2;
    *cpu.pc = pointer & 0xFFFFFFFE; // the PC must be even, so we & with 0xFFFFFFFE.
    cpu.set_bit_T(pointer & 1);
@@ -607,8 +607,8 @@ void run_0101LSBR(ushort opcode) {
     
     @IF( L !S  B) if ((address & 0b1 ) == 0b1 ) value = ((value & 0xFF)     << 24) | (value >> 8);
 
-    @IF( L  S  B) if ((address & 0b1 ) == 0b1 ) value = ((value & 0xFF)     << 24) | (value >> 8);
-    @IF( L  S  B) value = sign_extend(value & 0xFFFF, 16);
+    @IF( L  S  B) if ((address & 0b1 ) == 0b1 ) value = sign_extend(value >> 8, 8); // get this - if LDRSH acts on an odd address, it acts like LDRSB
+    @IF( L  S  B) else                          value = sign_extend(value,      16);
 
     cpu.regs[rd] = value;
 
@@ -797,7 +797,7 @@ void run_11001REG(ushort opcode) {
 
 // multiple store
 void run_11000REG(ushort opcode) {
-    warning(format("STMIA"));
+    // warning(format("STMIA"));
     //DEBUG_MESSAGE("Multiple Store (STMIA)");
     uint* start_address = &cpu.regs[0] + get_nth_bits(opcode, 8, 11);
     ubyte   register_list = cast(ubyte) get_nth_bits(opcode, 0, 8);
