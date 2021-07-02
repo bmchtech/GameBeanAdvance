@@ -34,8 +34,8 @@ $(LOG_DIR)/thumb-simple.log: $(SRC_DIR)/thumb-simple.S
 	gbafix $(BIN_DIR)/thumb-simple.gba
 
 # generate the instruction logs
-	NanoBoyAdvance --num_instructions 200300 $(BIN_DIR)/thumb-simple.gba
-	@sed -n -i.bak -e '196634,200300p' out.log
+	NanoBoyAdvance --num_instructions 200500 $(BIN_DIR)/thumb-simple.gba
+	@sed -n -i.bak -e '196634,200500p' out.log
 	@rm out.log.bak
 	mv out.log $(LOG_DIR)/thumb-simple.log
 
