@@ -304,6 +304,12 @@ class ARM7TDMI {
     }
 
     void execute(uint opcode) {
+            // write(format("%08x |", opcode));
+            
+            // for (int j = 0; j < 16; j++)
+            //     write(format("%08x ", regs[j]));
+
+            // writeln();
         if (get_bit_T()) {
             jumptable_thumb.jumptable[opcode >> 8](this, cast(ushort)opcode);
         } else {

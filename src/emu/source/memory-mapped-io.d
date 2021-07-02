@@ -212,7 +212,7 @@ class MMIO {
             case WAITCNT     + 0: return 0; // TODO
             case WAITCNT     + 1: return 0;
 
-            default: warning(format("MMIO Register %x read from; doesn't exist.", address)); return 0;
+            default: /*warning(format("MMIO Register %x read from; doesn't exist.", address));*/ return 0;
         }
     }
 
@@ -416,7 +416,7 @@ class MMIO {
             case WAITCNT     + 1: break;
             case HALTCNT     + 0: gba.write_HALTCNT    (data); break;
 
-            default: warning(format("MMIO Register %x written to with value %x; doesn't exist.", address, data));
+            default: /*warning(format("MMIO Register %x written to with value %x; doesn't exist.", address, data));*/ break;
         }
     }
 
