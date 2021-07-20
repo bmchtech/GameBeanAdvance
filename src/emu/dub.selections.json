@@ -1,9 +1,13 @@
 {
 	"fileVersion": 1,
 	"versions": {
+		"bindbc-imgui": "0.6.0",
 		"bindbc-loader": "0.3.2",
+		"bindbc-opengl": "0.13.0",
 		"bindbc-sdl": "0.20.0",
 		"commandr": "0.2.0",
+		"derelict-imgui": "0.10.0",
+		"derelict-util": "2.0.6",
 		"gperftools_d": "0.1.0",
 		"silly": "1.1.1"
 	}

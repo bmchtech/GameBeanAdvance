@@ -903,8 +903,8 @@
 - FORMAT:  ----000000AS------------1001----
 {
     uint* result = &cpu.regs[get_nth_bits(opcode, 16, 20)];
-    *result = cpu.regs[get_nth_bits(opcode, 0, 4)] * cpu.regs[get_nth_bits(opcode, 8, 12)];
-    @IF( A) *result += cpu.regs[get_nth_bits(opcode, 12, 16)];
+    @IF( A) *result += cpu.regs[get_nth_bits(opcode, 0, 4)] * cpu.regs[get_nth_bits(opcode, 8, 12)];
+    @IF(!A) *result  = cpu.regs[get_nth_bits(opcode, 0, 4)] * cpu.regs[get_nth_bits(opcode, 8, 12)];
 
     @IF( S) cpu.set_flag_Z(*result == 0);
     @IF( S) cpu.set_flag_N(*result >> 31);

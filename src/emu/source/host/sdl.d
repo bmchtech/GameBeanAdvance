@@ -12,6 +12,10 @@ import apu;
 
 import core.sync.mutex;
 
+version (Imgui) {
+    import derelict.imgui.imgui;
+}
+
 class GameBeanSDLHost {
     // extern (C) {
     //     static void fill_audio(void* userdata, ubyte* stream, int len) nothrow {
@@ -78,19 +82,6 @@ class GameBeanSDLHost {
         wanted.callback = &apu.audiobuffer.callback;
         wanted.userdata = apu.audiobuffer.get_audio_data();
 
-        // audio_data.chunk = new ubyte[44100 * 2];
-        // audio_data.pos = audio_data.chunk.ptr;
-        // audio_data.bytes_left = 44100;
-        // audio_data.total_bytes = 44100;
-        // audio_data.verification = VERIFICATION;
-
-        // short[] buffer = new short[0x10000];
-        // for (int i = 0; i < 0x10000; i++) {
-            // buffer[i] = cast(short) (256.0 * (cast(double)(i % 200)) / 200.0);
-        // }
-
-        // push_to_buffer(buffer);
-        /* Open the audio device, forcing the desired format */
         int output = SDL_OpenAudio(&wanted, &received);
         if (output < 0) {
             writefln("Couldn't open audio: %s\n", SDL_GetError());
@@ -102,6 +93,35 @@ class GameBeanSDLHost {
         gba.set_internal_sample_rate(16_780_000 / received.freq);
         this.sample_rate          = received.freq;
         this.samples_per_callback = received.samples;
+
+        version (Imgui) {
+            writefln("Setting up imgui");
+            
+            loadSDL();
+	        // DerelictImgui.load();
+            // loadImGui();
+            // loadOpenGL();
+            igCreateContext();
+            // ImGuiIO* io = igGetIO();
+            // igStyleColorsDark(null);
+
+            // ImGui_ImplSDL2_InitForOpenGL(window, null);
+
+            // Setup Dear ImGui context
+            // IMGUI_CHECKVERSION();
+	        // DerelictImgui.load("cimgui.so");
+            // igCreateContext();
+            // ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+            // // Setup Dear ImGui style
+            // ImGui::StyleColorsDark();
+
+            // // Setup Platform/Renderer bindings
+            // // window is the SDL_Window*
+            // // context is the SDL_GLContext
+            // ImGui_ImplSDL2_InitForOpenGL(window, context);
+            // ImGui_ImplOpenGL3_Init();
+        }
 
         writeln("Complete.");
     }
@@ -208,6 +228,7 @@ class GameBeanSDLHost {
     void exit() {
         SDL_DestroyWindow(window);
         SDL_Quit();
+        
         running = false;
     }
 
@@ -235,6 +256,9 @@ class GameBeanSDLHost {
         if (cpu_tracing_enabled)
             trace.print_trace();
     }
+
+    int counter = 0;
+    float f = 0;
 
 private:
     uint sample_rate;
@@ -284,6 +308,25 @@ private:
 
         // render present
         SDL_RenderPresent(renderer);
+
+        version (Imgui) {
+            igBegin("Hello, world!", null, cast(ImGuiWindowFlags)0);                          // Create a window called "Hello, world!" and append into it.
+
+            igText("This is some useful text.");               // Display some text (you can use a format strings too)
+            // igCheckbox("Demo Window", true);      // Edit bools storing our window open/close state
+            // igCheckbox("Another Window", true);
+
+            igSliderFloat("float", &f, 0.0f, 1.0f, null, 0);            // Edit 1 float using a slider from 0.0f to 1.0f
+            //igColorEdit3("clear color", cast(float*)&clear_color.x); // Edit 3 floats representing a color
+
+            if (igButton("Button", ImVec2(0,0)))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+                counter++;
+            igSameLine(0,0);
+            igText("counter = %d", counter);
+
+            igText("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / igGetIO().Framerate, igGetIO().Framerate);
+            igEnd();
+        }
     }
 
     enum KEYMAP = [

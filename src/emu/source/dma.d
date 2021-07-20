@@ -75,7 +75,7 @@ public:
         if (dma_channels[current_channel].transferring_words) {
             bytes_to_transfer *= 4;
             for (int i = 0; i < bytes_to_transfer; i += 4) {
-                if (is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x successfully transfered %x from %x to %x. %x words done.", current_channel, memory.read_word(dma_channels[current_channel].source_buf + source_offset), dma_channels[current_channel].source_buf + source_offset, dma_channels[current_channel].dest_buf, i);
+                // if (is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x successfully transfered %x from %x to %x. %x words done.", current_channel, memory.read_word(dma_channels[current_channel].source_buf + source_offset), dma_channels[current_channel].source_buf + source_offset, dma_channels[current_channel].dest_buf, i);
 
                 memory.write_word(dma_channels[current_channel].dest_buf + dest_offset, memory.read_word(dma_channels[current_channel].source_buf + source_offset));
                 source_offset += source_increment;
