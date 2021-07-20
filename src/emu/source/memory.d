@@ -6,9 +6,7 @@ import util;
 import apu;
 import mmio;
 
-// for more details on the GBA memory map: https://problemkaputt.de/gbatek.htm#gbamemorymap
-// i'm going to probably have to split this struct into more specific values later,
-// but for now ill just do the ones i can see myself easily using.
+Memory memory;
 
 class Memory {
     bool has_updated = false;
@@ -74,11 +72,7 @@ class Memory {
         this.oam         = new ubyte[SIZE_OAM];
         this.rom         = new ubyte[SIZE_ROM];
 
-        // manual overrides: TEMPORARY
-        // TODO: remove when properly implemented
-        // *DISPCNT = 6;
-        // *SOUNDBIAS = 0x200;
-        // write_halfword(0x4000130, 0x03FF);
+        memory = this;
     }
 
     // MUST BE CALLED BEFORE READ/WRITE TO 0x0400_0000 ARE ACCESSED!
@@ -91,8 +85,6 @@ class Memory {
     }
 
     ushort read_halfword(uint address) {    
-        // compiler is a dumdum, i originally had (address + 0) << 0 for clarity
-        // and for some reason the add / shl appear in the asm output
         return Aligned!(ushort).read(address);
     }
 
@@ -189,7 +181,7 @@ class Memory {
                 case REGION_VRAM:         *(cast(T*) (&vram[0]        + (address & (SIZE_VRAM        - 1)))) = value; break;
                 case REGION_OAM:          *(cast(T*) (&oam[0]         + (address & (SIZE_OAM         - 1)))) = value; break;
 
-                case REGION_IO_REGISTERS:
+                case REGION_IO_REGISTERS: 
                     static if (is(T == uint)) {
                         // writefln("%x", value);
                         mmio.write(address + 0, (value >>  0) & 0xFF);

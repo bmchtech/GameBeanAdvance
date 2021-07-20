@@ -263,13 +263,13 @@ class ARM7TDMI {
 
         cycles_remaining = 0;
 
-        // if (memory.read_word(0x0300_1600) != 0) num_log += 100_000;
+        // if (*pc == 0x03000154) num_log += 100;
 
-        Logger.instance.capture_cpu();
+        // Logger.instance.capture_cpu();
 
-        // if ((*pc & 0x0F00_0000) != 0x0800_0000) {
-        //     error("PC out of range!");
-        // }
+        if (*pc > 0x0FFF_FFFF) {
+            error("PC out of range!");
+        }
 
         // if ( && !get_nth_bit(*cpsr, 7)) {
             // exception(CpuException.IRQ);
@@ -277,6 +277,9 @@ class ARM7TDMI {
 
         uint opcode = fetch();
         if (num_log > 0) {
+            if (num_log == 2) {
+                writefln("First.");
+            }
             num_log--;
             write(format("%08x |", opcode));
             

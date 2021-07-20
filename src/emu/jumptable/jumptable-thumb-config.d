@@ -508,9 +508,12 @@ void run_01000100(ushort opcode) {
     ubyte rm = cast(ubyte) get_nth_bits(opcode, 3, 7);
     ubyte rd = cast(ubyte) (get_nth_bits(opcode, 0, 3) | (get_nth_bit(opcode, 7) << 3));
 
+    if (rd == 15) cpu.regs[rd] += 2;
+    if (rm == 15) cpu.regs[rd] += 2;
+
     cpu.regs[rd] += cpu.regs[rm];
 
-    if (rd == 15 && (cpu.regs[rd] & 1)) cpu.regs[15]++;
+    if (rd == 15 && (cpu.regs[rd] & 1)) cpu.regs[15]--;
      
     cpu.cycles_remaining += 1;
 }
@@ -521,6 +524,10 @@ void run_01000101(ushort opcode) {
     // this uses a two's complement trick that makes ADD the same as SUB.
     ubyte rm = cast(ubyte) get_nth_bits(opcode, 3, 7);
     ubyte rd = cast(ubyte) get_nth_bits(opcode, 0, 3) | (get_nth_bit(opcode, 7) << 3);
+
+    if (rd == 15) cpu.regs[rd] += 2;
+    if (rm == 15) cpu.regs[rm] += 2;
+
     int rm_value     = ~cpu.regs[rm] + 1; // the trick is implemented here
     int old_rd_value = cpu.regs[rd];
 

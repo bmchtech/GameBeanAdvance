@@ -20,6 +20,7 @@ enum Interrupt {
     GAMEPAK              = 8192
 }
 
+
 class InterruptManager {
     this(bool delegate() interrupt_cpu) {
         this.interrupt_cpu = interrupt_cpu;
