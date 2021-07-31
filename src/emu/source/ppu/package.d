@@ -8,4 +8,5 @@ public {
     import ppu.effects;
     import ppu.point;
     import ppu.delta_optimization;
+    import ppu.layer;
 }

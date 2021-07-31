@@ -315,10 +315,10 @@ class MMIO {
             // case SOUND3CNT_H + 1: apu.write_SOUND3CNT_H(); break; 
             // case SOUND3CNT_X + 0: apu.write_SOUND3CNT_X(); break; 
             // case SOUND3CNT_X + 1: apu.write_SOUND3CNT_X(); break; 
-            // case SOUND4CNT_L + 0: apu.write_SOUND4CNT_L(); break; 
-            // case SOUND4CNT_L + 1: apu.write_SOUND4CNT_L(); break; 
-            // case SOUND4CNT_H + 0: apu.write_SOUND4CNT_H(); break; 
-            // case SOUND4CNT_H + 1: apu.write_SOUND4CNT_H(); break; 
+            case SOUND4CNT_L + 0: apu.write_SOUND4CNT_L(0, data); break; 
+            case SOUND4CNT_L + 1: apu.write_SOUND4CNT_L(1, data); break; 
+            case SOUND4CNT_H + 0: apu.write_SOUND4CNT_H(0, data); break; 
+            case SOUND4CNT_H + 1: apu.write_SOUND4CNT_H(1, data); break; 
             case SOUNDCNT_L  + 0: break; // TODO: apu.write_SOUNDCNT_L (0, data); break; 
             case SOUNDCNT_L  + 1: break; //       apu.write_SOUNDCNT_L (1, data); break; 
             case SOUNDCNT_H  + 0: apu.write_SOUNDCNT_H (0, data); break; 
@@ -335,6 +335,8 @@ class MMIO {
             case FIFO_B      + 1: apu.write_FIFO       (data, DirectSound.B); break;
             case FIFO_B      + 2: apu.write_FIFO       (data, DirectSound.B); break;
             case FIFO_B      + 3: apu.write_FIFO       (data, DirectSound.B); break;
+
+            case 0x4000090: writefln("WAVERAM %x", data); 
 
             case DMA0SAD     + 0: dma.write_DMAXSAD    (0, data, 0); break;
             case DMA0SAD     + 1: dma.write_DMAXSAD    (1, data, 0); break;

@@ -36,13 +36,9 @@ enum BackgroundMode {
     ROTATION_SCALING
 }
 
-static Background[] backgrounds;
-
-void background_init(Memory memory) {
-    backgrounds = [
+static Background[] backgrounds = [
         Background(),
         Background(),
         Background(),
         Background()
     ];
-}
