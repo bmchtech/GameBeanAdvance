@@ -65,11 +65,12 @@ extern (C) {
             //     error("Channel buffers have differing lengths!");
             // }
 
+            double ratio = 1;
             if (len / 4 > audio_data.buffer[Channel.L].offset) {
                 try { warning("Emulator too slow!"); } catch (Exception e) {}
             }
 
-            len = (len > (audio_data.buffer[Channel.L].offset * 2) ? (audio_data.buffer[Channel.L].offset * 2) : len);
+            len = (len > (audio_data.buffer[Channel.L].offset * 4) ? (audio_data.buffer[Channel.L].offset * 4) : len);
 
             for (int i = 0; i < len / 4; i++) {
                 for (int channel = 0; channel < 2; channel++) {

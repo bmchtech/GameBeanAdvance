@@ -5,6 +5,8 @@ import memory;
 import util;
 import scheduler;
 
+import apu.channels.noise_channel;
+
 import std.stdio;
 
 enum DirectSound {
@@ -34,6 +36,8 @@ public:
         this.bias                    = 0x100;
 
         this.scheduler = scheduler;
+
+        noise_channel = new NoiseChannel(scheduler);
     }
 
     void on_timer_overflow(int timer_id) {
@@ -51,6 +55,9 @@ public:
     }
 
 private:
+
+    DMASound[2]  dma_sounds;
+    NoiseChannel noise_channel;
 
     uint sample_rate;
     uint cycles_till_next_sample;
@@ -87,8 +94,6 @@ private:
         }
     }
 
-    DMASound[2] dma_sounds;
-
     void sample() {
         short mixed_sample_L;
         short mixed_sample_R;
@@ -97,6 +102,9 @@ private:
         if (dma_sounds[DirectSound.A].enabled_right) mixed_sample_R += (cast(byte) dma_sounds[DirectSound.A].popped_sample);
         if (dma_sounds[DirectSound.B].enabled_left ) mixed_sample_L += (cast(byte) dma_sounds[DirectSound.B].popped_sample);
         if (dma_sounds[DirectSound.B].enabled_right) mixed_sample_R += (cast(byte) dma_sounds[DirectSound.B].popped_sample);
+
+        mixed_sample_L += noise_channel.sample(sample_rate);
+        mixed_sample_R += noise_channel.sample(sample_rate);
 
         mixed_sample_L += bias * 2;
         mixed_sample_R += bias * 2;
@@ -164,6 +172,33 @@ public:
         
     //     channel_tone.frequency = 131072 / (2048 - channel_tone.frequency_raw);
     // }
+
+    void write_SOUND4CNT_L(int target_byte, ubyte data) {
+        writefln("For fucks sake %x %x", target_byte, data);
+        final switch (target_byte) {
+            case 0b0:
+                noise_channel.set_length(get_nth_bits(data, 0, 6));
+                break;
+            case 0b1:
+                noise_channel.set_volume(get_nth_bits(data, 4, 8));
+                break;
+        }
+    }
+    
+    void write_SOUND4CNT_H(int target_byte, ubyte data) {
+        writefln("Written to %x %x", target_byte, data);
+        final switch (target_byte) {
+            case 0b0:
+                noise_channel.set_dividing_ratio       (get_nth_bits(data, 0, 3));
+                noise_channel.set_counter_width        (get_nth_bit (data, 3));
+                noise_channel.set_shift_clock_frequency(get_nth_bits(data, 4, 8));
+                break;
+
+            case 0b1:
+                // TODO
+                break;
+        }
+    }
     
     void write_SOUNDCNT_H(int target_byte, ubyte data) {
         final switch (target_byte) {

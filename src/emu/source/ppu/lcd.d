@@ -18,6 +18,11 @@ struct FixedPoint {
 }
 
 class PPU {
+    // General information:
+    // - Contains 227 scanlines, 160+ is VBLANK. VBLANK is not set on scanline 227.
+    // - HBLANK is constantly toggled
+    // - Although the drawing time is only 960 cycles (240*4), the H-Blank flag is "0" for a total of 1006 cycles.
+
 public:
     void delegate(uint) interrupt_cpu;
     void delegate()     on_hblank_callback;
@@ -43,7 +48,7 @@ public:
         scheduler.add_event(&on_hblank_start, 240 * 4);
         scheduler.add_event(&on_vblank_start, 308 * 160 * 4);
 
-        background_init(memory);
+        // background_init(memory);
     }
 
     void on_hblank_start() {
@@ -459,8 +464,6 @@ private:
             // relevant information.
             int attribute_1 = memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 2);
             int attribute_2 = memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 4);
-            uint priority = get_nth_bits(attribute_2, 10, 11);
-            if (priority != given_priority) continue;
 
             int size   = get_nth_bits(attribute_1, 14, 16);
             int shape  = get_nth_bits(attribute_0, 14, 16);
@@ -480,6 +483,7 @@ private:
             if (scanline < topleft_y || scanline >= topleft_y + (height << 3)) continue;
 
             uint base_tile_number = cast(ushort) get_nth_bits(attribute_2, 0, 10);
+            uint priority = get_nth_bits(attribute_2, 10, 11);
 
             int tile_number_increment_per_row = obj_character_vram_mapping ? (get_nth_bit(attribute_0, 9) ? width >> 1: width) : 32;
 
@@ -490,8 +494,6 @@ private:
 
             bool scaled        = get_nth_bit(attribute_0, 8);
             int scaling_number = get_nth_bits(attribute_1, 9, 14);
-
-            bool bpp_8         = get_nth_bit(attribute_0, 13);
 
             PMatrix p_matrix = PMatrix(
                 convert_from_8_8f_to_double(memory.read_halfword(memory.OFFSET_OAM + 0x06 + 0x20 * scaling_number)),
@@ -515,9 +517,7 @@ private:
                                         get_nth_bits(attribute_2, 12, 16),
                                         flipped_x, flipped_y, get_nth_bit(attribute_0, 9));
 
-            // TODO: this is scuffed
-            if (bpp_8) Render!(true ).texture(Layer.A, texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline));
-            else       Render!(false).texture(Layer.A, texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline));
+            Render!(false).texture(Layer.A, texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline));
         }
     }
 
