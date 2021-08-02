@@ -67,6 +67,7 @@ public:
         }
 
         hblank = false;
+        writefln("Hblank????");
         scanline++;
 
         scheduler.add_event(&on_hblank_start, 240 * 4);
@@ -96,6 +97,7 @@ public:
     }
 
     void render() {
+        writefln("Rendering scanline %x w/ mode %x", scanline, bg_mode);
         switch (bg_mode) {
             case 0: 
                 render_sprites(0);
@@ -405,8 +407,6 @@ private:
     }
 
     void render_background__rotation_scaling(uint background_id) {
-        // writefln("Rendering this shit");
-
         // do we even render?
         Background background = backgrounds[background_id];
         if (!background.enabled) return;

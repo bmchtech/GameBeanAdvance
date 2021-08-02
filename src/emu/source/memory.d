@@ -5,6 +5,7 @@ import std.stdio;
 import util;
 import apu;
 import mmio;
+import cpu;
 
 Memory memory;
 
@@ -57,8 +58,6 @@ class Memory {
     enum OFFSET_ROM_3        = 0xC000000;
     enum OFFSET_SRAM         = 0xE000000;
 
-    uint bios_open_bus = 0;
-
     this() {
         video_buffer = new uint[][](240, 160);
         fifo_a = new Fifo!ubyte(0x20, 0x00);
@@ -106,41 +105,6 @@ class Memory {
         return Aligned!(uint).write(address, value);
     }
 
-    ubyte read_memory(uint address) {
-        switch ((address >> 24) & 0xF) {
-            case REGION_BIOS:         return bios       [address & (SIZE_BIOS        - 1)]; // incorrect - implement properly later
-            case 0x1:                 return 0x0; // nothing is mapped here
-            case REGION_WRAM_BOARD:   return wram_board [address & (SIZE_WRAM_BOARD  - 1)];
-            case REGION_WRAM_CHIP:    return wram_chip  [address & (SIZE_WRAM_CHIP   - 1)];
-            case REGION_IO_REGISTERS: return mmio.read(address);
-            case REGION_PALETTE_RAM:  return palette_ram[address & (SIZE_PALETTE_RAM - 1)];
-            case REGION_VRAM:         return vram       [address & (SIZE_VRAM        - 1)];
-            case REGION_OAM:          return oam        [address & (SIZE_OAM         - 1)];
-
-            default:
-                // this is on its own because when waitstates are implemented, this is going
-                // to get a lot more complicated
-                return rom[address & (SIZE_ROM - 1)];
-        }
-    }
-
-    void write_memory(uint address, ubyte value) {
-        switch ((address >> 24) & 0xF) {
-            case REGION_BIOS:         break; // cannot write to bios
-            case 0x1:                 break; // nothing is mapped here
-            case REGION_WRAM_BOARD:   wram_board [address & (SIZE_WRAM_BOARD  - 1)] = value; break;
-            case REGION_WRAM_CHIP:    wram_chip  [address & (SIZE_WRAM_CHIP   - 1)] = value; break;
-            case REGION_IO_REGISTERS: mmio.write(address, value); break;
-            case REGION_PALETTE_RAM:  palette_ram[address & (SIZE_PALETTE_RAM - 1)] = value; break;
-            case REGION_VRAM:         vram       [address & (SIZE_VRAM        - 1)] = value; break;
-            case REGION_OAM:          oam        [address & (SIZE_OAM         - 1)] = value; break;
-
-            default:
-                // rom is read-only
-                break;
-        }
-    }
-
     // trying a templated style of read/write, see how it goes.
     // things can be faster if theyre mem aligned, because you know the address falls into one region only
     // don't use for mmio yet
@@ -174,6 +138,7 @@ class Memory {
         }
 
         void write(uint address, T value) {
+            if ((address & 0xFFFF0000) == 0x06000000) { writefln("Wrote %x to %x", value, address); }
             switch ((address >> 24) & 0xF) {
                 case REGION_BIOS:         break; // incorrect - implement properly later
                 case 0x1:                 break; // nothing is mapped here

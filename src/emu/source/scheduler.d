@@ -52,14 +52,16 @@ class Scheduler {
     }
 
     void remove_event(Event* event) {
-        if (event.prev != null) {
-            event.prev.next = event.next;
-        } else {
-            head = event.next;
+        if (event == head) {
+            head = head.next;
         }
 
         if (event.next != null) {
             event.next.prev = event.prev;
+        }
+
+        if (event.prev != null) {
+            event.prev.next = event.next;
         }
 
         event.destroy();

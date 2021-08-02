@@ -17,6 +17,8 @@ version (LDC) {
     import ldc.intrinsics;
 }
 
+ulong num_log = 0;
+
 enum CPU_STATE_LOG_LENGTH = 1;
 
 class ARM7TDMI {
@@ -50,8 +52,6 @@ class ARM7TDMI {
         cpsr = &regs[16];
         spsr = &regs[17];
     }
-
-    ulong num_log = 0;
 
     // returns true if the exception is accepted (or, excepted :P)
     bool exception(const CpuException exception) {
@@ -262,7 +262,7 @@ class ARM7TDMI {
 
         cycles_remaining = 0;
 
-        // if (*pc == 0x03000154) num_log += 100;
+        // if (*pc == 0x0800_06f8) num_log += 100;
 
         // Logger.instance.capture_cpu();
 
