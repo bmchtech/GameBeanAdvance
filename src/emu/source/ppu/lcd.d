@@ -538,7 +538,7 @@ private:
          
             Texture texture = Texture(base_tile_number, width << 3, height << 3, tile_number_increment_per_row, 
                                         scaled, p_matrix, Point(middle_x, middle_y),
-                                        0x10000, 0x200,
+                                        memory.OFFSET_VRAM + 0x10000, 0x200,
                                         get_nth_bits(attribute_2, 12, 16),
                                         flipped_x, flipped_y, get_nth_bit(attribute_0, 9));
 
