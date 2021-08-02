@@ -894,7 +894,7 @@
     if (get_nth_bit(opcode, 18)) *destination = (*destination & 0xFF00FFFF) | (operand & 0x00FF0000);
     if (get_nth_bit(opcode, 19)) *destination = (*destination & 0x00FFFFFF) | (operand & 0xFF000000);
 
-    cpu.update_mode();
+    @IF(!R) cpu.update_mode();
     cpu.cycles_remaining++;
 }
 [/COMPONENT]

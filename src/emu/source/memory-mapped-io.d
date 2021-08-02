@@ -234,6 +234,7 @@ class MMIO {
     }
 
     void write(uint address, ubyte data) {
+        writefln("Writing %x to %x", data, address);
         switch (address) {
             case DISPCNT     + 0: ppu.write_DISPCNT    (0, data); break;
             case DISPCNT     + 1: ppu.write_DISPCNT    (1, data); break;

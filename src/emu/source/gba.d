@@ -59,11 +59,11 @@ public:
 
         this.memory            = memory;
         this.cpu               = new ARM7TDMI(memory);
-        this.interrupt_manager = new InterruptManager(&interrupt_cpu);
+        this.interrupt_manager = new InterruptManager(&interrupt_cpu, &cpu.enable);
         this.ppu               = new PPU(memory, scheduler, &interrupt_manager.interrupt, &on_hblank);
         this.apu               = new APU(memory, scheduler, &on_fifo_empty);
         this.dma_manager       = new DMAManager(memory);
-        this.timers            = new TimerManager(memory, scheduler, this, &on_timer_overflow);
+        this.timers            = new TimerManager(memory, scheduler, this, &interrupt_manager.interrupt, &on_timer_overflow);
         this.key_input         = key_input;
 
         // this.direct_sound = new DirectSound(memory);
@@ -83,7 +83,7 @@ public:
     void set_internal_sample_rate(uint sample_rate) {
         apu.set_internal_sample_rate(sample_rate);
     }
-    
+
     void load_rom(string rom_name) {
         ubyte[] rom = get_rom_as_bytes(rom_name);
         cpu.memory.rom[0 ..  rom.length] = rom[0 .. rom.length];

@@ -29,6 +29,7 @@ class ARM7TDMI {
 
     this(Memory memory) {
         this.memory        = memory;
+
         this.regs          = new uint[18];
         this.register_file = new uint[18 * 6];
 
@@ -54,8 +55,6 @@ class ARM7TDMI {
 
     // returns true if the exception is accepted (or, excepted :P)
     bool exception(const CpuException exception) {
-        halted = false;
-
         // interrupts not allowed if the cpu itself has interrupts disabled.
         if ((exception == CpuException.IRQ && get_nth_bit(*cpsr, 7)) ||
             (exception == CpuException.FIQ && get_nth_bit(*cpsr, 6))) {
@@ -212,48 +211,48 @@ class ARM7TDMI {
     uint shifter_operand;
     bool shifter_carry_out;
 
-    pragma(inline) void set_flag_N(bool condition) {
+    pragma(inline, true) void set_flag_N(bool condition) {
         if (condition) *cpsr |= 0x80000000;
         else           *cpsr &= 0x7FFFFFFF;
     }
 
-    pragma(inline) void set_flag_Z(bool condition) {
+    pragma(inline, true) void set_flag_Z(bool condition) {
         if (condition) *cpsr |= 0x40000000;
         else           *cpsr &= 0xBFFFFFFF;
     }
 
-    pragma(inline) void set_flag_C(bool condition) {
+    pragma(inline, true) void set_flag_C(bool condition) {
         if (condition) *cpsr |= 0x20000000;
         else           *cpsr &= 0xDFFFFFFF;
     }
 
-    pragma(inline) void set_flag_V(bool condition) {
+    pragma(inline, true) void set_flag_V(bool condition) {
         if (condition) *cpsr |= 0x10000000;
         else           *cpsr &= 0xEFFFFFFF;
     }
 
-    pragma(inline) void set_bit_T(bool condition) {
+    pragma(inline, true) void set_bit_T(bool condition) {
         if (condition) *cpsr |= 0x00000020;
         else           *cpsr &= 0xFFFFFFDF;
     }
 
-    pragma(inline) bool get_flag_N() {
+    pragma(inline, true) bool get_flag_N() {
         return (*cpsr >> 31) & 1;
     }
 
-    pragma(inline) bool get_flag_Z() {
+    pragma(inline, true) bool get_flag_Z() {
         return (*cpsr >> 30) & 1;
     }
 
-    pragma(inline) bool get_flag_C() {
+    pragma(inline, true) bool get_flag_C() {
         return (*cpsr >> 29) & 1;
     }
 
-    pragma(inline) bool get_flag_V() {
+    pragma(inline, true) bool get_flag_V() {
         return (*cpsr >> 28) & 1;
     }
 
-    pragma(inline) bool get_bit_T() {
+    pragma(inline, true) bool get_bit_T() {
         return (*cpsr >> 5) & 1;
     }
 

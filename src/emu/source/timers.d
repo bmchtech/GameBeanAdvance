@@ -6,16 +6,19 @@ import util;
 import apu;
 import gba;
 import scheduler;
+import interrupts;
 
 class TimerManager {
 public:
-    void delegate(int) on_timer_overflow;
+    void delegate(int)  on_timer_overflow;
+    void delegate(uint) interrupt_cpu;
 
     Scheduler scheduler;
     GBA gba;
 
-    this(Memory memory, Scheduler scheduler, GBA gba, void delegate(int) on_timer_overflow) {
+    this(Memory memory, Scheduler scheduler, GBA gba, void delegate(uint) interrupt_cpu, void delegate(int) on_timer_overflow) {
         this.memory            = memory;
+        this.interrupt_cpu     = interrupt_cpu;
         this.on_timer_overflow = on_timer_overflow;
 
         timers = [
@@ -41,8 +44,20 @@ public:
     }
 
     void timer_overflow(int x) {
+        import std.stdio;
         reload_timer(x);
-        on_timer_overflow(x);  
+        on_timer_overflow(x);
+        // writefln("Overflow. IRQ Enable is %x", timers[x].irq_enable);
+        if (timers[x].irq_enable) interrupt_cpu(get_interrupt_from_timer_id(x));
+    }
+
+    Interrupt get_interrupt_from_timer_id(int x) {
+        final switch (x) {
+            case 0: return Interrupt.TIMER_0_OVERFLOW;
+            case 1: return Interrupt.TIMER_1_OVERFLOW;
+            case 2: return Interrupt.TIMER_2_OVERFLOW;
+            case 3: return Interrupt.TIMER_3_OVERFLOW;
+        }
     }
 
     ushort calculate_timer_value(int x) {

@@ -22,24 +22,27 @@ enum Interrupt {
 
 
 class InterruptManager {
-    this(bool delegate() interrupt_cpu) {
+    this(bool delegate() interrupt_cpu, void delegate() unhalt_cpu) {
         this.interrupt_cpu = interrupt_cpu;
+        this.unhalt_cpu    = unhalt_cpu;
     }
 
     // interrupt_code must be one-hot
     void interrupt(uint interrupt_code) {
-        if (!(interrupt_master_enable & 0x1)) return; // if interrupts are disabled globally, ignore.
-
         // is this specific interrupt enabled
+        writefln("cmon");
         if (interrupt_enable & interrupt_code) {
+            writefln("Interrupting with code: %x", interrupt_code);
             interrupt_request |= interrupt_code;
-            interrupt_cpu();
+
+            unhalt_cpu();
+            if (interrupt_master_enable) interrupt_cpu();
         }
     }
 
 private:
     bool delegate() interrupt_cpu;
-
+    void delegate() unhalt_cpu;
 // .......................................................................................................................
 // .RRRRRRRRRRR...EEEEEEEEEEEE....GGGGGGGGG....IIII...SSSSSSSSS...TTTTTTTTTTTTT.EEEEEEEEEEEE..RRRRRRRRRRR....SSSSSSSSS....
 // .RRRRRRRRRRRR..EEEEEEEEEEEE...GGGGGGGGGGG...IIII..SSSSSSSSSSS..TTTTTTTTTTTTT.EEEEEEEEEEEE..RRRRRRRRRRRR..SSSSSSSSSSS...
