@@ -6,6 +6,7 @@ import util;
 import scheduler;
 
 import apu.channels.noise_channel;
+import apu.channels.wave_channel;
 
 import std.stdio;
 
@@ -38,6 +39,7 @@ public:
         this.scheduler = scheduler;
 
         noise_channel = new NoiseChannel(scheduler);
+        wave_channel  = new WaveChannel();
     }
 
     void on_timer_overflow(int timer_id) {
@@ -58,6 +60,7 @@ private:
 
     DMASound[2]  dma_sounds;
     NoiseChannel noise_channel;
+    WaveChannel  wave_channel;
 
     uint sample_rate;
     uint cycles_till_next_sample;
@@ -105,6 +108,8 @@ private:
 
         mixed_sample_L += noise_channel.sample(sample_rate);
         mixed_sample_R += noise_channel.sample(sample_rate);
+        mixed_sample_L += wave_channel.sample(sample_rate);
+        mixed_sample_R += wave_channel.sample(sample_rate);
 
         mixed_sample_L += bias * 2;
         mixed_sample_R += bias * 2;
@@ -173,8 +178,51 @@ public:
     //     channel_tone.frequency = 131072 / (2048 - channel_tone.frequency_raw);
     // }
 
+    void write_SOUND3CNT_L(ubyte data) {
+        writefln("L %x", data);
+        wave_channel.set_double_banked(get_nth_bit(data, 5));
+        wave_channel.set_playback_bank(get_nth_bit(data, 6));
+        wave_channel.set_enabled      (get_nth_bit(data, 7));
+    }
+
+    void write_SOUND3CNT_H(int target_byte, ubyte data) {
+        writefln("H %x %x", target_byte, data);
+        final switch (target_byte) {
+            case 0b0:
+                wave_channel.set_length(data);
+                break;
+            case 0b1:
+                wave_channel.set_sound_volume(get_nth_bits(data, 5, 7));
+                wave_channel.set_force_volume(get_nth_bit (data, 7));
+                break;
+        }
+    }
+
+    // used to hold the current sample rate because
+    // the full value is spread across bits [0-10],
+    // which will happen in two separate function calls
+    uint SOUND3CNT_X_sample_rate;
+    void write_SOUND3CNT_X(int target_byte, ubyte data) {
+        writefln("X %x %x", target_byte, data);
+        final switch (target_byte) {
+            case 0b0:
+                SOUND3CNT_X_sample_rate = (SOUND3CNT_X_sample_rate & 0x700) | data;
+                wave_channel.set_sample_rate(SOUND3CNT_X_sample_rate);
+                break;
+            case 0b1:
+                SOUND3CNT_X_sample_rate = (SOUND3CNT_X_sample_rate & 0xFF) | (get_nth_bits(data, 0, 3) << 8);
+                wave_channel.set_sample_rate(SOUND3CNT_X_sample_rate);
+                wave_channel.set_length_flag(get_nth_bit(data, 6));
+                if (get_nth_bit(data, 7)) wave_channel.restart();
+                break;
+        }
+    }
+
+    pragma(inline, true) void write_WAVE_RAM(int index, ubyte data) {
+        wave_channel.write_wave_ram(index, data);
+    }
+
     void write_SOUND4CNT_L(int target_byte, ubyte data) {
-        writefln("For fucks sake %x %x", target_byte, data);
         final switch (target_byte) {
             case 0b0:
                 noise_channel.set_length(get_nth_bits(data, 0, 6));

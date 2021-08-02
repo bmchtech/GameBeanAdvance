@@ -242,28 +242,55 @@ private:
         return ((tile_y * tiles_per_row) + tile_x);
     }
 
-    template Render(bool bpp8) {
-        void tile(Layer layer, int tile, int tile_base_address, int palette_base_address, int left_x, int y, int ref_x, int ref_y, PMatrix p_matrix, bool scaled, bool flipped_x, bool flipped_y, int palette) {
-            Point reference_point = Point(ref_x, ref_y);
+    template Render(bool bpp8, bool flipped_x, bool flipped_y) {
+
+        void tile(Layer layer, int tile, int tile_base_address, int palette_base_address, int left_x, int y, int ref_x, int ref_y, PMatrix p_matrix, bool scaled, int palette) {
+            // Point reference_point = Point(ref_x, ref_y);
+            static if (bpp8) {
+                static if (flipped_y) uint tile_address = tile_base_address + (tile & 0x3ff) * 64 + (7 - y) * 8;    
+                else                  uint tile_address = tile_base_address + (tile & 0x3ff) * 64 + (y)     * 8;
+            } else {
+                static if (flipped_y) uint tile_address = tile_base_address + (tile & 0x3ff) * 32 + (7 - y) * 4;    
+                else                  uint tile_address = tile_base_address + (tile & 0x3ff) * 32 + (y)     * 4;
+            }
             
-            for (int tile_x = 0; tile_x < 8; tile_x++) {
-                int x = left_x - tile_x;
+            ubyte[8] tile_data = memory.vram[tile_address .. tile_address + 8];
 
-                int draw_x = flipped_x ? left_x    + (7 - tile_x) : left_x + tile_x;
-                int draw_y = flipped_y ? (scanline - y) + (7 - y) : scanline;
+            static if (flipped_x) {
 
+            } else {
                 static if (bpp8) {
-                    ubyte index = memory.read_byte(tile_base_address + ((tile & 0x3ff) * 64) + y * 8 + tile_x);
-                
-                    maybe_draw_pixel_on_layer(layer, palette_base_address, index, 0, draw_x, draw_y, index == 0);
+                    for (int tile_dx = 0; tile_dx < 8; tile_dx++) {
+                        ubyte index = tile_data[tile_dx];
+                        maybe_draw_pixel_on_layer(layer, palette_base_address, index, 0, left_x + tile_dx, scanline, index == 0);
+                    }
                 } else {
-                    ubyte index = memory.read_byte(tile_base_address + ((tile & 0x3ff) * 32) + y * 4 + (tile_x / 2));
-
-                    index = (tile_x % 2 == 0) ? index & 0xF : index >> 4;
-                    index += palette * 16;
-                    maybe_draw_pixel_on_layer(layer, palette_base_address, index, 0, draw_x, draw_y, (index & 0xF) == 0);
+                    for (int tile_dx = 0; tile_dx < 4; tile_dx++) {
+                        ubyte index = tile_data[tile_dx];
+                        maybe_draw_pixel_on_layer(layer, palette_base_address, (index & 0xF) + (palette * 16), 0, left_x + tile_dx * 2,     scanline, (index & 0xF) == 0);
+                        maybe_draw_pixel_on_layer(layer, palette_base_address, (index >> 4)  + (palette * 16), 0, left_x + tile_dx * 2 + 1, scanline, (index >>  4) == 0);
+                    }
                 }
-            } 
+            }
+
+            // for (int tile_x = 0; tile_x < 8; tile_x++) {
+            //     int x = left_x - tile_x;
+
+            //     int draw_x = flipped_x ? left_x    + (7 - tile_x) : left_x + tile_x;
+            //     int draw_y = flipped_y ? (scanline - y) + (7 - y) : scanline;
+
+            //     static if (bpp8) {
+            //         ubyte index = memory.read_byte(tile_base_address + ((tile & 0x3ff) * 64) + y * 8 + tile_x);
+                
+            //         maybe_draw_pixel_on_layer(layer, palette_base_address, index, 0, draw_x, draw_y, index == 0);
+            //     } else {
+            //         ubyte index = memory.read_byte(tile_base_address + ((tile & 0x3ff) * 32) + y * 4 + (tile_x / 2));
+
+            //         index = (tile_x % 2 == 0) ? index & 0xF : index >> 4;
+            //         index += palette * 16;
+            //         maybe_draw_pixel_on_layer(layer, palette_base_address, index, 0, draw_x, draw_y, (index & 0xF) == 0);
+            //     }
+            // } 
         }
 
         void texture(Layer layer, Texture texture, Point topleft_texture_pos, Point topleft_draw_pos) {
@@ -330,7 +357,7 @@ private:
 
         // relevant addresses for the background's tilemap and screen
         int screen_base_address = memory.OFFSET_VRAM + background.screen_base_block    * 0x800;
-        int tile_base_address   = memory.OFFSET_VRAM + background.character_base_block * 0x4000;
+        int tile_base_address   = background.character_base_block * 0x4000;
 
         // the coordinates at the topleft of the background that we are drawing
         int topleft_x      = background.x_offset;
@@ -362,18 +389,16 @@ private:
 
             // yes this looks stupid. and it is.
             if (background.doesnt_use_color_palettes) {
-                Render!(true).tile(
+                Render!(true, false, false).tile(
                         Layer.A, tile, tile_base_address, 0, 
                         draw_x, tile_dy, 
                         0, 0, PMatrix(0, 0, 0, 0), false,
-                        flipped_x, flipped_y, 
                         get_nth_bits(tile, 12, 16));
             } else {
-                Render!(false).tile(
+                Render!(false, false, false).tile(
                         Layer.A, tile, tile_base_address, 0, 
                         draw_x, tile_dy, 
                         0, 0, PMatrix(0, 0, 0, 0), false,
-                        flipped_x, flipped_y, 
                         get_nth_bits(tile, 12, 16));
             }
         }
@@ -388,7 +413,7 @@ private:
 
         // relevant addresses for the background's tilemap and screen
         int screen_base_address = memory.OFFSET_VRAM + background.screen_base_block    * 0x800;
-        int tile_base_address   = memory.OFFSET_VRAM + background.character_base_block * 0x4000;
+        int tile_base_address   = background.character_base_block * 0x4000;
 
         // the coordinates at the topleft of the background that we are drawing
         int topleft_x      = 0;//cast(int) (get_double_from_fixed_point(background.x_offset_rotation));
@@ -417,10 +442,10 @@ private:
             int draw_x = tile_x_offset * 8 - tile_dx;
             int draw_y = scanline;
 
-            Render!(true).tile(Layer.A, tile, tile_base_address, 0, 
+            Render!(true, false, false).tile(Layer.A, tile, tile_base_address, 0, 
                                draw_x, tile_dy, 
-                               0, 0, PMatrix(0, 0, 0, 0), false,
-                               false, false, get_nth_bits(tile, 12, 16));
+                               0, 0, PMatrix(0, 0, 0, 0), false, 
+                               get_nth_bits(tile, 12, 16));
         }
     }
 
@@ -513,11 +538,12 @@ private:
          
             Texture texture = Texture(base_tile_number, width << 3, height << 3, tile_number_increment_per_row, 
                                         scaled, p_matrix, Point(middle_x, middle_y),
-                                        memory.OFFSET_VRAM + 0x10000, 0x200,
+                                        0x10000, 0x200,
                                         get_nth_bits(attribute_2, 12, 16),
                                         flipped_x, flipped_y, get_nth_bit(attribute_0, 9));
 
-            Render!(false).texture(Layer.A, texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline));
+            if (doesnt_use_color_palettes) Render!(true,  false, false).texture(Layer.A, texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline));
+            else                           Render!(false, false, false).texture(Layer.A, texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline));
         }
     }
 

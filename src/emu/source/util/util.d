@@ -23,7 +23,7 @@ static int verbosity_level = 0;
 // }
 
 // get nth bit from value
-bool get_nth_bit(uint val, ubyte n) {
+pragma(inline, true) bool get_nth_bit(uint val, ubyte n) {
     return (val >> n) & 1;
 }
 
@@ -58,10 +58,9 @@ string to_hex_string(uint val) {
 }
 
 // get nth bits from value as so: [start, end)
-pragma(inline) int get_nth_bits(int val, int start, int end) {
-    int a = cast(uint)(cast(uint)(val) >> start) & ((1 << cast(uint)(end - start)) - 1);
-    if (end - start == 32) a = val;
-    return a;
+pragma(inline, true) int get_nth_bits(int val, const int start, const int end) {
+    if (end - start == 32) return val;
+    else return cast(uint)(cast(uint)(val) >> start) & ((1 << cast(uint)(end - start)) - 1);
 }
 
 // get nth bit from value
@@ -71,7 +70,7 @@ pragma(inline, true) bool get_nth_bit(int val, int n) {
 }
 
 // sign extend the given value
-pragma(inline) int sign_extend(int val, int num_bits) {
+pragma(inline, true) int sign_extend(int val, int num_bits) {
     return (val ^ (1U << (num_bits - 1))) - (1U << (num_bits - 1));
 }
 
