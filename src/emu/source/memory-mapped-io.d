@@ -70,6 +70,23 @@ class MMIO {
     enum FIFO_A        = 0x40000A0; //  4      W   Channel A FIFO, Data 0-3
     enum FIFO_B        = 0x40000A4; //  4      W   Channel B FIFO, Data 0-3
 
+    enum WAVE_RAM0_LL  = 0x4000090; //  1    R/W   Channel 3 Wave Pattern RAM
+    enum WAVE_RAM0_LH  = 0x4000091; //  1
+    enum WAVE_RAM0_HL  = 0x4000092; //  1
+    enum WAVE_RAM0_HH  = 0x4000093; //  1
+    enum WAVE_RAM1_LL  = 0x4000094; //  1
+    enum WAVE_RAM1_LH  = 0x4000095; //  1
+    enum WAVE_RAM1_HL  = 0x4000096; //  1
+    enum WAVE_RAM1_HH  = 0x4000097; //  1
+    enum WAVE_RAM2_LL  = 0x4000098; //  1
+    enum WAVE_RAM2_LH  = 0x4000099; //  1
+    enum WAVE_RAM2_HL  = 0x400009A; //  1
+    enum WAVE_RAM2_HH  = 0x400009B; //  1
+    enum WAVE_RAM3_LL  = 0x400009C; //  1
+    enum WAVE_RAM3_LH  = 0x400009D; //  1
+    enum WAVE_RAM3_HL  = 0x400009E; //  1
+    enum WAVE_RAM3_HH  = 0x400009F; //  1
+
     enum DMA0SAD       = 0x40000B0; //  4      W   DMA 0 Source Address
     enum DMA0DAD       = 0x40000B4; //  4      W   DMA 0 Destination Address
     enum DMA0CNT_L     = 0x40000B8; //  2      W   DMA 0 Word Count
@@ -151,12 +168,12 @@ class MMIO {
             // case SOUND2CNT_L + 1: return apu.read_SOUND2CNT_L(); 
             // case SOUND2CNT_H + 0: return apu.read_SOUND2CNT_H(); 
             // case SOUND2CNT_H + 1: return apu.read_SOUND2CNT_H(); 
-            // case SOUND3CNT_L + 0: return apu.read_SOUND3CNT_L(); 
-            // case SOUND3CNT_L + 1: return apu.read_SOUND3CNT_L(); 
-            // case SOUND3CNT_H + 0: return apu.read_SOUND3CNT_H(); 
-            // case SOUND3CNT_H + 1: return apu.read_SOUND3CNT_H(); 
-            // case SOUND3CNT_X + 0: return apu.read_SOUND3CNT_X(); 
-            // case SOUND3CNT_X + 1: return apu.read_SOUND3CNT_X(); 
+            // case SOUND3CNT_L + 0: return apu.read_SOUND3CNT_L(0); 
+            // case SOUND3CNT_L + 1: return apu.read_SOUND3CNT_L(1); 
+            // case SOUND3CNT_H + 0: return apu.read_SOUND3CNT_H(0); 
+            // case SOUND3CNT_H + 1: return apu.read_SOUND3CNT_H(1); 
+            // case SOUND3CNT_X + 0: return apu.read_SOUND3CNT_X(0); 
+            // case SOUND3CNT_X + 1: return apu.read_SOUND3CNT_X(1); 
             // case SOUND4CNT_L + 0: return apu.read_SOUND4CNT_L(); 
             // case SOUND4CNT_L + 1: return apu.read_SOUND4CNT_L(); 
             // case SOUND4CNT_H + 0: return apu.read_SOUND4CNT_H(); 
@@ -309,12 +326,12 @@ class MMIO {
             // case SOUND2CNT_L + 1: apu.write_SOUND2CNT_L(); break; 
             // case SOUND2CNT_H + 0: apu.write_SOUND2CNT_H(); break; 
             // case SOUND2CNT_H + 1: apu.write_SOUND2CNT_H(); break; 
-            // case SOUND3CNT_L + 0: apu.write_SOUND3CNT_L(); break; 
-            // case SOUND3CNT_L + 1: apu.write_SOUND3CNT_L(); break; 
-            // case SOUND3CNT_H + 0: apu.write_SOUND3CNT_H(); break; 
-            // case SOUND3CNT_H + 1: apu.write_SOUND3CNT_H(); break; 
-            // case SOUND3CNT_X + 0: apu.write_SOUND3CNT_X(); break; 
-            // case SOUND3CNT_X + 1: apu.write_SOUND3CNT_X(); break; 
+            case SOUND3CNT_L + 0: apu.write_SOUND3CNT_L(   data); break; 
+         // case SOUND3CNT_L + 1: apu.write_SOUND3CNT_L(1, data); break; NOTE: unused
+            case SOUND3CNT_H + 0: apu.write_SOUND3CNT_H(0, data); break; 
+            case SOUND3CNT_H + 1: apu.write_SOUND3CNT_H(1, data); break; 
+            case SOUND3CNT_X + 0: apu.write_SOUND3CNT_X(0, data); break; 
+            case SOUND3CNT_X + 1: apu.write_SOUND3CNT_X(1, data); break; 
             case SOUND4CNT_L + 0: apu.write_SOUND4CNT_L(0, data); break; 
             case SOUND4CNT_L + 1: apu.write_SOUND4CNT_L(1, data); break; 
             case SOUND4CNT_H + 0: apu.write_SOUND4CNT_H(0, data); break; 
@@ -336,7 +353,22 @@ class MMIO {
             case FIFO_B      + 2: apu.write_FIFO       (data, DirectSound.B); break;
             case FIFO_B      + 3: apu.write_FIFO       (data, DirectSound.B); break;
 
-            case 0x4000090: writefln("WAVERAM %x", data); 
+            case WAVE_RAM0_LL:    apu.write_WAVE_RAM   (0x0, data); break;
+            case WAVE_RAM0_LH:    apu.write_WAVE_RAM   (0x1, data); break;
+            case WAVE_RAM0_HL:    apu.write_WAVE_RAM   (0x2, data); break;
+            case WAVE_RAM0_HH:    apu.write_WAVE_RAM   (0x3, data); break;
+            case WAVE_RAM1_LL:    apu.write_WAVE_RAM   (0x4, data); break;
+            case WAVE_RAM1_LH:    apu.write_WAVE_RAM   (0x5, data); break;
+            case WAVE_RAM1_HL:    apu.write_WAVE_RAM   (0x6, data); break;
+            case WAVE_RAM1_HH:    apu.write_WAVE_RAM   (0x7, data); break;
+            case WAVE_RAM2_LL:    apu.write_WAVE_RAM   (0x8, data); break;
+            case WAVE_RAM2_LH:    apu.write_WAVE_RAM   (0x9, data); break;
+            case WAVE_RAM2_HL:    apu.write_WAVE_RAM   (0xA, data); break;
+            case WAVE_RAM2_HH:    apu.write_WAVE_RAM   (0xB, data); break;
+            case WAVE_RAM3_LL:    apu.write_WAVE_RAM   (0xC, data); break;
+            case WAVE_RAM3_LH:    apu.write_WAVE_RAM   (0xD, data); break;
+            case WAVE_RAM3_HL:    apu.write_WAVE_RAM   (0xE, data); break;
+            case WAVE_RAM3_HH:    apu.write_WAVE_RAM   (0xF, data); break;
 
             case DMA0SAD     + 0: dma.write_DMAXSAD    (0, data, 0); break;
             case DMA0SAD     + 1: dma.write_DMAXSAD    (1, data, 0); break;
