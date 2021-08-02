@@ -417,7 +417,7 @@ private:
 
         // the coordinates at the topleft of the background that we are drawing
         int topleft_x      = 0;//cast(int) (get_double_from_fixed_point(background.x_offset_rotation));
-        int topleft_y      = 0;//cast(int) (get_double_from_fixed_point(background.y_offset_rotation) + scanline);
+        int topleft_y      = scanline;//cast(int) (get_double_from_fixed_point(background.y_offset_rotation) + scanline);
 
         // the tile number at the topleft of the background that we are drawing
         int topleft_tile_x = topleft_x >> 3;

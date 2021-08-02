@@ -282,6 +282,7 @@ public:
     }
 
     void write_SOUNDBIAS(int target_byte, ubyte data) {
+        writefln("BIAS: %x", bias);
         final switch (target_byte) {
             case 0b0:
                 bias = cast(short) ((bias & 0x180) | get_nth_bits(data, 1, 8));

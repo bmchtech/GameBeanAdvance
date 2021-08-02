@@ -57,6 +57,8 @@ class Memory {
     enum OFFSET_ROM_3        = 0xC000000;
     enum OFFSET_SRAM         = 0xE000000;
 
+    uint bios_open_bus = 0;
+
     this() {
         video_buffer = new uint[][](240, 160);
         fifo_a = new Fifo!ubyte(0x20, 0x00);
