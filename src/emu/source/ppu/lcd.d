@@ -67,7 +67,6 @@ public:
         }
 
         hblank = false;
-        writefln("Hblank????");
         scanline++;
 
         scheduler.add_event(&on_hblank_start, 240 * 4);
@@ -97,20 +96,8 @@ public:
     }
 
     void render() {
-        writefln("Rendering scanline %x w/ mode %x", scanline, bg_mode);
         switch (bg_mode) {
             case 0: 
-                render_sprites(0);
-                render_background(0);
-                render_sprites(1);
-                render_background(1);
-                render_sprites(2);
-                render_background(2);
-                render_sprites(3);
-                render_background(3);
-                calculate_backdrop();
-                break;
-
             case 1:
                 render_sprites(0);
                 render_background(0);
@@ -258,8 +245,24 @@ private:
             
             ubyte[8] tile_data = memory.vram[tile_address .. tile_address + 8];
 
+            // hi. i hate this. but ive profiled it and it makes the code miles faster.
             static if (flipped_x) {
+                int draw_dx = 0;
 
+                static if (bpp8) {
+                    for (int tile_dx = 7; tile_dx < 0; tile_dx--) {
+                        ubyte index = tile_data[tile_dx];
+                        maybe_draw_pixel_on_layer(layer, palette_base_address, index, 0, left_x + draw_dx, scanline, index == 0);
+                        draw_dx++;
+                    }
+                } else {
+                    for (int tile_dx = 3; tile_dx < 0; tile_dx--) {
+                        ubyte index = tile_data[tile_dx];
+                        maybe_draw_pixel_on_layer(layer, palette_base_address, (index & 0xF) + (palette * 16), 0, left_x + draw_dx * 2,     scanline, (index & 0xF) == 0);
+                        maybe_draw_pixel_on_layer(layer, palette_base_address, (index >> 4)  + (palette * 16), 0, left_x + draw_dx * 2 + 1, scanline, (index >>  4) == 0);
+                        draw_dx += 2;
+                    }
+                }
             } else {
                 static if (bpp8) {
                     for (int tile_dx = 0; tile_dx < 8; tile_dx++) {
@@ -475,7 +478,7 @@ private:
 
     void render_sprites(int given_priority) {
         // Very useful guide for attributes! https://problemkaputt.de/gbatek.htm#lcdobjoamattributes
-        for (int sprite = 0; sprite <= 127; sprite++) {
+        for (int sprite = 0; sprite < 128; sprite++) {
             if (get_nth_bits(memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 4), 10, 11) != given_priority) continue;
 
             // first of all, we need to figure out if we render this sprite in the first place.
@@ -561,14 +564,14 @@ private:
         );
     }
 
-    void maybe_draw_pixel_on_layer(Layer layer, uint palette_offset, uint palette_index, uint priority, uint x, uint y, bool transparent) {
+    pragma(inline, true) void maybe_draw_pixel_on_layer(Layer layer, uint palette_offset, uint palette_index, uint priority, uint x, uint y, bool transparent) {
         if (!transparent) {
             // pixel_priorities[x][y] = priority;
             draw_pixel(layer, palette_offset, palette_index, priority, x, y, transparent);
         }
     }
 
-    void draw_pixel(Layer layer, uint palette_offset, uint palette_index, uint priority, uint x, uint y, bool transparent) {
+    pragma(inline, true) void draw_pixel(Layer layer, uint palette_offset, uint palette_index, uint priority, uint x, uint y, bool transparent) {
         // warning(format("%x", palette_offset));
         if (x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT) return;
 

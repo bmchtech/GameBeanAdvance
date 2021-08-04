@@ -59,7 +59,7 @@ extern (C) {
         
         audio_data.mutex.lock_nothrow();
 
-            // try { writefln("Details: %x %x", len, audio_data.buffer[0].offset);} catch (Exception e) {}
+            try { writefln("Details: %x %x", len, audio_data.buffer[0].offset);} catch (Exception e) {}
 
             // if (audio_data.buffer[Channel.L].offset != audio_data.buffer[Channel.R].offset) {
             //     error("Channel buffers have differing lengths!");

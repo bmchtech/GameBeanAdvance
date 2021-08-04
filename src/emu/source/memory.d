@@ -58,6 +58,28 @@ class Memory {
     enum OFFSET_ROM_3        = 0xC000000;
     enum OFFSET_SRAM         = 0xE000000;
 
+    bool can_read_from_bios = false;
+
+    enum OpenBusBiosState {
+        STARTUP,
+        SOFT_RESET,
+        DURING_IRQ,
+        AFTER_IRQ,
+        AFTER_SWI
+    }
+    OpenBusBiosState open_bus_bios_state = OpenBusBiosState.STARTUP;
+
+    uint read_bios_open_bus() {
+        final switch (open_bus_bios_state) {
+            case OpenBusBiosState.STARTUP:    return 0;
+            case OpenBusBiosState.SOFT_RESET: return 0;
+
+            case OpenBusBiosState.DURING_IRQ: return 0xE25EF004;
+            case OpenBusBiosState.AFTER_IRQ:  return 0xE55EC002;
+            case OpenBusBiosState.AFTER_SWI:  return 0xE3A02004;
+        }
+    }
+
     this() {
         video_buffer = new uint[][](240, 160);
         fifo_a = new Fifo!ubyte(0x20, 0x00);
@@ -111,7 +133,6 @@ class Memory {
     template Aligned(T) {
         T read(uint address) {
             switch ((address >> 24) & 0xF) {
-                case REGION_BIOS:         return *((cast(T*) (&bios[0]        + (address & (SIZE_BIOS        - 1))))); // incorrect - implement properly later
                 case 0x1:                 return 0x0; // nothing is mapped here
                 case REGION_WRAM_BOARD:   return *((cast(T*) (&wram_board[0]  + (address & (SIZE_WRAM_BOARD  - 1)))));
                 case REGION_WRAM_CHIP:    return *((cast(T*) (&wram_chip[0]   + (address & (SIZE_WRAM_CHIP   - 1)))));
@@ -130,6 +151,17 @@ class Memory {
                         (cast(ushort) mmio.read(address + 1) << 8);
                     static if (is(T == ubyte))  return mmio.read(address);
 
+                case REGION_BIOS: 
+                    if (can_read_from_bios) {
+                        return *((cast(T*) (&bios[0] + (address & (SIZE_BIOS - 1)))));
+                    } else {
+                        // num_log += 10;
+                        static if (is(T == uint  )) writefln("Reading from %x (word)", address);
+                        static if (is(T == ushort)) writefln("Reading from %x (halfword)", address);
+                        static if (is(T == ubyte )) writefln("Reading from %x (byte)", address);
+                        writefln("Returning %x", read_bios_open_bus());
+                        return cast(T) read_bios_open_bus();
+                    }
                 default:
                     // this is on its own because when waitstates are implemented, this is going
                     // to get a lot more complicated
@@ -138,7 +170,7 @@ class Memory {
         }
 
         void write(uint address, T value) {
-            if ((address & 0xFFFF0000) == 0x06000000) { writefln("Wrote %x to %x", value, address); }
+            // if ((address & 0xFFFF0000) == 0x06000000) { writefln("Wrote %x to %x", value, address); }
             switch ((address >> 24) & 0xF) {
                 case REGION_BIOS:         break; // incorrect - implement properly later
                 case 0x1:                 break; // nothing is mapped here

@@ -22,6 +22,17 @@ public:
         ];
     }
 
+    int dmas_available = 0;
+
+    pragma(inline, true) int check_dma() {
+        if (dmas_available > 0) {
+            dmas_available--;
+            return handle_dma();
+        }
+
+        return 0;
+    }
+
     // returns the amount of cycles to idle
     int handle_dma() {
         idle_cycles = 0;
@@ -35,8 +46,7 @@ public:
             }
         }
 
-        // if we found no channels, leave.
-        if (current_channel == -1) return 0;
+        if (current_channel == -1) return 0; //error("DMA requested but no active channels found");
 
         uint bytes_to_transfer  = dma_channels[current_channel].size_buf;
         int  source_increment   = 0;
@@ -154,6 +164,7 @@ public:
     }
 
     void enable_dma(int dma_id) {
+        // writefln("Enabling DMA %x", dma_id);
         dma_channels[dma_id].num_units = dma_channels[dma_id].num_units & 0x0FFFFFFF;
         if (dma_id == 3) dma_channels[dma_id].num_units &= 0x07FFFFFF;
 
@@ -163,18 +174,19 @@ public:
             dma_channels[dma_id].transferring_words = true;
             dma_channels[dma_id].dest_addr_control  = DestAddrMode.Fixed;
         }
+        dma_channels[dma_id].enabled  = true;
+        dma_channels[dma_id].size_buf = dma_channels[dma_id].num_units;
 
-        dma_channels[dma_id].size_buf         = dma_channels[dma_id].num_units;
-        dma_channels[dma_id].waiting_to_start = dma_channels[dma_id].dma_start_timing == DMAStartTiming.Immediately;
-
-        dma_channels[dma_id].enabled          = true;
+        if (dma_channels[dma_id].dma_start_timing == DMAStartTiming.Immediately) start_dma_channel(dma_id);
+        else dma_channels[dma_id].waiting_to_start = false;
     }
 
-    void start_dma_channel(int dma_id) {
+    pragma(inline, true) void start_dma_channel(int dma_id) {
         dma_channels[dma_id].waiting_to_start = true;
+        dmas_available++;
     }
 
-    bool is_dma_channel_fifo(int i) {
+    pragma(inline, true) bool is_dma_channel_fifo(int i) {
         return (i == 1 || i == 2) && dma_channels[i].dma_start_timing == DMAStartTiming.Special;
     }
 

@@ -179,14 +179,14 @@ public:
     // }
 
     void write_SOUND3CNT_L(ubyte data) {
-        writefln("L %x", data);
+        // writefln("L %x", data);
         wave_channel.set_double_banked(get_nth_bit(data, 5));
         wave_channel.set_playback_bank(get_nth_bit(data, 6));
         wave_channel.set_enabled      (get_nth_bit(data, 7));
     }
 
     void write_SOUND3CNT_H(int target_byte, ubyte data) {
-        writefln("H %x %x", target_byte, data);
+        // writefln("H %x %x", target_byte, data);
         final switch (target_byte) {
             case 0b0:
                 wave_channel.set_length(data);
@@ -203,7 +203,7 @@ public:
     // which will happen in two separate function calls
     uint SOUND3CNT_X_sample_rate;
     void write_SOUND3CNT_X(int target_byte, ubyte data) {
-        writefln("X %x %x", target_byte, data);
+        // writefln("X %x %x", target_byte, data);
         final switch (target_byte) {
             case 0b0:
                 SOUND3CNT_X_sample_rate = (SOUND3CNT_X_sample_rate & 0x700) | data;
@@ -234,7 +234,7 @@ public:
     }
     
     void write_SOUND4CNT_H(int target_byte, ubyte data) {
-        writefln("Written to %x %x", target_byte, data);
+        // writefln("Written to %x %x", target_byte, data);
         final switch (target_byte) {
             case 0b0:
                 noise_channel.set_dividing_ratio       (get_nth_bits(data, 0, 3));
@@ -282,7 +282,7 @@ public:
     }
 
     void write_SOUNDBIAS(int target_byte, ubyte data) {
-        writefln("BIAS: %x", bias);
+        // writefln("BIAS: %x", bias);
         final switch (target_byte) {
             case 0b0:
                 bias = cast(short) ((bias & 0x180) | get_nth_bits(data, 1, 8));

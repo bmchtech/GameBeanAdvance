@@ -120,7 +120,7 @@ public:
         }
 
         idle_cycles += cpu.cycle();
-        idle_cycles += dma_manager.handle_dma();
+        idle_cycles += dma_manager.check_dma();
         // timers.cycle(idle_cycles);
     }
 
