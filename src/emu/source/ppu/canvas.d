@@ -73,22 +73,22 @@ public:
         switch (layer | pixel_types[x][y]) {
             case Layer.NONE     | PixelType.EMPTY:
                 pixel_types[x][y] = PixelType.SINGLE;
-                indices_a   [x][y] = index;
+                indices_a  [x][y] = index;
                 break;
 
             case Layer.A        | PixelType.EMPTY: 
                 pixel_types[x][y] = PixelType.DOUBLE_A;
-                indices_a   [x][y] = index;
+                indices_a  [x][y] = index;
                 break;
             
             case Layer.B        | PixelType.EMPTY:
                 pixel_types[x][y] = PixelType.SINGLE;
-                indices_a   [x][y] = index;
+                indices_a  [x][y] = index;
                 break;
             
             case Layer.BACKDROP | PixelType.EMPTY:
                 pixel_types[x][y] = PixelType.SINGLE;
-                indices_a   [x][y] = index;
+                indices_a  [x][y] = index;
                 break;
 
             case Layer.NONE | PixelType.DOUBLE_A:
@@ -97,7 +97,7 @@ public:
             
             case Layer.B    | PixelType.DOUBLE_A:
                 pixel_types[x][y] = PixelType.DOUBLE_AB;
-                indices_b   [x][y] = index;
+                indices_b  [x][y] = index;
                 break;
 
             default: break;

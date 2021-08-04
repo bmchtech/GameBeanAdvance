@@ -79,6 +79,14 @@ class ARM7TDMI {
             *cpsr |= (1 << 6); // disable fast interrupts
         }
 
+        if (exception == CpuException.SoftwareInterrupt) {
+            memory.open_bus_bios_state = Memory.OpenBusBiosState.AFTER_SWI;
+        }
+
+        if (exception == CpuException.IRQ) {
+            memory.open_bus_bios_state = Memory.OpenBusBiosState.DURING_IRQ;
+        }
+
         *pc = get_address_from_exception(exception);
 
         halted = false;
@@ -273,6 +281,11 @@ class ARM7TDMI {
         // if ( && !get_nth_bit(*cpsr, 7)) {
             // exception(CpuException.IRQ);
         // }
+
+        // bios open bus handling
+        // if (*pc == 0x0000_00134) memory.open_bus_bios_state = Memory.OpenBusBiosState.DURING_IRQ;
+        // if (*pc == 0x0000_0013C) memory.open_bus_bios_state = Memory.OpenBusBiosState.AFTER_IRQ;
+        memory.can_read_from_bios = (*pc >> 24) == 0;
 
         uint opcode = fetch();
         if (num_log > 0) {

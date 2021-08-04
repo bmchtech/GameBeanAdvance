@@ -192,7 +192,7 @@ class GameBeanSDLHost {
             }
 
             audio_data.mutex.lock();
-                if (audio_data.buffer[0].offset < samples_per_callback * 3) {
+                if (audio_data.buffer[0].offset < samples_per_callback * 2) {
                     // writefln("Cycling");
                     gba.cycle_at_least_n_times(cycles_per_batch);
                     // gba_batch_enable = false;

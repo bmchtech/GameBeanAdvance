@@ -54,10 +54,12 @@ class Scheduler {
     void remove_event(Event* event) {
         if (event == head) {
             head = head.next;
+            head.num_cycles += event.num_cycles;
         }
 
         if (event.next != null) {
             event.next.prev = event.prev;
+            event.next.num_cycles += event.num_cycles;
         }
 
         if (event.prev != null) {
