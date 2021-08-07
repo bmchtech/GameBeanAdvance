@@ -256,11 +256,11 @@ private:
                         draw_dx++;
                     }
                 } else {
-                    for (int tile_dx = 3; tile_dx < 0; tile_dx--) {
+                    for (int tile_dx = 3; tile_dx >= 0; tile_dx--) {
                         ubyte index = tile_data[tile_dx];
-                        maybe_draw_pixel_on_layer(layer, palette_base_address, (index & 0xF) + (palette * 16), 0, left_x + draw_dx * 2,     scanline, (index & 0xF) == 0);
-                        maybe_draw_pixel_on_layer(layer, palette_base_address, (index >> 4)  + (palette * 16), 0, left_x + draw_dx * 2 + 1, scanline, (index >>  4) == 0);
-                        draw_dx += 2;
+                        maybe_draw_pixel_on_layer(layer, palette_base_address, (index & 0xF) + (palette * 16), 0, left_x + draw_dx * 2 + 1, scanline, (index & 0xF) == 0);
+                        maybe_draw_pixel_on_layer(layer, palette_base_address, (index >> 4)  + (palette * 16), 0, left_x + draw_dx * 2    , scanline, (index >>  4) == 0);
+                        draw_dx++;
                     }
                 }
             } else {
@@ -378,6 +378,10 @@ private:
         int tile_dx        = topleft_x & 0b111;
         int tile_dy        = topleft_y & 0b111;
 
+        // to understand this, go to the switch down below
+        // im just precalculating this one bit since it stays the same
+        int template_args  = background.doesnt_use_color_palettes << 2;
+
         // tile_x_offset and tile_y_offset are offsets from the topleft tile. we use this to iterate through
         // each tile.
         for (int tile_x_offset = 0; tile_x_offset < 32 + 1; tile_x_offset++) {
@@ -392,19 +396,16 @@ private:
             bool flipped_x = (tile >> 10) & 1;
             bool flipped_y = (tile >> 11) & 1;
 
-            // yes this looks stupid. and it is.
-            if (background.doesnt_use_color_palettes) {
-                Render!(true, false, false).tile(
-                        Layer.A, tile, tile_base_address, 0, 
-                        draw_x, tile_dy, 
-                        0, 0, PMatrix(0, 0, 0, 0), false,
-                        get_nth_bits(tile, 12, 16));
-            } else {
-                Render!(false, false, false).tile(
-                        Layer.A, tile, tile_base_address, 0, 
-                        draw_x, tile_dy, 
-                        0, 0, PMatrix(0, 0, 0, 0), false,
-                        get_nth_bits(tile, 12, 16));
+            // i hate how silly this looks, but i've checked and having the render tile function templated makes the code run a lot faster
+            final switch (template_args | (flipped_x << 1) | flipped_y) {
+                case 0b000: Render!(false, false, false).tile(Layer.A, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
+                case 0b001: Render!(false, false,  true).tile(Layer.A, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
+                case 0b010: Render!(false,  true, false).tile(Layer.A, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
+                case 0b011: Render!(false,  true,  true).tile(Layer.A, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
+                case 0b100: Render!( true, false, false).tile(Layer.A, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
+                case 0b101: Render!( true, false,  true).tile(Layer.A, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
+                case 0b110: Render!( true,  true, false).tile(Layer.A, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
+                case 0b111: Render!( true,  true,  true).tile(Layer.A, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
             }
         }
     }
