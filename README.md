@@ -106,3 +106,8 @@ ARM Architectural Reference Manual: https://cs.nyu.edu/courses/spring18/CSCI-GA.
 GBATEK: https://problemkaputt.de/gbatek.htm
 
 Patater GBA ASM Guide: https://patater.com/gbaguy/gbaasm.htm
+
+# Special Thanks
++ nocash https://problemkaputt.de/gbatek.htm
++ fleroviux https://github.com/fleroviux/NanoBoyAdvance
++ DenSinH https://github.com/DenSinH/DSHBA
