@@ -21,6 +21,9 @@ ulong num_log = 0;
 
 enum CPU_STATE_LOG_LENGTH = 1;
 
+long num_arm = 0;
+long num_thm = 0;
+
 class ARM7TDMI {
 
     Memory memory;
@@ -265,10 +268,10 @@ class ARM7TDMI {
     }
 
     int cycle() {
-        if (halted) return 0;
+        if (halted) return 1;
         // writefln("1");
 
-        cycles_remaining = 0;
+        cycles_remaining = 1;
 
         // if (*pc == 0x0800_06f8) num_log += 100;
 
@@ -326,8 +329,10 @@ class ARM7TDMI {
 
             // writeln();
         if (get_bit_T()) {
+            num_thm++;
             jumptable_thumb.jumptable[opcode >> 8](this, cast(ushort)opcode);
         } else {
+            num_arm++;
             jumptable_arm.execute_instruction(opcode, this);
         }
     }

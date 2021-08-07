@@ -25,7 +25,7 @@ class NoiseChannel {
     private int current_shifter_out = -1;
 
     private Scheduler scheduler;
-    private Event*    shifter_event;
+    private ulong     shifter_event;
 
     this(Scheduler scheduler) {
         this.scheduler = scheduler;

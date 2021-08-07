@@ -37,6 +37,9 @@ enum GBAKey {
     L      = 9
 }
 
+
+    // 2 ^ 64 can last for up to 3000 years
+    ulong num_cycles = 0;
 class GBA {
 public:
     ARM7TDMI         cpu;
@@ -50,9 +53,6 @@ public:
     // DirectSound  direct_sound;
 
     Scheduler        scheduler;
-
-    // 2 ^ 64 can last for up to 3000 years
-    ulong num_cycles = 0;
 
     this(Memory memory, KeyInput key_input) {
         scheduler = new Scheduler();
@@ -92,10 +92,15 @@ public:
         enabled = true; 
     }
  
-    int extra_cycles = 0;
+    ulong extra_cycles = 0;
 
+    ulong active_cycles_cpu = 0;
+    ulong active_cycles_dma = 0;
+    ulong inactive_cycles = 0;
     void cycle_at_least_n_times(int n) {
-        int times_cycled = extra_cycles;
+        ulong times_cycled = extra_cycles;
+        // writefln("Cycling at least %x times, with overflow times_cycled: %x", n, extra_cycles);
+        // writefln("idle cycles: %x", idle_cycles);
         
         while (times_cycled < n) {
             Event event = scheduler.remove_schedule_item();
@@ -113,15 +118,15 @@ public:
         extra_cycles = times_cycled - n;
     }
 
-    void maybe_cycle_cpu() {
+    pragma(inline, true) void maybe_cycle_cpu() {
         if (idle_cycles > 0) {
             idle_cycles--;
+            inactive_cycles++;
             return;
         }
 
         idle_cycles += cpu.cycle();
         idle_cycles += dma_manager.check_dma();
-        // timers.cycle(idle_cycles);
     }
 
     bool interrupt_cpu() {
@@ -129,7 +134,6 @@ public:
     }
 
     void on_timer_overflow(int timer_id) {
-        // do we have to tell direct sound to request another sample from dma?
         apu.on_timer_overflow(timer_id);
     }
 
@@ -156,6 +160,6 @@ public:
 
 private:
     bool dma_cycle = false;
-    int idle_cycles = 0;
+    uint idle_cycles = 0;
     
 }

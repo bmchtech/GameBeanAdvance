@@ -8,6 +8,7 @@ import gba;
 import scheduler;
 import interrupts;
 
+import std.stdio;
 class TimerManager {
 public:
     void delegate(int)  on_timer_overflow;
@@ -37,10 +38,10 @@ public:
         if (!timers[timer_id].enabled) return;
 
         timers[timer_id].value = timers[timer_id].reload_value;
-        // warning(format("%x TS: %x. Scheduling another at %x", timer_id, gba.num_cycles, gba.num_cycles + ((0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment)));
+        // writeln(format("%x TS: %x. Scheduling another at %x", timer_id, num_cycles, num_cycles + ((0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment)));
         timers[timer_id].timer_event = scheduler.add_event(() => timer_overflow(timer_id), (0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment);
 
-        timers[timer_id].timestamp = gba.num_cycles;
+        timers[timer_id].timestamp = num_cycles;
     }
 
     void timer_overflow(int x) {
@@ -65,7 +66,7 @@ public:
         if (!timers[x].enabled) return timers[x].value;
 
         // how many clock cycles has it been since we've been enabled?
-        ulong cycles_elapsed = timers[x].timestamp - gba.num_cycles;
+        ulong cycles_elapsed = timers[x].timestamp - num_cycles;
 
         // use timer increments to get the relevant bits, and mod by the reload value
         return cast(ushort) (cycles_elapsed >> timers[x].increment);
@@ -87,7 +88,7 @@ private:
 
         ulong   timestamp;
 
-        Event*  timer_event;
+        ulong   timer_event;
     }
 
     //.......................................................................................................................
@@ -125,7 +126,7 @@ public:
                 if (!timers[x].enabled && get_nth_bit(data, 7)) {
                     timers[x].enabled = true;
 
-                    if (timers[x].timer_event != null) scheduler.remove_event(timers[x].timer_event);
+                    if (timers[x].timer_event != 0) scheduler.remove_event(timers[x].timer_event);
                     reload_timer(x);
                 }
 

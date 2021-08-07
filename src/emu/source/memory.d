@@ -103,27 +103,27 @@ class Memory {
         this.mmio = mmio;
     }
 
-    ubyte read_byte(uint address) {
+    pragma(inline, true) ubyte read_byte(uint address) {
         return Aligned!(ubyte).read(address);
     }
 
-    ushort read_halfword(uint address) {    
+    pragma(inline, true) ushort read_halfword(uint address) {    
         return Aligned!(ushort).read(address);
     }
 
-    uint read_word(uint address) {
+    pragma(inline, true) uint read_word(uint address) {
         return Aligned!(uint).read(address);
     }
 
-    void write_byte(uint address, ubyte value) {
+    pragma(inline, true) void write_byte(uint address, ubyte value) {
         return Aligned!(ubyte).write(address, value);
     }
 
-    void write_halfword(uint address, ushort value) {
+    pragma(inline, true) void write_halfword(uint address, ushort value) {
         return Aligned!(ushort).write(address, value);
     }
 
-    void write_word(uint address, uint value) {
+    pragma(inline, true) void write_word(uint address, uint value) {
         return Aligned!(uint).write(address, value);
     }
 
@@ -156,10 +156,7 @@ class Memory {
                         return *((cast(T*) (&bios[0] + (address & (SIZE_BIOS - 1)))));
                     } else {
                         // num_log += 10;
-                        static if (is(T == uint  )) writefln("Reading from %x (word)", address);
-                        static if (is(T == ushort)) writefln("Reading from %x (halfword)", address);
-                        static if (is(T == ubyte )) writefln("Reading from %x (byte)", address);
-                        writefln("Returning %x", read_bios_open_bus());
+                        // writefln("Returning %x", read_bios_open_bus());
                         return cast(T) read_bios_open_bus();
                     }
                 default:
