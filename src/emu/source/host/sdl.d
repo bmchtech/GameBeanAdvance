@@ -9,12 +9,17 @@ import cputrace;
 import logger;
 
 import apu;
+import cpu;
 
 import core.sync.mutex;
 
 version (Imgui) {
     import derelict.imgui.imgui;
 }
+
+__gshared GBA _gba;
+__gshared int _samples_per_callback;
+__gshared int _cycles_per_batch;
 
 class GameBeanSDLHost {
     // extern (C) {
@@ -47,7 +52,7 @@ class GameBeanSDLHost {
     bool gba_batch_enable = false;
 
     this(GBA gba, int screen_scale) {
-        this.gba = gba;
+        _gba = gba;
         this.screen_scale = screen_scale;
         gba_batch_enable_mutex = new Mutex();
     }
@@ -79,8 +84,8 @@ class GameBeanSDLHost {
         wanted.format = AUDIO_S16LSB;
         wanted.channels = 2;    /* 1 = mono, 2 = stereo */
         wanted.samples = 1024;  /* Good low-latency value for callback */
-        wanted.callback = &apu.audiobuffer.callback;
         wanted.userdata = apu.audiobuffer.get_audio_data();
+        wanted.callback = &apu.audiobuffer.callback;
 
         int output = SDL_OpenAudio(&wanted, &received);
         if (output < 0) {
@@ -90,9 +95,9 @@ class GameBeanSDLHost {
             writefln("[SDL] Audio driver: %s\n", SDL_GetCurrentAudioDriver());
         }
 
-        gba.set_internal_sample_rate(16_780_000 / received.freq);
-        this.sample_rate          = received.freq;
-        this.samples_per_callback = received.samples;
+        _gba.set_internal_sample_rate(16_780_000 / received.freq);
+        this.sample_rate      = received.freq;
+        _samples_per_callback = received.samples;
 
         version (Imgui) {
             writefln("Setting up imgui");
@@ -130,13 +135,13 @@ class GameBeanSDLHost {
         readln();
         running = true;
 
-        int num_batches       = this.sample_rate / this.samples_per_callback;
+        int num_batches       = this.sample_rate / _samples_per_callback;
         enum cycles_per_second = 16_780_000;
-        this.cycles_per_batch  = cycles_per_second / num_batches;
-        writefln("%d batches per second, %d batches per cycle.", num_batches, cycles_per_batch);
-        writefln("sample rate: %d, samples_per_callback: %d", sample_rate, samples_per_callback);
+        _cycles_per_batch  = cycles_per_second / num_batches;
+        writefln("%d batches per second, %d batches per cycle.", num_batches, _cycles_per_batch);
+        writefln("sample rate: %d, samples_per_callback: %d", sample_rate, _samples_per_callback);
 
-        set_audio_buffer_callback(&cycle_gba);
+        // set_audio_buffer_callback(&cycle_gba);
         SDL_PauseAudio(0);
 
         // // each cycle() does 4 cpu cycles
@@ -164,64 +169,23 @@ class GameBeanSDLHost {
 
         // writefln("ns for single: %s, ns for batch: %s, ", nsec_per_cycle, nsec_per_gba_cyclebatch);
 
+        int fps = 0;
         while (running) {
             long elapsed = stopwatch.update();
-            clockfor_frame += elapsed;
             clockfor_log   += elapsed;
 
-        //     mixin(VERBOSE_LOG!(`3`, `format("elapsed: %s ns", elapsed)`));
-
-        //     // GBA cycle batching
-        //     if (clockfor_cycle > nsec_per_gba_cyclebatch) {
-        //         for (int i = 0; i < gba_cycle_batch_sz; i++) {
-        //             mixin(VERBOSE_LOG!(`3`, `format("pc: %00000000x (cycle %s)",
-        //                     *gba.cpu.pc, total_cycles + i)`));
-        //             gba.cycle();
-        //         }
-        //         total_cycles += gba_cycle_batch_sz;
-        //         cycles_since_last_log += gba_cycle_batch_sz;
-        //         mixin(VERBOSE_LOG!(`3`, `format("CYCLE[%s]", gba_cycle_batch_sz)`));
-        //         clockfor_cycle -= nsec_per_gba_cyclebatch;
-        //     }
-
-        //     // 60Hz frame refresh (mod 267883)
-            if (clockfor_frame > nsec_per_frame) {
-                frame();
-                mixin(VERBOSE_LOG!(`3`, `format("FRAME %s", frame_count)`));
-                clockfor_frame = 0;
+            frame();
+            while (_audio_data.buffer[0].offset < _samples_per_callback * 3) {
+                _gba.cycle_at_least_n_times(_cycles_per_batch);
             }
+            fps++;
 
-            audio_data.mutex.lock();
-                if (audio_data.buffer[0].offset < samples_per_callback * 2) {
-                    // writefln("Cycling");
-                    gba.cycle_at_least_n_times(cycles_per_batch);
-                    // gba_batch_enable = false;
-                    cycles_since_last_log += cycles_per_batch;
-                    // writefln("Cycled");
-                }
-            audio_data.mutex.unlock();
-
-        //     // writefln("NSEC: %s  |  %s OF %s", total_time.total!"nsecs", clockfor_log, nsec_per_log);
             if (clockfor_log > nsec_per_log) {
-                immutable auto cpu_cycles_since_last_log = cycles_since_last_log;
-                double avg_speed = (cast(double) cpu_cycles_since_last_log / cast(
-                        double) cycles_per_log);
-                mixin(VERBOSE_LOG!(`1`, `format("AVG SPEED: [%s/%s] = %s",
-                        cpu_cycles_since_last_log, cycles_per_log, avg_speed)`));
+                SDL_SetWindowTitle(window, cast(char*) format("FPS: %s", fps));
                 clockfor_log = 0;
                 cycles_since_last_log = 0;
+                fps = 0;
             }
-
-            // Thread.sleep(0.msecs);
-        }
-    }
-
-    void cycle_gba() {
-        // writefln("Enabling");
-        bool acquired = gba_batch_enable_mutex.tryLock();
-        if (acquired) {
-            gba_batch_enable = true;
-            gba_batch_enable_mutex.unlock();
         }
     }
 
@@ -233,7 +197,6 @@ class GameBeanSDLHost {
     }
 
     int frame_count;
-    GBA gba;
     bool running;
     SDL_Window* window;
     SDL_Renderer* renderer;
@@ -248,7 +211,7 @@ class GameBeanSDLHost {
 
     void enable_cpu_tracing(int trace_length) {
         cpu_tracing_enabled = true;
-        trace = new CpuTrace(gba.cpu, trace_length);
+        trace = new CpuTrace(_gba.cpu, trace_length);
         Logger.singleton(trace);
     }
 
@@ -262,8 +225,6 @@ class GameBeanSDLHost {
 
 private:
     uint sample_rate;
-    uint samples_per_callback;
-    uint cycles_per_batch;
 
     void frame() {
         SDL_Event event;
@@ -291,7 +252,7 @@ private:
         // sync from GBA video buffer
         for (int j = 0; j < GBA_SCREEN_HEIGHT; j++) {
             for (int i = 0; i < GBA_SCREEN_WIDTH; i++) {
-                auto p = gba.memory.video_buffer[i][j];
+                auto p = _gba.memory.video_buffer[i][j];
                 pixels[j * (GBA_SCREEN_WIDTH) + i] = p;
             }
         }
@@ -347,6 +308,6 @@ private:
         if (key !in KEYMAP)
             return;
         auto gba_key = to!int(KEYMAP[key]);
-        gba.key_input.set_key(cast(ubyte) gba_key, pressed);
+        _gba.key_input.set_key(cast(ubyte) gba_key, pressed);
     }
 }

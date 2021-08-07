@@ -5,6 +5,8 @@ import memory;
 import util;
 import scheduler;
 
+import gba;
+
 import apu.channels.noise_channel;
 import apu.channels.wave_channel;
 
@@ -116,9 +118,11 @@ private:
         
         // short mixed_sample = cast(short) (dma_sample_A + dma_sample_B + bias * 2);
         // writefln("Mixing: %x %x", mixed_sample_L, mixed_sample_R);
+        _audio_data.mutex.lock_nothrow();
         push_to_buffer(Channel.L, [mixed_sample_L]);
         push_to_buffer(Channel.R, [mixed_sample_R]);
-
+        _audio_data.mutex.unlock_nothrow();
+        
         scheduler.add_event(&sample, sample_rate);
     }
 

@@ -7,106 +7,81 @@ import std.stdio;
 struct Event {
     void delegate() callback;
     int             num_cycles;
-
-    Event*          next;
-    Event*          prev;
+	ulong           id;
+    bool            completed;
 }
 
 class Scheduler {
-    Event* head;
+    enum TOTAL_NUMBER_OF_EVENTS = 0x100;
+    Event*[TOTAL_NUMBER_OF_EVENTS] events;
+    int events_in_queue = 0;
+    ulong id_counter = 0;
 
     this() {
-        head = null;
+        for (int i = 0; i < TOTAL_NUMBER_OF_EVENTS; i++) {
+        	events[i] = new Event(null, 0, 0, false);
+        }
+        
+        events_in_queue = 0;
     }
 
-    Event* add_event(void delegate() callback, int num_cycles) {
-        // writefln("Adding an event %d cycles away", num_cycles);
-
-        Event* event = new Event(callback, num_cycles, null, null);
-        if (head == null) {
-            head = event;
-            return event;
-        }
-
-        Event* ptr  = head;
-        Event* after = null;
-
-        while (ptr != null) {
-            if (event.num_cycles > ptr.num_cycles) {
-                event.num_cycles -= ptr.num_cycles;
-                after = ptr;
+    ulong add_event(void delegate() callback, int num_cycles) {
+        int insert_at = 0;
+        for (; insert_at < events_in_queue; insert_at++) {
+            if (num_cycles > events[insert_at].num_cycles) {
+            	num_cycles -= events[insert_at].num_cycles;
             } else {
+                events[insert_at].num_cycles -= num_cycles;
                 break;
             }
-
-            ptr = ptr.next;
         }
-
-        if (after == null) {
-            insert_before_head(event);
-        } else {
-            insert_after(after, event);
+        
+        for (int i = events_in_queue; i > insert_at; i--) {
+            *events[i] = *events[i - 1];
         }
-
-        return event;
+        
+        id_counter++;
+        events_in_queue++;
+        *events[insert_at] = Event(callback, num_cycles, id_counter, false);
+        
+        return id_counter;
     }
 
-    void remove_event(Event* event) {
-        if (event == head) {
-            head = head.next;
-            head.num_cycles += event.num_cycles;
+    void remove_event(ulong event_id) {
+        int remove_at = -1;
+        for (int i = 0; i < events_in_queue; i++) {
+            if (events[i].id == event_id) {
+            	remove_at = i;
+                break;
+            }
         }
 
-        if (event.next != null) {
-            event.next.prev = event.prev;
-            event.next.num_cycles += event.num_cycles;
+        if (remove_at == -1) return;
+        
+        events[remove_at + 1].num_cycles += events[remove_at].num_cycles;
+        
+        for (int i = remove_at; i < events_in_queue; i++) {
+            *events[i] = *events[i + 1];
         }
+        
+        events_in_queue--;
+    }
 
-        if (event.prev != null) {
-            event.prev.next = event.next;
+    Event remove_schedule_item() {
+        Event return_val = *events[0];
+        
+        for (int i = 0; i < events_in_queue; i++) {
+            *events[i] = *events[i + 1];
         }
-
-        event.destroy();
+        
+        events_in_queue--;
+        return return_val;
     }
 
     void print_schedule() {
         writefln("Schedule:");
-        Event* ptr = head;
-        while (ptr != null) {
-            writefln("%d", ptr.num_cycles);
-            ptr = ptr.next;
+        for (int i = 0; i < events_in_queue; i++) {
+            writefln("%d", events[i].num_cycles);
         }
-    }
-
-    void insert_before_head(Event* event) {
-        head.num_cycles -= event.num_cycles;
-
-        event.next = head;
-        head.prev = event;
-        head = event;
-    }
-
-    void insert_after(Event* after, Event* event) {
-        if (after.next == null) {
-            after.next = event;
-            event.prev = after;
-
-        } else {
-            event.next = after.next;
-            after.next.prev = event;
-            after.next = event;
-            event.prev = after;
-
-            event.next.num_cycles -= event.num_cycles;
-        }
-    }
-
-    Event remove_schedule_item() {
-        if (head == null) error("Scheduler ran dry.");
-
-        Event* ret = head;
-        head = head.next;
-
-        return *ret;
     }
 }
