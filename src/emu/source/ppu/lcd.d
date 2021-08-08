@@ -480,7 +480,7 @@ private:
     void render_sprites(int given_priority) {
         // Very useful guide for attributes! https://problemkaputt.de/gbatek.htm#lcdobjoamattributes
         for (int sprite = 0; sprite < 128; sprite++) {
-            if (get_nth_bits(memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 4), 10, 11) != given_priority) continue;
+            if (get_nth_bits(memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 4), 10, 12) != given_priority) continue;
 
             // first of all, we need to figure out if we render this sprite in the first place.
             // so, we collect a bunch of info that'll help us figure that out.
@@ -657,6 +657,7 @@ private:
 
 public:
     void write_DISPCNT(int target_byte, ubyte data) {
+        writefln("wrote to dispcnt: %x %x", target_byte, data);
         if (target_byte == 0) {
             bg_mode                    = get_nth_bits(data, 0, 3);
             disp_frame_select          = get_nth_bit (data, 4);

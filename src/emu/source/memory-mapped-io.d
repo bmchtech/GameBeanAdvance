@@ -178,12 +178,12 @@ class MMIO {
             // case SOUND4CNT_L + 1: return apu.read_SOUND4CNT_L(); 
             // case SOUND4CNT_H + 0: return apu.read_SOUND4CNT_H(); 
             // case SOUND4CNT_H + 1: return apu.read_SOUND4CNT_H(); 
-            case SOUNDCNT_L  + 0: return 0; // TODO: return apu.read_SOUNDCNT_L(); 
-            case SOUNDCNT_L  + 1: return 0; //       return apu.read_SOUNDCNT_L(); 
+            case SOUNDCNT_L  + 0: //error(format("read from %x", address)); // ; // TODO: return apu.read_SOUNDCNT_L(); 
+            case SOUNDCNT_L  + 1: //error(format("read from %x", address)); // ; //       return apu.read_SOUNDCNT_L(); 
             case SOUNDCNT_H  + 0: return apu.read_SOUNDCNT_H(0); 
             case SOUNDCNT_H  + 1: return apu.read_SOUNDCNT_H(1); 
-            // case SOUNDCNT_X  + 0: return apu.read_SOUNDCNT_X(0); 
-            // case SOUNDCNT_X  + 1: return apu.read_SOUNDCNT_X(1);
+            case SOUNDCNT_X  + 0: //error(format("read from %x", address)); // return apu.read_SOUNDCNT_X(0); 
+            case SOUNDCNT_X  + 1: //error(format("read from %x", address)); // return apu.read_SOUNDCNT_X(1);
             case SOUNDBIAS   + 0: return apu.read_SOUNDBIAS (0); 
             case SOUNDBIAS   + 1: return apu.read_SOUNDBIAS (1); 
 
@@ -322,10 +322,10 @@ class MMIO {
             // case SOUND1CNT_H + 1: apu.write_SOUND1CNT_H(); break; 
             // case SOUND1CNT_X + 0: apu.write_SOUND1CNT_X(); break; 
             // case SOUND1CNT_X + 1: apu.write_SOUND1CNT_X(); break; 
-            // case SOUND2CNT_L + 0: apu.write_SOUND2CNT_L(); break; 
-            // case SOUND2CNT_L + 1: apu.write_SOUND2CNT_L(); break; 
-            // case SOUND2CNT_H + 0: apu.write_SOUND2CNT_H(); break; 
-            // case SOUND2CNT_H + 1: apu.write_SOUND2CNT_H(); break; 
+            case SOUND2CNT_L + 0: apu.write_SOUND2CNT_L(0, data); break; 
+            case SOUND2CNT_L + 1: apu.write_SOUND2CNT_L(1, data); break; 
+            case SOUND2CNT_H + 0: apu.write_SOUND2CNT_H(0, data); break; 
+            case SOUND2CNT_H + 1: apu.write_SOUND2CNT_H(1, data); break; 
             case SOUND3CNT_L + 0: apu.write_SOUND3CNT_L(   data); break; 
          // case SOUND3CNT_L + 1: apu.write_SOUND3CNT_L(1, data); break; NOTE: unused
             case SOUND3CNT_H + 0: apu.write_SOUND3CNT_H(0, data); break; 

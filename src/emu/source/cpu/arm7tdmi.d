@@ -292,15 +292,19 @@ class ARM7TDMI {
 
         uint opcode = fetch();
         if (num_log > 0) {
-            if (num_log == 2) {
-                writefln("First.");
-            }
             num_log--;
-            write(format("%08x |", opcode));
-            
-            for (int j = 0; j < 16; j++)
-                write(format("%08x ", regs[j]));
+            if (get_bit_T()) write("THM ");
+            else write("ARM ");
 
+            write(format("0x%x ", opcode));
+            
+            for (int j = 0; j < 15; j++)
+                write(format("%x ", regs[j]));
+
+            if (get_bit_T()) write(format("%x ", regs[15] + 2));
+            else write(format("%x ", regs[15] + 4));
+
+            write(format("%x", memory.read_byte(0x0300_0003)));
             writeln();
         }
 

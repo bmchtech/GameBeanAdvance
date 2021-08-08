@@ -9,6 +9,7 @@ import gba;
 
 import apu.channels.noise_channel;
 import apu.channels.wave_channel;
+import apu.channels.tone_channel;
 
 import std.stdio;
 
@@ -41,7 +42,8 @@ public:
         this.scheduler = scheduler;
 
         noise_channel = new NoiseChannel(scheduler);
-        wave_channel  = new WaveChannel();
+        wave_channel  = new WaveChannel ();
+        tone_channel  = new ToneChannel ();
     }
 
     void on_timer_overflow(int timer_id) {
@@ -63,6 +65,7 @@ private:
     DMASound[2]  dma_sounds;
     NoiseChannel noise_channel;
     WaveChannel  wave_channel;
+    ToneChannel  tone_channel; // todo: there are two, not one
 
     uint sample_rate;
     uint cycles_till_next_sample;
@@ -108,10 +111,13 @@ private:
         if (dma_sounds[DirectSound.B].enabled_left ) mixed_sample_L += (cast(byte) dma_sounds[DirectSound.B].popped_sample);
         if (dma_sounds[DirectSound.B].enabled_right) mixed_sample_R += (cast(byte) dma_sounds[DirectSound.B].popped_sample);
 
+        // todo: make this code less repetitive
         mixed_sample_L += noise_channel.sample(sample_rate);
         mixed_sample_R += noise_channel.sample(sample_rate);
-        mixed_sample_L += wave_channel.sample(sample_rate);
-        mixed_sample_R += wave_channel.sample(sample_rate);
+        mixed_sample_L += wave_channel .sample(sample_rate);
+        mixed_sample_R += wave_channel .sample(sample_rate);
+        mixed_sample_L += tone_channel .sample(sample_rate);
+        mixed_sample_R += tone_channel .sample(sample_rate);
 
         mixed_sample_L += bias * 2;
         mixed_sample_R += bias * 2;
@@ -151,36 +157,36 @@ private:
 
 public:
 
-    // void write_SOUND2CNT_L(int target_byte, ubyte data) {
-    //     final switch (target_byte) {
-    //         case 0b0:
-    //             channel_tone.length             = (cast(float) (64 - get_nth_bits(data, 0, 6))) / 256.0;
-    //             channel_tone.duty               = tone_duty_table[get_nth_bits(data, 6, 8)];
-    //             break;
+    void write_SOUND2CNT_L(int target_byte, ubyte data) {
+        final switch (target_byte) {
+            case 0b0:
+                tone_channel.set_length(get_nth_bits(data, 0, 6));
+                tone_channel.set_duty  (get_nth_bits(data, 6, 8));
+                break;
 
-    //         case 0b1:
-    //             channel_tone.envelope           = (cast(float) (get_nth_bits(data, 0, 3))) / 64.0;
-    //             channel_tone.envelope_direction = get_nth_bit(data, 3) ? EnvelopeDirection.DECREASING : EnvelopeDirection.INCREASING;
-    //             channel_tone.initial_volume     = get_nth_bits(data, 4, 8);
-    //             break;
-    //     }
-    // }
+            case 0b1:
+                // tone_channel.envelope           = (cast(float) (get_nth_bits(data, 0, 3))) / 64.0;
+                // tone_channel.envelope_direction = get_nth_bit(data, 3) ? EnvelopeDirection.DECREASING : EnvelopeDirection.INCREASING;
+                // tone_channel.initial_volume     = get_nth_bits(data, 4, 8);
+                break;
+        }
+    }
 
-    // void write_SOUND2CNT_H(int target_byte, ubyte data) {
-    //     final switch (target_byte) {
-    //         case 0b0:
-    //             channel_tone.frequency_raw        = get_nth_bits(data, 0, 8) | channel_tone.frequency_raw & ~0xFF;
-    //             break;
+    uint frequency_raw;
+    void write_SOUND2CNT_H(int target_byte, ubyte data) {
+        final switch (target_byte) {
+            case 0b0:
+                frequency_raw = (frequency_raw & ~0xFF) | data;
+                tone_channel.set_frequency(frequency_raw);
+                break;
             
-    //         case 0b1:
-    //             channel_tone.frequency_raw        = (get_nth_bits(data, 0, 2) << 8) | (channel_tone.frequency_raw & 0xFF);
-    //             channel_tone.stop_upon_completion = get_nth_bit(data, 14);   
-                
-    //             if (get_nth_bit(data, 15)) restart_channel_tone();
-    //     }
-        
-    //     channel_tone.frequency = 131072 / (2048 - channel_tone.frequency_raw);
-    // }
+            case 0b1:
+                frequency_raw = (frequency_raw & 0xFF) | ((data & 3) << 2);
+                tone_channel.set_frequency(frequency_raw);
+                tone_channel.set_length_flag(get_nth_bit(data, 6));
+                if (get_nth_bit(data, 7)) tone_channel.restart();
+        }
+    }
 
     void write_SOUND3CNT_L(ubyte data) {
         // writefln("L %x", data);
