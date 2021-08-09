@@ -104,26 +104,46 @@ public:
         }
     }
 
-    void consolidate(uint blend_a, uint blend_b) {
-        for (int x = 0; x < SCREEN_WIDTH;  x++) {
-        for (int y = 0; y < SCREEN_HEIGHT; y++) {
-            final switch (pixel_types[x][y]) {
-                case PixelType.EMPTY:
-                    break;
-                case PixelType.SINGLE:
-                    pixels_output[x][y] = index_to_pixel(indices_a[x][y]); break;
-                case PixelType.DOUBLE_A:
-                    pixels_output[x][y] = index_to_pixel(indices_a[x][y]); break;
-                case PixelType.DOUBLE_AB: {
-                    Pixel a = index_to_pixel(indices_a[x][y]);
-                    Pixel b = index_to_pixel(indices_b[x][y]);
+    template Consolidate(SpecialEffect special_effect) {
+        void consolidate(uint blend_a, uint blend_b, uint bldy) {
+            for (int x = 0; x < SCREEN_WIDTH;  x++) {
+            for (int y = 0; y < SCREEN_HEIGHT; y++) {
+                final switch (pixel_types[x][y]) {
+                    case PixelType.EMPTY:
+                        break;
+                    case PixelType.SINGLE:
+                        pixels_output[x][y] = index_to_pixel(indices_a[x][y]); break;
+                    case PixelType.DOUBLE_A:
+                        pixels_output[x][y] = index_to_pixel(indices_a[x][y]);
 
-                    pixels_output[x][y].r = (blend_a * a.r + blend_b * b.r) >> 6;
-                    pixels_output[x][y].g = (blend_a * a.g + blend_b * b.g) >> 6;
-                    pixels_output[x][y].b = (blend_a * a.b + blend_b * b.b) >> 6;
+                        static if (special_effect == SpecialEffect.BrightnessIncrease) {
+                            pixels_output[x][y].r += ((31 - pixels_output[x][y].r) * bldy) >> 4;
+                            pixels_output[x][y].g += ((31 - pixels_output[x][y].g) * bldy) >> 4;
+                            pixels_output[x][y].b += ((31 - pixels_output[x][y].b) * bldy) >> 4;
+                        }
+
+                        static if (special_effect == SpecialEffect.BrightnessDecrease) {
+                            pixels_output[x][y].r -= ((     pixels_output[x][y].r) * bldy) >> 4;
+                            pixels_output[x][y].g -= ((     pixels_output[x][y].g) * bldy) >> 4;
+                            pixels_output[x][y].b -= ((     pixels_output[x][y].b) * bldy) >> 4;
+                        }
+                        
+                        break;
+                    case PixelType.DOUBLE_AB: {
+                        static if (special_effect == SpecialEffect.Alpha) {
+                            Pixel a = index_to_pixel(indices_a[x][y]);
+                            Pixel b = index_to_pixel(indices_b[x][y]);
+
+                            pixels_output[x][y].r = (blend_a * a.r + blend_b * b.r) >> 6;
+                            pixels_output[x][y].g = (blend_a * a.g + blend_b * b.g) >> 6;
+                            pixels_output[x][y].b = (blend_a * a.b + blend_b * b.b) >> 6;
+                        }
+                        
+                        break;
+                    }
                 }
             }
-        }
+            }
         }
     }
 
