@@ -3,7 +3,16 @@
 # GameBeanAdvance
 WIP Gameboy Advance Emulator written in D. Currently working on the GBA Sound Controller (APU).
 
-# Demo Videos
+# Demo Videos (Turn audio up)
+
+https://user-images.githubusercontent.com/15221993/128622370-1854bba0-84de-4856-8a98-c66d4ff29738.mp4
+
+
+https://user-images.githubusercontent.com/15221993/128622387-92538ff3-868f-4f6c-a7cf-eb22426cab37.mp4
+
+
+https://user-images.githubusercontent.com/15221993/128622390-e3ce7525-5144-4810-a718-069fdc0a3301.mp4
+
 
 
 # Usage
