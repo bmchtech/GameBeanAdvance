@@ -29,6 +29,8 @@ struct Background {
     FixedPoint y_offset_rotation; 
 
     BackgroundMode mode;
+
+    Layer layer;
 }
 
 enum BackgroundMode {
