@@ -76,7 +76,13 @@ public:
         vblank = true;
         if (vblank_irq_enabled) interrupt_cpu(Interrupt.LCD_VBLANK);
 
-        canvas.consolidate(31, 0);
+        final switch (special_effect) {
+            case SpecialEffect.None:               canvas.Consolidate!(SpecialEffect.None)              .consolidate(0, 0, 0);         break;
+            case SpecialEffect.Alpha:              canvas.Consolidate!(SpecialEffect.Alpha)             .consolidate(0, 0, 0);         break;
+            case SpecialEffect.BrightnessIncrease: canvas.Consolidate!(SpecialEffect.BrightnessIncrease).consolidate(0, 0, evy_coeff); break;
+            case SpecialEffect.BrightnessDecrease: canvas.Consolidate!(SpecialEffect.BrightnessDecrease).consolidate(0, 0, evy_coeff); break;
+        }
+
         render_canvas();
         
         scheduler.add_event(&on_vblank_end, 308 * 68 * 4);
@@ -92,7 +98,7 @@ public:
     }
 
     void calculate_backdrop() {
-        for (int x = 0; x < 240; x++) canvas.draw(x, scanline, memory.OFFSET_PALETTE_RAM, Layer.BACKDROP);
+        for (int x = 0; x < 240; x++) canvas.draw(x, scanline, memory.OFFSET_PALETTE_RAM, layer_backdrop);
     }
 
     void render() {
@@ -398,14 +404,14 @@ private:
 
             // i hate how silly this looks, but i've checked and having the render tile function templated makes the code run a lot faster
             final switch (template_args | (flipped_x << 1) | flipped_y) {
-                case 0b000: Render!(false, false, false).tile(Layer.A, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
-                case 0b001: Render!(false, false,  true).tile(Layer.A, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
-                case 0b010: Render!(false,  true, false).tile(Layer.A, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
-                case 0b011: Render!(false,  true,  true).tile(Layer.A, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
-                case 0b100: Render!( true, false, false).tile(Layer.A, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
-                case 0b101: Render!( true, false,  true).tile(Layer.A, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
-                case 0b110: Render!( true,  true, false).tile(Layer.A, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
-                case 0b111: Render!( true,  true,  true).tile(Layer.A, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
+                case 0b000: Render!(false, false, false).tile(backgrounds[background_id].layer, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
+                case 0b001: Render!(false, false,  true).tile(backgrounds[background_id].layer, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
+                case 0b010: Render!(false,  true, false).tile(backgrounds[background_id].layer, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
+                case 0b011: Render!(false,  true,  true).tile(backgrounds[background_id].layer, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
+                case 0b100: Render!( true, false, false).tile(backgrounds[background_id].layer, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
+                case 0b101: Render!( true, false,  true).tile(backgrounds[background_id].layer, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
+                case 0b110: Render!( true,  true, false).tile(backgrounds[background_id].layer, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
+                case 0b111: Render!( true,  true,  true).tile(backgrounds[background_id].layer, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
             }
         }
     }
@@ -446,7 +452,7 @@ private:
             int draw_x = tile_x_offset * 8 - tile_dx;
             int draw_y = scanline;
 
-            Render!(true, false, false).tile(Layer.A, tile, tile_base_address, 0, 
+            Render!(true, false, false).tile(backgrounds[background_id].layer, tile, tile_base_address, 0, 
                                draw_x, tile_dy, 
                                0, 0, PMatrix(0, 0, 0, 0), false, 
                                get_nth_bits(tile, 12, 16));
@@ -546,8 +552,8 @@ private:
                                         get_nth_bits(attribute_2, 12, 16),
                                         flipped_x, flipped_y, get_nth_bit(attribute_0, 9));
 
-            if (doesnt_use_color_palettes) Render!(true,  false, false).texture(Layer.A, texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline));
-            else                           Render!(false, false, false).texture(Layer.A, texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline));
+            if (doesnt_use_color_palettes) Render!(true,  false, false).texture(layer_obj, texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline));
+            else                           Render!(false, false, false).texture(layer_obj, texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline));
         }
     }
 
@@ -651,13 +657,14 @@ private:
 
     // BLDCNT
     SpecialEffect special_effect;
+    Layer         layer_backdrop;
+    Layer         layer_obj;
 
     // BLDY
     int evy_coeff;
 
 public:
     void write_DISPCNT(int target_byte, ubyte data) {
-        writefln("wrote to dispcnt: %x %x", target_byte, data);
         if (target_byte == 0) {
             bg_mode                    = get_nth_bits(data, 0, 3);
             disp_frame_select          = get_nth_bit (data, 4);
@@ -789,32 +796,27 @@ public:
     }
 
     void write_BLDCNT(int target_byte, ubyte data) {
-    //     void maybe_set_special_effect_layer(Layer layer, SpecialEffectLayer special_effect_layer, bool condition) {
-    //         if (layer.special_effect_layer == special_effect_layer || layer.special_effect_layer == SpecialEffectLayer.None) {
-    //             layer.special_effect_layer = condition ? special_effect_layer : SpecialEffectLayer.None;
-    //         }
-    //     }
-        
-    //     final switch (target_byte) {
-    //         case 0b0:
-    //             maybe_set_special_effect_layer(layer_backgrounds[0], SpecialEffectLayer.A, get_nth_bit(data, 0));
-    //             maybe_set_special_effect_layer(layer_backgrounds[1], SpecialEffectLayer.A, get_nth_bit(data, 1));
-    //             maybe_set_special_effect_layer(layer_backgrounds[2], SpecialEffectLayer.A, get_nth_bit(data, 2));
-    //             maybe_set_special_effect_layer(layer_backgrounds[3], SpecialEffectLayer.A, get_nth_bit(data, 3));
-    //             // TODO: OBJ BLENDING
-    //             maybe_set_special_effect_layer(layer_backdrop      , SpecialEffectLayer.A, get_nth_bit(data, 5));
-    //             special_effect = cast(SpecialEffect) get_nth_bits(data, 6, 8);
+        final switch (target_byte) {
+            case 0b0:
+                backgrounds[0].layer = cast(Layer) ((backgrounds[0].layer & 0x17) | (get_nth_bit(data, 0) << 3));
+                backgrounds[1].layer = cast(Layer) ((backgrounds[1].layer & 0x17) | (get_nth_bit(data, 1) << 3));
+                backgrounds[2].layer = cast(Layer) ((backgrounds[2].layer & 0x17) | (get_nth_bit(data, 2) << 3));
+                backgrounds[3].layer = cast(Layer) ((backgrounds[3].layer & 0x17) | (get_nth_bit(data, 3) << 3));
+                layer_obj            = cast(Layer) ((layer_obj            & 0x17) | (get_nth_bit(data, 4) << 3));
+                layer_backdrop       = cast(Layer) ((layer_backdrop       & 0x17) | (get_nth_bit(data, 5) << 3));
 
-    //             break;
-    //         case 0b1:
-    //             maybe_set_special_effect_layer(layer_backgrounds[0], SpecialEffectLayer.B, get_nth_bit(data, 0));
-    //             maybe_set_special_effect_layer(layer_backgrounds[1], SpecialEffectLayer.B, get_nth_bit(data, 1));
-    //             maybe_set_special_effect_layer(layer_backgrounds[2], SpecialEffectLayer.B, get_nth_bit(data, 2));
-    //             maybe_set_special_effect_layer(layer_backgrounds[3], SpecialEffectLayer.B, get_nth_bit(data, 3));
-    //             // TODO: OBJ BLENDING
-    //             maybe_set_special_effect_layer(layer_backdrop      , SpecialEffectLayer.B, get_nth_bit(data, 5));
-    //             break;
-    //     }
+                special_effect = cast(SpecialEffect) get_nth_bits(data, 6, 8);
+
+                break;
+            case 0b1:
+                backgrounds[0].layer = cast(Layer) ((backgrounds[0].layer & 0x0F) | (get_nth_bit(data, 0) << 4));
+                backgrounds[1].layer = cast(Layer) ((backgrounds[1].layer & 0x0F) | (get_nth_bit(data, 1) << 4));
+                backgrounds[2].layer = cast(Layer) ((backgrounds[2].layer & 0x0F) | (get_nth_bit(data, 2) << 4));
+                backgrounds[3].layer = cast(Layer) ((backgrounds[3].layer & 0x0F) | (get_nth_bit(data, 3) << 4));
+                layer_obj            = cast(Layer) ((layer_obj            & 0x17) | (get_nth_bit(data, 4) << 3));
+                layer_backdrop       = cast(Layer) ((layer_backdrop       & 0x0F) | (get_nth_bit(data, 5) << 4));
+                break;
+        }
     }
 
     void write_BLDY(int target_byte, ubyte data) {
