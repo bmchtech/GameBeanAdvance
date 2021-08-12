@@ -123,6 +123,14 @@ class MMIO {
     enum WAITCNT       = 0x4000204; //  2    R/W   Game Pak Waitstate Control
     enum HALTCNT       = 0x4000301; //  1      W   Undocumented - Power Down Control
 
+    template GenerateRegister(string register_name, int size, int addr)
+    {
+        mixin("void read_" ~ register_name ~ "_");
+        mixin("void read_" ~ register_name ~ "_");
+        mixin("void read_" ~ register_name ~ "_");
+        mixin("void read_" ~ register_name ~ "_");
+    }
+
     this(GBA gba, PPU ppu, APU apu, DMAManager dma, TimerManager timers, InterruptManager interrupt, KeyInput keyinput) {
         this.gba       = gba;
         this.ppu       = ppu;

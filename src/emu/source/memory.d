@@ -6,6 +6,7 @@ import util;
 import apu;
 import mmio;
 import cpu;
+import ppu;
 
 Memory memory;
 
@@ -116,15 +117,15 @@ class Memory {
     }
 
     pragma(inline, true) void write_byte(uint address, ubyte value) {
-        return Aligned!(ubyte).write(address, value);
+        Aligned!(ubyte).write(address, value);
     }
 
     pragma(inline, true) void write_halfword(uint address, ushort value) {
-        return Aligned!(ushort).write(address, value);
+        Aligned!(ushort).write(address, value);
     }
 
     pragma(inline, true) void write_word(uint address, uint value) {
-        return Aligned!(uint).write(address, value);
+        Aligned!(uint).write(address, value);
     }
 
     // trying a templated style of read/write, see how it goes.
@@ -173,7 +174,20 @@ class Memory {
                 case 0x1:                 break; // nothing is mapped here
                 case REGION_WRAM_BOARD:   *(cast(T*) (&wram_board[0]  + (address & (SIZE_WRAM_BOARD  - 1)))) = value; break;
                 case REGION_WRAM_CHIP:    *(cast(T*) (&wram_chip[0]   + (address & (SIZE_WRAM_CHIP   - 1)))) = value; break;
-                case REGION_PALETTE_RAM:  *(cast(T*) (&palette_ram[0] + (address & (SIZE_PALETTE_RAM - 1)))) = value; break;
+                case REGION_PALETTE_RAM:  
+                    *(cast(T*) (&palette_ram[0] + (address & (SIZE_PALETTE_RAM - 1)))) = value; 
+                    uint index = (address & (SIZE_PALETTE_RAM - 1)) >> 1;
+
+                    static if (is(T == uint)) {
+                        ppu.palette.set_color(index,     cast(ushort) (value & 0xFFFF));
+                        ppu.palette.set_color(index + 1, cast(ushort) (value >> 16));
+                    } else static if (is(T == ushort)) {
+                        ppu.palette.set_color(index, value);
+                    } else static if (is(T == ubyte)) {
+                        ppu.palette.set_color(index, value | (value << 8));
+                    }
+                    break;
+
                 case REGION_VRAM:         *(cast(T*) (&vram[0]        + (address & (SIZE_VRAM        - 1)))) = value; break;
                 case REGION_OAM:          *(cast(T*) (&oam[0]         + (address & (SIZE_OAM         - 1)))) = value; break;
 

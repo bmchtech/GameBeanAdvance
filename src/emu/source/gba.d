@@ -62,7 +62,7 @@ public:
         this.interrupt_manager = new InterruptManager(&interrupt_cpu, &cpu.enable);
         this.ppu               = new PPU(memory, scheduler, &interrupt_manager.interrupt, &on_hblank);
         this.apu               = new APU(memory, scheduler, &on_fifo_empty);
-        this.dma_manager       = new DMAManager(memory);
+        this.dma_manager       = new DMAManager(memory, scheduler, &interrupt_manager.interrupt);
         this.timers            = new TimerManager(memory, scheduler, this, &interrupt_manager.interrupt, &on_timer_overflow);
         this.key_input         = key_input;
 
@@ -121,7 +121,6 @@ public:
     pragma(inline, true) void maybe_cycle_cpu() {
         if (idle_cycles > 0) {
             idle_cycles--;
-            inactive_cycles++;
             return;
         }
 

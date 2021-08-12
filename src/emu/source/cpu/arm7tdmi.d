@@ -276,11 +276,6 @@ class ARM7TDMI {
         // if (*pc == 0x0800_06f8) num_log += 100;
 
         // Logger.instance.capture_cpu();
-
-        if (*pc > 0x0FFF_FFFF) {
-            error("PC out of range!");
-        }
-
         // if ( && !get_nth_bit(*cpsr, 7)) {
             // exception(CpuException.IRQ);
         // }
@@ -291,6 +286,13 @@ class ARM7TDMI {
         memory.can_read_from_bios = (*pc >> 24) == 0;
 
         uint opcode = fetch();
+
+version (Debug) {
+
+        if (*pc > 0x0FFF_FFFF) {
+            error("PC out of range!");
+        }
+
         if (num_log > 0) {
             num_log--;
             if (get_bit_T()) write("THM ");
@@ -307,6 +309,7 @@ class ARM7TDMI {
             write(format("%x", memory.read_byte(0x0300_0003)));
             writeln();
         }
+}
 
         execute(opcode);
 
