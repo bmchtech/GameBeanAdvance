@@ -9,4 +9,5 @@ public {
     import ppu.point;
     import ppu.delta_optimization;
     import ppu.layer;
+    import ppu.palette;
 }
