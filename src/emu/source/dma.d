@@ -2,17 +2,26 @@ module dma;
 
 import memory;
 import util;
+import gba;
 import apu;
 import mmio;
+import interrupts;
+import scheduler;
 
 import std.stdio;
 
 class DMAManager {
 public:
-    this(Memory memory) {
-        this.memory      = memory;
-        dma_cycle        = false;
-        this.idle_cycles = 0;
+    void delegate(uint) interrupt_cpu;
+    Scheduler scheduler;
+
+    this(Memory memory, Scheduler scheduler, void delegate(uint) interrupt_cpu) {
+        this.memory        = memory;
+        this.scheduler     = scheduler;
+        this.interrupt_cpu = interrupt_cpu;
+
+        dma_cycle          = false;
+        this.idle_cycles   = 0;
 
         dma_channels = [
             DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately),
@@ -46,6 +55,8 @@ public:
             }
         }
 
+        writefln("[%016x] Running DMA Channel %x", num_cycles, current_channel);
+
         if (current_channel == -1) return 0; //error("DMA requested but no active channels found");
 
         uint bytes_to_transfer  = dma_channels[current_channel].size_buf;
@@ -74,13 +85,13 @@ public:
         int source_offset = 0;
         int dest_offset   = 0;
 
-        // if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x enabled: Transferring %x %s from %x to %x (Control: %x)",
-        //          current_channel,
-        //          bytes_to_transfer,
-        //          dma_channels[current_channel].transferring_words ? "words" : "halfwords",
-        //          dma_channels[current_channel].source_buf,
-        //          dma_channels[current_channel].dest_buf,
-        //          read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
+        if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x enabled: Transferring %x %s from %x to %x (Control: %x)",
+                 current_channel,
+                 bytes_to_transfer,
+                 dma_channels[current_channel].transferring_words ? "words" : "halfwords",
+                 dma_channels[current_channel].source_buf,
+                 dma_channels[current_channel].dest_buf,
+                 read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
 
         if (dma_channels[current_channel].transferring_words) {
             bytes_to_transfer *= 4;
@@ -108,7 +119,7 @@ public:
         idle_cycles += bytes_to_transfer * 2;
 
         if (dma_channels[current_channel].irq_on_end) {
-            warning("EXPECTED INTERRUPT");
+            scheduler.add_event(() => interrupt_cpu(Interrupt.DMA_0 + current_channel), idle_cycles);
         }
 
 

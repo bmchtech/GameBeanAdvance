@@ -104,6 +104,11 @@ public:
         }
     }
 
+    pragma(inline, true) bool is_pixel_full(uint x, uint y) {
+        return pixel_types[x][y] == PixelType.SINGLE    ||
+               pixel_types[x][y] == PixelType.DOUBLE_AB;
+    }
+
     template Consolidate(SpecialEffect special_effect) {
         void consolidate(uint blend_a, uint blend_b, uint bldy) {
             for (int x = 0; x < SCREEN_WIDTH;  x++) {
@@ -112,9 +117,9 @@ public:
                     case PixelType.EMPTY:
                         break;
                     case PixelType.SINGLE:
-                        pixels_output[x][y] = index_to_pixel(indices_a[x][y]); break;
+                        pixels_output[x][y] = ppu.palette.get_color(indices_a[x][y] >> 1); break;
                     case PixelType.DOUBLE_A:
-                        pixels_output[x][y] = index_to_pixel(indices_a[x][y]);
+                        pixels_output[x][y] = ppu.palette.get_color(indices_a[x][y] >> 1);
 
                         static if (special_effect == SpecialEffect.BrightnessIncrease) {
                             pixels_output[x][y].r += ((31 - pixels_output[x][y].r) * bldy) >> 4;
@@ -131,8 +136,8 @@ public:
                         break;
                     case PixelType.DOUBLE_AB: {
                         static if (special_effect == SpecialEffect.Alpha) {
-                            Pixel a = index_to_pixel(indices_a[x][y]);
-                            Pixel b = index_to_pixel(indices_b[x][y]);
+                            Pixel a = ppu.palette.get_color(indices_a[x][y] >> 1);
+                            Pixel b = ppu.palette.get_color(indices_b[x][y] >> 1);
 
                             pixels_output[x][y].r = (blend_a * a.r + blend_b * b.r) >> 6;
                             pixels_output[x][y].g = (blend_a * a.g + blend_b * b.g) >> 6;
@@ -145,9 +150,5 @@ public:
             }
             }
         }
-    }
-
-    Pixel index_to_pixel(uint index) {
-        return get_pixel_from_color(memory.read_halfword(index));
     }
 }
