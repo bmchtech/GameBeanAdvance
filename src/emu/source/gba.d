@@ -38,8 +38,9 @@ enum GBAKey {
 }
 
 
-    // 2 ^ 64 can last for up to 3000 years
-    ulong num_cycles = 0;
+// 2 ^ 64 can last for up to 3000 years
+ulong num_cycles = 0;
+
 class GBA {
 public:
     ARM7TDMI         cpu;
@@ -93,10 +94,6 @@ public:
     }
  
     ulong extra_cycles = 0;
-
-    ulong active_cycles_cpu = 0;
-    ulong active_cycles_dma = 0;
-    ulong inactive_cycles = 0;
     void cycle_at_least_n_times(int n) {
         ulong times_cycled = extra_cycles;
         // writefln("Cycling at least %x times, with overflow times_cycled: %x", n, extra_cycles);

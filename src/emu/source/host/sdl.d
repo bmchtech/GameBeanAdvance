@@ -170,6 +170,7 @@ class GameBeanSDLHost {
         // writefln("ns for single: %s, ns for batch: %s, ", nsec_per_cycle, nsec_per_gba_cyclebatch);
 
         int fps = 0;
+        ulong cycle_timestamp = 0;
         while (running) {
             long elapsed = stopwatch.update();
             clockfor_log   += elapsed;
@@ -181,7 +182,11 @@ class GameBeanSDLHost {
             fps++;
 
             if (clockfor_log > nsec_per_log) {
-                SDL_SetWindowTitle(window, cast(char*) format("FPS: %s", fps));
+                ulong cycles_elapsed = num_cycles - cycle_timestamp;
+                cycle_timestamp = num_cycles;
+                double speed = (cast(double) cycles_elapsed) / (cast(double) cycles_per_second);
+                // SDL_SetWindowTitle(window, cast(char*) format("FPS: %s", fps));
+                SDL_SetWindowTitle(window, cast(char*) format("Speed: %s", speed));
                 clockfor_log = 0;
                 cycles_since_last_log = 0;
                 fps = 0;
