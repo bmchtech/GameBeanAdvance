@@ -17,19 +17,16 @@ version (LDC) {
     import ldc.intrinsics;
 }
 
-ulong num_log = 0;
-
-enum CPU_STATE_LOG_LENGTH = 1;
-
-long num_arm = 0;
-long num_thm = 0;
+ulong _g_num_log              = 0;
+uint  _g_cpu_cycles_remaining = 0;
 
 class ARM7TDMI {
 
     Memory memory;
 
-    uint cycles_remaining = 0;
     CpuMode current_mode;
+
+    enum CPU_STATE_LOG_LENGTH = 1;
     CpuState[CPU_STATE_LOG_LENGTH] cpu_states;
 
     this(Memory memory) {
@@ -69,7 +66,7 @@ class ARM7TDMI {
 
         register_file[mode.OFFSET + 14] = *pc;
         if (exception == CpuException.IRQ) {
-            // num_log += 30;
+            // _g_num_log += 30;
             register_file[mode.OFFSET + 14] += 4; // in a SWI, the linkage register must point to the next instruction + 4
         }
 
@@ -271,9 +268,9 @@ class ARM7TDMI {
         if (halted) return 1;
         // writefln("1");
 
-        cycles_remaining = 1;
+        _g_cpu_cycles_remaining = 1;
 
-        // if (*pc == 0x0800_06f8) num_log += 100;
+        // if (*pc == 0x0800_06f8) _g_num_log += 100;
 
         // Logger.instance.capture_cpu();
         // if ( && !get_nth_bit(*cpsr, 7)) {
@@ -293,8 +290,8 @@ version (Debug) {
             error("PC out of range!");
         }
 
-        if (num_log > 0) {
-            num_log--;
+        if (_g_num_log > 0) {
+            _g_num_log--;
             if (get_bit_T()) write("THM ");
             else write("ARM ");
 
@@ -313,7 +310,7 @@ version (Debug) {
 
         execute(opcode);
 
-        return cycles_remaining * 2;
+        return _g_cpu_cycles_remaining * 2;
     }
 
     uint fetch() {

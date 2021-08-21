@@ -10,6 +10,10 @@ import ppu;
 
 Memory memory;
 
+// assume abbreviation "ws" = "waitstate" because these lines are getting long
+// N and S stand for nonsequential and sequential look, i love using verbose 
+// variable names, but in this case the lines will simply be too long to understand
+
 class Memory {
     bool has_updated = false;
 
@@ -31,6 +35,25 @@ class Memory {
     ubyte[] oam;
     ubyte[] rom;
 
+    enum Region {
+        BIOS              = 0x0,
+        WRAM_BOARD        = 0x2,
+        WRAM_CHIP         = 0x3,
+        IO_REGISTERS      = 0x4,
+        PALETTE_RAM       = 0x5,
+        VRAM              = 0x6,
+        OAM               = 0x7,
+
+        ROM_WAITSTATE_0_L = 0x8,
+        ROM_WAITSTATE_0_H = 0x9,
+        ROM_WAITSTATE_1_L = 0xA,
+        ROM_WAITSTATE_1_H = 0xB,
+        ROM_WAITSTATE_2_L = 0xC,
+        ROM_WAITSTATE_2_H = 0xD,
+        ROM_SRAM_L        = 0xE,
+        ROM_SRAM_H        = 0xF,
+    }
+
     enum SIZE_BIOS           = 0x4000;
     enum SIZE_WRAM_BOARD     = 0x40000;
     enum SIZE_WRAM_CHIP      = 0x8000;
@@ -38,14 +61,6 @@ class Memory {
     enum SIZE_VRAM           = 0x20000; // its actually 0x18000, but this tiny change makes it easy to bitmask for mirroring
     enum SIZE_OAM            = 0x400;
     enum SIZE_ROM            = 0x2000000;
-
-    enum REGION_BIOS         = 0x0;
-    enum REGION_WRAM_BOARD   = 0x2;
-    enum REGION_WRAM_CHIP    = 0x3;
-    enum REGION_IO_REGISTERS = 0x4;
-    enum REGION_PALETTE_RAM  = 0x5;
-    enum REGION_VRAM         = 0x6;
-    enum REGION_OAM          = 0x7;
 
     enum OFFSET_BIOS         = 0x0000000;
     enum OFFSET_WRAM_BOARD   = 0x2000000;
@@ -69,6 +84,80 @@ class Memory {
         AFTER_SWI
     }
     OpenBusBiosState open_bus_bios_state = OpenBusBiosState.STARTUP;
+
+    enum AccessType {
+        SEQUENTIAL    = 0,
+        NONSEQUENTIAL = 1
+    }
+
+    enum AccessSize {
+        BYTE     = 0,
+        HALFWORD = 1,
+        WORD     = 2
+    }
+
+    // the number of cycles to idle on a given memory access is given by
+    // waitstates[memory region][access type][byte = 0 | halfword = 1 | word = 2]
+
+    int[3][2][16] waitstates = [
+        [[1, 1, 1], [1, 1, 1]], // BIOS
+        [[0, 0, 0], [0, 0, 0]], // Invalid
+        [[3, 3, 6], [3, 3, 6]], // Work Ram Board
+        [[1, 1, 1], [1, 1, 1]], // Work Ram Chip
+        [[1, 1, 1], [1, 1, 1]], // IO Registers
+        [[1, 1, 2], [1, 1, 2]], // Palette Ram
+        [[1, 1, 2], [1, 1, 2]], // VRAM
+        [[1, 1, 1], [1, 1, 1]], // OAM
+
+        [[5, 5, 8], [5, 5, 8]], // ROM Wait State 0
+        [[5, 5, 8], [5, 5, 8]], // ROM Wait State 0
+        [[5, 5, 8], [5, 5, 8]], // ROM Wait State 1
+        [[5, 5, 8], [5, 5, 8]], // ROM Wait State 1
+        [[5, 5, 8], [5, 5, 8]], // ROM Wait State 2
+        [[5, 5, 8], [5, 5, 8]], // ROM Wait State 2
+        [[5, 5, 8], [5, 5, 8]], // ROM SRAM
+        [[5, 5, 8], [5, 5, 8]]  // ROM SRAM
+    ];
+
+    void write_WAITCNT(uint target_byte, ubyte data) {
+        final switch (target_byte) {
+            case 0b0:
+                int ws_sram = (cast(int[]) [4, 3, 2, 8])[get_nth_bits(data, 0, 2)];
+                int ws_0_N  = (cast(int[]) [4, 3, 2, 8])[get_nth_bits(data, 2, 4)];
+                int ws_0_S  = (cast(int[]) [2, 1])      [get_nth_bit (data, 4)];
+                int ws_1_N  = (cast(int[]) [4, 3, 2, 8])[get_nth_bits(data, 5, 7)];
+                int ws_1_S  = (cast(int[]) [4, 1])      [get_nth_bit (data, 7)];
+
+                waitstates[Region.ROM_SRAM_L][AccessType.SEQUENTIAL]    = [ws_sram, ws_sram, ws_sram];
+                waitstates[Region.ROM_SRAM_H][AccessType.SEQUENTIAL]    = [ws_sram, ws_sram, ws_sram];
+                waitstates[Region.ROM_SRAM_L][AccessType.NONSEQUENTIAL] = [ws_sram, ws_sram, ws_sram];
+                waitstates[Region.ROM_SRAM_H][AccessType.NONSEQUENTIAL] = [ws_sram, ws_sram, ws_sram];
+
+                set_waitstate_ROM(0, ws_0_N, ws_0_S);
+                set_waitstate_ROM(1, ws_1_N, ws_1_S);
+                break;
+            
+            case 0b1:
+                int ws_2_N  = (cast(int[]) [4, 3, 2, 8])[get_nth_bits(data, 0, 2)];
+                int ws_2_S  = (cast(int[]) [8, 1])      [get_nth_bit (data, 2)];
+
+                set_waitstate_ROM(2, ws_2_N, ws_2_S);
+                break;
+        }
+    }
+
+    // waitstate_region is one of: 0, 1, 2
+    void set_waitstate_ROM(int ws_region, int ws_N, int ws_S) {
+        int rom_region = Region.ROM_WAITSTATE_0_L + ws_region * 2;
+
+        waitstates[rom_region][AccessType.NONSEQUENTIAL][AccessSize.BYTE    ] = ws_N + 1;
+        waitstates[rom_region][AccessType.NONSEQUENTIAL][AccessSize.HALFWORD] = ws_N + 1;
+        waitstates[rom_region][AccessType.NONSEQUENTIAL][AccessSize.WORD    ] = ws_N + 1 + ws_S + 1;
+
+        waitstates[rom_region][AccessType.SEQUENTIAL   ][AccessSize.BYTE    ] = ws_S + 1;
+        waitstates[rom_region][AccessType.SEQUENTIAL   ][AccessSize.HALFWORD] = ws_S + 1;
+        waitstates[rom_region][AccessType.SEQUENTIAL   ][AccessSize.WORD    ] = ws_S + 1 + ws_S + 1;
+    }
 
     uint read_bios_open_bus() {
         final switch (open_bus_bios_state) {
@@ -104,36 +193,16 @@ class Memory {
         this.mmio = mmio;
     }
 
-    pragma(inline, true) ubyte read_byte(uint address) {
-        return Aligned!(ubyte).read(address);
-    }
+    template Read(T, AccessType access_type) {
+        pragma(inline, true) ubyte Read(uint address) {
+            uint region = (address >> 24) & 0xF;
 
-    pragma(inline, true) ushort read_halfword(uint address) {    
-        return Aligned!(ushort).read(address);
-    }
+            // handle waitstates
+            static if (is(T == uint  )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.WORD];
+            static if (is(T == ushort)) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.HALFWORD];
+            static if (is(T == ubyte )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.BYTE];
 
-    pragma(inline, true) uint read_word(uint address) {
-        return Aligned!(uint).read(address);
-    }
-
-    pragma(inline, true) void write_byte(uint address, ubyte value) {
-        Aligned!(ubyte).write(address, value);
-    }
-
-    pragma(inline, true) void write_halfword(uint address, ushort value) {
-        Aligned!(ushort).write(address, value);
-    }
-
-    pragma(inline, true) void write_word(uint address, uint value) {
-        Aligned!(uint).write(address, value);
-    }
-
-    // trying a templated style of read/write, see how it goes.
-    // things can be faster if theyre mem aligned, because you know the address falls into one region only
-    // don't use for mmio yet
-    template Aligned(T) {
-        T read(uint address) {
-            switch ((address >> 24) & 0xF) {
+            switch (region) {
                 case 0x1:                 return 0x0; // nothing is mapped here
                 case REGION_WRAM_BOARD:   return *((cast(T*) (&wram_board[0]  + (address & (SIZE_WRAM_BOARD  - 1)))));
                 case REGION_WRAM_CHIP:    return *((cast(T*) (&wram_chip[0]   + (address & (SIZE_WRAM_CHIP   - 1)))));
@@ -166,9 +235,17 @@ class Memory {
                     return *((cast(T*) (&rom[0] + (address & (SIZE_ROM - 1)))));
             }
         }
+    }
 
-        void write(uint address, T value) {
-            // if ((address & 0xFFFF0000) == 0x06000000) { writefln("Wrote %x to %x", value, address); }
+    template Write(T, AccessType access_type) {
+        pragma(inline, true) ubyte Write(uint address) {
+            uint region = (address >> 24) & 0xF;
+
+            // handle waitstates
+            static if (is(T == uint  )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.WORD];
+            static if (is(T == ushort)) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.HALFWORD];
+            static if (is(T == ubyte )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.BYTE];
+
             switch ((address >> 24) & 0xF) {
                 case REGION_BIOS:         break; // incorrect - implement properly later
                 case 0x1:                 break; // nothing is mapped here
@@ -212,21 +289,11 @@ class Memory {
             }
         }
     }
+
     void set_rgb(uint x, uint y, ubyte r, ubyte g, ubyte b) {
         auto p = (r << 24) | (g << 16) | (b << 8) | (0xff);
         mixin(VERBOSE_LOG!(`4`,
                 `format("SETRGB (%s,%s) = [%s, %s, %s] = %00000000x", x, y, r, g, b, p)`));
         video_buffer[x][y] = p;
-    }
-
-    void set_key(ubyte code, bool pressed) {
-        // assert(code >= 0 && code < 10, "invalid gba key code");
-        // mixin(VERBOSE_LOG!(`2`, `format("KEY (%s) = %s", code, pressed)`));
-
-        // if (pressed) {
-        //     *KEYINPUT &= ~(0b1 << code);
-        // } else {
-        //     *KEYINPUT |= (0b1 << code);
-        // }
     }
 }
