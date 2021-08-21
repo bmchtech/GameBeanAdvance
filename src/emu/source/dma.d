@@ -55,7 +55,7 @@ public:
             }
         }
 
-        writefln("[%016x] Running DMA Channel %x", num_cycles, current_channel);
+        // writefln("[%016x] Running DMA Channel %x", num_cycles, current_channel);
 
         if (current_channel == -1) return 0; //error("DMA requested but no active channels found");
 
@@ -85,13 +85,13 @@ public:
         int source_offset = 0;
         int dest_offset   = 0;
 
-        if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x enabled: Transferring %x %s from %x to %x (Control: %x)",
-                 current_channel,
-                 bytes_to_transfer,
-                 dma_channels[current_channel].transferring_words ? "words" : "halfwords",
-                 dma_channels[current_channel].source_buf,
-                 dma_channels[current_channel].dest_buf,
-                 read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
+        // if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x enabled: Transferring %x %s from %x to %x (Control: %x)",
+        //          current_channel,
+        //          bytes_to_transfer,
+        //          dma_channels[current_channel].transferring_words ? "words" : "halfwords",
+        //          dma_channels[current_channel].source_buf,
+        //          dma_channels[current_channel].dest_buf,
+        //          read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
 
         if (dma_channels[current_channel].transferring_words) {
             bytes_to_transfer *= 4;
