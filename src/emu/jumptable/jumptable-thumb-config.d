@@ -56,7 +56,7 @@ void run_0000SABC(ushort opcode) {
     cpu.set_flag_N(get_nth_bit(cpu.regs[dest], 31));
     cpu.set_flag_Z(cpu.regs[dest] == 0);
 
-    cpu.cycles_remaining += 2;
+    _g_cpu_cycles_remaining += 2;
 }
 
 // arithmetic shift right
@@ -78,7 +78,7 @@ void run_00010ABC(ushort opcode) {
     cpu.set_flag_N(cpu.regs[rd] >> 31);
     cpu.set_flag_Z(cpu.regs[rd] == 0);
 
-    cpu.cycles_remaining += 2;
+    _g_cpu_cycles_remaining += 2;
 }
 
 // add #3 010 001 001
@@ -106,7 +106,7 @@ void run_0001100A(ushort opcode) {
     bool matching_signs = get_nth_bit(rn, 31) == get_nth_bit(rm, 31);
     cpu.set_flag_V(matching_signs && (get_nth_bit(rn, 31) ^ cpu.get_flag_N()));
 
-    cpu.cycles_remaining += 1;
+    _g_cpu_cycles_remaining += 1;
 }
 
 // sub #3 010 001 001
@@ -133,7 +133,7 @@ void run_0001101A(ushort opcode) {
     bool matching_signs = get_nth_bit(rn, 31) == get_nth_bit(cpu.regs[get_nth_bits(opcode, 6, 9)], 31);
     cpu.set_flag_V(!matching_signs && (get_nth_bit(cpu.regs[get_nth_bits(opcode, 6, 9)], 31) == cpu.get_flag_N()));
 
-    cpu.cycles_remaining += 1;
+    _g_cpu_cycles_remaining += 1;
 }
 
 // add #1 
@@ -154,7 +154,7 @@ void run_0001110A(ushort opcode) {
     bool matching_signs = get_nth_bit(immediate_value, 31) == get_nth_bit(rn_value, 31);
     cpu.set_flag_V(matching_signs && (get_nth_bit(immediate_value, 31) ^ cpu.get_flag_N()));
 
-    cpu.cycles_remaining += 1;
+    _g_cpu_cycles_remaining += 1;
 }
 
 // Subtract #1
@@ -174,7 +174,7 @@ void run_0001111A(ushort opcode) {
     bool matching_signs = get_nth_bit(rn_value, 31) == get_nth_bit(get_nth_bits(opcode, 6, 9), 31);
     cpu.set_flag_V(!matching_signs && (get_nth_bit(get_nth_bits(opcode, 6, 9), 31) == cpu.get_flag_N()));
 
-    cpu.cycles_remaining += 1;
+    _g_cpu_cycles_remaining += 1;
 }
 
 // move immediate
@@ -187,7 +187,7 @@ void run_00100ABC(ushort opcode) {
     cpu.set_flag_N(get_nth_bit(immediate_value, 31));
     cpu.set_flag_Z(immediate_value == 0);
 
-    cpu.cycles_remaining += 1;
+    _g_cpu_cycles_remaining += 1;
 }
 
 // compare immediate
@@ -210,7 +210,7 @@ void run_00101ABC(ushort opcode) {
     bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 31);
     cpu.set_flag_V(!matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
 
-    cpu.cycles_remaining += 1;
+    _g_cpu_cycles_remaining += 1;
 }
 
 // add immediate
@@ -234,7 +234,7 @@ void run_00110ABC(ushort opcode) {
     bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 31);
     cpu.set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ cpu.get_flag_N()));
 
-    cpu.cycles_remaining += 1;
+    _g_cpu_cycles_remaining += 1;
 }
 
 // subtract immediate
@@ -263,7 +263,7 @@ void run_00111ABC(ushort opcode) {
     bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(immediate_value, 31);
     cpu.set_flag_V(!matching_signs && (get_nth_bit(immediate_value, 31) == cpu.get_flag_N()));
 
-    cpu.cycles_remaining += 1;
+    _g_cpu_cycles_remaining += 1;
 }
 
 // ALU operation - AND, EOR, LSL #2, LSR #2
@@ -291,7 +291,7 @@ void run_01000000(ushort opcode) {
                 cpu.regs[rd] = 0;
             }
 
-            cpu.cycles_remaining += 1;
+            _g_cpu_cycles_remaining += 1;
             break;
         case 0b11:
             if ((cpu.regs[rm] & 0xFF) < 32 && (cpu.regs[rm] & 0xFF) != 0) {
@@ -305,7 +305,7 @@ void run_01000000(ushort opcode) {
                 cpu.regs[rd] = 0;
             }
 
-            cpu.cycles_remaining += 1;
+            _g_cpu_cycles_remaining += 1;
             break;
         
         default: assert(0);
@@ -314,7 +314,7 @@ void run_01000000(ushort opcode) {
     cpu.set_flag_N(cpu.regs[rd] >> 31);
     cpu.set_flag_Z(cpu.regs[rd] == 0);
 
-    cpu.cycles_remaining += 1;
+    _g_cpu_cycles_remaining += 1;
 }
 
 // ALU operation - ASR #2, ADC, SBC, ROR
@@ -340,7 +340,7 @@ void run_01000001(ushort opcode) {
                 }
             }
 
-            cpu.cycles_remaining += 1;
+            _g_cpu_cycles_remaining += 1;
             break;
         }
         
@@ -399,7 +399,7 @@ void run_01000001(ushort opcode) {
                 cpu.regs[rd] = rotated_in | (rotated_off << (32 - (cpu.regs[rm] & 0x1F)));
             }
 
-            cpu.cycles_remaining += 1;
+            _g_cpu_cycles_remaining += 1;
 
             break;
         }
@@ -407,7 +407,7 @@ void run_01000001(ushort opcode) {
         default: assert(0);
     }
 
-    cpu.cycles_remaining += 1;
+    _g_cpu_cycles_remaining += 1;
     cpu.set_flag_N(cpu.regs[rd] >> 31);
     cpu.set_flag_Z(cpu.regs[rd] == 0);
 }
@@ -470,7 +470,7 @@ void run_01000010(ushort opcode) {
         default: assert(0);
     }
 
-    cpu.cycles_remaining += 1;
+    _g_cpu_cycles_remaining += 1;
     cpu.set_flag_N(get_nth_bit(result, 31));
     cpu.set_flag_Z(result == 0);
 }
@@ -498,7 +498,7 @@ void run_01000011(ushort opcode) {
         default: assert(0);
     }
 
-    cpu.cycles_remaining += 1;
+    _g_cpu_cycles_remaining += 1;
     cpu.set_flag_N(get_nth_bit(cpu.regs[rd], 31));
     cpu.set_flag_Z(cpu.regs[rd] == 0);
 }
@@ -508,14 +508,11 @@ void run_01000100(ushort opcode) {
     ubyte rm = cast(ubyte) get_nth_bits(opcode, 3, 7);
     ubyte rd = cast(ubyte) (get_nth_bits(opcode, 0, 3) | (get_nth_bit(opcode, 7) << 3));
 
-    if (rd == 15) cpu.regs[rd] += 2;
-    if (rm == 15) cpu.regs[rd] += 2;
-
     cpu.regs[rd] += cpu.regs[rm];
 
     if (rd == 15 && (cpu.regs[rd] & 1)) cpu.regs[15]--;
      
-    cpu.cycles_remaining += 1;
+    _g_cpu_cycles_remaining += 1;
 }
 
 // CMP #4 - high registers
@@ -524,9 +521,6 @@ void run_01000101(ushort opcode) {
     // this uses a two's complement trick that makes ADD the same as SUB.
     ubyte rm = cast(ubyte) get_nth_bits(opcode, 3, 7);
     ubyte rd = cast(ubyte) get_nth_bits(opcode, 0, 3) | (get_nth_bit(opcode, 7) << 3);
-
-    if (rd == 15) cpu.regs[rd] += 2;
-    if (rm == 15) cpu.regs[rm] += 2;
 
     int rm_value     = ~cpu.regs[rm] + 1; // the trick is implemented here
     int old_rd_value = cpu.regs[rd];
@@ -542,7 +536,7 @@ void run_01000101(ushort opcode) {
     bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rm_value, 31);
     cpu.set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
 
-    cpu.cycles_remaining += 1;
+    _g_cpu_cycles_remaining += 1;
 }
 
 // MOV #3 - high registers, does not change flags
@@ -554,34 +548,31 @@ void run_01000110(ushort opcode) {
     if (rd == 15) {
         // the least significant bit of pc (cpu.regs[15]) must be clear.
         cpu.regs[rd] &= 0xFFFFFFFE;
+        cpu.refill_pipeline_partial();
     }
 
-    if (rm == 15) {
-        cpu.regs[rd] += 2;
-    }
-
-    cpu.cycles_remaining += 1;
+    _g_cpu_cycles_remaining += 1;
 }
 
 // branch exchange
 void run_01000111(ushort opcode) {
-   uint pointer = cpu.regs[get_nth_bits(opcode, 3, 7)];
+    uint pointer = cpu.regs[get_nth_bits(opcode, 3, 7)];
 //    warning(format("%x %x", pointer, get_nth_bits(opcode, 3, 7)));
-   if (get_nth_bits(opcode, 3, 7) == 15) pointer += 2;
-   *cpu.pc = pointer & 0xFFFFFFFE; // the PC must be even, so we & with 0xFFFFFFFE.
-   cpu.set_bit_T(pointer & 1);
+    *cpu.pc = pointer & 0xFFFFFFFE; // the PC must be even, so we & with 0xFFFFFFFE.
+    cpu.set_bit_T(pointer & 1);
+    cpu.refill_pipeline_partial();
 
-    cpu.cycles_remaining += 3;
+    _g_cpu_cycles_remaining += 3;
 }
 
 // pc-relative load
 void run_01001REG(ushort opcode) {
     //DEBUG_MESSAGE("PC-Relative Load");
     ubyte reg = cast(ubyte) (get_nth_bits(opcode, 8,  11));
-    uint loc = (get_nth_bits(opcode, 0,  8) << 2) + ((*cpu.pc + 2) & 0xFFFFFFFC);
+    uint loc = (get_nth_bits(opcode, 0,  8) << 2) + ((*cpu.pc) & 0xFFFFFFFC);
     cpu.regs[reg] = read_word_and_rotate(cpu.memory, loc);
 
-    cpu.cycles_remaining += 5;
+    _g_cpu_cycles_remaining += 5;
 }
 
 // load with relative offset
@@ -619,7 +610,7 @@ void run_0101LSBR(ushort opcode) {
 
     cpu.regs[rd] = value;
 
-    cpu.cycles_remaining += 3;
+    _g_cpu_cycles_remaining += 3;
 }
 
 // store sign-extended byte and halfword
@@ -641,7 +632,7 @@ void run_01010SBR(ushort opcode) {
     @IF(!S  B) cpu.memory.write_halfword(cpu.regs[rm] + cpu.regs[rn], cast(ushort) value);
     @IF(!S !B) cpu.memory.write_word    (cpu.regs[rm] + cpu.regs[rn], value);
 
-    cpu.cycles_remaining += 2;
+    _g_cpu_cycles_remaining += 2;
 }
 
 // load and store with immediate offset
@@ -661,8 +652,8 @@ void run_011BLOFS(ushort opcode) {
     @IF(!B  L) cpu.regs[rd] = read_word_and_rotate(cpu.memory, cpu.regs[rn] + (immediate_value << 2));
     @IF( B  L) cpu.regs[rd] = cpu.memory.read_byte(cpu.regs[rn] + immediate_value);
 
-    cpu.cycles_remaining += 2;
-    @IF( L) cpu.cycles_remaining += 1;
+    _g_cpu_cycles_remaining += 2;
+    @IF( L) _g_cpu_cycles_remaining += 1;
 }
 
 // store halfword
@@ -673,7 +664,7 @@ void run_10000OFS(ushort opcode) {
     
     cpu.memory.write_halfword(cpu.regs[rn] + (offset << 1), cast(ushort) cpu.regs[rd]);
 
-    cpu.cycles_remaining += 2;
+    _g_cpu_cycles_remaining += 2;
 }
 
 // load halfword
@@ -684,7 +675,7 @@ void run_10001OFS(ushort opcode) {
     
     cpu.regs[rd] = cpu.memory.read_halfword(cpu.regs[rn] + offset * 2);
 
-    cpu.cycles_remaining += 3;
+    _g_cpu_cycles_remaining += 3;
 }
 
 // sp-relative load and store
@@ -696,18 +687,18 @@ void run_1001LREG(ushort opcode) {
     @IF(L)  cpu.regs[rd] = read_word_and_rotate(cpu.memory, *cpu.sp + (immediate_value << 2));
     @IF(!L) cpu.memory.write_word(*cpu.sp + (immediate_value << 2), cpu.regs[rd]);
 
-    cpu.cycles_remaining += 2;
-    @IF( L) cpu.cycles_remaining += 1;
+    _g_cpu_cycles_remaining += 2;
+    @IF( L) _g_cpu_cycles_remaining += 1;
 }
 
 // add #5 / #6 - PC and SP relative respectively
 void run_1010SREG(ushort opcode) {
     ubyte rd = cast(ubyte) (get_nth_bits(opcode, 8, 11));
     ubyte immediate_value = cast(ubyte) (opcode & 0xFF);
-    @IF(S)  cpu.regs[rd] =   *cpu.sp                    + (immediate_value << 2);
-    @IF(!S) cpu.regs[rd] = ((*cpu.pc + 2) & 0xFFFFFFFC) + (immediate_value << 2);
+    @IF( S) cpu.regs[rd] =   *cpu.sp                + (immediate_value << 2);
+    @IF(!S) cpu.regs[rd] = ((*cpu.pc) & 0xFFFFFFFC) + (immediate_value << 2);
 
-    cpu.cycles_remaining += 3;
+    _g_cpu_cycles_remaining += 3;
 }
 
 // add / subtract offset to stack pointer
@@ -721,7 +712,7 @@ void run_10110000(ushort opcode) {
         *cpu.sp += offset;
     }
 
-    cpu.cycles_remaining += 1;
+    _g_cpu_cycles_remaining += 1;
 }
 
 // push registers
@@ -746,7 +737,7 @@ void run_1011010R(ushort opcode) {
         }
     }
 
-    cpu.cycles_remaining += num_pushed + 1;
+    _g_cpu_cycles_remaining += num_pushed + 1;
 }
 
 // pop registers
@@ -768,9 +759,10 @@ void run_1011110R(ushort opcode) {
     if (is_lr_included) {
         *cpu.pc = read_word_and_rotate(cpu.memory, *cpu.sp) & 0xFFFFFFFE;
         *cpu.sp += 4;
+        cpu.refill_pipeline_partial();
     }
 
-    cpu.cycles_remaining += num_pushed + 2;
+    _g_cpu_cycles_remaining += num_pushed + 2;
 }
 
 // multiple load
@@ -799,7 +791,7 @@ void run_11001REG(ushort opcode) {
         cpu.regs[rn] = current_address;
     }
 
-    cpu.cycles_remaining += num_pushed + 2;
+    _g_cpu_cycles_remaining += num_pushed + 2;
 }
 
 // multiple store
@@ -821,7 +813,7 @@ void run_11000REG(ushort opcode) {
         }
     }
 
-    cpu.cycles_remaining += num_pushed + 1;
+    _g_cpu_cycles_remaining += num_pushed + 1;
 }
 
 // conditional branch
@@ -845,13 +837,14 @@ void run_1101COND(ushort opcode) {
     @IF( C  O !N  D) if ( cpu.get_flag_Z() || (cpu.get_flag_N() ^  cpu.get_flag_V())) {
     @IF( C  O  N !D) if (true) { // the compiler will optimize this so it's fine
         // warning(format("Conditional Branch Taken at %x", *cpu.pc));
-        *cpu.pc += (cast(byte)(opcode & 0xFF)) * 2 + 2;
+        *cpu.pc += (cast(byte)(opcode & 0xFF)) * 2;
+        cpu.refill_pipeline_partial();
         
     } else {
         //DEBUG_MESSAGE("Conditional Branch Not Taken");
     }
 
-    cpu.cycles_remaining += 3;
+    _g_cpu_cycles_remaining += 3;
 }
 
 // software interrupt
@@ -865,9 +858,10 @@ void run_11100OFS(ushort opcode) {
     //DEBUG_MESSAGE("Unconditional Branch");
 
     int sign_extended = sign_extend(get_nth_bits(opcode, 0, 11) << 1, 12);
-    *cpu.pc = (*cpu.pc + 2) + sign_extended;
+    *cpu.pc += sign_extended;
+    cpu.refill_pipeline_partial();
 
-    cpu.cycles_remaining += 3;
+    _g_cpu_cycles_remaining += 3;
 }
 
 // long branch with link - high byte
@@ -876,16 +870,18 @@ void run_11110OFS(ushort opcode) {
     int extended = cast(int)(get_nth_bits(opcode, 0, 11));
     if (get_nth_bit(extended, 10)) extended |= 0xFFFFF800;
 
-    *cpu.lr = (*cpu.pc + 2) + (extended << 12);
+    *cpu.lr = *cpu.pc + (extended << 12);
 
-    cpu.cycles_remaining += 3;
+    _g_cpu_cycles_remaining += 3;
 }
 
 // long branch with link - low byte and call to subroutine
 void run_11111OFS(ushort opcode) {
-    uint next_pc = *(cpu.pc);
+    uint next_pc = *(cpu.pc) - 2;
     *cpu.pc = (*cpu.lr + (get_nth_bits(opcode, 0, 11) << 1));
     *cpu.lr = (next_pc) | 1;
 
-    cpu.cycles_remaining += 3;
+    cpu.refill_pipeline_partial();
+
+    _g_cpu_cycles_remaining += 3;
 }

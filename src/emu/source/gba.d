@@ -90,6 +90,7 @@ public:
         cpu.memory.rom[0 ..  rom.length] = rom[0 .. rom.length];
 
         *cpu.pc = 0x0800_0000;
+        cpu.refill_pipeline();
         enabled = true; 
     }
  

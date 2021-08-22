@@ -193,8 +193,32 @@ class Memory {
         this.mmio = mmio;
     }
 
-    template Read(T, AccessType access_type) {
-        pragma(inline, true) ubyte Read(uint address) {
+    pragma(inline, true) ubyte read_byte(uint address) {
+        return Read!ubyte(address);
+    }
+
+    pragma(inline, true) ushort read_halfword(uint address) {    
+        return Read!ushort(address);
+    }
+
+    pragma(inline, true) uint read_word(uint address) {
+        return Read!uint(address);
+    }
+
+    pragma(inline, true) void write_byte(uint address, ubyte value) {
+        Write!ubyte(address, value);
+    }
+
+    pragma(inline, true) void write_halfword(uint address, ushort value) {
+        Write!ushort(address, value);
+    }
+
+    pragma(inline, true) void write_word(uint address, uint value) {
+        Write!uint(address, value);
+    }
+
+    private template Read(T) {
+        pragma(inline, true) T Read(uint address, AccessType access_type = AccessType.NONSEQUENTIAL) {
             uint region = (address >> 24) & 0xF;
 
             // handle waitstates
@@ -204,13 +228,13 @@ class Memory {
 
             switch (region) {
                 case 0x1:                 return 0x0; // nothing is mapped here
-                case REGION_WRAM_BOARD:   return *((cast(T*) (&wram_board[0]  + (address & (SIZE_WRAM_BOARD  - 1)))));
-                case REGION_WRAM_CHIP:    return *((cast(T*) (&wram_chip[0]   + (address & (SIZE_WRAM_CHIP   - 1)))));
-                case REGION_PALETTE_RAM:  return *((cast(T*) (&palette_ram[0] + (address & (SIZE_PALETTE_RAM - 1)))));
-                case REGION_VRAM:         return *((cast(T*) (&vram[0]        + (address & (SIZE_VRAM        - 1)))));
-                case REGION_OAM:          return *((cast(T*) (&oam[0]         + (address & (SIZE_OAM         - 1)))));
+                case Region.WRAM_BOARD:   return *((cast(T*) (&wram_board[0]  + (address & (SIZE_WRAM_BOARD  - 1)))));
+                case Region.WRAM_CHIP:    return *((cast(T*) (&wram_chip[0]   + (address & (SIZE_WRAM_CHIP   - 1)))));
+                case Region.PALETTE_RAM:  return *((cast(T*) (&palette_ram[0] + (address & (SIZE_PALETTE_RAM - 1)))));
+                case Region.VRAM:         return *((cast(T*) (&vram[0]        + (address & (SIZE_VRAM        - 1)))));
+                case Region.OAM:          return *((cast(T*) (&oam[0]         + (address & (SIZE_OAM         - 1)))));
 
-                case REGION_IO_REGISTERS:
+                case Region.IO_REGISTERS:
                     static if (is(T == uint)) return 
                         (cast(uint) mmio.read(address + 0) << 0)  |
                         (cast(uint) mmio.read(address + 1) << 8)  |
@@ -221,7 +245,7 @@ class Memory {
                         (cast(ushort) mmio.read(address + 1) << 8);
                     static if (is(T == ubyte))  return mmio.read(address);
 
-                case REGION_BIOS: 
+                case Region.BIOS: 
                     if (can_read_from_bios) {
                         return *((cast(T*) (&bios[0] + (address & (SIZE_BIOS - 1)))));
                     } else {
@@ -237,8 +261,8 @@ class Memory {
         }
     }
 
-    template Write(T, AccessType access_type) {
-        pragma(inline, true) ubyte Write(uint address) {
+    private template Write(T) {
+        pragma(inline, true) void Write(uint address, T value, AccessType access_type = AccessType.NONSEQUENTIAL) {
             uint region = (address >> 24) & 0xF;
 
             // handle waitstates
@@ -247,11 +271,11 @@ class Memory {
             static if (is(T == ubyte )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.BYTE];
 
             switch ((address >> 24) & 0xF) {
-                case REGION_BIOS:         break; // incorrect - implement properly later
+                case Region.BIOS:         break; // incorrect - implement properly later
                 case 0x1:                 break; // nothing is mapped here
-                case REGION_WRAM_BOARD:   *(cast(T*) (&wram_board[0]  + (address & (SIZE_WRAM_BOARD  - 1)))) = value; break;
-                case REGION_WRAM_CHIP:    *(cast(T*) (&wram_chip[0]   + (address & (SIZE_WRAM_CHIP   - 1)))) = value; break;
-                case REGION_PALETTE_RAM:  
+                case Region.WRAM_BOARD:   *(cast(T*) (&wram_board[0]  + (address & (SIZE_WRAM_BOARD  - 1)))) = value; break;
+                case Region.WRAM_CHIP:    *(cast(T*) (&wram_chip[0]   + (address & (SIZE_WRAM_CHIP   - 1)))) = value; break;
+                case Region.PALETTE_RAM:  
                     *(cast(T*) (&palette_ram[0] + (address & (SIZE_PALETTE_RAM - 1)))) = value; 
                     uint index = (address & (SIZE_PALETTE_RAM - 1)) >> 1;
 
@@ -265,10 +289,10 @@ class Memory {
                     }
                     break;
 
-                case REGION_VRAM:         *(cast(T*) (&vram[0]        + (address & (SIZE_VRAM        - 1)))) = value; break;
-                case REGION_OAM:          *(cast(T*) (&oam[0]         + (address & (SIZE_OAM         - 1)))) = value; break;
+                case Region.VRAM:         *(cast(T*) (&vram[0]        + (address & (SIZE_VRAM        - 1)))) = value; break;
+                case Region.OAM:          *(cast(T*) (&oam[0]         + (address & (SIZE_OAM         - 1)))) = value; break;
 
-                case REGION_IO_REGISTERS: 
+                case Region.IO_REGISTERS: 
                     static if (is(T == uint)) {
                         // writefln("%x", value);
                         mmio.write(address + 0, (value >>  0) & 0xFF);
@@ -291,9 +315,6 @@ class Memory {
     }
 
     void set_rgb(uint x, uint y, ubyte r, ubyte g, ubyte b) {
-        auto p = (r << 24) | (g << 16) | (b << 8) | (0xff);
-        mixin(VERBOSE_LOG!(`4`,
-                `format("SETRGB (%s,%s) = [%s, %s, %s] = %00000000x", x, y, r, g, b, p)`));
-        video_buffer[x][y] = p;
+        video_buffer[x][y] = (r << 24) | (g << 16) | (b << 8) | (0xff);
     }
 }

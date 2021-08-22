@@ -282,7 +282,7 @@
     cpu.shifter_operand   = cpu.ROR(get_nth_bits(opcode, 0, 8), cast(ubyte) ((get_nth_bits(opcode, 8, 12)) * 2));
     cpu.shifter_carry_out = get_nth_bits(opcode, 8, 12) == 0 ? cpu.get_flag_C() : get_nth_bit(cpu.shifter_operand, 31);
 
-    cpu.cycles_remaining++;
+    _g_cpu_cycles_remaining++;
 
     int pc_additional_shift_amount = 0;
 }
@@ -312,7 +312,7 @@
     @IF(!S  H) if (shift_immediate == 0) {
     @IF(!S  H)     cpu.shifter_operand   = 0;
     @IF(!S  H)     cpu.shifter_carry_out = get_nth_bit(rm, 31);
-    @IF(!S  H)     cpu.cycles_remaining--;
+    @IF(!S  H)     _g_cpu_cycles_remaining--;
     @IF(!S  H) } else { // shift_immediate > 0
     @IF(!S  H)     cpu.shifter_operand   = cpu.LSR(rm, cast(ubyte) shift_immediate);
     @IF(!S  H)     cpu.shifter_carry_out = get_nth_bit(rm, shift_immediate - 1);
@@ -337,7 +337,7 @@
     @IF( S  H)     cpu.shifter_carry_out = get_nth_bit(rm, shift_immediate - 1);
     @IF( S  H) } 
 
-    cpu.cycles_remaining++;
+    _g_cpu_cycles_remaining++;
 
     int pc_additional_shift_amount = 0;
 }
@@ -425,7 +425,7 @@
     @IF( S  H)     cpu.shifter_carry_out = get_nth_bit(rm, (rs & 0x1F) - 1);
     @IF( S  H) }
 
-    cpu.cycles_remaining++;
+    _g_cpu_cycles_remaining++;
 }
 [/COMPONENT]
 
@@ -570,7 +570,7 @@
 [COMPONENT DATA_WRITEBACK]
 - FORMAT:  ----00I----S--------------------
 {
-    if (get_nth_bits(opcode, 12, 16) == 15) cpu.cycles_remaining += 2;
+    if (get_nth_bits(opcode, 12, 16) == 15) _g_cpu_cycles_remaining += 2;
     cpu.regs[get_nth_bits(opcode, 12, 16)] = result;
 }
 [/COMPONENT]
@@ -641,7 +641,7 @@
     // unintuitive sign extension: http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
     *cpu.pc += ((((1 << 23) ^ get_nth_bits(opcode, 0, 24)) - (1 << 23)) << 2) + 4;
 
-    cpu.cycles_remaining += 3;
+    _g_cpu_cycles_remaining += 3;
 }
 [/COMPONENT]
 
@@ -725,12 +725,12 @@
     ubyte rd = cast(ubyte) get_nth_bits(opcode, 12, 16);
     if (rd == 15) {
         *cpu.pc = value & 0xFFFFFFFC;
-        cpu.cycles_remaining += 2;
+        _g_cpu_cycles_remaining += 2;
     } else {
         cpu.regs[rd] = value;
     }
 
-    cpu.cycles_remaining += 3;
+    _g_cpu_cycles_remaining += 3;
 }
 [/COMPONENT]
 
@@ -738,8 +738,8 @@
 - FORMAT:  ----01---1-1--------------------
 {
     cpu.regs[get_nth_bits(opcode, 12, 16)] = cpu.memory.read_byte(address);
-    if (get_nth_bits(opcode, 12, 16) == 15) cpu.cycles_remaining += 2;
-    cpu.cycles_remaining += 3;
+    if (get_nth_bits(opcode, 12, 16) == 15) _g_cpu_cycles_remaining += 2;
+    _g_cpu_cycles_remaining += 3;
 }
 [/COMPONENT]
 
@@ -750,8 +750,8 @@
     if ((address & 0b11) == 0b01) value = ((value & 0xFF) << 24) | (value >> 8);
 
     cpu.regs[get_nth_bits(opcode, 12, 16)] = value;
-    if (get_nth_bits(opcode, 12, 16) == 15) cpu.cycles_remaining += 2;
-    cpu.cycles_remaining += 3;
+    if (get_nth_bits(opcode, 12, 16) == 15) _g_cpu_cycles_remaining += 2;
+    _g_cpu_cycles_remaining += 3;
 }
 [/COMPONENT]
 
@@ -759,8 +759,8 @@
 - FORMAT:  ----000----1------------1101----
 {
     cpu.regs[get_nth_bits(opcode, 12, 16)] = sign_extend(cpu.memory.read_byte(address), 8);
-    if (get_nth_bits(opcode, 12, 16) == 15) cpu.cycles_remaining += 2;
-    cpu.cycles_remaining += 3;
+    if (get_nth_bits(opcode, 12, 16) == 15) _g_cpu_cycles_remaining += 2;
+    _g_cpu_cycles_remaining += 3;
 }
 [/COMPONENT]
 
@@ -775,8 +775,8 @@
     }
 
     cpu.regs[get_nth_bits(opcode, 12, 16)] = value;
-    if (get_nth_bits(opcode, 12, 16) == 15) cpu.cycles_remaining += 2;
-    cpu.cycles_remaining += 3;
+    if (get_nth_bits(opcode, 12, 16) == 15) _g_cpu_cycles_remaining += 2;
+    _g_cpu_cycles_remaining += 3;
 }
 [/COMPONENT]
 
@@ -843,10 +843,10 @@
 
     @IF( L  S) if (pc_loaded) *cpu.cpsr = *cpu.spsr;
 
-    @IF( L) cpu.cycles_remaining += num_transactions + 2;
-    @IF( L) if (pc_loaded) cpu.cycles_remaining += 2;
+    @IF( L) _g_cpu_cycles_remaining += num_transactions + 2;
+    @IF( L) if (pc_loaded) _g_cpu_cycles_remaining += 2;
 
-    @IF(!L) cpu.cycles_remaining += num_transactions + 1;
+    @IF(!L) _g_cpu_cycles_remaining += num_transactions + 1;
     
     @IF( W  L) if (!register_in_rlist) cpu.regs[get_nth_bits(opcode, 16, 20)] = address;
     @IF( W !L) cpu.regs[get_nth_bits(opcode, 16, 20)] = address;
@@ -876,7 +876,7 @@
     @IF(!R) cpu.regs[get_nth_bits(opcode, 12, 16)] = *cpu.cpsr;
     @IF( R) cpu.regs[get_nth_bits(opcode, 12, 16)] = *cpu.spsr;
 
-    cpu.cycles_remaining++;
+    _g_cpu_cycles_remaining++;
 }
 [/COMPONENT]
 
@@ -895,7 +895,7 @@
     if (get_nth_bit(opcode, 19)) *destination = (*destination & 0x00FFFFFF) | (operand & 0xFF000000);
 
     @IF(!R) cpu.update_mode();
-    cpu.cycles_remaining++;
+    _g_cpu_cycles_remaining++;
 }
 [/COMPONENT]
 
@@ -914,8 +914,8 @@
     if ((operand & 0xFFFFFF00) == 0x000000000 || (operand | 0x000000FF) == 0xFFFFFFFF) m = 1;
     if ((operand & 0xFFFF0000) == 0x000000000 || (operand | 0x0000FFFF) == 0xFFFFFFFF) m = 2;
     if ((operand & 0xFF000000) == 0x000000000 || (operand | 0x00FFFFFF) == 0xFFFFFFFF) m = 3;
-    @IF( A) cpu.cycles_remaining += m + 2;
-    @IF(!A) cpu.cycles_remaining += m + 1;
+    @IF( A) _g_cpu_cycles_remaining += m + 2;
+    @IF(!A) _g_cpu_cycles_remaining += m + 1;
 }
 [/COMPONENT]
 
@@ -999,7 +999,7 @@
     if ((operand & 0xFFFFFF00) == 0x000000000 || (operand | 0x000000FF) == 0xFFFFFFFF) m = 1;
     if ((operand & 0xFFFF0000) == 0x000000000 || (operand | 0x0000FFFF) == 0xFFFFFFFF) m = 2;
     if ((operand & 0xFF000000) == 0x000000000 || (operand | 0x00FFFFFF) == 0xFFFFFFFF) m = 3;
-    cpu.cycles_remaining += m + 3;
+    _g_cpu_cycles_remaining += m + 3;
 }
 [/COMPONENT]
 
@@ -1032,7 +1032,7 @@
     uint result = cpu.regs[get_nth_bits(opcode, 12, 16)];
     if (get_nth_bits(opcode, 12, 16) == 15) result += 8;
     cpu.memory.write_word(address & 0xFFFFFFFC, result);
-    cpu.cycles_remaining += 2;
+    _g_cpu_cycles_remaining += 2;
 }
 [/COMPONENT]
 
@@ -1042,7 +1042,7 @@
     uint result = cpu.regs[get_nth_bits(opcode, 12, 16)];
     if (get_nth_bits(opcode, 12, 16) == 15) result += 8;
     cpu.memory.write_byte(address, result & 0xFF);
-    cpu.cycles_remaining += 2;
+    _g_cpu_cycles_remaining += 2;
 }
 [/COMPONENT]
 
@@ -1050,7 +1050,7 @@
 - FORMAT:  ----000PUIW0------------1011----
 {
     cpu.memory.write_halfword(address & ~1, cpu.regs[get_nth_bits(opcode, 12, 16)] & 0xFFFF);
-    cpu.cycles_remaining += 2;
+    _g_cpu_cycles_remaining += 2;
 }
 [/COMPONENT]
 
@@ -1074,7 +1074,7 @@
     cpu.memory.write_word(address & 0xFFFFFFFC, cpu.regs[get_nth_bits(opcode, 0, 4)]);
     cpu.regs[get_nth_bits(opcode, 12, 16)] = value;
 
-    cpu.cycles_remaining += 4;
+    _g_cpu_cycles_remaining += 4;
 }
 [/COMPONENT]
 
@@ -1112,7 +1112,7 @@
     if ((operand & 0xFFFFFF00) == 0x000000000 || (operand | 0x000000FF) == 0xFFFFFFFF) m = 1;
     if ((operand & 0xFFFF0000) == 0x000000000 || (operand | 0x0000FFFF) == 0xFFFFFFFF) m = 2;
     if ((operand & 0xFF000000) == 0x000000000 || (operand | 0x00FFFFFF) == 0xFFFFFFFF) m = 3;
-    cpu.cycles_remaining += m + 3;
+    _g_cpu_cycles_remaining += m + 3;
 }
 [/COMPONENT]
 
