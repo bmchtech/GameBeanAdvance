@@ -29,6 +29,8 @@ class ARM7TDMI {
     enum CPU_STATE_LOG_LENGTH = 1;
     CpuState[CPU_STATE_LOG_LENGTH] cpu_states;
 
+    uint[2] pipeline;
+
     this(Memory memory) {
         this.memory        = memory;
 
@@ -282,61 +284,49 @@ class ARM7TDMI {
         // if (*pc == 0x0000_0013C) memory.open_bus_bios_state = Memory.OpenBusBiosState.AFTER_IRQ;
         memory.can_read_from_bios = (*pc >> 24) == 0;
 
-        uint opcode = fetch();
-
-version (Debug) {
+        uint opcode = pipeline[0];
+        pipeline[0] = pipeline[1];
 
         if (*pc > 0x0FFF_FFFF) {
             error("PC out of range!");
         }
 
-        if (_g_num_log > 0) {
+        if (_g_num_log > 0 || true) {
             _g_num_log--;
             if (get_bit_T()) write("THM ");
             else write("ARM ");
 
             write(format("0x%x ", opcode));
             
-            for (int j = 0; j < 15; j++)
+            for (int j = 0; j < 16; j++)
                 write(format("%x ", regs[j]));
-
-            if (get_bit_T()) write(format("%x ", regs[15] + 2));
-            else write(format("%x ", regs[15] + 4));
 
             write(format("%x", memory.read_byte(0x0300_0003)));
             writeln();
         }
-}
-
+        
         execute(opcode);
+        pipeline[1] = fetch();
 
-        return _g_cpu_cycles_remaining * 2;
+        return _g_cpu_cycles_remaining;
     }
 
     uint fetch() {
         if (get_bit_T()) { // thumb mode: grab a halfword and return it
-            uint opcode = cast(uint) memory.Aligned!(ushort).read(*pc & 0xFFFFFFFE);
+            uint opcode = cast(uint) memory.read_halfword(*pc & 0xFFFFFFFE);
             *pc += 2;
             return opcode;
         } else {           // arm mode: grab a word and return it
-            uint opcode = memory.Aligned!(uint).read(*pc & 0xFFFFFFFC);
+            uint opcode = memory.read_word(*pc & 0xFFFFFFFC);
             *pc += 4;
             return opcode;
         }
     }
 
     void execute(uint opcode) {
-            // write(format("%08x |", opcode));
-            
-            // for (int j = 0; j < 16; j++)
-            //     write(format("%08x ", regs[j]));
-
-            // writeln();
         if (get_bit_T()) {
-            num_thm++;
             jumptable_thumb.jumptable[opcode >> 8](this, cast(ushort)opcode);
         } else {
-            num_arm++;
             jumptable_arm.execute_instruction(opcode, this);
         }
     }
@@ -347,6 +337,15 @@ version (Debug) {
 
     void disable() {
         halted = true;
+    }
+
+    void refill_pipeline() {
+        pipeline[0] = fetch();
+        pipeline[1] = fetch();
+    }
+
+    void refill_pipeline_partial() {
+        pipeline[0] = fetch();
     }
     
     pragma(inline) uint ASR(uint value, ubyte shift) {

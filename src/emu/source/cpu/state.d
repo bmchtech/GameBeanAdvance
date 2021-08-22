@@ -20,13 +20,15 @@ struct CpuState {
 CpuState get_cpu_state(ARM7TDMI cpu) {
     CpuState cpu_state;
     cpu_state.type           = cpu.get_bit_T() ? CpuType.THUMB : CpuType.ARM;
-    cpu_state.opcode         = cpu.get_bit_T() ? cpu.memory.read_halfword(*cpu.pc) : cpu.memory.read_word(*cpu.pc);
+    cpu_state.opcode         = cpu.pipeline[0];
     cpu_state.mode           = *cpu.cpsr;
     cpu_state.mem_0x03000003 = cpu.memory.read_byte(0x03000003);
 
     for (int i = 0; i < 16; i++) {
         cpu_state.regs[i] = cpu.regs[i];
     }
+
+    cpu_state.regs[15] -= cpu.get_bit_T() ? 4 : 8;
 
     return cpu_state;
 }
