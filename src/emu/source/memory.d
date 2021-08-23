@@ -160,14 +160,15 @@ class Memory {
     }
 
     uint read_bios_open_bus() {
-        final switch (open_bus_bios_state) {
-            case OpenBusBiosState.STARTUP:    return 0;
-            case OpenBusBiosState.SOFT_RESET: return 0;
+        return 0xe8174e9e;
+        // final switch (open_bus_bios_state) {
+        //     case OpenBusBiosState.STARTUP:    return 0;
+        //     case OpenBusBiosState.SOFT_RESET: return 0;
 
-            case OpenBusBiosState.DURING_IRQ: return 0xE25EF004;
-            case OpenBusBiosState.AFTER_IRQ:  return 0xE55EC002;
-            case OpenBusBiosState.AFTER_SWI:  return 0xE3A02004;
-        }
+        //     case OpenBusBiosState.DURING_IRQ: return 0xE25EF004;
+        //     case OpenBusBiosState.AFTER_IRQ:  return 0xE55EC002;
+        //     case OpenBusBiosState.AFTER_SWI:  return 0xE3A02004;
+        // }
     }
 
     this() {
@@ -246,13 +247,13 @@ class Memory {
                     static if (is(T == ubyte))  return mmio.read(address);
 
                 case Region.BIOS: 
-                    if (can_read_from_bios) {
+                    // if (can_read_from_bios) {
                         return *((cast(T*) (&bios[0] + (address & (SIZE_BIOS - 1)))));
-                    } else {
+                    // } else {
                         // num_log += 10;
                         // writefln("Returning %x", read_bios_open_bus());
-                        return cast(T) read_bios_open_bus();
-                    }
+                        // return cast(T) read_bios_open_bus();
+                    // }
                 default:
                     // this is on its own because when waitstates are implemented, this is going
                     // to get a lot more complicated
@@ -289,7 +290,7 @@ class Memory {
                     }
                     break;
 
-                case Region.VRAM:         *(cast(T*) (&vram[0]        + (address & (SIZE_VRAM        - 1)))) = value; break;
+                case Region.VRAM:         writefln("Wrote %x to %x", value, address); *(cast(T*) (&vram[0]        + (address & (SIZE_VRAM        - 1)))) = value; break;
                 case Region.OAM:          *(cast(T*) (&oam[0]         + (address & (SIZE_OAM         - 1)))) = value; break;
 
                 case Region.IO_REGISTERS: 

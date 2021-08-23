@@ -148,6 +148,7 @@ public:
         if (get_nth_bit(data, 7)) {
             // idk figure out stopping
         } else {
+            writefln("Halting cpu");
             // halt
             cpu.halt();
         }

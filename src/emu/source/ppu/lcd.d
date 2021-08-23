@@ -120,7 +120,7 @@ public:
                 // in mode 3, the dot and scanline (x and y) simply tell us where to read from in VRAM. The colors
                 // are stored directly, so we just read from VRAM and interpret as a 15bit highcolor
                 for (uint x = 0; x < 240; x++) {
-                    canvas.draw(x, scanline, memory.OFFSET_VRAM + (x + scanline * 240) * 2, Layer.BACKDROP);
+                    canvas.pixels_output[x][scanline] = get_pixel_from_color(memory.read_halfword(memory.OFFSET_VRAM + (x + scanline * 240) * 2));
                 }
                     // writefln("%x", memory.read_halfword(memory.OFFSET_VRAM + (0 + 200 * 240) * 2));
                 // writefln("%x %x %x", memory.read_halfword(memory.OFFSET_VRAM + (0 + scanline * 240) * 2), memory.read_halfword(memory.OFFSET_VRAM + (120 * 230 * 2)), memory.vram[120 * 230 * 2]);
