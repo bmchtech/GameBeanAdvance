@@ -118,6 +118,7 @@ void test_arm_mode(string gba_file, string log_file, int num_instructions, int s
     set_cpu_state(cpu, expected_output[0]);
     cpu.set_bit_T(true);
     cpu.set_mode(cpu.MODE_SYSTEM);
+    cpu.refill_pipeline();
 
     for (int i = 0; i < num_instructions - 1; i++) {
         // print_cpu_state(get_cpu_state(cpu));
@@ -132,24 +133,25 @@ void test_arm_mode(string gba_file, string log_file, int num_instructions, int s
         if (i < start_instruction) cpu.set_bit_T(true);
 
         if (i > start_instruction || expected_output[i].type == CpuType.THUMB) {
-            uint opcode = cpu.fetch();
-            cpu.execute(opcode);
-            check_cpu_state(expected_output[i + 1], get_cpu_state(cpu), "Failed at instruction #" ~ to!string(i) ~ " with opcode 0x" ~ to_hex_string(opcode));
+            cpu.cycle();
+            check_cpu_state(expected_output[i + 1], get_cpu_state(cpu), "Failed at instruction #" ~ to!string(i));
         } else {
+            print_cpu_state(get_cpu_state(cpu));
             set_cpu_state(cpu, expected_output[i + 1]);
+            cpu.refill_pipeline();
         }
     }
 
     // make sure we've reached B infin
-    if (b_infin_check) assert(cpu.fetch() == 0xEAFFFFFE, "ROM did not reach B infin!");
+    if (b_infin_check) assert(cpu.pipeline[0] == 0xEAFFFFFE, "ROM did not reach B infin!");
 }
 
 
 
-@("tests-thumb") 
-unittest {
-    test_thumb_mode("../../tests/asm/bin/thumb-simple.gba", "../../tests/asm/logs/thumb-simple.log", 3866);
-}
+// @("tests-thumb") 
+// unittest {
+//     test_thumb_mode("../../tests/asm/bin/thumb-simple.gba", "../../tests/asm/logs/thumb-simple.log", 3866);
+// }
 
 // @("tests-arm-addressing-mode-1") 
 // unittest {
@@ -166,10 +168,10 @@ unittest {
 //     test_arm_mode("../../tests/asm/bin/arm-addressing-mode-3.gba", "../../tests/asm/logs/arm-addressing-mode-3.log", 1290, 212, true);
 // }
 
-// @("tests-arm-opcodes") 
-// unittest {
-//     test_arm_mode("../../tests/asm/bin/arm-opcodes.gba", "../../tests/asm/logs/arm-opcodes.log", 2100, 276, true);
-// }
+@("tests-arm-opcodes") 
+unittest {
+    test_arm_mode("../../tests/asm/bin/arm-opcodes.gba", "../../tests/asm/logs/arm-opcodes.log", 2000, 276, true);
+}
 
 // @("tests-roms-fountain") 
 // unittest {

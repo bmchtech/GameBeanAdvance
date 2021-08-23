@@ -64,12 +64,12 @@ class ARM7TDMI {
         }
 
         CpuMode mode = get_mode_from_exception(exception);
-        // writefln("Interrupt! Setting LR to %x", *pc);
+        writefln("Interrupt! Setting LR to %x", *pc);
 
-        register_file[mode.OFFSET + 14] = *pc;
+        register_file[mode.OFFSET + 14] = *pc - (get_bit_T() ? 2 : 4);
         if (exception == CpuException.IRQ) {
             // _g_num_log += 30;
-            register_file[mode.OFFSET + 14] += 4; // in a SWI, the linkage register must point to the next instruction + 4
+            // register_file[mode.OFFSET + 14] += 4; // in an IRQ, the linkage register must point to the next instruction + 4
         }
 
         register_file[mode.OFFSET + 17] = *cpsr;
@@ -90,9 +90,17 @@ class ARM7TDMI {
         }
 
         *pc = get_address_from_exception(exception);
+        set_bit_T(false);
+        memory.can_read_from_bios = true;
+        
+        if (exception == CpuException.SoftwareInterrupt) {
+            refill_pipeline_partial();
+        } else {
+            refill_pipeline();
+        }
+
 
         halted = false;
-        set_bit_T(false);
 
         return true;
     }
@@ -159,7 +167,8 @@ class ARM7TDMI {
 
     // sets the CPU mode. can be one of: MODE_USER, MODE_FIQ, MODE_IRQ, MODE_SUPERVISOR, MODE_ABORT, MODE_UNDEFINED, or MODE_SYSTEM.
     // these modes are ARM7TDMI modes that dictate how the cpu runs.
-    pragma(inline) void set_mode(const CpuMode new_mode) {
+    void set_mode(const CpuMode new_mode) {
+        writefln("Setting mode to %x", new_mode.CPSR_ENCODING);
         uint mask;
 
         mask = current_mode.REGISTER_UNIQUENESS;
@@ -185,6 +194,13 @@ class ARM7TDMI {
             mask >>= 1;
         }
 
+        // user and system modes dont have spsr. spsr reads return cpsr.
+        if (new_mode == MODE_USER || new_mode == MODE_SYSTEM) {
+            spsr = cpsr;
+        } else {
+            spsr = &regs[17];
+        }
+
         // bool old_bit_T = get_bit_T();
         // set_bit_T(old_bit_T);
         // writefln("Linkage: %x", register_file[new_mode.OFFSET + 14]);
@@ -207,6 +223,14 @@ class ARM7TDMI {
                 set_mode(MODES[i]);
             }
         }
+    }
+
+    pragma(inline, true) bool has_spsr() {
+        return !(current_mode == MODE_USER || current_mode == MODE_SYSTEM);
+    }
+
+    pragma(inline, true) bool in_a_privileged_mode() {
+        return current_mode != MODE_USER;
     }
 
     uint[] register_file;
@@ -291,7 +315,7 @@ class ARM7TDMI {
             error("PC out of range!");
         }
 
-        if (_g_num_log > 0 || true) {
+        if (_g_num_log > 0) {
             _g_num_log--;
             if (get_bit_T()) write("THM ");
             else write("ARM ");
@@ -301,7 +325,8 @@ class ARM7TDMI {
             for (int j = 0; j < 16; j++)
                 write(format("%x ", regs[j]));
 
-            write(format("%x", memory.read_byte(0x0300_0003)));
+            write(format("%x ", *cpsr));
+            write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
             writeln();
         }
         
@@ -345,6 +370,7 @@ class ARM7TDMI {
     }
 
     void refill_pipeline_partial() {
+        writefln("flushing %x", *pc);
         pipeline[0] = fetch();
     }
     
