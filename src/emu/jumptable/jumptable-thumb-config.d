@@ -558,8 +558,9 @@ void run_01000110(ushort opcode) {
 void run_01000111(ushort opcode) {
     uint pointer = cpu.regs[get_nth_bits(opcode, 3, 7)];
 //    warning(format("%x %x", pointer, get_nth_bits(opcode, 3, 7)));
-    *cpu.pc = pointer & 0xFFFFFFFE; // the PC must be even, so we & with 0xFFFFFFFE.
+    *cpu.pc = pointer & ((pointer & 1) ? ~1 : ~3); // the PC must be even, so we & with 0xFFFFFFFE.
     cpu.set_bit_T(pointer & 1);
+    
     cpu.refill_pipeline_partial();
 
     _g_cpu_cycles_remaining += 3;

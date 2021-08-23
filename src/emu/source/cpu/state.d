@@ -38,8 +38,8 @@ void set_cpu_state(ARM7TDMI cpu, CpuState cpu_state) {
         cpu.regs[i] = cpu_state.regs[i];
     }
 
-    *cpu.cpsr = (*cpu.cpsr & 0xFFFFFFE0) | (cpu_state.mode & 0x1F);
-    cpu.update_mode();
+    // *cpu.cpsr = (*cpu.cpsr & 0xFFFFFFE0) | (cpu_state.mode & 0x1F);
+    // cpu.update_mode();
 
     cpu.memory.write_byte(cast(uint) 0x03000003, cast(ubyte) cpu_state.mem_0x03000003);
 }
