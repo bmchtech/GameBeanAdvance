@@ -109,14 +109,14 @@ class Memory {
         [[1, 1, 2], [1, 1, 2]], // VRAM
         [[1, 1, 1], [1, 1, 1]], // OAM
 
-        [[5, 5, 8], [5, 5, 8]], // ROM Wait State 0
-        [[5, 5, 8], [5, 5, 8]], // ROM Wait State 0
-        [[5, 5, 8], [5, 5, 8]], // ROM Wait State 1
-        [[5, 5, 8], [5, 5, 8]], // ROM Wait State 1
-        [[5, 5, 8], [5, 5, 8]], // ROM Wait State 2
-        [[5, 5, 8], [5, 5, 8]], // ROM Wait State 2
-        [[5, 5, 8], [5, 5, 8]], // ROM SRAM
-        [[5, 5, 8], [5, 5, 8]]  // ROM SRAM
+        [[5, 5, 8], [3, 3, 6]], // ROM Wait State 0
+        [[5, 5, 8], [3, 3, 6]], // ROM Wait State 0
+        [[5, 5, 8], [3, 3, 6]], // ROM Wait State 1
+        [[5, 5, 8], [3, 3, 6]], // ROM Wait State 1
+        [[5, 5, 8], [3, 3, 6]], // ROM Wait State 2
+        [[5, 5, 8], [3, 3, 6]], // ROM Wait State 2
+        [[5, 5, 8], [3, 3, 6]], // ROM SRAM
+        [[5, 5, 8], [3, 3, 6]]  // ROM SRAM
     ];
 
     void write_WAITCNT(uint target_byte, ubyte data) {
@@ -194,32 +194,32 @@ class Memory {
         this.mmio = mmio;
     }
 
-    pragma(inline, true) ubyte read_byte(uint address) {
-        return Read!ubyte(address);
+    pragma(inline, true) ubyte read_byte(uint address, AccessType access_type = AccessType.NONSEQUENTIAL) {
+        return read!ubyte(address, access_type);
     }
 
-    pragma(inline, true) ushort read_halfword(uint address) {    
-        return Read!ushort(address);
+    pragma(inline, true) ushort read_halfword(uint address, AccessType access_type = AccessType.NONSEQUENTIAL) {    
+        return read!ushort(address, access_type);
     }
 
-    pragma(inline, true) uint read_word(uint address) {
-        return Read!uint(address);
+    pragma(inline, true) uint read_word(uint address, AccessType access_type = AccessType.NONSEQUENTIAL) {
+        return read!uint(address, access_type);
     }
 
-    pragma(inline, true) void write_byte(uint address, ubyte value) {
-        Write!ubyte(address, value);
+    pragma(inline, true) void write_byte(uint address, ubyte value, AccessType access_type = AccessType.NONSEQUENTIAL) {
+        write!ubyte(address, value, access_type);
     }
 
-    pragma(inline, true) void write_halfword(uint address, ushort value) {
-        Write!ushort(address, value);
+    pragma(inline, true) void write_halfword(uint address, ushort value, AccessType access_type = AccessType.NONSEQUENTIAL) {
+        write!ushort(address, value, access_type);
     }
 
-    pragma(inline, true) void write_word(uint address, uint value) {
-        Write!uint(address, value);
+    pragma(inline, true) void write_word(uint address, uint value, AccessType access_type = AccessType.NONSEQUENTIAL) {
+        write!uint(address, value, access_type);
     }
 
-    private template Read(T) {
-        pragma(inline, true) T Read(uint address, AccessType access_type = AccessType.NONSEQUENTIAL) {
+    private template read(T) {
+        pragma(inline, true) T read(uint address, AccessType access_type = AccessType.NONSEQUENTIAL) {
             uint region = (address >> 24) & 0xF;
 
             // handle waitstates
@@ -262,8 +262,8 @@ class Memory {
         }
     }
 
-    private template Write(T) {
-        pragma(inline, true) void Write(uint address, T value, AccessType access_type = AccessType.NONSEQUENTIAL) {
+    private template write(T) {
+        pragma(inline, true) void write(uint address, T value, AccessType access_type = AccessType.NONSEQUENTIAL) {
             uint region = (address >> 24) & 0xF;
 
             // handle waitstates

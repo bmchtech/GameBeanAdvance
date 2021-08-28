@@ -189,9 +189,9 @@ class GameBeanSDLHost {
             if (clockfor_log > nsec_per_log) {
                 ulong cycles_elapsed = num_cycles - cycle_timestamp;
                 cycle_timestamp = num_cycles;
-                int speed = cast(int) ((cast(double) cycles_elapsed) / (cast(double) cycles_per_second));
+                double speed = ((cast(double) cycles_elapsed) / (cast(double) cycles_per_second));
                 // SDL_SetWindowTitle(window, cast(char*) format("FPS: %d", fps));
-                SDL_SetWindowTitle(window, cast(char*) format("Speed: %s", speed));
+                SDL_SetWindowTitle(window, cast(char*) format("Speed: %f", speed));
                 clockfor_log = 0;
                 cycles_since_last_log = 0;
                 fps = 0;
