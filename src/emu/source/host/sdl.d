@@ -174,18 +174,23 @@ class GameBeanSDLHost {
         while (running) {
             long elapsed = stopwatch.update();
             clockfor_log   += elapsed;
+            clockfor_frame += elapsed;
 
-            frame();
-            while (_audio_data.buffer[0].offset < _samples_per_callback * 3) {
+            while (_audio_data.buffer[0].offset < _samples_per_callback * 4) {
                 _gba.cycle_at_least_n_times(_cycles_per_batch);
             }
             fps++;
 
+            if (clockfor_frame > nsec_per_frame) {
+                clockfor_frame = 0;
+                frame();
+            }
+
             if (clockfor_log > nsec_per_log) {
                 ulong cycles_elapsed = num_cycles - cycle_timestamp;
                 cycle_timestamp = num_cycles;
-                double speed = (cast(double) cycles_elapsed) / (cast(double) cycles_per_second);
-                // SDL_SetWindowTitle(window, cast(char*) format("FPS: %s", fps));
+                int speed = cast(int) ((cast(double) cycles_elapsed) / (cast(double) cycles_per_second));
+                // SDL_SetWindowTitle(window, cast(char*) format("FPS: %d", fps));
                 SDL_SetWindowTitle(window, cast(char*) format("Speed: %s", speed));
                 clockfor_log = 0;
                 cycles_since_last_log = 0;

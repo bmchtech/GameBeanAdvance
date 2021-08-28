@@ -290,7 +290,7 @@ class Memory {
                     }
                     break;
 
-                case Region.VRAM:         writefln("Wrote %x to %x", value, address); *(cast(T*) (&vram[0]        + (address & (SIZE_VRAM        - 1)))) = value; break;
+                case Region.VRAM:         *(cast(T*) (&vram[0]        + (address & (SIZE_VRAM        - 1)))) = value; break;
                 case Region.OAM:          *(cast(T*) (&oam[0]         + (address & (SIZE_OAM         - 1)))) = value; break;
 
                 case Region.IO_REGISTERS: 

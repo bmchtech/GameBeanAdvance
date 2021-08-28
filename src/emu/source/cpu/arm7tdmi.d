@@ -64,12 +64,12 @@ class ARM7TDMI {
         }
 
         CpuMode mode = get_mode_from_exception(exception);
-        writefln("Interrupt! Setting LR to %x", *pc);
+        // writefln("Interrupt! Setting LR to %x", *pc);
 
         register_file[mode.OFFSET + 14] = *pc - (get_bit_T() ? 2 : 4);
         if (exception == CpuException.IRQ) {
             // _g_num_log += 30;
-            // register_file[mode.OFFSET + 14] += 4; // in an IRQ, the linkage register must point to the next instruction + 4
+            register_file[mode.OFFSET + 14] += 4 - (get_bit_T() ? 2 : 4); // in an IRQ, the linkage register must point to the next instruction + 4
         }
 
         register_file[mode.OFFSET + 17] = *cpsr;
@@ -168,7 +168,6 @@ class ARM7TDMI {
     // sets the CPU mode. can be one of: MODE_USER, MODE_FIQ, MODE_IRQ, MODE_SUPERVISOR, MODE_ABORT, MODE_UNDEFINED, or MODE_SYSTEM.
     // these modes are ARM7TDMI modes that dictate how the cpu runs.
     void set_mode(const CpuMode new_mode) {
-        writefln("Setting mode to %x", new_mode.CPSR_ENCODING);
         uint mask;
 
         mask = current_mode.REGISTER_UNIQUENESS;
@@ -315,24 +314,25 @@ class ARM7TDMI {
             error("PC out of range!");
         }
 
-        if (_g_num_log > 0) {
-            _g_num_log--;
-            if (get_bit_T()) write("THM ");
-            else write("ARM ");
+        // if (_g_num_log > 0 || true) {
+        //     _g_num_log--;
+        //     if (get_bit_T()) write("THM ");
+        //     else write("ARM ");
 
-            write(format("0x%x ", opcode));
+        //     write(format("0x%x ", opcode));
             
-            for (int j = 0; j < 16; j++)
-                write(format("%x ", regs[j]));
+        //     for (int j = 0; j < 16; j++)
+        //         write(format("%x ", regs[j]));
 
-            write(format("%x ", *cpsr));
-            write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
-            writeln();
-        }
+        //     // write(format("%x ", *cpsr));
+        //     write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
+        //     writeln();
+        // }
         
         execute(opcode);
-        pipeline[1] = fetch();
 
+        pipeline[1] = fetch();
+        // writefln("Cycle: %x", _g_cpu_cycles_remaining);
         return _g_cpu_cycles_remaining;
     }
 
@@ -369,9 +369,10 @@ class ARM7TDMI {
         pipeline[1] = fetch();
     }
 
+    bool flushed = false;
     void refill_pipeline_partial() {
-        writefln("flushing %x", *pc);
         pipeline[0] = fetch();
+        flushed = true;
     }
     
     pragma(inline) uint ASR(uint value, ubyte shift) {
