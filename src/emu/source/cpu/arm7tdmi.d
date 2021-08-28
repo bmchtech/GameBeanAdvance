@@ -30,6 +30,7 @@ class ARM7TDMI {
     CpuState[CPU_STATE_LOG_LENGTH] cpu_states;
 
     uint[2] pipeline;
+    Memory.AccessType pipeline_access_type;
 
     this(Memory memory) {
         this.memory        = memory;
@@ -53,6 +54,8 @@ class ARM7TDMI {
         sp   = &regs[13];
         cpsr = &regs[16];
         spsr = &regs[17];
+
+        pipeline_access_type = Memory.AccessType.NONSEQUENTIAL;
     }
 
     // returns true if the exception is accepted (or, excepted :P)
@@ -332,17 +335,18 @@ class ARM7TDMI {
         execute(opcode);
 
         pipeline[1] = fetch();
-        // writefln("Cycle: %x", _g_cpu_cycles_remaining);
+        pipeline_access_type = Memory.AccessType.SEQUENTIAL;
+
         return _g_cpu_cycles_remaining;
     }
 
     uint fetch() {
         if (get_bit_T()) { // thumb mode: grab a halfword and return it
-            uint opcode = cast(uint) memory.read_halfword(*pc & 0xFFFFFFFE);
+            uint opcode = cast(uint) memory.read_halfword(*pc & 0xFFFFFFFE, pipeline_access_type);
             *pc += 2;
             return opcode;
         } else {           // arm mode: grab a word and return it
-            uint opcode = memory.read_word(*pc & 0xFFFFFFFC);
+            uint opcode = memory.read_word(*pc & 0xFFFFFFFC, pipeline_access_type);
             *pc += 4;
             return opcode;
         }
@@ -367,12 +371,14 @@ class ARM7TDMI {
     void refill_pipeline() {
         pipeline[0] = fetch();
         pipeline[1] = fetch();
+
+        pipeline_access_type = Memory.AccessType.NONSEQUENTIAL;
     }
 
-    bool flushed = false;
     void refill_pipeline_partial() {
         pipeline[0] = fetch();
-        flushed = true;
+
+        pipeline_access_type = Memory.AccessType.NONSEQUENTIAL;
     }
     
     pragma(inline) uint ASR(uint value, ubyte shift) {
