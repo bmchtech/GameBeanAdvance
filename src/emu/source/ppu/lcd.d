@@ -12,9 +12,11 @@ import std.typecons;
 enum SCREEN_WIDTH  = 240;
 enum SCREEN_HEIGHT = 160;
 
-struct FixedPoint {
-    int   integer;
-    ubyte fraction;
+enum AffineParameter {
+    A = 0,
+    B = 1,
+    C = 2,
+    D = 3
 }
 
 class PPU {
@@ -194,10 +196,6 @@ private:
         uint bottom;
         uint left;
         uint right;
-    }
-
-    double get_double_from_fixed_point(FixedPoint fp) {
-        return (cast(double) fp.integer) + ((cast(double) fp.fraction) / 256);
     }
 
     Window[2] windows;
@@ -421,40 +419,38 @@ private:
         if (!background.enabled) return;
 
         // relevant addresses for the background's tilemap and screen
-        int screen_base_address = memory.OFFSET_VRAM + background.screen_base_block    * 0x800;
+        int screen_base_address = memory.OFFSET_VRAM + background.screen_base_block * 0x800;
         int tile_base_address   = background.character_base_block * 0x4000;
 
         // the coordinates at the topleft of the background that we are drawing
-        int topleft_x      = 0;//cast(int) (get_double_from_fixed_point(background.x_offset_rotation));
-        int topleft_y      = scanline;//cast(int) (get_double_from_fixed_point(background.y_offset_rotation) + scanline);
+        Point texture_point = Point(background.x_offset_rotation,
+                                    background.y_offset_rotation + (scanline << 8)); // << 8 because _offset_rotation is 8-bit fixed point.
+        
+        // rotation/scaling backgrounds are squares
+        int tiles_per_row = BG_ROTATION_SCALING_TILE_DIMENSIONS[background.screen_size];
 
-        // the tile number at the topleft of the background that we are drawing
-        int topleft_tile_x = topleft_x >> 3;
-        int topleft_tile_y = topleft_y >> 3;
+        writefln("Beginning rendering at %x %x", texture_point.x, texture_point.y);
 
-        // how far back do we have to render the tile? because the topleft of the screen
-        // usually doesn't mark the start of the tile, so these are the offsets we can
-        // subtract to handle the mislignment
-        int tile_dx        = topleft_x & 0b111;
-        int tile_dy        = topleft_y & 0b111;
+        for (int x = 0; x < 240; x++) {
+            // truncate the decimal because texture_point is 8-bit fixed point
+            Point truncated_texture_point = Point(texture_point.x >> 8,
+                                                  texture_point.y >> 8);
+            int tile_x = truncated_texture_point.x >> 3;
+            int tile_y = truncated_texture_point.y >> 3;
+            int fine_x = truncated_texture_point.x & 0b111;
+            int fine_y = truncated_texture_point.y & 0b111;
 
-        int tiles_per_row  = BG_ROTATION_SCALING_TILE_DIMENSIONS[background.screen_size];
+            if ((0 <= tile_x && tile_x < tiles_per_row) &&
+                (0 <= tile_y && tile_y < tiles_per_row)) {
+                int tile_address = get_tile_address__rotation_scaling(tile_x, tile_y, tiles_per_row);
+                int tile = memory.read_byte(screen_base_address + tile_address);
 
-        // tile_x_offset and tile_y_offset are offsets from the topleft tile. we use this to iterate through
-        // each tile.
-        for (int tile_x_offset = 0; tile_x_offset < 32 + 1; tile_x_offset++) {
+                ubyte color_index = memory.vram[tile_base_address + (tile & 0x3FF) * 64 + fine_y * 8 + fine_x];
+                maybe_draw_pixel_on_layer(background.layer, 0, color_index, 0, x, scanline, color_index == 0);
+            }
 
-            // get the tile address and read it from memory
-            int tile_address = get_tile_address__rotation_scaling(topleft_tile_x + tile_x_offset, topleft_tile_y, tiles_per_row);
-            int tile = memory.read_byte(screen_base_address + tile_address);
-
-            int draw_x = tile_x_offset * 8 - tile_dx;
-            int draw_y = scanline;
-
-            Render!(true, false, false).tile(backgrounds[background_id].layer, tile, tile_base_address, 0, 
-                               draw_x, tile_dy, 
-                               0, 0, PMatrix(0, 0, 0, 0), false, 
-                               get_nth_bits(tile, 12, 16));
+            texture_point.x += background.p[AffineParameter.A];
+            texture_point.y += background.p[AffineParameter.C];
         }
     }
 
@@ -740,23 +736,23 @@ public:
     void write_BGxX(int target_byte, ubyte data, int x) {
         final switch (target_byte) {
             case 0b00:
-                backgrounds[x].x_offset_rotation.fraction = data;
+                backgrounds[x].x_offset_rotation &= 0xFFFFFF00;
+                backgrounds[x].x_offset_rotation |= data;
                 break;
             case 0b01:
-                backgrounds[x].x_offset_rotation.integer &= 0xFFFFFF00;
-                backgrounds[x].x_offset_rotation.integer |= data;
+                backgrounds[x].x_offset_rotation &= 0xFFFF00FF;
+                backgrounds[x].x_offset_rotation |= data << 8;
                 break;
             case 0b10:
-                backgrounds[x].x_offset_rotation.integer &= 0xFFFF00FF;
-                backgrounds[x].x_offset_rotation.integer |= data << 8;
+                backgrounds[x].x_offset_rotation &= 0xFF00FFFF;
+                backgrounds[x].x_offset_rotation |= data << 16;
                 break;
             case 0b11:
-                backgrounds[x].x_offset_rotation.integer &= 0xFFF8FFFF;
-                backgrounds[x].x_offset_rotation.integer |= (data & 0b111) << 16;
+                backgrounds[x].x_offset_rotation &= 0x00FFFFFF;
+                backgrounds[x].x_offset_rotation |= data << 24;
 
-                if ((data >> 3) ^ (backgrounds[x].x_offset_rotation.integer < 0)) {
-                    backgrounds[x].x_offset_rotation.integer *= -1;
-                } 
+                // sign extension. bit 27 is the sign bit.
+                backgrounds[x].x_offset_rotation |= ((data >> 3) ? 0xF0 : 0x00);
                 break;
         }
     }
@@ -764,27 +760,39 @@ public:
     void write_BGxY(int target_byte, ubyte data, int x) {
         final switch (target_byte) {
             case 0b00:
-                backgrounds[x].y_offset_rotation.fraction = data;
+                backgrounds[x].y_offset_rotation &= 0xFFFFFF00;
+                backgrounds[x].y_offset_rotation |= data;
                 break;
             case 0b01:
-                backgrounds[x].y_offset_rotation.integer &= 0xFFFFFF00;
-                backgrounds[x].y_offset_rotation.integer |= data;
+                backgrounds[x].y_offset_rotation &= 0xFFFF00FF;
+                backgrounds[x].y_offset_rotation |= data << 8;
                 break;
             case 0b10:
-                backgrounds[x].y_offset_rotation.integer &= 0xFFFF00FF;
-                backgrounds[x].y_offset_rotation.integer |= data << 8;
+                backgrounds[x].y_offset_rotation &= 0xFF00FFFF;
+                backgrounds[x].y_offset_rotation |= data << 16;
                 break;
             case 0b11:
-                backgrounds[x].y_offset_rotation.integer &= 0xFFF8FFFF;
-                backgrounds[x].y_offset_rotation.integer |= (data & 0b111) << 16;
+                backgrounds[x].y_offset_rotation &= 0x00FFFFFF;
+                backgrounds[x].y_offset_rotation |= data << 24;
 
-                if ((data >> 3) ^ (backgrounds[x].y_offset_rotation.integer < 0)) {
-                    backgrounds[x].y_offset_rotation.integer *= -1;
-                } 
+                // sign extension. bit 27 is the sign bit.
+                backgrounds[x].x_offset_rotation |= ((data >> 3) ? 0xF0 : 0x00);
                 break;
         }
     }
 
+    void write_BGxPy(int target_byte, ubyte data, int x, AffineParameter y) {
+        final switch (target_byte) {
+            case 0b0:
+                backgrounds[x].p[cast(int) y] &= 0xFF00;
+                backgrounds[x].p[cast(int) y] |= data;
+                break;
+            case 0b1:
+                backgrounds[x].p[cast(int) y] &= 0x00FF;
+                backgrounds[x].p[cast(int) y] |= data << 8;
+                break;
+        }
+    }
 
     void write_WININ(int target_byte, ubyte data) {
 

@@ -4,7 +4,6 @@ import memory;
 import ppu;
 
 struct Background {
-    // all backgrounds have the following:
     int   priority;                   // 0 - 3
     int   character_base_block;       // 0 - 3 (units of 16 KBytes)
     bool  is_mosaic;
@@ -17,7 +16,6 @@ struct Background {
     ushort y_offset;
     bool   enabled;
 
-    // only backgrounds 2 and 3 have the following:
     ushort transformation_dx;
     ushort transformation_dmx;
     ushort transformation_dy;
@@ -25,12 +23,14 @@ struct Background {
     uint   reference_x;
     uint   reference_y;
 
-    FixedPoint x_offset_rotation;
-    FixedPoint y_offset_rotation; 
+    int x_offset_rotation;
+    int y_offset_rotation; 
 
     BackgroundMode mode;
 
     Layer layer;
+    
+    int[4] p;
 }
 
 enum BackgroundMode {
