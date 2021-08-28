@@ -85,7 +85,7 @@ public:
         int source_offset = 0;
         int dest_offset   = 0;
 
-        // if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x enabled: Transferring %x %s from %x to %x (Control: %x)",
+        // if (is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x enabled: Transferring %x %s from %x to %x (Control: %x)",
         //          current_channel,
         //          bytes_to_transfer,
         //          dma_channels[current_channel].transferring_words ? "words" : "halfwords",

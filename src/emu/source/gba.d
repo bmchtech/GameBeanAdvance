@@ -94,6 +94,8 @@ public:
         enabled = true; 
     }
  
+
+ 
     ulong extra_cycles = 0;
     void cycle_at_least_n_times(int n) {
         ulong times_cycled = extra_cycles;
@@ -148,7 +150,6 @@ public:
         if (get_nth_bit(data, 7)) {
             // idk figure out stopping
         } else {
-            writefln("Halting cpu");
             // halt
             cpu.halt();
         }

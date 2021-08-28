@@ -32,7 +32,7 @@ class InterruptManager {
         // is this specific interrupt enabled
         // writefln("cmon %x", interrupt_code);
         if (interrupt_enable & interrupt_code) {
-            writefln("Interrupting with code: %x", interrupt_code);
+            // writefln("Interrupting with code: %x", interrupt_code);
             interrupt_request |= interrupt_code;
 
             unhalt_cpu();
@@ -80,7 +80,6 @@ public:
     }
 
     void write_IME(int target_byte, ubyte data) {
-        writefln("Setting IME to %x %x", data, target_byte);
         final switch (target_byte) {
             case 0b0: interrupt_master_enable = data & 1; break;
             case 0b1: break;

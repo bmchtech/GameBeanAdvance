@@ -282,7 +282,7 @@
     cpu.shifter_operand   = cpu.ROR(get_nth_bits(opcode, 0, 8), cast(ubyte) ((get_nth_bits(opcode, 8, 12)) * 2));
     cpu.shifter_carry_out = get_nth_bits(opcode, 8, 12) == 0 ? cpu.get_flag_C() : get_nth_bit(cpu.shifter_operand, 31);
 
-    _g_cpu_cycles_remaining++;
+    // _g_cpu_cycles_remaining++;
 
     int pc_additional_shift_amount = 0;
 }
@@ -309,7 +309,7 @@
     @IF(!S  H) if (shift_immediate == 0) {
     @IF(!S  H)     cpu.shifter_operand   = 0;
     @IF(!S  H)     cpu.shifter_carry_out = get_nth_bit(rm, 31);
-    @IF(!S  H)     _g_cpu_cycles_remaining--;
+    @IF(!S  H)     // _g_cpu_cycles_remaining--;
     @IF(!S  H) } else { // shift_immediate > 0
     @IF(!S  H)     cpu.shifter_operand   = cpu.LSR(rm, cast(ubyte) shift_immediate);
     @IF(!S  H)     cpu.shifter_carry_out = get_nth_bit(rm, shift_immediate - 1);
@@ -334,7 +334,7 @@
     @IF( S  H)     cpu.shifter_carry_out = get_nth_bit(rm, shift_immediate - 1);
     @IF( S  H) } 
 
-    _g_cpu_cycles_remaining++;
+    // _g_cpu_cycles_remaining++;
 
     int pc_additional_shift_amount = 0;
 }
@@ -420,7 +420,7 @@
     @IF( S  H)     cpu.shifter_carry_out = get_nth_bit(rm, (rs & 0x1F) - 1);
     @IF( S  H) }
 
-    _g_cpu_cycles_remaining++;
+    // _g_cpu_cycles_remaining++;
 }
 [/COMPONENT]
 
@@ -554,7 +554,11 @@
 [COMPONENT ADDR_WRITEBACK]
 - FORMAT:  -------PUBWL-------------SH-----
 {
-    if (should_writeback) cpu.regs[get_nth_bits(opcode, 16, 20)] = addr_writeback; 
+    if (should_writeback) {
+        cpu.regs[get_nth_bits(opcode, 16, 20)] = addr_writeback; 
+
+        if (get_nth_bits(opcode, 16, 20) == 15) cpu.refill_pipeline_partial();
+    }
 }
 [/COMPONENT]
 
@@ -564,7 +568,7 @@
     cpu.regs[get_nth_bits(opcode, 12, 16)] = result;
 
     if (get_nth_bits(opcode, 12, 16) == 15) {
-        _g_cpu_cycles_remaining += 2;
+        // _g_cpu_cycles_remaining += 2;
         cpu.refill_pipeline_partial();
     }
 }
@@ -637,7 +641,7 @@
     *cpu.pc += ((((1 << 23) ^ get_nth_bits(opcode, 0, 24)) - (1 << 23)) << 2);
     cpu.refill_pipeline_partial();
 
-    _g_cpu_cycles_remaining += 3;
+    // _g_cpu_cycles_remaining += 3;
 }
 [/COMPONENT]
 
@@ -657,8 +661,6 @@
     uint register_operand = cpu.regs[get_nth_bits(opcode, 16, 20)];
     if (get_nth_bits(opcode, 16, 20) == 15) register_operand += pc_additional_shift_amount;
     uint result           = register_operand + cpu.shifter_operand;
-
-    warning(format("Comparing %x %x", register_operand, cpu.shifter_operand));
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
@@ -725,12 +727,12 @@
     if (rd == 15) {
         *cpu.pc = value & 0xFFFFFFFC;
         cpu.refill_pipeline_partial();
-        _g_cpu_cycles_remaining += 2;
+        // _g_cpu_cycles_remaining += 2;
     } else {
         cpu.regs[rd] = value;
     }
 
-    _g_cpu_cycles_remaining += 3;
+    // _g_cpu_cycles_remaining += 3;
 }
 [/COMPONENT]
 
@@ -738,8 +740,11 @@
 - FORMAT:  ----01---1-1--------------------
 {
     cpu.regs[get_nth_bits(opcode, 12, 16)] = cpu.memory.read_byte(address);
-    if (get_nth_bits(opcode, 12, 16) == 15) _g_cpu_cycles_remaining += 2;
-    _g_cpu_cycles_remaining += 3;
+    if (get_nth_bits(opcode, 12, 16) == 15) {
+        cpu.refill_pipeline_partial();
+        // _g_cpu_cycles_remaining += 2;
+    }
+    // _g_cpu_cycles_remaining += 3;
 }
 [/COMPONENT]
 
@@ -750,8 +755,11 @@
     if ((address & 0b11) == 0b01) value = ((value & 0xFF) << 24) | (value >> 8);
 
     cpu.regs[get_nth_bits(opcode, 12, 16)] = value;
-    if (get_nth_bits(opcode, 12, 16) == 15) _g_cpu_cycles_remaining += 2;
-    _g_cpu_cycles_remaining += 3;
+    if (get_nth_bits(opcode, 12, 16) == 15) {
+        cpu.refill_pipeline_partial();
+        // _g_cpu_cycles_remaining += 2;
+    }
+    // _g_cpu_cycles_remaining += 3;
 }
 [/COMPONENT]
 
@@ -759,8 +767,11 @@
 - FORMAT:  ----000----1------------1101----
 {
     cpu.regs[get_nth_bits(opcode, 12, 16)] = sign_extend(cpu.memory.read_byte(address), 8);
-    if (get_nth_bits(opcode, 12, 16) == 15) _g_cpu_cycles_remaining += 2;
-    _g_cpu_cycles_remaining += 3;
+    if (get_nth_bits(opcode, 12, 16) == 15) {
+        cpu.refill_pipeline_partial();
+        // _g_cpu_cycles_remaining += 2;
+    }
+    // _g_cpu_cycles_remaining += 3;
 }
 [/COMPONENT]
 
@@ -775,8 +786,11 @@
     }
 
     cpu.regs[get_nth_bits(opcode, 12, 16)] = value;
-    if (get_nth_bits(opcode, 12, 16) == 15) _g_cpu_cycles_remaining += 2;
-    _g_cpu_cycles_remaining += 3;
+    if (get_nth_bits(opcode, 12, 16) == 15) {
+        cpu.refill_pipeline_partial();
+        // _g_cpu_cycles_remaining += 2;
+    }
+    // _g_cpu_cycles_remaining += 3;
 }
 [/COMPONENT]
 
@@ -785,7 +799,8 @@
 {
     // this if statement emulates unpredictable ARM7TDMI behavior
     if (get_nth_bits(opcode, 0, 16) == 0) {
-        *cpu.pc += 8; // skip the next instruction
+        *cpu.pc += 4; // skip the next instruction
+        cpu.refill_pipeline_partial();
         cpu.regs[get_nth_bits(opcode, 16, 20)] += 4 * 16;
         return;
     }
@@ -846,10 +861,10 @@
 
     @IF( L  S) if (pc_loaded) *cpu.cpsr = *cpu.spsr;
 
-    @IF( L) _g_cpu_cycles_remaining += num_transactions + 2;
-    @IF( L) if (pc_loaded) _g_cpu_cycles_remaining += 2;
+    @IF( L) // _g_cpu_cycles_remaining += num_transactions + 2;
+    // @IF( L) if (pc_loaded) // _g_cpu_cycles_remaining += 2;
 
-    @IF(!L) _g_cpu_cycles_remaining += num_transactions + 1;
+    @IF(!L) // _g_cpu_cycles_remaining += num_transactions + 1;
     
     @IF( W  L) if (!register_in_rlist) cpu.regs[get_nth_bits(opcode, 16, 20)] = address;
     @IF( W !L) cpu.regs[get_nth_bits(opcode, 16, 20)] = address;
@@ -879,7 +894,7 @@
     @IF(!R) cpu.regs[get_nth_bits(opcode, 12, 16)] = *cpu.cpsr;
     @IF( R) cpu.regs[get_nth_bits(opcode, 12, 16)] = *cpu.spsr;
 
-    _g_cpu_cycles_remaining++;
+    // _g_cpu_cycles_remaining++;
 }
 [/COMPONENT]
 
@@ -904,7 +919,7 @@
     @IF(!R)     if (get_nth_bit(opcode, 19)) *cpu.cpsr = (*cpu.cpsr & 0x00FFFFFF) | (operand & 0xFF000000);
 
     @IF(!R) cpu.update_mode();
-    _g_cpu_cycles_remaining++;
+    // _g_cpu_cycles_remaining++;
 }
 [/COMPONENT]
 
@@ -923,8 +938,8 @@
     if ((operand & 0xFFFFFF00) == 0x000000000 || (operand | 0x000000FF) == 0xFFFFFFFF) m = 1;
     if ((operand & 0xFFFF0000) == 0x000000000 || (operand | 0x0000FFFF) == 0xFFFFFFFF) m = 2;
     if ((operand & 0xFF000000) == 0x000000000 || (operand | 0x00FFFFFF) == 0xFFFFFFFF) m = 3;
-    @IF( A) _g_cpu_cycles_remaining += m + 2;
-    @IF(!A) _g_cpu_cycles_remaining += m + 1;
+    @IF( A) // _g_cpu_cycles_remaining += m + 2;
+    @IF(!A) // _g_cpu_cycles_remaining += m + 1;
 }
 [/COMPONENT]
 
@@ -1008,7 +1023,7 @@
     if ((operand & 0xFFFFFF00) == 0x000000000 || (operand | 0x000000FF) == 0xFFFFFFFF) m = 1;
     if ((operand & 0xFFFF0000) == 0x000000000 || (operand | 0x0000FFFF) == 0xFFFFFFFF) m = 2;
     if ((operand & 0xFF000000) == 0x000000000 || (operand | 0x00FFFFFF) == 0xFFFFFFFF) m = 3;
-    _g_cpu_cycles_remaining += m + 3;
+    // _g_cpu_cycles_remaining += m + 3;
 }
 [/COMPONENT]
 
@@ -1028,6 +1043,7 @@
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
     @IF( S)     cpu.update_mode();
+    @IF( S)     cpu.refill_pipeline_partial();
     @IF( S) } else {
     @IF( S)     cpu.set_flag_Z(result == 0);
     @IF( S)     cpu.set_flag_N(result >> 63);
@@ -1041,7 +1057,7 @@
     uint result = cpu.regs[get_nth_bits(opcode, 12, 16)];
     if (get_nth_bits(opcode, 12, 16) == 15) result += 4;
     cpu.memory.write_word(address & 0xFFFFFFFC, result);
-    _g_cpu_cycles_remaining += 2;
+    // _g_cpu_cycles_remaining += 2;
 }
 [/COMPONENT]
 
@@ -1051,7 +1067,7 @@
     uint result = cpu.regs[get_nth_bits(opcode, 12, 16)];
     if (get_nth_bits(opcode, 12, 16) == 15) result += 4;
     cpu.memory.write_byte(address, result & 0xFF);
-    _g_cpu_cycles_remaining += 2;
+    // _g_cpu_cycles_remaining += 2;
 }
 [/COMPONENT]
 
@@ -1059,7 +1075,7 @@
 - FORMAT:  ----000PUIW0------------1011----
 {
     cpu.memory.write_halfword(address & ~1, cpu.regs[get_nth_bits(opcode, 12, 16)] & 0xFFFF);
-    _g_cpu_cycles_remaining += 2;
+    // _g_cpu_cycles_remaining += 2;
 }
 [/COMPONENT]
 
@@ -1083,7 +1099,7 @@
     cpu.memory.write_word(address & 0xFFFFFFFC, cpu.regs[get_nth_bits(opcode, 0, 4)]);
     cpu.regs[get_nth_bits(opcode, 12, 16)] = value;
 
-    _g_cpu_cycles_remaining += 4;
+    // _g_cpu_cycles_remaining += 4;
 }
 [/COMPONENT]
 
@@ -1093,6 +1109,8 @@
     uint temp = cpu.memory.read_byte(cpu.regs[get_nth_bits(opcode, 16, 20)]);
     cpu.memory.write_byte(cpu.regs[get_nth_bits(opcode, 16, 20)], cpu.regs[get_nth_bits(opcode, 0, 4)] & 0xFF);
     cpu.regs[get_nth_bits(opcode, 12, 16)] = temp;
+
+    if (get_nth_bits(opcode, 12, 16) == 15) cpu.refill_pipeline_partial();
 }
 [/COMPONENT]
 
@@ -1121,7 +1139,7 @@
     if ((operand & 0xFFFFFF00) == 0x000000000 || (operand | 0x000000FF) == 0xFFFFFFFF) m = 1;
     if ((operand & 0xFFFF0000) == 0x000000000 || (operand | 0x0000FFFF) == 0xFFFFFFFF) m = 2;
     if ((operand & 0xFF000000) == 0x000000000 || (operand | 0x00FFFFFF) == 0xFFFFFFFF) m = 3;
-    _g_cpu_cycles_remaining += m + 3;
+    // _g_cpu_cycles_remaining += m + 3;
 }
 [/COMPONENT]
 
@@ -1137,6 +1155,7 @@
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
     @IF( S)     cpu.update_mode();
+    @IF( S)     cpu.refill_pipeline_partial();
     @IF( S) } else {
     @IF( S)     cpu.set_flag_Z(result == 0);
     @IF( S)     cpu.set_flag_N(result >> 63);
