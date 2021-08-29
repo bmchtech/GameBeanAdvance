@@ -1,4 +1,4 @@
-module cpu.mode;
+module hw.cpu.mode;
 
 // CPU modes will be described as the following:
 // 1) their encoding in the CPSR register

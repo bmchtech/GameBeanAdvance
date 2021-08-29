@@ -1,11 +1,17 @@
-import std.stdio;
-import bindbc.sdl;
-import host.sdl;
-import gba;
-import commandr;
+import hw.gba;
+import hw.memory;
+import hw.keyinput;
+
 import util;
-import keyinput;
+
+import std.stdio;
 import std.conv;
+
+import bindbc.sdl;
+
+import host.sdl;
+
+import commandr;
 
 version (gperf) {
 	import gperftools_d.profiler;

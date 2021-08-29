@@ -1,6 +1,10 @@
 module rom_tests;
 
-import gba;
+import hw.gba;
+import hw.cpu;
+import hw.memory;
+
+import util;
 
 import std.conv;
 import std.stdio;
