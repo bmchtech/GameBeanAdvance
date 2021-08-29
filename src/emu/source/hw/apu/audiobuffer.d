@@ -1,17 +1,17 @@
-module apu.audiobuffer;
+module hw.apu.audiobuffer;
+
+import hw.apu;
 
 import std.stdio;
 import std.math;
+import std.datetime.stopwatch;
 
 import util;
 
 import core.sync.mutex;
 import core.stdc.string;
-import std.datetime.stopwatch;
 
 import host.sdl;
-
-import apu;
 
 // audiobuffer provides a way of adding sound to the buffer that the gba can use
 // the callback function callback() must be connected to sdl for this to function

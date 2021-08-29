@@ -1,4 +1,4 @@
-module ppu.point;
+module hw.ppu.point;
 
 struct Point {
     int x;

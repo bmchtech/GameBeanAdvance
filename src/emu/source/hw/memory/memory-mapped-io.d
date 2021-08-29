@@ -1,12 +1,12 @@
-module mmio;
+module hw.memory.mmio;
 
-import gba;
-import ppu;
-import apu;
-import dma;
-import timers;
-import interrupts;
-import keyinput;
+import hw.gba;
+import hw.ppu;
+import hw.apu;
+import hw.dma;
+import hw.timers;
+import hw.interrupts;
+import hw.keyinput;
 
 import std.stdio;
 
