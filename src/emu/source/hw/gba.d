@@ -1,22 +1,19 @@
-module gba;
+module hw.gba;
+
+import hw.memory;
+import hw.ppu;
+import hw.cpu;
+import hw.apu;
+import hw.dma;
+import hw.timers;
+import hw.interrupts;
+import hw.keyinput;
+
+import scheduler;
+import util;
 
 import std.math;
 import std.stdio;
-
-import scheduler;
-
-public {
-    import memory;
-    import ppu;
-    import cpu;
-    import apu;
-    import util;
-    import dma;
-    import timers;
-    import mmio;
-    import interrupts;
-    import keyinput;
-}
 
 enum CART_SIZE = 0x1000000;
 

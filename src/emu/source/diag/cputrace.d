@@ -1,10 +1,11 @@
-module cputrace;
+module diag.cputrace;
+
+import hw.cpu;
+
+import ringbuffer;
 
 import std.stdio;
 import std.format;
-
-import cpu;
-import ringbuffer;
 
 class CpuTrace {
     ARM7TDMI cpu;

@@ -1,4 +1,4 @@
-module cpu.exception;
+module hw.cpu.exception;
 
 enum CpuException {
     Reset,

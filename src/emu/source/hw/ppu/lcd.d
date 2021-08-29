@@ -1,9 +1,10 @@
-module ppu.lcd;
+module hw.ppu.lcd;
 
-import memory;
+import hw.memory;
+import hw.ppu;
+import hw.interrupts;
+
 import util;
-import ppu;
-import interrupts;
 import scheduler;
 
 import std.stdio;

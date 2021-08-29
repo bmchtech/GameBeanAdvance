@@ -1,8 +1,9 @@
-module ppu.canvas;
+module hw.ppu.canvas;
 
-import ppu;
+import hw.ppu;
+import hw.memory;
+
 import util;
-import memory;
 
 import std.stdio;
 
@@ -117,9 +118,9 @@ public:
                     case PixelType.EMPTY:
                         break;
                     case PixelType.SINGLE:
-                        pixels_output[x][y] = ppu.palette.get_color(indices_a[x][y] >> 1); break;
+                        pixels_output[x][y] = hw.ppu.palette.get_color(indices_a[x][y] >> 1); break;
                     case PixelType.DOUBLE_A:
-                        pixels_output[x][y] = ppu.palette.get_color(indices_a[x][y] >> 1);
+                        pixels_output[x][y] = hw.ppu.palette.get_color(indices_a[x][y] >> 1);
 
                         static if (special_effect == SpecialEffect.BrightnessIncrease) {
                             pixels_output[x][y].r += ((31 - pixels_output[x][y].r) * bldy) >> 4;
@@ -136,8 +137,8 @@ public:
                         break;
                     case PixelType.DOUBLE_AB: {
                         static if (special_effect == SpecialEffect.Alpha) {
-                            Pixel a = ppu.palette.get_color(indices_a[x][y] >> 1);
-                            Pixel b = ppu.palette.get_color(indices_b[x][y] >> 1);
+                            Pixel a = hw.ppu.palette.get_color(indices_a[x][y] >> 1);
+                            Pixel b = hw.ppu.palette.get_color(indices_b[x][y] >> 1);
 
                             pixels_output[x][y].r = (blend_a * a.r + blend_b * b.r) >> 6;
                             pixels_output[x][y].g = (blend_a * a.g + blend_b * b.g) >> 6;

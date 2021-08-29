@@ -1,11 +1,13 @@
-module cpu.arm7tdmi;
+module hw.cpu.arm7tdmi;
 
-import cpu.mode;
-import cpu.state;
-import cpu.exception;
-import memory;
+import hw.cpu.mode;
+import hw.cpu.state;
+import hw.cpu.exception;
+import hw.memory;
+
+import diag.logger;
+
 import util;
-import logger;
 
 import jumptable_arm;
 import jumptable_thumb;
@@ -300,7 +302,7 @@ class ARM7TDMI {
 
         // if (*pc == 0x0800_06f8) _g_num_log += 100;
 
-        // Logger.instance.capture_cpu();
+        Logger.instance.capture_cpu();
         // if ( && !get_nth_bit(*cpsr, 7)) {
             // exception(CpuException.IRQ);
         // }
@@ -308,7 +310,6 @@ class ARM7TDMI {
         // bios open bus handling
         // if (*pc == 0x0000_00134) memory.open_bus_bios_state = Memory.OpenBusBiosState.DURING_IRQ;
         // if (*pc == 0x0000_0013C) memory.open_bus_bios_state = Memory.OpenBusBiosState.AFTER_IRQ;
-        memory.can_read_from_bios = (*pc >> 24) == 0;
 
         uint opcode = pipeline[0];
         pipeline[0] = pipeline[1];
@@ -331,7 +332,8 @@ class ARM7TDMI {
         //     write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
         //     writeln();
         // }
-        
+
+        memory.can_read_from_bios = (*pc >> 24) == 0;
         execute(opcode);
 
         pipeline[1] = fetch();
@@ -369,6 +371,7 @@ class ARM7TDMI {
     }
 
     void refill_pipeline() {
+        memory.can_read_from_bios = (*pc >> 24) == 0;
         pipeline[0] = fetch();
         pipeline[1] = fetch();
 
@@ -376,6 +379,7 @@ class ARM7TDMI {
     }
 
     void refill_pipeline_partial() {
+        memory.can_read_from_bios = (*pc >> 24) == 0;
         pipeline[0] = fetch();
 
         pipeline_access_type = Memory.AccessType.NONSEQUENTIAL;

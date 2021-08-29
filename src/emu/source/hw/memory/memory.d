@@ -1,12 +1,13 @@
-module memory;
+module hw.memory.memory;
 
-import std.stdio;
+import hw.apu;
+import hw.memory;
+import hw.cpu;
+import hw.ppu;
 
 import util;
-import apu;
-import mmio;
-import cpu;
-import ppu;
+
+import std.stdio;
 
 Memory memory;
 
@@ -160,7 +161,7 @@ class Memory {
     }
 
     uint read_bios_open_bus() {
-        return 0xe8174e9e;
+        return 0;
         // final switch (open_bus_bios_state) {
         //     case OpenBusBiosState.STARTUP:    return 0;
         //     case OpenBusBiosState.SOFT_RESET: return 0;
@@ -281,12 +282,12 @@ class Memory {
                     uint index = (address & (SIZE_PALETTE_RAM - 1)) >> 1;
 
                     static if (is(T == uint)) {
-                        ppu.palette.set_color(index,     cast(ushort) (value & 0xFFFF));
-                        ppu.palette.set_color(index + 1, cast(ushort) (value >> 16));
+                        hw.ppu.palette.set_color(index,     cast(ushort) (value & 0xFFFF));
+                        hw.ppu.palette.set_color(index + 1, cast(ushort) (value >> 16));
                     } else static if (is(T == ushort)) {
-                        ppu.palette.set_color(index, value);
+                        hw.ppu.palette.set_color(index, value);
                     } else static if (is(T == ubyte)) {
-                        ppu.palette.set_color(index, value | (value << 8));
+                        hw.ppu.palette.set_color(index, value | (value << 8));
                     }
                     break;
 

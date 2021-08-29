@@ -1,11 +1,14 @@
 module util;
 
+import hw.gba;
+
+import diag.logger;
+
 import core.stdc.math; //core.stdc.math.pow 
+
 import std.stdio;
 import std.conv;
 
-import gba;
-import logger;
 
 public {
     import std.format;

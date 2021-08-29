@@ -1,15 +1,18 @@
 module host.sdl;
 
+import hw.gba;
+import hw.apu;
+import hw.cpu;
+
+import diag.cputrace;
+import diag.logger;
+
+import util;
+
 import bindbc.sdl;
+
 import std.stdio;
 import std.conv;
-
-import gba;
-import cputrace;
-import logger;
-
-import apu;
-import cpu;
 
 import core.sync.mutex;
 
@@ -84,8 +87,8 @@ class GameBeanSDLHost {
         wanted.format = AUDIO_S16LSB;
         wanted.channels = 2;    /* 1 = mono, 2 = stereo */
         wanted.samples = 1024;  /* Good low-latency value for callback */
-        wanted.userdata = apu.audiobuffer.get_audio_data();
-        wanted.callback = &apu.audiobuffer.callback;
+        wanted.userdata = hw.apu.audiobuffer.get_audio_data();
+        wanted.callback = &hw.apu.audiobuffer.callback;
 
         int output = SDL_OpenAudio(&wanted, &received);
         if (output < 0) {

@@ -1,6 +1,6 @@
-module ppu.palette;
+module hw.ppu.palette;
 
-import ppu;
+import hw.ppu;
 
 import std.stdio;
 

@@ -1,12 +1,12 @@
-module timers;
+module hw.timers;
 
-import memory;
+import hw.memory;
+import hw.apu;
+import hw.gba;
+import hw.interrupts;
+
 import util;
-
-import apu;
-import gba;
 import scheduler;
-import interrupts;
 
 import std.stdio;
 class TimerManager {

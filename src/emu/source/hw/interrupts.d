@@ -1,4 +1,4 @@
-module interrupts;
+module hw.interrupts;
 
 import std.stdio;
 

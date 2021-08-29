@@ -1,15 +1,15 @@
-module apu.apu;
+module hw.apu.apu;
 
-import apu;
-import memory;
-import util;
-import scheduler;
-
-import gba;
+import hw.apu;
+import hw.memory;
+import hw.gba;
 
 import apu.channels.noise_channel;
 import apu.channels.wave_channel;
 import apu.channels.tone_channel;
+
+import util;
+import scheduler;
 
 import std.stdio;
 

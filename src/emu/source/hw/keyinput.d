@@ -1,6 +1,6 @@
-module keyinput;
+module hw.keyinput;
 
-import memory;
+import hw.memory;
 
 import std.stdio;
 

@@ -1,4 +1,4 @@
-module apu.channel;
+module hw.apu.channel;
 
 enum EnvelopeDirection {
     DECREASING,

@@ -1,6 +1,6 @@
-module cpu.state;
+module hw.cpu.state;
 
-import cpu.arm7tdmi;
+import hw.cpu.arm7tdmi;
 
 import std.stdio;
 

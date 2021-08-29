@@ -1,4 +1,4 @@
-module ppu.pixel;
+module hw.ppu.pixel;
 
 struct Pixel {
     uint r;

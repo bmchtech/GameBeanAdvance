@@ -1,7 +1,6 @@
-module ppu.background;
+module hw.ppu.background;
 
-import memory;
-import ppu;
+import hw.ppu;
 
 struct Background {
     int   priority;                   // 0 - 3

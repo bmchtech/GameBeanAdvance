@@ -1,4 +1,4 @@
-module apu.fifo;
+module hw.apu.fifo;
 
 import std.stdio;
 

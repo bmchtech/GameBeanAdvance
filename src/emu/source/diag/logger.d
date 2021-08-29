@@ -1,11 +1,13 @@
-module logger;
+module diag.logger;
+
+import hw.gba;
+
+import diag.cputrace;
+
+import util;
 
 import std.stdio;
 import std.conv;
-
-import gba;
-import util;
-import cputrace;
 
 class Logger {
     static Logger instance;

@@ -1,4 +1,4 @@
-module ppu.effects;
+module hw.ppu.effects;
 
 enum SpecialEffect {
     None               = 0,
