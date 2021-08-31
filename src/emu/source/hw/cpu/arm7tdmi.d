@@ -302,7 +302,7 @@ class ARM7TDMI {
 
         // if (*pc == 0x0800_06f8) _g_num_log += 100;
 
-        Logger.instance.capture_cpu();
+        // Logger.instance.capture_cpu();
         // if ( && !get_nth_bit(*cpsr, 7)) {
             // exception(CpuException.IRQ);
         // }

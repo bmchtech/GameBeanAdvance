@@ -163,8 +163,8 @@ class MMIO {
             case WINOUT      + 1: return ppu.read_WINOUT     (1); 
             case BLDCNT      + 0: return ppu.read_BLDCNT     (0); 
             case BLDCNT      + 1: return ppu.read_BLDCNT     (1); 
-            // case BLDALPHA    + 0: return ppu.read_BLDALPHA(); 
-            // case BLDALPHA    + 1: return ppu.read_BLDALPHA(); 
+            case BLDALPHA    + 0: return ppu.read_BLDALPHA   (0); 
+            case BLDALPHA    + 1: return ppu.read_BLDALPHA   (1); 
 
             // case SOUND1CNT_L + 0: return apu.read_SOUND1CNT_L(); 
             // case SOUND1CNT_L + 1: return apu.read_SOUND1CNT_L(); 
@@ -319,8 +319,8 @@ class MMIO {
             // case MOSAIC      + 1: ppu.write_MOSAIC(data); break;
             case BLDCNT      + 0: ppu.write_BLDCNT     (0, data); break;
             case BLDCNT      + 1: ppu.write_BLDCNT     (1, data); break;
-            // case BLDALPHA    + 0: ppu.write_BLDALPHA   (0, data); break;
-            // case BLDALPHA    + 1: ppu.write_BLDALPHA   (1, data); break;
+            case BLDALPHA    + 0: ppu.write_BLDALPHA   (0, data); break;
+            case BLDALPHA    + 1: ppu.write_BLDALPHA   (1, data); break;
             case BLDY        + 0: ppu.write_BLDY       (0, data); break;
             case BLDY        + 1: ppu.write_BLDY       (1, data); break;
 
