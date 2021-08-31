@@ -6,6 +6,7 @@ import hw.memory;
 import util;
 
 import std.stdio;
+import std.algorithm;
 
 import core.stdc.string;
 
@@ -140,9 +141,9 @@ public:
                             Pixel a = hw.ppu.palette.get_color(indices_a[x][y] >> 1);
                             Pixel b = hw.ppu.palette.get_color(indices_b[x][y] >> 1);
 
-                            pixels_output[x][y].r = (blend_a * a.r + blend_b * b.r) >> 6;
-                            pixels_output[x][y].g = (blend_a * a.g + blend_b * b.g) >> 6;
-                            pixels_output[x][y].b = (blend_a * a.b + blend_b * b.b) >> 6;
+                            pixels_output[x][y].r = min(31, (blend_a * a.r + blend_b * b.r) >> 4);
+                            pixels_output[x][y].g = min(31, (blend_a * a.g + blend_b * b.g) >> 4);
+                            pixels_output[x][y].b = min(31, (blend_a * a.b + blend_b * b.b) >> 4);
                         }
                         
                         break;

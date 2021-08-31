@@ -9,6 +9,7 @@ import scheduler;
 
 import std.stdio;
 import std.typecons;
+import std.algorithm;
 
 enum SCREEN_WIDTH  = 240;
 enum SCREEN_HEIGHT = 160;
@@ -81,7 +82,7 @@ public:
 
         final switch (special_effect) {
             case SpecialEffect.None:               canvas.Consolidate!(SpecialEffect.None)              .consolidate(0, 0, 0);         break;
-            case SpecialEffect.Alpha:              canvas.Consolidate!(SpecialEffect.Alpha)             .consolidate(0, 0, 0);         break;
+            case SpecialEffect.Alpha:              canvas.Consolidate!(SpecialEffect.Alpha)             .consolidate(bld_a, bld_b, 0); break;
             case SpecialEffect.BrightnessIncrease: canvas.Consolidate!(SpecialEffect.BrightnessIncrease).consolidate(0, 0, evy_coeff); break;
             case SpecialEffect.BrightnessDecrease: canvas.Consolidate!(SpecialEffect.BrightnessDecrease).consolidate(0, 0, evy_coeff); break;
         }
@@ -804,6 +805,13 @@ public:
     }
 
     void write_BLDCNT(int target_byte, ubyte data) {
+        // writefln("report");
+        // writefln("%b", cast(int) backgrounds[0].layer);
+        // writefln("%b", cast(int) backgrounds[1].layer);
+        // writefln("%b", cast(int) backgrounds[2].layer);
+        // writefln("%b", cast(int) backgrounds[3].layer);
+        // writefln("%b", cast(int) layer_obj);
+
         final switch (target_byte) {
             case 0b0:
                 backgrounds[0].layer = cast(Layer) ((backgrounds[0].layer & 0x17) | (get_nth_bit(data, 0) << 3));
@@ -823,6 +831,20 @@ public:
                 backgrounds[3].layer = cast(Layer) ((backgrounds[3].layer & 0x0F) | (get_nth_bit(data, 3) << 4));
                 layer_obj            = cast(Layer) ((layer_obj            & 0x17) | (get_nth_bit(data, 4) << 3));
                 layer_backdrop       = cast(Layer) ((layer_backdrop       & 0x0F) | (get_nth_bit(data, 5) << 4));
+                break;
+        }
+    }
+
+    int bld_a = 0;
+    int bld_b = 0;
+
+    void write_BLDALPHA(int target_byte, ubyte data) {
+        final switch (target_byte) {
+            case 0b0:
+                bld_a = min(get_nth_bits(data, 0, 4), 16);
+                break;
+            case 0b1:
+                bld_b = min(get_nth_bits(data, 0, 4), 16);
                 break;
         }
     }
@@ -888,21 +910,36 @@ public:
     }
 
     ubyte read_BLDCNT(int target_byte) {
-    //     final switch (target_byte) {
-    //         case 0b0:
-    //             return ((layer_backgrounds[0].special_effect_layer == SpecialEffectLayer.A) << 0) |
-    //                    ((layer_backgrounds[1].special_effect_layer == SpecialEffectLayer.A) << 1) |
-    //                    ((layer_backgrounds[2].special_effect_layer == SpecialEffectLayer.A) << 2) |
-    //                    ((layer_backgrounds[3].special_effect_layer == SpecialEffectLayer.A) << 3) |
-    //                    (((cast(int) special_effect) & 0b11)                                 << 4);
-                       
-    //         case 0b1:
-    //             return ((layer_backgrounds[0].special_effect_layer == SpecialEffectLayer.B) << 0) |
-    //                    ((layer_backgrounds[1].special_effect_layer == SpecialEffectLayer.B) << 1) |
-    //                    ((layer_backgrounds[2].special_effect_layer == SpecialEffectLayer.B) << 2) |
-    //                    ((layer_backgrounds[3].special_effect_layer == SpecialEffectLayer.B) << 3);
-    //     }
-        return 0x0;
+        // writefln("help");
+
+        final switch (target_byte) {
+            case 0b0:
+                return cast(ubyte) (
+                (((cast(ubyte) backgrounds[0].layer >> 3) & 1) << 0) |
+                (((cast(ubyte) backgrounds[1].layer >> 3) & 1) << 1) |
+                (((cast(ubyte) backgrounds[2].layer >> 3) & 1) << 2) |
+                (((cast(ubyte) backgrounds[3].layer >> 3) & 1) << 3) |
+                (((cast(ubyte) layer_obj            >> 3) & 1) << 4) |
+                (((cast(ubyte) layer_backdrop       >> 3) & 1) << 5) |
+                (cast(ubyte) special_effect << 6));
+            case 0b1:
+                return cast(ubyte) (
+                (((cast(ubyte) backgrounds[0].layer >> 4) & 1) << 0) |
+                (((cast(ubyte) backgrounds[1].layer >> 4) & 1) << 1) |
+                (((cast(ubyte) backgrounds[2].layer >> 4) & 1) << 2) |
+                (((cast(ubyte) backgrounds[3].layer >> 4) & 1) << 3) |
+                (((cast(ubyte) layer_obj            >> 4) & 1) << 4) |
+                (((cast(ubyte) layer_backdrop       >> 4) & 1) << 5));
+        }
+    }
+
+    ubyte read_BLDALPHA(int target_byte) {
+        final switch (target_byte) {
+            case 0b0:
+                return cast(ubyte) bld_a;
+            case 0b1:
+                return cast(ubyte) bld_b;
+        }
     }
 
     ubyte read_WININ(int target_byte) {
