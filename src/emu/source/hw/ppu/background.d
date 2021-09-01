@@ -3,6 +3,7 @@ module hw.ppu.background;
 import hw.ppu;
 
 struct Background {
+    int   id;
     int   priority;                   // 0 - 3
     int   character_base_block;       // 0 - 3 (units of 16 KBytes)
     bool  is_mosaic;
@@ -38,8 +39,15 @@ enum BackgroundMode {
 }
 
 static Background[] backgrounds = [
-        Background(),
-        Background(),
-        Background(),
-        Background()
-    ];
+    Background(),
+    Background(),
+    Background(),
+    Background()
+];
+
+
+// the backgrounds may get sorted by priority at some point
+static this() {
+    for (int i = 0; i < 4; i++) 
+        backgrounds[i].id = i;
+}
