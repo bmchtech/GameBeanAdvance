@@ -46,7 +46,7 @@ public:
         dot                     = 0;
         scanline                = 0;
 
-        canvas = new Canvas(memory);
+        canvas = new Canvas();
 
         this.scheduler = scheduler;
         scheduler.add_event(&on_hblank_start, 240 * 4);
@@ -58,7 +58,14 @@ public:
     void on_hblank_start() {
         hblank = true;
         if (hblank_irq_enabled) interrupt_cpu(Interrupt.LCD_HBLANK);
-        if (scanline < 160) render();
+
+        if (!vblank) {
+            canvas.reset();
+            render();
+            canvas.composite();
+
+            display_scanline();
+        }
 
         if (!vblank) on_hblank_callback();
 
@@ -80,29 +87,14 @@ public:
         vblank = true;
         if (vblank_irq_enabled) interrupt_cpu(Interrupt.LCD_VBLANK);
 
-        final switch (special_effect) {
-            case SpecialEffect.None:               canvas.Consolidate!(SpecialEffect.None)              .consolidate(0, 0, 0);         break;
-            case SpecialEffect.Alpha:              canvas.Consolidate!(SpecialEffect.Alpha)             .consolidate(bld_a, bld_b, 0); break;
-            case SpecialEffect.BrightnessIncrease: canvas.Consolidate!(SpecialEffect.BrightnessIncrease).consolidate(0, 0, evy_coeff); break;
-            case SpecialEffect.BrightnessDecrease: canvas.Consolidate!(SpecialEffect.BrightnessDecrease).consolidate(0, 0, evy_coeff); break;
-        }
-
-        render_canvas();
-        
         scheduler.add_event(&on_vblank_end, 308 * 68 * 4);
     }
 
     void on_vblank_end() {
         scanline = 0;
         vblank = false;
-        
-        canvas.reset();
 
         scheduler.add_event(&on_vblank_start, 308 * 160 * 4);
-    }
-
-    void calculate_backdrop() {
-        for (int x = 0; x < 240; x++) canvas.draw(x, scanline, 0, layer_backdrop);
     }
 
     void render() {
@@ -117,14 +109,13 @@ public:
                 render_background(2);
                 render_sprites(3);
                 render_background(3);
-                calculate_backdrop();
                 break;
 
             case 3: {
                 // in mode 3, the dot and scanline (x and y) simply tell us where to read from in VRAM. The colors
                 // are stored directly, so we just read from VRAM and interpret as a 15bit highcolor
                 for (uint x = 0; x < 240; x++) {
-                    canvas.pixels_output[x][scanline] = get_pixel_from_color(memory.read_halfword(memory.OFFSET_VRAM + (x + scanline * 240) * 2));
+                    canvas.pixels_output[x] = get_pixel_from_color(memory.read_halfword(memory.OFFSET_VRAM + (x + scanline * 240) * 2));
                 }
                     // writefln("%x", memory.read_halfword(memory.OFFSET_VRAM + (0 + 200 * 240) * 2));
                 // writefln("%x %x %x", memory.read_halfword(memory.OFFSET_VRAM + (0 + scanline * 240) * 2), memory.read_halfword(memory.OFFSET_VRAM + (120 * 230 * 2)), memory.vram[120 * 230 * 2]);
@@ -142,8 +133,8 @@ public:
 
                 for (uint x = 0; x < 240; x++) {
                     // the index in palette ram that we need to lookinto  is then found in the base frame.
-                    uint index = memory.read_byte(base_frame_address + (x + scanline * 240));
-                    draw_pixel(Layer.BACKDROP, 0, index, 0, x, scanline, false);
+                    ubyte index = memory.read_byte(base_frame_address + (x + scanline * 240));
+                    canvas.draw_bg_pixel(x, 2, index, 0, false);
                 }
 
                 break;
@@ -238,7 +229,7 @@ private:
 
     template Render(bool bpp8, bool flipped_x, bool flipped_y) {
 
-        void tile(Layer layer, int tile, int tile_base_address, int palette_base_address, int left_x, int y, int ref_x, int ref_y, PMatrix p_matrix, bool scaled, int palette) {
+        void tile(int bg, int priority, int tile, int tile_base_address, int palette_base_address, int left_x, int y, int palette) {
             // Point reference_point = Point(ref_x, ref_y);
             static if (bpp8) {
                 static if (flipped_y) uint tile_address = tile_base_address + (tile & 0x3ff) * 64 + (7 - y) * 8;    
@@ -257,14 +248,14 @@ private:
                 static if (bpp8) {
                     for (int tile_dx = 7; tile_dx < 0; tile_dx--) {
                         ubyte index = tile_data[tile_dx];
-                        maybe_draw_pixel_on_layer(layer, palette_base_address, index, 0, left_x + draw_dx, scanline, index == 0);
+                        canvas.draw_bg_pixel(left_x + draw_dx, bg, index, priority, index == 0);
                         draw_dx++;
                     }
                 } else {
                     for (int tile_dx = 3; tile_dx >= 0; tile_dx--) {
                         ubyte index = tile_data[tile_dx];
-                        maybe_draw_pixel_on_layer(layer, palette_base_address, (index & 0xF) + (palette * 16), 0, left_x + draw_dx * 2 + 1, scanline, (index & 0xF) == 0);
-                        maybe_draw_pixel_on_layer(layer, palette_base_address, (index >> 4)  + (palette * 16), 0, left_x + draw_dx * 2    , scanline, (index >>  4) == 0);
+                        canvas.draw_bg_pixel(left_x + draw_dx * 2 + 1, bg, cast(ubyte) ((index & 0xF) + (palette * 16)), priority, (index & 0xF) == 0);
+                        canvas.draw_bg_pixel(left_x + draw_dx * 2,     bg, cast(ubyte) ((index >> 4)  + (palette * 16)), priority, (index >> 4)  == 0);
                         draw_dx++;
                     }
                 }
@@ -272,13 +263,13 @@ private:
                 static if (bpp8) {
                     for (int tile_dx = 0; tile_dx < 8; tile_dx++) {
                         ubyte index = tile_data[tile_dx];
-                        maybe_draw_pixel_on_layer(layer, palette_base_address, index, 0, left_x + tile_dx, scanline, index == 0);
+                        canvas.draw_bg_pixel(left_x + tile_dx, bg, index, priority, index == 0);
                     }
                 } else {
                     for (int tile_dx = 0; tile_dx < 4; tile_dx++) {
                         ubyte index = tile_data[tile_dx];
-                        maybe_draw_pixel_on_layer(layer, palette_base_address, (index & 0xF) + (palette * 16), 0, left_x + tile_dx * 2,     scanline, (index & 0xF) == 0);
-                        maybe_draw_pixel_on_layer(layer, palette_base_address, (index >> 4)  + (palette * 16), 0, left_x + tile_dx * 2 + 1, scanline, (index >>  4) == 0);
+                        canvas.draw_bg_pixel(left_x + tile_dx * 2,     bg, cast(ubyte) ((index & 0xF) + (palette * 16)), priority, (index & 0xF) == 0);
+                        canvas.draw_bg_pixel(left_x + tile_dx * 2 + 1, bg, cast(ubyte) ((index >> 4)  + (palette * 16)), priority, (index >> 4)  == 0);
                     }
                 }
             }
@@ -303,7 +294,7 @@ private:
             // } 
         }
 
-        void texture(Layer layer, Texture texture, Point topleft_texture_pos, Point topleft_draw_pos) {
+        void texture(int priority, Texture texture, Point topleft_texture_pos, Point topleft_draw_pos) {
             int texture_bound_x_upper = texture.double_sized ? texture.width  >> 1 : texture.width;
             int texture_bound_y_upper = texture.double_sized ? texture.height >> 1 : texture.height;
             int texture_bound_x_lower = 0;
@@ -337,13 +328,13 @@ private:
                 static if (bpp8) {
                     ubyte index = memory.read_byte(texture.tile_base_address + ((tile_number & 0x3ff) * 64) + ofs_y * 8 + ofs_x);
                     
-                    maybe_draw_pixel_on_layer(layer, texture.palette_base_address, index, 0, draw_pos.x, draw_pos.y, index == 0);
+                    canvas.draw_obj_pixel(draw_pos.x, index + 256, priority, index == 0);
                 } else {
                     ubyte index = memory.read_byte(texture.tile_base_address + ((tile_number & 0x3ff) * 32) + ofs_y * 4 + (ofs_x / 2));
 
                     index = !(ofs_x % 2) ? index & 0xF : index >> 4;
                     index += texture.palette * 16;
-                    maybe_draw_pixel_on_layer(layer, texture.palette_base_address, index, 0, draw_pos.x, draw_pos.y, (index & 0xF) == 0);
+                    canvas.draw_obj_pixel(draw_pos.x, index + 256, priority, (index & 0xF) == 0);
                 }
             }
         }
@@ -403,14 +394,14 @@ private:
 
             // i hate how silly this looks, but i've checked and having the render tile function templated makes the code run a lot faster
             final switch (template_args | (flipped_x << 1) | flipped_y) {
-                case 0b000: Render!(false, false, false).tile(backgrounds[background_id].layer, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
-                case 0b001: Render!(false, false,  true).tile(backgrounds[background_id].layer, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
-                case 0b010: Render!(false,  true, false).tile(backgrounds[background_id].layer, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
-                case 0b011: Render!(false,  true,  true).tile(backgrounds[background_id].layer, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
-                case 0b100: Render!( true, false, false).tile(backgrounds[background_id].layer, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
-                case 0b101: Render!( true, false,  true).tile(backgrounds[background_id].layer, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
-                case 0b110: Render!( true,  true, false).tile(backgrounds[background_id].layer, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
-                case 0b111: Render!( true,  true,  true).tile(backgrounds[background_id].layer, tile, tile_base_address, 0, draw_x, tile_dy, 0, 0, PMatrix(0, 0, 0, 0), false, get_nth_bits(tile, 12, 16)); break;
+                case 0b000: Render!(false, false, false).tile(background_id, backgrounds[background_id].priority, tile, tile_base_address, 0, draw_x, tile_dy, get_nth_bits(tile, 12, 16)); break;
+                case 0b001: Render!(false, false,  true).tile(background_id, backgrounds[background_id].priority, tile, tile_base_address, 0, draw_x, tile_dy, get_nth_bits(tile, 12, 16)); break;
+                case 0b010: Render!(false,  true, false).tile(background_id, backgrounds[background_id].priority, tile, tile_base_address, 0, draw_x, tile_dy, get_nth_bits(tile, 12, 16)); break;
+                case 0b011: Render!(false,  true,  true).tile(background_id, backgrounds[background_id].priority, tile, tile_base_address, 0, draw_x, tile_dy, get_nth_bits(tile, 12, 16)); break;
+                case 0b100: Render!( true, false, false).tile(background_id, backgrounds[background_id].priority, tile, tile_base_address, 0, draw_x, tile_dy, get_nth_bits(tile, 12, 16)); break;
+                case 0b101: Render!( true, false,  true).tile(background_id, backgrounds[background_id].priority, tile, tile_base_address, 0, draw_x, tile_dy, get_nth_bits(tile, 12, 16)); break;
+                case 0b110: Render!( true,  true, false).tile(background_id, backgrounds[background_id].priority, tile, tile_base_address, 0, draw_x, tile_dy, get_nth_bits(tile, 12, 16)); break;
+                case 0b111: Render!( true,  true,  true).tile(background_id, backgrounds[background_id].priority, tile, tile_base_address, 0, draw_x, tile_dy, get_nth_bits(tile, 12, 16)); break;
             }
         }
     }
@@ -431,8 +422,6 @@ private:
         // rotation/scaling backgrounds are squares
         int tiles_per_row = BG_ROTATION_SCALING_TILE_DIMENSIONS[background.screen_size];
 
-        writefln("Beginning rendering at %x %x", texture_point.x, texture_point.y);
-
         for (int x = 0; x < 240; x++) {
             // truncate the decimal because texture_point is 8-bit fixed point
             Point truncated_texture_point = Point(texture_point.x >> 8,
@@ -448,7 +437,7 @@ private:
                 int tile = memory.read_byte(screen_base_address + tile_address);
 
                 ubyte color_index = memory.vram[tile_base_address + (tile & 0x3FF) * 64 + fine_y * 8 + fine_x];
-                maybe_draw_pixel_on_layer(background.layer, 0, color_index, 0, x, scanline, color_index == 0);
+                canvas.draw_bg_pixel(x, background_id, color_index, background.priority, color_index == 0);
             }
 
             texture_point.x += background.p[AffineParameter.A];
@@ -549,8 +538,8 @@ private:
                                         get_nth_bits(attribute_2, 12, 16),
                                         flipped_x, flipped_y, get_nth_bit(attribute_0, 9));
 
-            if (doesnt_use_color_palettes) Render!(true,  false, false).texture(layer_obj, texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline));
-            else                           Render!(false, false, false).texture(layer_obj, texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline));
+            if (doesnt_use_color_palettes) Render!(true,  false, false).texture(given_priority, texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline));
+            else                           Render!(false, false, false).texture(given_priority, texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline));
         }
     }
 
@@ -568,26 +557,11 @@ private:
         );
     }
 
-    pragma(inline, true) void maybe_draw_pixel_on_layer(Layer layer, uint palette_offset, uint palette_index, uint priority, uint x, uint y, bool transparent) {
-        if (!transparent) {
-            // pixel_priorities[x][y] = priority;
-            draw_pixel(layer, palette_offset, palette_index, priority, x, y, transparent);
-        }
-    }
-
-    pragma(inline, true) void draw_pixel(Layer layer, uint palette_offset, uint palette_index, uint priority, uint x, uint y, bool transparent) {
-        // warning(format("%x", palette_offset));
-        if (x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT) return;
-
-        canvas.draw(x, y, palette_offset + palette_index * 2, layer);
-    }
-    void render_canvas() {
+    void display_scanline() {
         for (int x = 0; x < SCREEN_WIDTH;  x++) {
-        for (int y = 0; y < SCREEN_HEIGHT; y++) {
-            memory.set_rgb(x, y, cast(ubyte) (canvas.pixels_output[x][y].r << 3), 
-                                 cast(ubyte) (canvas.pixels_output[x][y].g << 3), 
-                                 cast(ubyte) (canvas.pixels_output[x][y].b << 3));
-        }
+            memory.set_rgb(x, scanline, cast(ubyte) (canvas.pixels_output[x].r << 3), 
+                                        cast(ubyte) (canvas.pixels_output[x].g << 3), 
+                                        cast(ubyte) (canvas.pixels_output[x].b << 3));
         }
     }
 

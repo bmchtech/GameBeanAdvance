@@ -31,126 +31,117 @@ import core.stdc.string;
 // is double_a and a layer b pixel comes in, then we set the pixel type to
 // DOUBLE_AB.
 
-enum PixelType {
-    EMPTY     = 0b000,
-    SINGLE    = 0b001,
-
-    DOUBLE_A  = 0b101,
-    DOUBLE_AB = 0b111
+struct PixelData {
+    bool   transparent;
+    ushort index;
+    uint   priority;
 }
 
 enum Layer {
-    BACKDROP  = 0b00000,
-    A         = 0b01000,
-    B         = 0b10000,
-    NONE      = 0b11000
+    INVALID
 }
 
 class Canvas {
+    
+    public:
+        PixelData[SCREEN_WIDTH][4] bg_scanline;
+        PixelData[SCREEN_WIDTH]    obj_scanline;
+        Pixel    [SCREEN_WIDTH]    pixels_output;
 
-public:
-    int      [SCREEN_HEIGHT][SCREEN_WIDTH] indices_a;
-    int      [SCREEN_HEIGHT][SCREEN_WIDTH] indices_b;
-    PixelType[SCREEN_HEIGHT][SCREEN_WIDTH] pixel_types;
+    private:
+        Memory memory;
+        Background[4] sorted_backgrounds;
 
-    Pixel    [SCREEN_HEIGHT][SCREEN_WIDTH] pixels_output;
-
-    Memory memory;
-
-    this(Memory memory) {
-        this.indices_a     = new int  [SCREEN_HEIGHT][SCREEN_WIDTH];
-        this.indices_b     = new int  [SCREEN_HEIGHT][SCREEN_WIDTH];
-        this.pixels_output = new Pixel[SCREEN_HEIGHT][SCREEN_WIDTH];
-        this.memory        = memory;
+    public this() {
+        this.bg_scanline   = new PixelData[SCREEN_WIDTH][4];
+        this.obj_scanline  = new PixelData[SCREEN_WIDTH];
+        this.pixels_output = new Pixel    [SCREEN_WIDTH];
 
         reset();
     }
 
-    void reset() {
-        memset(&pixel_types, PixelType.EMPTY, SCREEN_HEIGHT * SCREEN_WIDTH * PixelType.sizeof);
-    }
+    public void reset() {
+        // memset(&bg_scanline,   0xFF, SCREEN_WIDTH * 4 * PixelData.sizeof);
+        // memset(&obj_scanline,  0xFF, SCREEN_WIDTH     * PixelData.sizeof);
 
+        for (int x = 0; x < SCREEN_WIDTH; x++) {
+            for (int bg = 0; bg < 4; bg++) {
+                bg_scanline[bg][x].transparent = true;
+            }
 
-    void draw(uint x, uint y, int index, Layer layer) {
-        switch (layer | pixel_types[x][y]) {
-            case Layer.NONE     | PixelType.EMPTY:
-                pixel_types[x][y] = PixelType.SINGLE;
-                indices_a  [x][y] = index;
-                break;
-
-            case Layer.A        | PixelType.EMPTY: 
-                pixel_types[x][y] = PixelType.DOUBLE_A;
-                indices_a  [x][y] = index;
-                break;
-            
-            case Layer.B        | PixelType.EMPTY:
-                pixel_types[x][y] = PixelType.SINGLE;
-                indices_a  [x][y] = index;
-                break;
-            
-            case Layer.BACKDROP | PixelType.EMPTY:
-                pixel_types[x][y] = PixelType.SINGLE;
-                indices_a  [x][y] = index;
-                break;
-
-            case Layer.NONE | PixelType.DOUBLE_A:
-                pixel_types[x][y] = PixelType.SINGLE;
-                break;
-            
-            case Layer.B    | PixelType.DOUBLE_A:
-                pixel_types[x][y] = PixelType.DOUBLE_AB;
-                indices_b  [x][y] = index;
-                break;
-
-            default: break;
+            obj_scanline[x].transparent = true;
+            obj_scanline[x].priority    = 4;
         }
     }
 
-    pragma(inline, true) bool is_pixel_full(uint x, uint y) {
-        return pixel_types[x][y] == PixelType.SINGLE    ||
-               pixel_types[x][y] == PixelType.DOUBLE_AB;
+    public pragma(inline, true) void draw_bg_pixel(uint x, int bg, ushort index, int priority, bool transparent) {
+        if (x >= SCREEN_WIDTH) return;
+
+        bg_scanline[bg][x].transparent = transparent;
+        bg_scanline[bg][x].index       = index;
+        bg_scanline[bg][x].priority    = priority;
     }
 
-    template Consolidate(SpecialEffect special_effect) {
-        void consolidate(uint blend_a, uint blend_b, uint bldy) {
-            for (int x = 0; x < SCREEN_WIDTH;  x++) {
-            for (int y = 0; y < SCREEN_HEIGHT; y++) {
-                final switch (pixel_types[x][y]) {
-                    case PixelType.EMPTY:
-                        break;
-                    case PixelType.SINGLE:
-                        pixels_output[x][y] = hw.ppu.palette.get_color(indices_a[x][y] >> 1); break;
-                    case PixelType.DOUBLE_A:
-                        pixels_output[x][y] = hw.ppu.palette.get_color(indices_a[x][y] >> 1);
+    public pragma(inline, true) void draw_obj_pixel(uint x, ushort index, int priority, bool transparent) {
+        if (x >= SCREEN_WIDTH) return;
+        
+        // obj rendering on the gba has a weird bug where if there are two overlapping obj pixels
+        // that have differing priorities as specified in oam, and the one with lower priority is
+        // nontransparent while the one with higher priority is transparent, the pixel with lower
+        // priority is overwritten anyway. which is why we don't care if this obj pixel is transparent
+        // or not, we just care about its priority
 
-                        static if (special_effect == SpecialEffect.BrightnessIncrease) {
-                            pixels_output[x][y].r += ((31 - pixels_output[x][y].r) * bldy) >> 4;
-                            pixels_output[x][y].g += ((31 - pixels_output[x][y].g) * bldy) >> 4;
-                            pixels_output[x][y].b += ((31 - pixels_output[x][y].b) * bldy) >> 4;
-                        }
+        if (priority < obj_scanline[x].priority ||
+            (priority == obj_scanline[x].priority && obj_scanline[x].transparent)) {
+            obj_scanline[x].transparent = transparent;
+            obj_scanline[x].index       = index;
+            obj_scanline[x].priority    = priority;
+        }
+    }
 
-                        static if (special_effect == SpecialEffect.BrightnessDecrease) {
-                            pixels_output[x][y].r -= ((     pixels_output[x][y].r) * bldy) >> 4;
-                            pixels_output[x][y].g -= ((     pixels_output[x][y].g) * bldy) >> 4;
-                            pixels_output[x][y].b -= ((     pixels_output[x][y].b) * bldy) >> 4;
-                        }
-                        
-                        break;
-                    case PixelType.DOUBLE_AB: {
-                        static if (special_effect == SpecialEffect.Alpha) {
-                            Pixel a = hw.ppu.palette.get_color(indices_a[x][y] >> 1);
-                            Pixel b = hw.ppu.palette.get_color(indices_b[x][y] >> 1);
+    public void composite() {
+        // step 1: sort the backgrounds by priority
+        sorted_backgrounds = backgrounds;
 
-                            pixels_output[x][y].r = min(31, (blend_a * a.r + blend_b * b.r) >> 4);
-                            pixels_output[x][y].g = min(31, (blend_a * a.g + blend_b * b.g) >> 4);
-                            pixels_output[x][y].b = min(31, (blend_a * a.b + blend_b * b.b) >> 4);
-                        }
-                        
-                        break;
+        // insertion sort
+        // the important part of insertion sort is that we need two backgrounds of the same priority
+        // to be *also* sorted by index. i.e. if bg0 and bg1 had the same priorities, bg0 must appear
+        // in sorted_backgrounds before bg1. insertion sort guarantees this.
+
+        // https://www.geeksforgeeks.org/insertion-sort/
+        for (int i = 1; i < 4; i++) {
+            Background temp = sorted_backgrounds[i];
+            int key = temp.priority;
+            int j = i - 1;
+
+            while (j >= 0 && sorted_backgrounds[j].priority > key) {
+                sorted_backgrounds[j + 1] = sorted_backgrounds[j];
+                j--;
+            }
+            sorted_backgrounds[j + 1] = temp;
+        }
+
+        // step 2: loop through the backgrounds, and get the first non transparent pixel
+        for (int x = 0; x < SCREEN_WIDTH; x++) {
+            int index = 0; // 0 is the backdrop index
+
+            for (int i = 0; i < 4; i++) {
+                int current_bg_id = sorted_backgrounds[i].id;
+                if (!bg_scanline[current_bg_id][x].transparent) {
+                    if (!obj_scanline[x].transparent && 
+                         bg_scanline[current_bg_id][x].priority >= obj_scanline[x].priority) {
+                        index = obj_scanline[x].index;
+                    } else {
+                        index = bg_scanline[current_bg_id][x].index;
                     }
+
+                    break;
                 }
             }
-            }
+
+            pixels_output[x] = hw.ppu.palette.get_color(index);
         }
+
+        // step 3: here's where i would do blending when i get around to it
     }
 }

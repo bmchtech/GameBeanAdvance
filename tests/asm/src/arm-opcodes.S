@@ -630,6 +630,9 @@ pass_bx_thumb:
 			LDR      r7,  =ldm_tests_start
 			STR      pc,  [r7, #0x1C]
 			LDMIA    r7,  {r1, r3, r4, r7, r9, r10, r11, r15}
+			NOP
+			NOP
+			NOP
 
 @ LDM 1 tests [LDMIB]
 
@@ -645,6 +648,9 @@ pass_bx_thumb:
 			LDR      r7,  =ldm_tests_start
 			STR      pc,  [r7, #0x20]
 			LDMIB    r7,  {r1, r3, r4, r7, r9, r10, r11, r15}
+			NOP
+			NOP
+			NOP
 
 @ LDM 1 tests [LDMDA]
 
@@ -660,6 +666,9 @@ pass_bx_thumb:
 			LDR      r7,  =ldm_tests_end
 			STR      pc,  [r7]
 			LDMDA    r7,  {r1, r3, r4, r7, r9, r10, r11, r15}
+			NOP
+			NOP
+			NOP
 
 @ LDM 1 tests [LDMDB]
 
@@ -675,6 +684,9 @@ pass_bx_thumb:
 			LDR      r7,  =ldm_tests_end
 			STR      pc,  [r7, #-0x04]
 			LDMDB    r7,  {r1, r3, r4, r7, r9, r10, r11, r15}
+			NOP
+			NOP
+			NOP
 
 @ TODO: LDM 2 tests must be done in an interrupt.
 @ this is because the result is UNPREDICTABLE in
