@@ -110,8 +110,8 @@ $(LOG_DIR)/arm-opcodes.log: $(SRC_DIR)/arm-opcodes.S
 	gbafix $(BIN_DIR)/arm-opcodes.gba
 
 # generate the instruction logs
-	NanoBoyAdvance --num_instructions 198634 $(BIN_DIR)/arm-opcodes.gba 
-	@sed -n -i.bak -e '196634,198634p' out.log
+	NanoBoyAdvance --num_instructions 198834 $(BIN_DIR)/arm-opcodes.gba 
+	@sed -n -i.bak -e '196634,198834p' out.log
 	@rm out.log.bak
 	mv out.log $(LOG_DIR)/arm-opcodes.log
 
@@ -127,3 +127,7 @@ texan-frog: $(SRC_DIR)/texan-frog.S
 mode4: $(SRC_DIR)/mode4.S
 	$(COMPILER) $(COMPILER_FLAGS) $(SRC_DIR)/mode4.S   -o        $(OUT_DIR)/mode4.out
 	$(LINKER)   $(LINKER_FLAGS)   $(OUT_DIR)/mode4.out -O binary $(BIN_DIR)/mode4.gba
+
+bitmap-test: $(SRC_DIR)/mode4.S
+	$(COMPILER) $(COMPILER_FLAGS) $(SRC_DIR)/bitmap-test.S   -o        $(OUT_DIR)/bitmap-test.out
+	$(LINKER)   $(LINKER_FLAGS)   $(OUT_DIR)/bitmap-test.out -O binary $(BIN_DIR)/bitmap-test.gba
