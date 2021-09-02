@@ -33,6 +33,8 @@ public:
     
     enum Pixel RESET_PIXEL = Pixel(0, 0, 0);
 
+    ushort scanline;
+
     Canvas canvas;
 
     Pixel[SCREEN_WIDTH][SCREEN_HEIGHT] screen;
@@ -46,7 +48,7 @@ public:
         dot                     = 0;
         scanline                = 0;
 
-        canvas = new Canvas();
+        canvas = new Canvas(this);
 
         this.scheduler = scheduler;
         scheduler.add_event(&on_hblank_start, 240 * 4);
@@ -149,7 +151,6 @@ public:
 private:
     Memory memory;
     ushort dot; // the horizontal counterpart to scanlines.
-    ushort scanline;
     // uint[][] pixel_priorities; // the associated priorities with each pixel.
     
 
@@ -183,15 +184,6 @@ private:
         bool flipped_y;
         bool double_sized;
     }
-
-    struct Window {
-        uint top;
-        uint bottom;
-        uint left;
-        uint right;
-    }
-
-    Window[2] windows;
 
     // void render_texture_256_1(Layer layer, Texture texture, Point topleft_draw_pos) {
     //     for (int draw_x_offset = 0; draw_x_offset < texture.width << 3; draw_x_offset++) {
@@ -648,6 +640,8 @@ public:
             backgrounds[1].enabled     = get_nth_bit (data, 1);
             backgrounds[2].enabled     = get_nth_bit (data, 2);
             backgrounds[3].enabled     = get_nth_bit (data, 3);
+            canvas.windows[0].enabled  = get_nth_bit (data, 5);
+            canvas.windows[1].enabled  = get_nth_bit (data, 6);
             // TODO: WINDOW 0
             // TODO: WINDOW 1
             // TODO: OBJ WINDOW
@@ -693,20 +687,28 @@ public:
         }
     }
 
-    void write_WINXH(int target_byte, ubyte data, int x) {
+    void write_WINxH(int target_byte, ubyte data, int x) {
+                // writefln("Window %x [%x : %x] [%x : %x]", x, canvas.windows[x].left, canvas.windows[x].right, canvas.windows[x].top, canvas.windows[x].bottom);
         if (target_byte == 0) {
-            windows[x].right = data;
+            canvas.windows[x].right = data;
         } else { // target_byte == 1
-            windows[x].left = data;
+            canvas.windows[x].left = data;
         }
     }
 
-    void write_WINXV(int target_byte, ubyte data, int x) {
+    void write_WINxV(int target_byte, ubyte data, int x) {
+        // writefln("Window %x %x %x", target_byte, data, x);
         if (target_byte == 0) {
-            windows[x].bottom = data;
+            canvas.windows[x].bottom = data;
         } else { // target_byte == 1
-            windows[x].top = data;
+            canvas.windows[x].top = data;
         }
+    }
+
+    void write_WININ(int target_byte, ubyte data) {
+        // the target_byte happens to specify the window here
+        canvas.windows[target_byte].bg_enable  = get_nth_bits(data, 0, 4);
+        canvas.windows[target_byte].obj_enable = get_nth_bit (data, 4);
     }
 
     void write_BGxX(int target_byte, ubyte data, int x) {
@@ -770,22 +772,11 @@ public:
         }
     }
 
-    void write_WININ(int target_byte, ubyte data) {
-
-    }
-
     void write_WINOUT(int target_byte, ubyte data) {
         
     }
 
     void write_BLDCNT(int target_byte, ubyte data) {
-        // writefln("report");
-        // writefln("%b", cast(int) backgrounds[0].layer);
-        // writefln("%b", cast(int) backgrounds[1].layer);
-        // writefln("%b", cast(int) backgrounds[2].layer);
-        // writefln("%b", cast(int) backgrounds[3].layer);
-        // writefln("%b", cast(int) layer_obj);
-
         final switch (target_byte) {
             case 0b0:
                 backgrounds[0].layer = cast(Layer) ((backgrounds[0].layer & 0x17) | (get_nth_bit(data, 0) << 3));
@@ -917,7 +908,9 @@ public:
     }
 
     ubyte read_WININ(int target_byte) {
-        return 0;
+        // target_byte here is conveniently the window index
+        return cast(ubyte) ((canvas.windows[target_byte].bg_enable) |
+                            (canvas.windows[target_byte].obj_enable << 4));
     }
 
     ubyte read_WINOUT(int target_byte) {
