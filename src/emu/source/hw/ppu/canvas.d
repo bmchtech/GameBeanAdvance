@@ -38,7 +38,20 @@ struct PixelData {
 }
 
 enum Layer {
-    INVALID
+    Invalid
+}
+
+struct Window {
+    int left;
+    int right;
+    int top;
+    int bottom;
+
+    bool enabled;
+
+    // bg_enable is 4 bits
+    int  bg_enable;
+    bool obj_enable;
 }
 
 class Canvas {
@@ -48,11 +61,16 @@ class Canvas {
         PixelData[SCREEN_WIDTH]    obj_scanline;
         Pixel    [SCREEN_WIDTH]    pixels_output;
 
+        // fields for windowing
+        Window[2] windows;
+
     private:
-        Memory memory;
+        PPU ppu;
         Background[4] sorted_backgrounds;
 
-    public this() {
+    public this(PPU ppu) {
+        this.ppu = ppu;
+
         this.bg_scanline   = new PixelData[SCREEN_WIDTH][4];
         this.obj_scanline  = new PixelData[SCREEN_WIDTH];
         this.pixels_output = new Pixel    [SCREEN_WIDTH];
@@ -61,9 +79,6 @@ class Canvas {
     }
 
     public void reset() {
-        // memset(&bg_scanline,   0xFF, SCREEN_WIDTH * 4 * PixelData.sizeof);
-        // memset(&obj_scanline,  0xFF, SCREEN_WIDTH     * PixelData.sizeof);
-
         for (int x = 0; x < SCREEN_WIDTH; x++) {
             for (int bg = 0; bg < 4; bg++) {
                 bg_scanline[bg][x].transparent = true;
@@ -76,6 +91,17 @@ class Canvas {
 
     public pragma(inline, true) void draw_bg_pixel(uint x, int bg, ushort index, int priority, bool transparent) {
         if (x >= SCREEN_WIDTH) return;
+
+        for (int i = 0; i < 2; i++) {
+            if (windows[i].enabled) {
+                // writefln("Window %x [%x : %x] [%x : %x]", i, windows[i].left, windows[i].right, windows[i].top, windows[i].bottom);
+                if (windows[i].left <= x            && x            < windows[i].right  && 
+                    windows[i].top  <= ppu.scanline && ppu.scanline < windows[i].bottom &&
+                    !get_nth_bit(windows[i].bg_enable, bg)) {
+                    return;
+                }
+            }
+        }
 
         bg_scanline[bg][x].transparent = transparent;
         bg_scanline[bg][x].index       = index;

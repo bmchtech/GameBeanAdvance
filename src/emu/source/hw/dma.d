@@ -63,13 +63,13 @@ public:
         int  source_increment   = 0;
         int  dest_increment     = 0;
 
-        // writefln("DMA Channel %x enabled: Transferring %x %s from %x to %x (Control: %x)",
-        //          current_channel,
-        //          bytes_to_transfer,
-        //          dma_channels[current_channel].transferring_words ? "words" : "halfwords",
-        //          dma_channels[current_channel].source_buf,
-        //          dma_channels[current_channel].dest_buf,
-        //          read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
+        writefln("DMA Channel %x enabled: Transferring %x %s from %x to %x (Control: %x)",
+                 current_channel,
+                 bytes_to_transfer,
+                 dma_channels[current_channel].transferring_words ? "words" : "halfwords",
+                 dma_channels[current_channel].source_buf,
+                 dma_channels[current_channel].dest_buf,
+                 read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
 
         switch (dma_channels[current_channel].source_addr_control) {
             case SourceAddrMode.Increment:  source_increment =  1; break;
@@ -96,7 +96,7 @@ public:
         if (dma_channels[current_channel].transferring_words) {
             bytes_to_transfer *= 4;
             for (int i = 0; i < bytes_to_transfer; i += 4) {
-                // if (is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x successfully transfered %x from %x to %x. %x words done.", current_channel, memory.read_word(dma_channels[current_channel].source_buf + source_offset), dma_channels[current_channel].source_buf + source_offset, dma_channels[current_channel].dest_buf, i);
+                // writefln("DMA Channel %x successfully transfered %x from %x to %x. %x words done.", current_channel, memory.read_word(dma_channels[current_channel].source_buf + source_offset), dma_channels[current_channel].source_buf + source_offset, dma_channels[current_channel].dest_buf, i);
 
                 memory.write_word(dma_channels[current_channel].dest_buf + dest_offset, memory.read_word(dma_channels[current_channel].source_buf + source_offset));
                 source_offset += source_increment;
@@ -125,7 +125,7 @@ public:
 
         if (dma_channels[current_channel].repeat) {
             if (dma_channels[current_channel].dest_addr_control == DestAddrMode.IncrementReload) {
-                dma_channels[current_channel].dest = dma_channels[current_channel].dest_buf;
+                dma_channels[current_channel].dest_buf = dma_channels[current_channel].dest;
             }
 
             enable_dma(current_channel);
