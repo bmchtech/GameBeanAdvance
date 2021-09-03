@@ -642,8 +642,6 @@ public:
             backgrounds[3].enabled     = get_nth_bit (data, 3);
             canvas.windows[0].enabled  = get_nth_bit (data, 5);
             canvas.windows[1].enabled  = get_nth_bit (data, 6);
-            // TODO: WINDOW 0
-            // TODO: WINDOW 1
             // TODO: OBJ WINDOW
         }
     }
@@ -688,7 +686,8 @@ public:
     }
 
     void write_WINxH(int target_byte, ubyte data, int x) {
-                // writefln("Window %x [%x : %x] [%x : %x]", x, canvas.windows[x].left, canvas.windows[x].right, canvas.windows[x].top, canvas.windows[x].bottom);
+        // writefln("SCANLINE %x", scanline);
+        // writefln("Window %x [%x : %x] [%x : %x]", x, canvas.windows[x].left, canvas.windows[x].right, canvas.windows[x].top, canvas.windows[x].bottom);
         if (target_byte == 0) {
             canvas.windows[x].right = data;
         } else { // target_byte == 1
@@ -709,6 +708,18 @@ public:
         // the target_byte happens to specify the window here
         canvas.windows[target_byte].bg_enable  = get_nth_bits(data, 0, 4);
         canvas.windows[target_byte].obj_enable = get_nth_bit (data, 4);
+    }
+
+    void write_WINOUT(int target_byte, ubyte data) {
+        final switch (target_byte) {
+            case 0b0:
+                canvas.outside_window_bg_enable  = get_nth_bits(data, 0, 4);
+                canvas.outside_window_obj_enable = get_nth_bit (data, 4);
+                break;
+
+            case 0b1:
+                break;
+        }
     }
 
     void write_BGxX(int target_byte, ubyte data, int x) {
@@ -770,10 +781,6 @@ public:
                 backgrounds[x].p[cast(int) y] |= data << 8;
                 break;
         }
-    }
-
-    void write_WINOUT(int target_byte, ubyte data) {
-        
     }
 
     void write_BLDCNT(int target_byte, ubyte data) {

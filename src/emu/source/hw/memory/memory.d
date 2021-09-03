@@ -87,8 +87,8 @@ class Memory {
     OpenBusBiosState open_bus_bios_state = OpenBusBiosState.STARTUP;
 
     enum AccessType {
-        SEQUENTIAL    = 0,
-        NONSEQUENTIAL = 1
+        NONSEQUENTIAL = 0,
+        SEQUENTIAL    = 1
     }
 
     enum AccessSize {
@@ -195,32 +195,32 @@ class Memory {
         this.mmio = mmio;
     }
 
-    pragma(inline, true) ubyte read_byte(uint address, AccessType access_type = AccessType.NONSEQUENTIAL) {
+    pragma(inline, true) ubyte read_byte(uint address, AccessType access_type = AccessType.SEQUENTIAL) {
         return read!ubyte(address, access_type);
     }
 
-    pragma(inline, true) ushort read_halfword(uint address, AccessType access_type = AccessType.NONSEQUENTIAL) {    
+    pragma(inline, true) ushort read_halfword(uint address, AccessType access_type = AccessType.SEQUENTIAL) {    
         return read!ushort(address, access_type);
     }
 
-    pragma(inline, true) uint read_word(uint address, AccessType access_type = AccessType.NONSEQUENTIAL) {
+    pragma(inline, true) uint read_word(uint address, AccessType access_type = AccessType.SEQUENTIAL) {
         return read!uint(address, access_type);
     }
 
-    pragma(inline, true) void write_byte(uint address, ubyte value, AccessType access_type = AccessType.NONSEQUENTIAL) {
+    pragma(inline, true) void write_byte(uint address, ubyte value, AccessType access_type = AccessType.SEQUENTIAL) {
         write!ubyte(address, value, access_type);
     }
 
-    pragma(inline, true) void write_halfword(uint address, ushort value, AccessType access_type = AccessType.NONSEQUENTIAL) {
+    pragma(inline, true) void write_halfword(uint address, ushort value, AccessType access_type = AccessType.SEQUENTIAL) {
         write!ushort(address, value, access_type);
     }
 
-    pragma(inline, true) void write_word(uint address, uint value, AccessType access_type = AccessType.NONSEQUENTIAL) {
+    pragma(inline, true) void write_word(uint address, uint value, AccessType access_type = AccessType.SEQUENTIAL) {
         write!uint(address, value, access_type);
     }
 
     private template read(T) {
-        pragma(inline, true) T read(uint address, AccessType access_type = AccessType.NONSEQUENTIAL) {
+        pragma(inline, true) T read(uint address, AccessType access_type = AccessType.SEQUENTIAL) {
             uint region = (address >> 24) & 0xF;
 
             // handle waitstates
@@ -264,7 +264,7 @@ class Memory {
     }
 
     private template write(T) {
-        pragma(inline, true) void write(uint address, T value, AccessType access_type = AccessType.NONSEQUENTIAL) {
+        pragma(inline, true) void write(uint address, T value, AccessType access_type = AccessType.SEQUENTIAL) {
             uint region = (address >> 24) & 0xF;
 
             // handle waitstates
@@ -291,7 +291,7 @@ class Memory {
                     }
                     break;
 
-                case Region.VRAM:         *(cast(T*) (&vram[0]        + (address & (SIZE_VRAM        - 1)))) = value; break;
+                case Region.VRAM:         /*writefln("Writing %x to %x", value, address);*/*(cast(T*) (&vram[0]        + (address & (SIZE_VRAM        - 1)))) = value; break;
                 case Region.OAM:          *(cast(T*) (&oam[0]         + (address & (SIZE_OAM         - 1)))) = value; break;
 
                 case Region.IO_REGISTERS: 

@@ -298,7 +298,7 @@ class ARM7TDMI {
         if (halted) return 1;
         // writefln("1");
 
-        _g_cpu_cycles_remaining = 1;
+        _g_cpu_cycles_remaining = 0;
 
         // if (*pc == 0x0800_06f8) _g_num_log += 100;
 
