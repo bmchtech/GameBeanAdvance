@@ -63,6 +63,8 @@ class Canvas {
 
         // fields for windowing
         Window[2] windows;
+        int outside_window_bg_enable;
+        int outside_window_obj_enable;
 
     private:
         PPU ppu;
@@ -94,12 +96,12 @@ class Canvas {
 
         for (int i = 0; i < 2; i++) {
             if (windows[i].enabled) {
-                // writefln("Window %x [%x : %x] [%x : %x]", i, windows[i].left, windows[i].right, windows[i].top, windows[i].bottom);
-                if (windows[i].left <= x            && x            < windows[i].right  && 
-                    windows[i].top  <= ppu.scanline && ppu.scanline < windows[i].bottom &&
-                    !get_nth_bit(windows[i].bg_enable, bg)) {
+                bool in_window = windows[i].left <= x            && x            < windows[i].right  && 
+                                 windows[i].top  <= ppu.scanline && ppu.scanline < windows[i].bottom;
+                
+                if (( in_window && !get_nth_bit(windows[i].bg_enable,     bg)) ||
+                    (!in_window && !get_nth_bit(outside_window_bg_enable, bg)))
                     return;
-                }
             }
         }
 
@@ -110,6 +112,16 @@ class Canvas {
 
     public pragma(inline, true) void draw_obj_pixel(uint x, ushort index, int priority, bool transparent) {
         if (x >= SCREEN_WIDTH) return;
+
+        for (int i = 0; i < 2; i++) {
+            if (windows[i].enabled) {
+                if (windows[i].left <= x            && x            < windows[i].right  && 
+                    windows[i].top  <= ppu.scanline && ppu.scanline < windows[i].bottom &&
+                    !windows[i].obj_enable) {
+                    return;
+                }
+            }
+        }
         
         // obj rendering on the gba has a weird bug where if there are two overlapping obj pixels
         // that have differing priorities as specified in oam, and the one with lower priority is
