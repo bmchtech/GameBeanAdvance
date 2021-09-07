@@ -160,16 +160,21 @@ class Memory {
         waitstates[rom_region][AccessType.SEQUENTIAL   ][AccessSize.WORD    ] = ws_S + 1 + ws_S + 1;
     }
 
-    uint read_bios_open_bus() {
-        return 0;
-        // final switch (open_bus_bios_state) {
-        //     case OpenBusBiosState.STARTUP:    return 0;
-        //     case OpenBusBiosState.SOFT_RESET: return 0;
+    uint bios_open_bus_latch;
 
-        //     case OpenBusBiosState.DURING_IRQ: return 0xE25EF004;
-        //     case OpenBusBiosState.AFTER_IRQ:  return 0xE55EC002;
-        //     case OpenBusBiosState.AFTER_SWI:  return 0xE3A02004;
-        // }
+    import std.conv;
+
+    uint read_bios_open_bus() {
+        writefln("Reading from BIOS as state %s", std.conv.to!string(open_bus_bios_state));
+
+        final switch (open_bus_bios_state) {
+            case OpenBusBiosState.STARTUP:    return 0;
+            case OpenBusBiosState.SOFT_RESET: return 0;
+
+            case OpenBusBiosState.DURING_IRQ: return 0xE25EF004;
+            case OpenBusBiosState.AFTER_IRQ:  return 0xE55EC002;
+            case OpenBusBiosState.AFTER_SWI:  return 0xE3A02004;
+        }
     }
 
     this() {
@@ -248,16 +253,27 @@ class Memory {
                     static if (is(T == ubyte))  return mmio.read(address);
 
                 case Region.BIOS: 
-                    // if (can_read_from_bios) {
-                        return *((cast(T*) (&bios[0] + (address & (SIZE_BIOS - 1)))));
-                    // } else {
-                        // num_log += 10;
-                        // writefln("Returning %x", read_bios_open_bus());
-                        // return cast(T) read_bios_open_bus();
-                    // }
+                    if (can_read_from_bios) {
+                        static if (is(T == uint  )) {
+                            bios_open_bus_latch = *((cast(uint*)    (&bios[0] + (address & (SIZE_BIOS - 1)))));
+                        } else { // ushort / ubyte (halfword / byte)
+                            bios_open_bus_latch &= 0xFFFF_0000;
+                            bios_open_bus_latch |= *((cast(ushort*) (&bios[0] + (address & (SIZE_BIOS - 1)))));
+                        }
+                    } else {
+                        writefln("Open bus!");
+                        static if (is(T == uint  )) writefln("word!");
+                        static if (is(T == ushort)) writefln("halfword!");
+                        static if (is(T == ubyte )) writefln("byte!");
+                        writefln("%x", bios_open_bus_latch);
+
+                    }
+
+                    static if (is(T == uint  )) return bios_open_bus_latch;
+                    static if (is(T == ushort)) return bios_open_bus_latch & 0xFFFF;
+                    static if (is(T == ubyte )) return bios_open_bus_latch & 0xFF;
+
                 default:
-                    // this is on its own because when waitstates are implemented, this is going
-                    // to get a lot more complicated
                     return *((cast(T*) (&rom[0] + (address & (SIZE_ROM - 1)))));
             }
         }

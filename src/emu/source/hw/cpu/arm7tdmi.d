@@ -321,10 +321,6 @@ class ARM7TDMI {
             // exception(CpuException.IRQ);
         // }
 
-        // bios open bus handling
-        // if (*pc == 0x0000_00134) memory.open_bus_bios_state = Memory.OpenBusBiosState.DURING_IRQ;
-        // if (*pc == 0x0000_0013C) memory.open_bus_bios_state = Memory.OpenBusBiosState.AFTER_IRQ;
-
         uint opcode = pipeline[0];
         pipeline[0] = pipeline[1];
 
@@ -348,9 +344,9 @@ class ARM7TDMI {
         // }
 
         memory.can_read_from_bios = (*pc >> 24) == 0;
+        pipeline[1] = fetch();
         execute(opcode);
 
-        pipeline[1] = fetch();
         pipeline_access_type = Memory.AccessType.SEQUENTIAL;
 
         return _g_cpu_cycles_remaining;

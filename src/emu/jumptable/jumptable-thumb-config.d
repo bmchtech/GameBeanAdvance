@@ -841,7 +841,8 @@ void run_1101COND(ushort opcode) {
     @IF( C  O !N  D) if ( cpu.get_flag_Z() || (cpu.get_flag_N() ^  cpu.get_flag_V())) {
     @IF( C  O  N !D) if (true) { // the compiler will optimize this so it's fine
         // warning(format("Conditional Branch Taken at %x", *cpu.pc));
-        *cpu.pc += (cast(byte)(opcode & 0xFF)) * 2;
+
+        *cpu.pc += (cast(byte)(opcode & 0xFF)) * 2 - 4;
         cpu.refill_pipeline_partial();
         
     } else {
@@ -862,6 +863,7 @@ void run_11100OFS(ushort opcode) {
     //DEBUG_MESSAGE("Unconditional Branch");
 
     int sign_extended = sign_extend(get_nth_bits(opcode, 0, 11) << 1, 12);
+
     *cpu.pc += sign_extended;
     cpu.refill_pipeline_partial();
 
