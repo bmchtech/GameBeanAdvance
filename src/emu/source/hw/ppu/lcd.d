@@ -199,7 +199,7 @@ private:
     //     }
     // }
 
-    pragma(inline, true) int get_tile_address__text(int tile_x, int tile_y, int screens_per_row) {
+    pragma(inline, true) int get_tile_address__text(int tile_x, int tile_y, int screens_per_row, int screens_per_col) {
         // each screen is 32 x 32 tiles. so to get the tile offset within its screen
         // we can get the low 5 bits
         int tile_x_within_screen = tile_x & 0x1F;
@@ -207,8 +207,8 @@ private:
 
         // similarly we can find out which screen this tile is located in
         // by getting its high bit
-        int screen_x             = (tile_x >> 5) & 1;
-        int screen_y             = (tile_y >> 5) & 1;
+        int screen_x             = min((tile_x >> 5) & 1, screens_per_row - 1);
+        int screen_y             = min((tile_y >> 5) & 1, screens_per_col - 1);
         int screen               = screen_x + screen_y * screens_per_row;
 
         int tile_address_offset_within_screen = ((tile_y_within_screen * 32) + tile_x_within_screen) * 2;
@@ -385,7 +385,9 @@ private:
         for (int tile_x_offset = 0; tile_x_offset < 32 + 1; tile_x_offset++) {
 
             // get the tile address and read it from memory
-            int tile_address = get_tile_address__text(topleft_tile_x + tile_x_offset, topleft_tile_y, BG_TEXT_SCREENS_DIMENSIONS[background.screen_size][0]);
+            int tile_address = get_tile_address__text(topleft_tile_x + tile_x_offset, topleft_tile_y, 
+                                                      BG_TEXT_SCREENS_DIMENSIONS[background.screen_size][0],
+                                                      BG_TEXT_SCREENS_DIMENSIONS[background.screen_size][1]);
             int tile = memory.read_halfword(screen_base_address + tile_address);
 
             int draw_x = tile_x_offset * 8 - tile_dx;
