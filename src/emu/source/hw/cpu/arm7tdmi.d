@@ -70,6 +70,8 @@ class ARM7TDMI {
 
         CpuMode mode = get_mode_from_exception(exception);
         // writefln("Interrupt! Setting LR to %x", *pc);
+        // writefln("Interrupt type: %s", get_exception_name(exception));
+        // writefln("IF: %x", memory.read_halfword(0x4000202));
 
         register_file[mode.OFFSET + 14] = *pc - (get_bit_T() ? 2 : 4);
         if (exception == CpuException.IRQ) {
@@ -135,6 +137,18 @@ class ARM7TDMI {
             case CpuException.DataAbort:         return MODE_ABORT;
             case CpuException.IRQ:               return MODE_IRQ;
             case CpuException.FIQ:               return MODE_FIQ;
+        }
+    }
+
+    string get_exception_name(CpuException exception) {
+        final switch (exception) {
+            case CpuException.Reset:             return "RESET";
+            case CpuException.Undefined:         return "UNDEFINED";
+            case CpuException.SoftwareInterrupt: return "SWI";
+            case CpuException.PrefetchAbort:     return "PREFETCH ABORT";
+            case CpuException.DataAbort:         return "DATA ABORT";
+            case CpuException.IRQ:               return "IRQ";
+            case CpuException.FIQ:               return "FIQ";
         }
     }
 

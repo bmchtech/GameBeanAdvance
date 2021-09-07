@@ -286,7 +286,7 @@ private:
             // } 
         }
 
-        void texture(int priority, Texture texture, Point topleft_texture_pos, Point topleft_draw_pos) {
+        void texture(int priority, Texture texture, Point topleft_texture_pos, Point topleft_draw_pos, OBJMode obj_mode) {
             int texture_bound_x_upper = texture.double_sized ? texture.width  >> 1 : texture.width;
             int texture_bound_y_upper = texture.double_sized ? texture.height >> 1 : texture.height;
             int texture_bound_x_lower = 0;
@@ -320,13 +320,23 @@ private:
                 static if (bpp8) {
                     ubyte index = memory.read_byte(texture.tile_base_address + ((tile_number & 0x3ff) * 64) + ofs_y * 8 + ofs_x);
                     
-                    canvas.draw_obj_pixel(draw_pos.x, index + 256, priority, index == 0);
+                    if (obj_mode == OBJMode.NORMAL) {
+                        canvas.draw_obj_pixel(draw_pos.x, index + 256, priority, index == 0);
+                    } else {
+                        if (index != 0) canvas.set_obj_window(draw_pos.x);
+                    }
+
                 } else {
                     ubyte index = memory.read_byte(texture.tile_base_address + ((tile_number & 0x3ff) * 32) + ofs_y * 4 + (ofs_x / 2));
 
                     index = !(ofs_x % 2) ? index & 0xF : index >> 4;
                     index += texture.palette * 16;
-                    canvas.draw_obj_pixel(draw_pos.x, index + 256, priority, (index & 0xF) == 0);
+
+                    if (obj_mode == OBJMode.NORMAL) {
+                        canvas.draw_obj_pixel(draw_pos.x, index + 256, priority, (index & 0xF) == 0);
+                    } else {
+                        if ((index & 0xF) != 0) canvas.set_obj_window(draw_pos.x);
+                    }
                 }
             }
         }
@@ -461,6 +471,13 @@ private:
         ]
     ];
 
+    enum OBJMode {
+        NORMAL           = 0,
+        SEMI_TRANSPARENT = 1,
+        OBJ_WINDOW       = 2,
+        PROHIBITED       = 3
+    }
+
     void render_sprites(int given_priority) {
         // Very useful guide for attributes! https://problemkaputt.de/gbatek.htm#lcdobjoamattributes
         for (int sprite = 0; sprite < 128; sprite++) {
@@ -495,8 +512,9 @@ private:
 
             if (scanline < topleft_y || scanline >= topleft_y + (height << 3)) continue;
 
+            OBJMode obj_mode = cast(OBJMode) get_nth_bits(attribute_0, 10, 12);
+
             uint base_tile_number = cast(ushort) get_nth_bits(attribute_2, 0, 10);
-            uint priority = get_nth_bits(attribute_2, 10, 11);
 
             int tile_number_increment_per_row = obj_character_vram_mapping ? (get_nth_bit(attribute_0, 9) ? width >> 1: width) : 32;
 
@@ -530,8 +548,8 @@ private:
                                         get_nth_bits(attribute_2, 12, 16),
                                         flipped_x, flipped_y, get_nth_bit(attribute_0, 9));
 
-            if (doesnt_use_color_palettes) Render!(true,  false, false).texture(given_priority, texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline));
-            else                           Render!(false, false, false).texture(given_priority, texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline));
+            if (doesnt_use_color_palettes) Render!(true,  false, false).texture(given_priority, texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline), obj_mode);
+            else                           Render!(false, false, false).texture(given_priority, texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline), obj_mode);
         }
     }
 
@@ -642,7 +660,7 @@ public:
             backgrounds[3].enabled     = get_nth_bit (data, 3);
             canvas.windows[0].enabled  = get_nth_bit (data, 5);
             canvas.windows[1].enabled  = get_nth_bit (data, 6);
-            // TODO: OBJ WINDOW
+            canvas.obj_window_enable   = get_nth_bit (data, 7);
         }
     }
 
@@ -718,6 +736,8 @@ public:
                 break;
 
             case 0b1:
+                canvas.obj_window_bg_enable      = get_nth_bits(data, 0, 4);
+                canvas.obj_window_obj_enable     = get_nth_bit (data, 4);
                 break;
         }
     }
@@ -921,6 +941,13 @@ public:
     }
 
     ubyte read_WINOUT(int target_byte) {
-        return 0;
+        final switch (target_byte) {
+            case 0b0:
+                return cast(ubyte) ((canvas.outside_window_bg_enable) |
+                                    (canvas.outside_window_obj_enable << 4));
+            case 0b1:
+                return cast(ubyte) ((canvas.obj_window_bg_enable) |
+                                    (canvas.obj_window_obj_enable << 4));
+        }
     }
 }
