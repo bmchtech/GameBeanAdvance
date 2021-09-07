@@ -37,8 +37,16 @@ struct PixelData {
     uint   priority;
 }
 
+enum WindowType {
+    ZERO    = 0,
+    ONE     = 1,
+    OBJ     = 2,
+    OUTSIDE = 3,
+    NONE    = 4
+}
+
 enum Layer {
-    Invalid
+    INVALID
 }
 
 struct Window {
@@ -64,7 +72,12 @@ class Canvas {
         // fields for windowing
         Window[2] windows;
         int outside_window_bg_enable;
-        int outside_window_obj_enable;
+        bool outside_window_obj_enable;
+
+        bool[SCREEN_WIDTH] obj_window;
+        int  obj_window_bg_enable;
+        bool obj_window_obj_enable;
+        bool obj_window_enable;
 
     private:
         PPU ppu;
@@ -91,19 +104,13 @@ class Canvas {
         }
     }
 
+    public pragma(inline, true) void set_obj_window(uint x) {
+        if (x >= SCREEN_WIDTH) return;
+        obj_window[x] = true;
+    }
+
     public pragma(inline, true) void draw_bg_pixel(uint x, int bg, ushort index, int priority, bool transparent) {
         if (x >= SCREEN_WIDTH) return;
-
-        for (int i = 0; i < 2; i++) {
-            if (windows[i].enabled) {
-                bool in_window = windows[i].left <= x            && x            < windows[i].right  && 
-                                 windows[i].top  <= ppu.scanline && ppu.scanline < windows[i].bottom;
-                
-                if (( in_window && !get_nth_bit(windows[i].bg_enable,     bg)) ||
-                    (!in_window && !get_nth_bit(outside_window_bg_enable, bg)))
-                    return;
-            }
-        }
 
         bg_scanline[bg][x].transparent = transparent;
         bg_scanline[bg][x].index       = index;
@@ -112,18 +119,8 @@ class Canvas {
 
     public pragma(inline, true) void draw_obj_pixel(uint x, ushort index, int priority, bool transparent) {
         if (x >= SCREEN_WIDTH) return;
-
-        for (int i = 0; i < 2; i++) {
-            if (windows[i].enabled) {
-                if (windows[i].left <= x            && x            < windows[i].right  && 
-                    windows[i].top  <= ppu.scanline && ppu.scanline < windows[i].bottom &&
-                    !windows[i].obj_enable) {
-                    return;
-                }
-            }
-        }
         
-        // obj rendering on the gba has a weird bug where if there are two overlapping obj pixels
+        // obj rendeWindowTypering on the gba has a weird bug where if there are two overlapping obj pixels
         // that have differing priorities as specified in oam, and the one with lower priority is
         // nontransparent while the one with higher priority is transparent, the pixel with lower
         // priority is overwritten anyway. which is why we don't care if this obj pixel is transparent
@@ -159,21 +156,40 @@ class Canvas {
             sorted_backgrounds[j + 1] = temp;
         }
 
+
         // step 2: loop through the backgrounds, and get the first non transparent pixel
+        WindowType default_window_type = (obj_window_enable || windows[0].enabled || windows[1].enabled) ? WindowType.OUTSIDE : WindowType.NONE;
+
         for (int x = 0; x < SCREEN_WIDTH; x++) {
+            // which window are we in?
+            WindowType current_window_type = default_window_type;
+            if (obj_window[x]) current_window_type = WindowType.OBJ;
+
+            for (int i = 0; i < 2; i++) {
+                if (windows[i].enabled) {
+                    if (windows[i].left <= x            && x            < windows[i].right  && 
+                        windows[i].top  <= ppu.scanline && ppu.scanline < windows[i].bottom) {
+                        current_window_type = cast(WindowType) i;
+                        break;
+                    }
+                }
+            }
+
+            // now that we know which window type we're in, let's calculate the color index for this pixel
+
             int index = 0; // 0 is the backdrop index
 
             for (int i = 0; i < 4; i++) {
                 int current_bg_id = sorted_backgrounds[i].id;
                 if (!bg_scanline[current_bg_id][x].transparent) {
-                    if (!obj_scanline[x].transparent && 
+                    if (!obj_scanline[x].transparent && is_obj_pixel_visible(current_window_type) &&
                          bg_scanline[current_bg_id][x].priority >= obj_scanline[x].priority) {
                         index = obj_scanline[x].index;
-                    } else {
+                        break;
+                    } else if (is_bg_pixel_visible(current_bg_id, current_window_type)) {
                         index = bg_scanline[current_bg_id][x].index;
+                        break;
                     }
-
-                    break;
                 }
             }
 
@@ -181,5 +197,27 @@ class Canvas {
         }
 
         // step 3: here's where i would do blending when i get around to it
+    }
+    
+    // calculates if the bg pixel is visible under the effects of windowing
+    private pragma(inline, true) bool is_bg_pixel_visible(int bg_id, WindowType window_type) {
+        final switch (window_type) {
+            case WindowType.ZERO:    return get_nth_bit(windows[0].bg_enable,     bg_id);
+            case WindowType.ONE:     return get_nth_bit(windows[1].bg_enable,     bg_id);
+            case WindowType.OBJ:     return get_nth_bit(obj_window_bg_enable,     bg_id);
+            case WindowType.OUTSIDE: return get_nth_bit(outside_window_bg_enable, bg_id);
+            case WindowType.NONE:    return true;
+        }
+    }
+    
+    // calculates if the obj pixel is visible under the effects of windowing
+    private pragma(inline, true) bool is_obj_pixel_visible(WindowType window_type) {
+        final switch (window_type) {
+            case WindowType.ZERO:    return windows[0].obj_enable;
+            case WindowType.ONE:     return windows[1].obj_enable;
+            case WindowType.OBJ:     return obj_window_obj_enable;
+            case WindowType.OUTSIDE: return outside_window_obj_enable;
+            case WindowType.NONE:    return true;
+        }
     }
 }
