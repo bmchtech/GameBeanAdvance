@@ -233,7 +233,7 @@ class Memory {
                 case Region.WRAM_BOARD:   return *((cast(T*) (&wram_board[0]  + (address & (SIZE_WRAM_BOARD  - 1)))));
                 case Region.WRAM_CHIP:    return *((cast(T*) (&wram_chip[0]   + (address & (SIZE_WRAM_CHIP   - 1)))));
                 case Region.PALETTE_RAM:  return *((cast(T*) (&palette_ram[0] + (address & (SIZE_PALETTE_RAM - 1)))));
-                case Region.VRAM:         return *((cast(T*) (&vram[0]        + (address & (SIZE_VRAM        - 1)))));
+                case Region.VRAM:         return *((cast(T*) (&vram[0]        + (address % SIZE_VRAM))));
                 case Region.OAM:          return *((cast(T*) (&oam[0]         + (address & (SIZE_OAM         - 1)))));
 
                 case Region.IO_REGISTERS:
@@ -291,7 +291,7 @@ class Memory {
                     }
                     break;
 
-                case Region.VRAM:         /*writefln("Writing %x to %x", value, address);*/*(cast(T*) (&vram[0]        + (address & (SIZE_VRAM        - 1)))) = value; break;
+                case Region.VRAM:         *(cast(T*) (&vram[0]        + (address % SIZE_VRAM)))              = value; break;
                 case Region.OAM:          *(cast(T*) (&oam[0]         + (address & (SIZE_OAM         - 1)))) = value; break;
 
                 case Region.IO_REGISTERS: 

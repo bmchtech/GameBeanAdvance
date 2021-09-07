@@ -156,8 +156,8 @@ private:
 
     static int[][] BG_TEXT_SCREENS_DIMENSIONS = [
         [1, 1],
-        [1, 2],
         [2, 1],
+        [1, 2],
         [2, 2]
     ];
 
@@ -199,7 +199,7 @@ private:
     //     }
     // }
 
-    int get_tile_address__text(int tile_x, int tile_y, int screens_per_row) {
+    pragma(inline, true) int get_tile_address__text(int tile_x, int tile_y, int screens_per_row) {
         // each screen is 32 x 32 tiles. so to get the tile offset within its screen
         // we can get the low 5 bits
         int tile_x_within_screen = tile_x & 0x1F;
@@ -215,7 +215,7 @@ private:
         return tile_address_offset_within_screen + screen * 0x800; 
     }
 
-    int get_tile_address__rotation_scaling(int tile_x, int tile_y, int tiles_per_row) {
+    pragma(inline, true) int get_tile_address__rotation_scaling(int tile_x, int tile_y, int tiles_per_row) {
         return ((tile_y * tiles_per_row) + tile_x);
     }
 
