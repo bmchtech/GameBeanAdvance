@@ -508,6 +508,9 @@ void run_01000100(ushort opcode) {
     ubyte rm = cast(ubyte) get_nth_bits(opcode, 3, 7);
     ubyte rd = cast(ubyte) (get_nth_bits(opcode, 0, 3) | (get_nth_bit(opcode, 7) << 3));
 
+    if (rd == 15) cpu.regs[rd] -= 2;
+    if (rm == 15) cpu.regs[rd] -= 2;
+
     cpu.regs[rd] += cpu.regs[rm];
 
     if (rd == 15) {
@@ -524,6 +527,9 @@ void run_01000101(ushort opcode) {
     // this uses a two's complement trick that makes ADD the same as SUB.
     ubyte rm = cast(ubyte) get_nth_bits(opcode, 3, 7);
     ubyte rd = cast(ubyte) get_nth_bits(opcode, 0, 3) | (get_nth_bit(opcode, 7) << 3);
+
+    if (rd == 15) cpu.regs[rd] -= 2;
+    if (rm == 15) cpu.regs[rd] -= 2;
 
     int rm_value     = ~cpu.regs[rm] + 1; // the trick is implemented here
     int old_rd_value = cpu.regs[rd];
@@ -547,6 +553,8 @@ void run_01000110(ushort opcode) {
     ubyte rm = cast(ubyte) get_nth_bits(opcode, 3, 7);
     ubyte rd = cast(ubyte) (get_nth_bits(opcode, 0, 3) | (get_nth_bit(opcode, 7) << 3));
     cpu.regs[rd] = cpu.regs[rm];
+
+    if (rm == 15) cpu.regs[rd] -= 2;
 
     if (rd == 15) {
         // the least significant bit of pc (cpu.regs[15]) must be clear.
@@ -573,7 +581,7 @@ void run_01000111(ushort opcode) {
 void run_01001REG(ushort opcode) {
     //DEBUG_MESSAGE("PC-Relative Load");
     ubyte reg = cast(ubyte) (get_nth_bits(opcode, 8,  11));
-    uint loc = (get_nth_bits(opcode, 0,  8) << 2) + ((*cpu.pc) & 0xFFFFFFFC);
+    uint loc = (get_nth_bits(opcode, 0,  8) << 2) + ((*cpu.pc - 2) & 0xFFFFFFFC);
     cpu.regs[reg] = read_word_and_rotate(cpu.memory, loc);
 
     // _g_cpu_cycles_remaining += 5;
@@ -699,8 +707,8 @@ void run_1001LREG(ushort opcode) {
 void run_1010SREG(ushort opcode) {
     ubyte rd = cast(ubyte) (get_nth_bits(opcode, 8, 11));
     ubyte immediate_value = cast(ubyte) (opcode & 0xFF);
-    @IF( S) cpu.regs[rd] =   *cpu.sp                + (immediate_value << 2);
-    @IF(!S) cpu.regs[rd] = ((*cpu.pc) & 0xFFFFFFFC) + (immediate_value << 2);
+    @IF( S) cpu.regs[rd] =   *cpu.sp                    + (immediate_value << 2);
+    @IF(!S) cpu.regs[rd] = ((*cpu.pc - 2) & 0xFFFFFFFC) + (immediate_value << 2);
 
     // _g_cpu_cycles_remaining += 3;
 }
@@ -842,7 +850,7 @@ void run_1101COND(ushort opcode) {
     @IF( C  O  N !D) if (true) { // the compiler will optimize this so it's fine
         // warning(format("Conditional Branch Taken at %x", *cpu.pc));
 
-        *cpu.pc += (cast(byte)(opcode & 0xFF)) * 2 - 4;
+        *cpu.pc += (cast(byte)(opcode & 0xFF)) * 2 - 2;
         cpu.refill_pipeline_partial();
         
     } else {
@@ -864,7 +872,7 @@ void run_11100OFS(ushort opcode) {
 
     int sign_extended = sign_extend(get_nth_bits(opcode, 0, 11) << 1, 12);
 
-    *cpu.pc += sign_extended;
+    *cpu.pc += sign_extended - 2;
     cpu.refill_pipeline_partial();
 
     // _g_cpu_cycles_remaining += 3;
@@ -876,14 +884,14 @@ void run_11110OFS(ushort opcode) {
     int extended = cast(int)(get_nth_bits(opcode, 0, 11));
     if (get_nth_bit(extended, 10)) extended |= 0xFFFFF800;
 
-    *cpu.lr = *cpu.pc + (extended << 12);
+    *cpu.lr = *cpu.pc + (extended << 12) - 2;
 
     // _g_cpu_cycles_remaining += 3;
 }
 
 // long branch with link - low byte and call to subroutine
 void run_11111OFS(ushort opcode) {
-    uint next_pc = *(cpu.pc) - 2;
+    uint next_pc = *(cpu.pc) - 4;
     *cpu.pc = (*cpu.lr + (get_nth_bits(opcode, 0, 11) << 1));
     *cpu.lr = (next_pc) | 1;
 

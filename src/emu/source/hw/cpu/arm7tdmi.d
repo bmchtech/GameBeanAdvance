@@ -323,6 +323,7 @@ class ARM7TDMI {
 
         uint opcode = pipeline[0];
         pipeline[0] = pipeline[1];
+        pipeline[1] = fetch();
 
         if (*pc > 0x0FFF_FFFF) {
             error("PC out of range!");
@@ -344,7 +345,6 @@ class ARM7TDMI {
         // }
 
         memory.can_read_from_bios = (*pc >> 24) == 0;
-        pipeline[1] = fetch();
         execute(opcode);
 
         pipeline_access_type = Memory.AccessType.SEQUENTIAL;
@@ -388,11 +388,8 @@ class ARM7TDMI {
         pipeline_access_type = Memory.AccessType.NONSEQUENTIAL;
     }
 
-    void refill_pipeline_partial() {
-        memory.can_read_from_bios = (*pc >> 24) == 0;
-        pipeline[0] = fetch();
-
-        pipeline_access_type = Memory.AccessType.NONSEQUENTIAL;
+    pragma(inline, true) void refill_pipeline_partial() {
+        refill_pipeline();
     }
     
     pragma(inline) uint ASR(uint value, ubyte shift) {
