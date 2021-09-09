@@ -22,6 +22,7 @@ void main(string[] args) {
 			.add(new Flag("v", "verbose", "turns on more verbose output").repeating)
 			.add(new Option("s", "scale", "render scale").optional.defaultValue("1"))
 			.add(new Argument("rompath", "path to rom file"))
+			.add(new Option("b", "bios", "path to bios file").optional.defaultValue("./gba_bios.bin"))
 			.add(new Option("t", "cputrace", "display cpu trace on crash").optional.defaultValue("0")).parse(args);
 
 	util.verbosity_level = a.occurencesOf("verbose");
@@ -40,7 +41,7 @@ void main(string[] args) {
 	writeln("init mem");
 
 	KeyInput key_input = new KeyInput(mem);
-	GBA gba = new GBA(mem, key_input);
+	GBA gba = new GBA(mem, key_input, a.option("bios"));
 	writeln("init gba");
 	gba.load_rom(a.arg("rompath"));
 	writeln("loaded rom");
