@@ -34,6 +34,8 @@ class ARM7TDMI {
     uint[2] pipeline;
     Memory.AccessType pipeline_access_type;
 
+    uint current_instruction_size;
+
     this(Memory memory) {
         this.memory        = memory;
 
@@ -58,6 +60,7 @@ class ARM7TDMI {
         spsr = &regs[17];
 
         pipeline_access_type = Memory.AccessType.NONSEQUENTIAL;
+        set_bit_T(false);
     }
 
     // returns true if the exception is accepted (or, excepted :P)
@@ -70,10 +73,10 @@ class ARM7TDMI {
 
         CpuMode mode = get_mode_from_exception(exception);
         // writefln("Interrupt! Setting LR to %x", *pc);
-        // writefln("Interrupt type: %s", get_exception_name(exception));
+        writefln("Interrupt type: %s", get_exception_name(exception));
         // writefln("IF: %x", memory.read_halfword(0x4000202));
 
-        register_file[mode.OFFSET + 14] = *pc - (get_bit_T() ? 2 : 4);
+        register_file[mode.OFFSET + 14] = *pc - 2 * (get_bit_T() ? 2 : 4);
         if (exception == CpuException.IRQ) {
             // _g_num_log += 30;
             register_file[mode.OFFSET + 14] += 4 - (get_bit_T() ? 2 : 4); // in an IRQ, the linkage register must point to the next instruction + 4
@@ -86,14 +89,6 @@ class ARM7TDMI {
 
         if (exception == CpuException.Reset || exception == CpuException.FIQ) {
             *cpsr |= (1 << 6); // disable fast interrupts
-        }
-
-        if (exception == CpuException.SoftwareInterrupt) {
-            memory.open_bus_bios_state = Memory.OpenBusBiosState.AFTER_SWI;
-        }
-
-        if (exception == CpuException.IRQ) {
-            memory.open_bus_bios_state = Memory.OpenBusBiosState.DURING_IRQ;
         }
 
         *pc = get_address_from_exception(exception);
@@ -263,6 +258,28 @@ class ARM7TDMI {
     uint shifter_operand;
     bool shifter_carry_out;
 
+    pragma(inline, true) uint read_reg(int reg) {
+        // when reading register PC (15), the pipeline will cause the read value to be
+        // one instruction_size greater than it should be. therefore if we're trying to
+        // read from pc, we subtract the current instruction_size to accomodate for this.
+        return reg == 15 ? regs[reg] - (get_bit_T() ? 2 : 4) : regs[reg];
+    }
+
+    pragma(inline, true) void write_reg(int reg, uint value) {
+        regs[reg] = value;
+        if (reg == 15) refill_pipeline();
+    }
+
+    // reg is [0, 7] - these are used to access only the lower regs
+    pragma(inline, true) uint read_reg__lower(int reg) {
+        return regs[reg];
+    }
+
+    // reg is [0, 7] - these are used to access only the lower regs
+    pragma(inline, true) void write_reg__lower(int reg, uint value) {
+        regs[reg] = value;
+    }
+
     pragma(inline, true) void set_flag_N(bool condition) {
         if (condition) *cpsr |= 0x80000000;
         else           *cpsr &= 0x7FFFFFFF;
@@ -286,6 +303,8 @@ class ARM7TDMI {
     pragma(inline, true) void set_bit_T(bool condition) {
         if (condition) *cpsr |= 0x00000020;
         else           *cpsr &= 0xFFFFFFDF;
+
+        current_instruction_size = condition ? 2 : 4;
     }
 
     pragma(inline, true) bool get_flag_N() {
@@ -321,36 +340,32 @@ class ARM7TDMI {
             // exception(CpuException.IRQ);
         // }
 
-        // bios open bus handling
-        // if (*pc == 0x0000_00134) memory.open_bus_bios_state = Memory.OpenBusBiosState.DURING_IRQ;
-        // if (*pc == 0x0000_0013C) memory.open_bus_bios_state = Memory.OpenBusBiosState.AFTER_IRQ;
-
         uint opcode = pipeline[0];
         pipeline[0] = pipeline[1];
+        pipeline[1] = fetch();
 
         if (*pc > 0x0FFF_FFFF) {
             error("PC out of range!");
         }
 
-        // if (_g_num_log > 0 || true) {
-        //     _g_num_log--;
-        //     if (get_bit_T()) write("THM ");
-        //     else write("ARM ");
+        if (_g_num_log > 0 || true) {
+            _g_num_log--;
+            if (get_bit_T()) write("THM ");
+            else write("ARM ");
 
-        //     write(format("0x%x ", opcode));
+            write(format("0x%x ", opcode));
             
-        //     for (int j = 0; j < 16; j++)
-        //         write(format("%x ", regs[j]));
+            for (int j = 0; j < 16; j++)
+                write(format("%x ", regs[j]));
 
-        //     // write(format("%x ", *cpsr));
-        //     write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
-        //     writeln();
-        // }
+            // write(format("%x ", *cpsr));
+            write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
+            writeln();
+        }
 
         memory.can_read_from_bios = (*pc >> 24) == 0;
         execute(opcode);
 
-        pipeline[1] = fetch();
         pipeline_access_type = Memory.AccessType.SEQUENTIAL;
 
         return _g_cpu_cycles_remaining;
@@ -392,12 +407,11 @@ class ARM7TDMI {
         pipeline_access_type = Memory.AccessType.NONSEQUENTIAL;
     }
 
-    void refill_pipeline_partial() {
-        memory.can_read_from_bios = (*pc >> 24) == 0;
-        pipeline[0] = fetch();
-
-        pipeline_access_type = Memory.AccessType.NONSEQUENTIAL;
+    pragma(inline, true) void refill_pipeline_partial() {
+        refill_pipeline();
     }
+
+    pragma(inline, true)
     
     pragma(inline) uint ASR(uint value, ubyte shift) {
         if ((value >> 31) == 1) {
