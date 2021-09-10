@@ -64,7 +64,8 @@ public:
         if (!vblank) {
             canvas.reset();
             render();
-            canvas.composite();
+            
+            if (bg_mode < 3) canvas.composite();
 
             display_scanline();
         }
