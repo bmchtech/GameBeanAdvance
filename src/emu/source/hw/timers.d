@@ -38,7 +38,7 @@ public:
         if (!timers[timer_id].enabled) return;
 
         timers[timer_id].value = timers[timer_id].reload_value;
-        // writeln(format("%x TS: %x. Scheduling another at %x", timer_id, num_cycles, num_cycles + ((0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment)));
+        writeln(format("%x TS: %x. Scheduling another at %x", timer_id, num_cycles, num_cycles + ((0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment)));
         timers[timer_id].timer_event = scheduler.add_event(() => timer_overflow(timer_id), (0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment);
 
         timers[timer_id].timestamp = num_cycles;
@@ -48,7 +48,7 @@ public:
         import std.stdio;
         reload_timer(x);
         on_timer_overflow(x);
-        // writefln("Overflow. IRQ Enable is %x", timers[x].irq_enable);
+        writefln("Overflow. IRQ Enable is %x", timers[x].irq_enable);
         if (timers[x].irq_enable) interrupt_cpu(get_interrupt_from_timer_id(x));
     }
 
@@ -109,6 +109,7 @@ private:
 
 public:
     void write_TMXCNT_L(int target_byte, ubyte data, int x) {
+        writefln("TIMERCNT_L WRITE %x %x %x", target_byte, data, x);
         final switch (target_byte) {
             case 0b0: timers[x].reload_value = (timers[x].reload_value & 0xFF00) | (data << 0); break;
             case 0b1: timers[x].reload_value = (timers[x].reload_value & 0x00FF) | (data << 8); break;
@@ -116,6 +117,7 @@ public:
     }
 
     void write_TMXCNT_H(int target_byte, ubyte data, int x) {
+        writefln("TIMERCNT_H WRITE %x %x %x", target_byte, data, x);
         final switch (target_byte) {
             case 0b0: 
                 timers[x].increment  = increment_shifts[get_nth_bits(data, 0, 2)];
