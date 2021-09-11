@@ -30,9 +30,9 @@ class InterruptManager {
     // interrupt_code must be one-hot
     void interrupt(uint interrupt_code) {
         // is this specific interrupt enabled
-        // writefln("cmon %x", interrupt_code);
+        writefln("cmon %x", interrupt_code);
         if (interrupt_enable & interrupt_code) {
-            // writefln("Interrupting with code: %x", interrupt_code);
+            writefln("Interrupting with code: %x", interrupt_code);
             interrupt_request |= interrupt_code;
 
             unhalt_cpu();

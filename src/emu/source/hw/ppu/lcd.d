@@ -65,7 +65,7 @@ public:
             canvas.reset();
             render();
             
-            if (bg_mode < 3) canvas.composite();
+            if (bg_mode != 3) canvas.composite();
 
             display_scanline();
         }
@@ -87,6 +87,7 @@ public:
     }
 
     void on_vblank_start() {
+        writefln("VBLANK");
         vblank = true;
         if (vblank_irq_enabled) interrupt_cpu(Interrupt.LCD_VBLANK);
 

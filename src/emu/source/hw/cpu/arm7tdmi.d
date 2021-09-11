@@ -20,7 +20,7 @@ version (LDC) {
 }
 
 ulong _g_num_log              = 0;
-uint  _g_cpu_cycles_remaining = 0;
+ulong _g_cpu_cycles_remaining = 0;
 
 class ARM7TDMI {
 
@@ -79,7 +79,7 @@ class ARM7TDMI {
         register_file[mode.OFFSET + 14] = *pc - 2 * (get_bit_T() ? 2 : 4);
         if (exception == CpuException.IRQ) {
             // _g_num_log += 30;
-            register_file[mode.OFFSET + 14] += 4 - (get_bit_T() ? 2 : 4); // in an IRQ, the linkage register must point to the next instruction + 4
+            register_file[mode.OFFSET + 14] += 4; // in an IRQ, the linkage register must point to the next instruction + 4
         }
 
         register_file[mode.OFFSET + 17] = *cpsr;
@@ -327,18 +327,18 @@ class ARM7TDMI {
         return (*cpsr >> 5) & 1;
     }
 
-    int cycle() {
+    ulong cycle() {
         if (halted) return 1;
         // writefln("1");
 
-        _g_cpu_cycles_remaining = 0;
-
-        // if (*pc == 0x0800_06f8) _g_num_log += 100;
+        if ((*pc >> 24) == 0x0) _g_num_log += 1000000;
 
         // Logger.instance.capture_cpu();
         // if ( && !get_nth_bit(*cpsr, 7)) {
             // exception(CpuException.IRQ);
         // }
+
+        _g_cpu_cycles_remaining = 0;
 
         uint opcode = pipeline[0];
         pipeline[0] = pipeline[1];
@@ -348,7 +348,7 @@ class ARM7TDMI {
             error("PC out of range!");
         }
 
-        if (_g_num_log > 0 || true) {
+        if (_g_num_log > 0) {
             _g_num_log--;
             if (get_bit_T()) write("THM ");
             else write("ARM ");
