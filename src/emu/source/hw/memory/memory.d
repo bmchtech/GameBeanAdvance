@@ -219,6 +219,8 @@ class Memory {
         write!uint(address, value, access_type);
     }
 
+    uint bios_open_bus_latch = 0;
+
     private template read(T) {
         pragma(inline, true) T read(uint address, AccessType access_type = AccessType.SEQUENTIAL) {
             uint region = (address >> 24) & 0xF;
@@ -248,13 +250,22 @@ class Memory {
                     static if (is(T == ubyte))  return mmio.read(address);
 
                 case Region.BIOS: 
-                    // if (can_read_from_bios) {
-                        return *((cast(T*) (&bios[0] + (address & (SIZE_BIOS - 1)))));
-                    // } else {
-                        // num_log += 10;
-                        // writefln("Returning %x", read_bios_open_bus());
-                        // return cast(T) read_bios_open_bus();
-                    // }
+                    if (can_read_from_bios) {
+                        uint word_aligned_address = address & ~3;
+
+                        bios_open_bus_latch = *((cast(uint*) (&bios[0] + (word_aligned_address & ~3 & (SIZE_BIOS - 1)))));
+
+                        static if (is(T == uint))   return (bios_open_bus_latch);
+                        static if (is(T == ushort)) return (bios_open_bus_latch >> (16 * (1 - address & 1))) & 0xFFFF;
+                        static if (is(T == ubyte))  return (bios_open_bus_latch >> (8  * (3 - address & 3))) & 0xFF;
+                    } else {
+                    
+                        writefln("OPEN BUS: %x", bios_open_bus_latch);
+                        static if (is(T == uint  )) return bios_open_bus_latch;
+                        static if (is(T == ushort)) return bios_open_bus_latch & 0xFFFF;
+                        static if (is(T == ubyte )) return bios_open_bus_latch & 0xFF;
+                    }
+
                 default:
                     // this is on its own because when waitstates are implemented, this is going
                     // to get a lot more complicated
