@@ -172,10 +172,10 @@ void test_arm_mode(string gba_file, string log_file, int num_instructions, int s
 //     test_arm_mode("../../tests/asm/bin/arm-addressing-mode-3.gba", "../../tests/asm/logs/arm-addressing-mode-3.log", 1290, 212, true);
 // }
 
-@("tests-arm-opcodes") 
-unittest {
-    test_arm_mode("../../tests/asm/bin/arm-opcodes.gba", "../../tests/asm/logs/arm-opcodes.log", 2000, 276, true);
-}
+// @("tests-arm-opcodes") 
+// unittest {
+//     test_arm_mode("../../tests/asm/bin/arm-opcodes.gba", "../../tests/asm/logs/arm-opcodes.log", 2000, 276, true);
+// }
 
 // @("tests-roms-fountain") 
 // unittest {

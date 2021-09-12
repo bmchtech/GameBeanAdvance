@@ -224,6 +224,8 @@ class Memory {
         write!uint(address, value, access_type);
     }
 
+    uint bios_open_bus_latch = 0;
+
     private template read(T) {
         pragma(inline, true) T read(uint address, AccessType access_type = AccessType.SEQUENTIAL) {
             uint region = (address >> 24) & 0xF;
@@ -254,24 +256,20 @@ class Memory {
 
                 case Region.BIOS: 
                     if (can_read_from_bios) {
-                        static if (is(T == uint  )) {
-                            bios_open_bus_latch = *((cast(uint*)    (&bios[0] + (address & (SIZE_BIOS - 1)))));
-                        } else { // ushort / ubyte (halfword / byte)
-                            bios_open_bus_latch &= 0xFFFF_0000;
-                            bios_open_bus_latch |= *((cast(ushort*) (&bios[0] + (address & (SIZE_BIOS - 1)))));
-                        }
+                        uint word_aligned_address = address & ~3;
+
+                        bios_open_bus_latch = *((cast(uint*) (&bios[0] + (word_aligned_address & ~3 & (SIZE_BIOS - 1)))));
+
+                        static if (is(T == uint))   return (bios_open_bus_latch);
+                        static if (is(T == ushort)) return (bios_open_bus_latch >> (16 * ((address >> 1) & 1))) & 0xFFFF;
+                        static if (is(T == ubyte))  return (bios_open_bus_latch >> (8  * ((address >> 1) & 3))) & 0xFF;
                     } else {
-                        writefln("Open bus!");
-                        static if (is(T == uint  )) writefln("word!");
-                        static if (is(T == ushort)) writefln("halfword!");
-                        static if (is(T == ubyte )) writefln("byte!");
-                        writefln("%x", bios_open_bus_latch);
-
+                    
+                        // writefln("OPEN BUS: %x", bios_open_bus_latch);
+                        static if (is(T == uint  )) return bios_open_bus_latch;
+                        static if (is(T == ushort)) return bios_open_bus_latch & 0xFFFF;
+                        static if (is(T == ubyte )) return bios_open_bus_latch & 0xFF;
                     }
-
-                    static if (is(T == uint  )) return bios_open_bus_latch;
-                    static if (is(T == ushort)) return bios_open_bus_latch & 0xFFFF;
-                    static if (is(T == ubyte )) return bios_open_bus_latch & 0xFF;
 
                 default:
                     return *((cast(T*) (&rom[0] + (address & (SIZE_ROM - 1)))));
