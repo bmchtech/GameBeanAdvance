@@ -30,7 +30,7 @@ class Scheduler {
 
     ulong add_event(void delegate() callback, int delta_cycles) {
         int insert_at = 0;
-        ulong timestamp = current_timestamp + delta_cycles;
+        ulong timestamp = events[0].timestamp + delta_cycles;
 
         // TODO: use binary search
         for (; insert_at < events_in_queue; insert_at++) {
@@ -68,17 +68,6 @@ class Scheduler {
         events_in_queue--;
     }
 
-    Event remove_schedule_item() {
-        Event return_val = *events[0];
-        
-        for (int i = 0; i < events_in_queue; i++) {
-            *events[i] = *events[i + 1];
-        }
-        
-        events_in_queue--;
-        return return_val;
-    }
-
     void print_schedule() {
         writefln("Schedule:");
         for (int i = 0; i < events_in_queue; i++) {
@@ -92,5 +81,15 @@ class Scheduler {
 
     pragma(inline, true) bool should_cycle() {
         return current_timestamp < events[0].timestamp;
+    }
+
+    pragma(inline, true) void process_event() {
+        events[0].callback();
+
+        for (int i = 0; i < events_in_queue; i++) {
+            *events[i] = *events[i + 1];
+        }
+        
+        events_in_queue--;
     }
 }
