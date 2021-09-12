@@ -107,8 +107,8 @@ public:
                 scheduler.tick(times_cycled);
             }
 
-            scheduler.remove_schedule_item().callback();
-
+            scheduler.process_event();
+            
             if (n <= 0) {
                 break;
             }

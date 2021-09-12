@@ -61,6 +61,7 @@ public:
         hblank = true;
         if (hblank_irq_enabled) interrupt_cpu(Interrupt.LCD_HBLANK);
 
+
         if (!vblank) {
             canvas.reset();
             render();
@@ -87,7 +88,6 @@ public:
     }
 
     void on_vblank_start() {
-        writefln("VBLANK");
         vblank = true;
         if (vblank_irq_enabled) interrupt_cpu(Interrupt.LCD_VBLANK);
 
