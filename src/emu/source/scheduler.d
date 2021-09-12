@@ -6,7 +6,7 @@ import std.stdio;
 
 struct Event {
     void delegate() callback;
-    int             num_cycles;
+    ulong           timestamp;
 	ulong           id;
     bool            completed;
 }
@@ -17,22 +17,25 @@ class Scheduler {
     int events_in_queue = 0;
     ulong id_counter = 0;
 
+    ulong current_timestamp;
+
     this() {
         for (int i = 0; i < TOTAL_NUMBER_OF_EVENTS; i++) {
         	events[i] = new Event(null, 0, 0, false);
         }
         
-        events_in_queue = 0;
+        events_in_queue      = 0;
+        current_timestamp = 0;
     }
 
-    ulong add_event(void delegate() callback, int num_cycles) {
+    ulong add_event(void delegate() callback, int delta_cycles) {
         int insert_at = 0;
+        ulong timestamp = events[0].timestamp + delta_cycles;
+
+        // TODO: use binary search
         for (; insert_at < events_in_queue; insert_at++) {
-            if (num_cycles > events[insert_at].num_cycles) {
-            	num_cycles -= events[insert_at].num_cycles;
-            } else {
-                events[insert_at].num_cycles -= num_cycles;
-                break;
+            if (timestamp < events[insert_at].timestamp) {
+            	break;
             }
         }
         
@@ -42,7 +45,7 @@ class Scheduler {
         
         id_counter++;
         events_in_queue++;
-        *events[insert_at] = Event(callback, num_cycles, id_counter, false);
+        *events[insert_at] = Event(callback, timestamp, id_counter, false);
         
         return id_counter;
     }
@@ -58,8 +61,6 @@ class Scheduler {
 
         if (remove_at == -1) return;
         
-        events[remove_at + 1].num_cycles += events[remove_at].num_cycles;
-        
         for (int i = remove_at; i < events_in_queue; i++) {
             *events[i] = *events[i + 1];
         }
@@ -67,21 +68,28 @@ class Scheduler {
         events_in_queue--;
     }
 
-    Event remove_schedule_item() {
-        Event return_val = *events[0];
-        
+    void print_schedule() {
+        writefln("Schedule:");
+        for (int i = 0; i < events_in_queue; i++) {
+            writefln("%d", events[i].timestamp);
+        }
+    }
+
+    pragma(inline, true) void tick(ulong num_cycles) {
+        current_timestamp += num_cycles;
+    }
+
+    pragma(inline, true) bool should_cycle() {
+        return current_timestamp < events[0].timestamp;
+    }
+
+    pragma(inline, true) void process_event() {
+        events[0].callback();
+
         for (int i = 0; i < events_in_queue; i++) {
             *events[i] = *events[i + 1];
         }
         
         events_in_queue--;
-        return return_val;
-    }
-
-    void print_schedule() {
-        writefln("Schedule:");
-        for (int i = 0; i < events_in_queue; i++) {
-            writefln("%d", events[i].num_cycles);
-        }
     }
 }
