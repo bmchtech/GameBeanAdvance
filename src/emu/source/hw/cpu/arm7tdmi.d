@@ -364,6 +364,7 @@ class ARM7TDMI {
         // }
 
         memory.can_read_from_bios = (*pc >> 24) == 0;
+        pipeline[1] = fetch();
         execute(opcode);
 
         pipeline_access_type = Memory.AccessType.SEQUENTIAL;

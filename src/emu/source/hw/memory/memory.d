@@ -160,16 +160,21 @@ class Memory {
         waitstates[rom_region][AccessType.SEQUENTIAL   ][AccessSize.WORD    ] = ws_S + 1 + ws_S + 1;
     }
 
-    uint read_bios_open_bus() {
-        return 0;
-        // final switch (open_bus_bios_state) {
-        //     case OpenBusBiosState.STARTUP:    return 0;
-        //     case OpenBusBiosState.SOFT_RESET: return 0;
+    uint bios_open_bus_latch;
 
-        //     case OpenBusBiosState.DURING_IRQ: return 0xE25EF004;
-        //     case OpenBusBiosState.AFTER_IRQ:  return 0xE55EC002;
-        //     case OpenBusBiosState.AFTER_SWI:  return 0xE3A02004;
-        // }
+    import std.conv;
+
+    uint read_bios_open_bus() {
+        writefln("Reading from BIOS as state %s", std.conv.to!string(open_bus_bios_state));
+
+        final switch (open_bus_bios_state) {
+            case OpenBusBiosState.STARTUP:    return 0;
+            case OpenBusBiosState.SOFT_RESET: return 0;
+
+            case OpenBusBiosState.DURING_IRQ: return 0xE25EF004;
+            case OpenBusBiosState.AFTER_IRQ:  return 0xE55EC002;
+            case OpenBusBiosState.AFTER_SWI:  return 0xE3A02004;
+        }
     }
 
     this() {
@@ -267,8 +272,6 @@ class Memory {
                     }
 
                 default:
-                    // this is on its own because when waitstates are implemented, this is going
-                    // to get a lot more complicated
                     return *((cast(T*) (&rom[0] + (address & (SIZE_ROM - 1)))));
             }
         }
