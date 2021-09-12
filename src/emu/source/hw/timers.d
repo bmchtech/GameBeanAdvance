@@ -38,17 +38,16 @@ public:
         if (!timers[timer_id].enabled) return;
 
         timers[timer_id].value = timers[timer_id].reload_value;
-        writeln(format("%x TS: %x. Scheduling another at %x", timer_id, num_cycles, num_cycles + ((0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment)));
+        // writeln(format("%x TS: %x. Scheduling another at %x", timer_id, num_cycles, num_cycles + ((0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment)));
         timers[timer_id].timer_event = scheduler.add_event(() => timer_overflow(timer_id), (0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment);
 
         timers[timer_id].timestamp = num_cycles;
     }
 
     void timer_overflow(int x) {
-        import std.stdio;
         reload_timer(x);
         on_timer_overflow(x);
-        writefln("Overflow. IRQ Enable is %x", timers[x].irq_enable);
+        // writefln("Overflow. IRQ Enable is %x", timers[x].irq_enable);
         if (timers[x].irq_enable) interrupt_cpu(get_interrupt_from_timer_id(x));
     }
 

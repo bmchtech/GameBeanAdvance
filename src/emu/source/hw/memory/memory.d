@@ -256,11 +256,11 @@ class Memory {
                         bios_open_bus_latch = *((cast(uint*) (&bios[0] + (word_aligned_address & ~3 & (SIZE_BIOS - 1)))));
 
                         static if (is(T == uint))   return (bios_open_bus_latch);
-                        static if (is(T == ushort)) return (bios_open_bus_latch >> (16 * (1 - address & 1))) & 0xFFFF;
-                        static if (is(T == ubyte))  return (bios_open_bus_latch >> (8  * (3 - address & 3))) & 0xFF;
+                        static if (is(T == ushort)) return (bios_open_bus_latch >> (16 * ((address >> 1) & 1))) & 0xFFFF;
+                        static if (is(T == ubyte))  return (bios_open_bus_latch >> (8  * ((address >> 1) & 3))) & 0xFF;
                     } else {
                     
-                        writefln("OPEN BUS: %x", bios_open_bus_latch);
+                        // writefln("OPEN BUS: %x", bios_open_bus_latch);
                         static if (is(T == uint  )) return bios_open_bus_latch;
                         static if (is(T == ushort)) return bios_open_bus_latch & 0xFFFF;
                         static if (is(T == ubyte )) return bios_open_bus_latch & 0xFF;

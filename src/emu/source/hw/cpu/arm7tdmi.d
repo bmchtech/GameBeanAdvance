@@ -73,7 +73,7 @@ class ARM7TDMI {
 
         CpuMode mode = get_mode_from_exception(exception);
         // writefln("Interrupt! Setting LR to %x", *pc);
-        writefln("Interrupt type: %s", get_exception_name(exception));
+        // writefln("Interrupt type: %s", get_exception_name(exception));
         // writefln("IF: %x", memory.read_halfword(0x4000202));
 
         register_file[mode.OFFSET + 14] = *pc - 2 * (get_bit_T() ? 2 : 4);
@@ -348,20 +348,20 @@ class ARM7TDMI {
             error("PC out of range!");
         }
 
-        if (_g_num_log > 0) {
-            _g_num_log--;
-            if (get_bit_T()) write("THM ");
-            else write("ARM ");
+        // if (_g_num_log > 0) {
+        //     _g_num_log--;
+        //     if (get_bit_T()) write("THM ");
+        //     else write("ARM ");
 
-            write(format("0x%x ", opcode));
+        //     write(format("0x%x ", opcode));
             
-            for (int j = 0; j < 16; j++)
-                write(format("%x ", regs[j]));
+        //     for (int j = 0; j < 16; j++)
+        //         write(format("%x ", regs[j]));
 
-            // write(format("%x ", *cpsr));
-            write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
-            writeln();
-        }
+        //     // write(format("%x ", *cpsr));
+        //     write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
+        //     writeln();
+        // }
 
         memory.can_read_from_bios = (*pc >> 24) == 0;
         execute(opcode);
