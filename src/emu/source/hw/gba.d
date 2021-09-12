@@ -52,7 +52,7 @@ public:
 
     Scheduler        scheduler;
 
-    this(Memory memory, KeyInput key_input) {
+    this(Memory memory, KeyInput key_input, string bios_path) {
         scheduler = new Scheduler();
 
         this.memory            = memory;
@@ -74,7 +74,7 @@ public:
         cpu.set_mode(cpu.MODE_SYSTEM);
 
         // load bios
-        ubyte[] bios = get_rom_as_bytes("source/gba_bios.bin");
+        ubyte[] bios = get_rom_as_bytes(bios_path);
         cpu.memory.bios[0 .. bios.length] = bios[0 .. bios.length];
     }
 
