@@ -177,21 +177,23 @@ class Canvas {
 
             // now that we know which window type we're in, let's calculate the color index for this pixel
 
-            int index = 0; // 0 is the backdrop index
+            int index    = 0; // 0 is the backdrop index
+            int priority = 4;
 
             for (int i = 0; i < 4; i++) {
                 int current_bg_id = sorted_backgrounds[i].id;
                 if (!bg_scanline[current_bg_id][x].transparent) {
-                    if (!obj_scanline[x].transparent && is_obj_pixel_visible(current_window_type) &&
-                         bg_scanline[current_bg_id][x].priority >= obj_scanline[x].priority) {
-                        index = obj_scanline[x].index;
-                        break;
-                    } else if (is_bg_pixel_visible(current_bg_id, current_window_type)) {
+                    if (is_bg_pixel_visible(current_bg_id, current_window_type)) {
                         index = bg_scanline[current_bg_id][x].index;
+                        priority = sorted_backgrounds[i].priority;
                         break;
                     }
                 }
             }
+
+            if (!obj_scanline[x].transparent && is_obj_pixel_visible(current_window_type) &&
+                    priority >= obj_scanline[x].priority)
+                index = obj_scanline[x].index;
 
             pixels_output[x] = hw.ppu.palette.get_color(index);
         }

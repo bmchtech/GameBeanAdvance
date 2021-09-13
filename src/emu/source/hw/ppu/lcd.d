@@ -61,10 +61,12 @@ public:
         hblank = true;
         if (hblank_irq_enabled) interrupt_cpu(Interrupt.LCD_HBLANK);
 
+
         if (!vblank) {
             canvas.reset();
             render();
-            canvas.composite();
+            
+            if (bg_mode != 3) canvas.composite();
 
             display_scanline();
         }

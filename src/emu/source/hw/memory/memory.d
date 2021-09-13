@@ -160,22 +160,7 @@ class Memory {
         waitstates[rom_region][AccessType.SEQUENTIAL   ][AccessSize.WORD    ] = ws_S + 1 + ws_S + 1;
     }
 
-    uint bios_open_bus_latch;
-
-    import std.conv;
-
-    uint read_bios_open_bus() {
-        writefln("Reading from BIOS as state %s", std.conv.to!string(open_bus_bios_state));
-
-        final switch (open_bus_bios_state) {
-            case OpenBusBiosState.STARTUP:    return 0;
-            case OpenBusBiosState.SOFT_RESET: return 0;
-
-            case OpenBusBiosState.DURING_IRQ: return 0xE25EF004;
-            case OpenBusBiosState.AFTER_IRQ:  return 0xE55EC002;
-            case OpenBusBiosState.AFTER_SWI:  return 0xE3A02004;
-        }
-    }
+    uint bios_open_bus_latch = 0;
 
     this() {
         video_buffer = new uint[][](240, 160);
@@ -254,24 +239,28 @@ class Memory {
 
                 case Region.BIOS: 
                     if (can_read_from_bios) {
-                        static if (is(T == uint  )) {
-                            bios_open_bus_latch = *((cast(uint*)    (&bios[0] + (address & (SIZE_BIOS - 1)))));
-                        } else { // ushort / ubyte (halfword / byte)
-                            bios_open_bus_latch &= 0xFFFF_0000;
-                            bios_open_bus_latch |= *((cast(ushort*) (&bios[0] + (address & (SIZE_BIOS - 1)))));
-                        }
+                        uint word_aligned_address = address & ~3;
+
+                        bios_open_bus_latch = *((cast(uint*) (&bios[0] + (word_aligned_address & ~3 & (SIZE_BIOS - 1)))));
+
+                        static if (is(T == uint))   return (bios_open_bus_latch);
+                        static if (is(T == ushort)) return (bios_open_bus_latch >> (16 * ((address >> 1) & 1))) & 0xFFFF;
+                        static if (is(T == ubyte))  return (bios_open_bus_latch >> (8  * ((address >> 1) & 3))) & 0xFF;
                     } else {
-                        writefln("Open bus!");
-                        static if (is(T == uint  )) writefln("word!");
-                        static if (is(T == ushort)) writefln("halfword!");
-                        static if (is(T == ubyte )) writefln("byte!");
-                        writefln("%x", bios_open_bus_latch);
-
+                    
+                        // writefln("OPEN BUS: %x", bios_open_bus_latch);
+                        static if (is(T == uint  )) return bios_open_bus_latch;
+                        static if (is(T == ushort)) return bios_open_bus_latch & 0xFFFF;
+                        static if (is(T == ubyte )) return bios_open_bus_latch & 0xFF;
                     }
+                
+                case 0xE: 
+                    writefln("Reading from %x", address);  
+                        static if (is(T == uint  )) writefln("uint");
+                        static if (is(T == ushort)) writefln("ushort");
+                        static if (is(T == ubyte )) writefln("ubyte");
 
-                    static if (is(T == uint  )) return bios_open_bus_latch;
-                    static if (is(T == ushort)) return bios_open_bus_latch & 0xFFFF;
-                    static if (is(T == ubyte )) return bios_open_bus_latch & 0xFF;
+                    return cast(T) 0x09C2;
 
                 default:
                     return *((cast(T*) (&rom[0] + (address & (SIZE_ROM - 1)))));
