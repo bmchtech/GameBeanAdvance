@@ -331,9 +331,9 @@ class ARM7TDMI {
         if (halted) return 1;
         // writefln("1");
 
-        if ((*pc >> 24) == 0x0) _g_num_log += 1000000;
+        // if ((*pc >> 24) == 0x0) _g_num_log += 1000000;
 
-        // Logger.instance.capture_cpu();
+        Logger.instance.capture_cpu();
         // if ( && !get_nth_bit(*cpsr, 7)) {
             // exception(CpuException.IRQ);
         // }
@@ -350,6 +350,7 @@ class ARM7TDMI {
 
         // if (_g_num_log > 0) {
         //     _g_num_log--;
+        //     write("%04x", _g_num_log);
         //     if (get_bit_T()) write("THM ");
         //     else write("ARM ");
 

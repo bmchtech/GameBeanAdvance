@@ -38,8 +38,9 @@ public:
         if (!timers[timer_id].enabled) return;
 
         timers[timer_id].value = timers[timer_id].reload_value;
-        // writeln(format("%x TS: %x. Scheduling another at %x", timer_id, num_cycles, num_cycles + ((0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment)));
-        timers[timer_id].timer_event = scheduler.add_event(() => timer_overflow(timer_id), (0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment);
+        ulong timestamp = scheduler.get_current_time();
+        // writeln(format("%x TS: %x. Scheduling another at %x", timer_id, timestamp, timestamp + ((0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment)));
+        timers[timer_id].timer_event = scheduler.add_event_relative_to_clock(() => timer_overflow(timer_id), (0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment);
 
         timers[timer_id].timestamp = num_cycles;
     }

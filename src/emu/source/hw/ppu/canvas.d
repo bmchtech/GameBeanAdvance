@@ -101,6 +101,7 @@ class Canvas {
 
             obj_scanline[x].transparent = true;
             obj_scanline[x].priority    = 4;
+            obj_window  [x]             = false;
         }
     }
 
