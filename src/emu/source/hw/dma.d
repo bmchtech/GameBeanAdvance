@@ -119,7 +119,7 @@ public:
         idle_cycles += bytes_to_transfer * 2;
 
         if (dma_channels[current_channel].irq_on_end) {
-            scheduler.add_event(() => interrupt_cpu(Interrupt.DMA_0 + current_channel), idle_cycles);
+            scheduler.add_event_relative_to_self(() => interrupt_cpu(Interrupt.DMA_0 + current_channel), idle_cycles);
         }
 
 
