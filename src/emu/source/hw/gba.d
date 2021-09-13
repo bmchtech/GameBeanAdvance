@@ -52,7 +52,7 @@ public:
 
     Scheduler        scheduler;
 
-    this(Memory memory, KeyInput key_input) {
+    this(Memory memory, KeyInput key_input, string bios_path) {
         scheduler = new Scheduler();
 
         this.memory            = memory;
@@ -74,7 +74,7 @@ public:
         cpu.set_mode(cpu.MODE_SYSTEM);
 
         // load bios
-        ubyte[] bios = get_rom_as_bytes("source/gba_bios.bin");
+        ubyte[] bios = get_rom_as_bytes(bios_path);
         cpu.memory.bios[0 .. bios.length] = bios[0 .. bios.length];
     }
 
@@ -91,38 +91,36 @@ public:
         enabled = true; 
     }
  
-
- 
-    ulong extra_cycles = 0;
+    long extra_cycles = 0;
     void cycle_at_least_n_times(int n) {
-        ulong times_cycled = extra_cycles;
-        // writefln("Cycling at least %x times, with overflow times_cycled: %x", n, extra_cycles);
-        // writefln("idle cycles: %x", idle_cycles);
-        
-        while (times_cycled < n) {
-            Event event = scheduler.remove_schedule_item();
-            // writefln("Cycling %x times", event.num_cycles);
-            
-            for (int i = 0; i < event.num_cycles; i++) {
-                maybe_cycle_cpu();
-                num_cycles++;
+
+        // warning(format("Asked to cycle %d times. Extra: %d", n, extra_cycles));
+
+        n -= extra_cycles;
+
+        while (n > 0) {
+            while (scheduler.should_cycle()) {
+                ulong times_cycled = cycle_components();
+                // warning(format("%d", times_cycled));
+
+                n -= times_cycled;
+                scheduler.tick(times_cycled);
             }
 
-            event.callback();
-            times_cycled += event.num_cycles;
+            scheduler.process_event();
+            
+            if (n <= 0) {
+                break;
+            }
         }
 
-        extra_cycles = times_cycled - n;
+        // warning(format("Cycled to %d.", n));
+
+        extra_cycles = -n;
     }
 
-    pragma(inline, true) void maybe_cycle_cpu() {
-        if (idle_cycles > 0) {
-            idle_cycles--;
-            return;
-        }
-
-        idle_cycles += cpu.cycle();
-        idle_cycles += dma_manager.check_dma();
+    pragma(inline, true) ulong cycle_components() {
+        return cpu.cycle() + dma_manager.check_dma();
     }
 
     bool interrupt_cpu() {

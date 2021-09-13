@@ -534,13 +534,13 @@ void run_01000101(ushort opcode) {
     int rm_value     = ~cpu.regs[rm] + 1; // the trick is implemented here
     int old_rd_value = cpu.regs[rd];
 
-    uint result = cpu.regs[rd] + rm_value;
+    uint result = cpu.read_reg(rd) + rm_value;
 
     cpu.set_flag_N(get_nth_bit(result, 31));
     cpu.set_flag_Z(result == 0);
 
     // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
-    cpu.set_flag_C(!(cpu.regs[rm] > cpu.regs[rd]));
+    cpu.set_flag_C(!(cpu.read_reg(rm) > cpu.read_reg(rd)));
 
     bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rm_value, 31);
     cpu.set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
@@ -552,7 +552,7 @@ void run_01000101(ushort opcode) {
 void run_01000110(ushort opcode) {
     ubyte rm = cast(ubyte) get_nth_bits(opcode, 3, 7);
     ubyte rd = cast(ubyte) (get_nth_bits(opcode, 0, 3) | (get_nth_bit(opcode, 7) << 3));
-    cpu.regs[rd] = cpu.regs[rm];
+    cpu.regs[rd] = cpu.read_reg(rm);
 
     if (rm == 15) cpu.regs[rd] -= 2;
 
@@ -567,7 +567,7 @@ void run_01000110(ushort opcode) {
 
 // branch exchange
 void run_01000111(ushort opcode) {
-    uint pointer = cpu.regs[get_nth_bits(opcode, 3, 7)];
+    uint pointer = cpu.read_reg(get_nth_bits(opcode, 3, 7));
 //    warning(format("%x %x", pointer, get_nth_bits(opcode, 3, 7)));
     *cpu.pc = pointer & ((pointer & 1) ? ~1 : ~3); // the PC must be even, so we & with 0xFFFFFFFE.
     cpu.set_bit_T(pointer & 1);
@@ -849,7 +849,6 @@ void run_1101COND(ushort opcode) {
     @IF( C  O !N  D) if ( cpu.get_flag_Z() || (cpu.get_flag_N() ^  cpu.get_flag_V())) {
     @IF( C  O  N !D) if (true) { // the compiler will optimize this so it's fine
         // warning(format("Conditional Branch Taken at %x", *cpu.pc));
-
         *cpu.pc += (cast(byte)(opcode & 0xFF)) * 2 - 2;
         cpu.refill_pipeline_partial();
         
@@ -871,7 +870,6 @@ void run_11100OFS(ushort opcode) {
     //DEBUG_MESSAGE("Unconditional Branch");
 
     int sign_extended = sign_extend(get_nth_bits(opcode, 0, 11) << 1, 12);
-
     *cpu.pc += sign_extended - 2;
     cpu.refill_pipeline_partial();
 
