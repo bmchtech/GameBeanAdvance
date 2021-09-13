@@ -57,7 +57,7 @@ public:
 
     void set_internal_sample_rate(uint sample_rate) {
         this.sample_rate = sample_rate;
-        scheduler.add_event(&sample, sample_rate);
+        scheduler.add_event_relative_to_self(&sample, sample_rate);
     }
 
 private:
@@ -129,7 +129,7 @@ private:
         push_to_buffer(Channel.R, [mixed_sample_R]);
         _audio_data.mutex.unlock_nothrow();
         
-        scheduler.add_event(&sample, sample_rate);
+        scheduler.add_event_relative_to_self(&sample, sample_rate);
     }
 
 // .......................................................................................................................

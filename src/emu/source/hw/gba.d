@@ -101,7 +101,7 @@ public:
         while (n > 0) {
             while (scheduler.should_cycle()) {
                 ulong times_cycled = cycle_components();
-                // warning(format("%d", times_cycled));
+                // writeln(format("%d", times_cycled));
 
                 n -= times_cycled;
                 scheduler.tick(times_cycled);

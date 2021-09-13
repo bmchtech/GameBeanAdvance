@@ -249,6 +249,7 @@ class Memory {
                     } else {
                     
                         // writefln("OPEN BUS: %x", bios_open_bus_latch);
+                        // _g_num_log += 20;
                         static if (is(T == uint  )) return bios_open_bus_latch;
                         static if (is(T == ushort)) return bios_open_bus_latch & 0xFFFF;
                         static if (is(T == ubyte )) return bios_open_bus_latch & 0xFF;
@@ -259,6 +260,9 @@ class Memory {
                         static if (is(T == uint  )) writefln("uint");
                         static if (is(T == ushort)) writefln("ushort");
                         static if (is(T == ubyte )) writefln("ubyte");
+                    _g_num_log += 200;
+
+                    // error("debug");
 
                     return cast(T) 0x09C2;
 

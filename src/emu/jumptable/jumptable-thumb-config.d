@@ -554,8 +554,6 @@ void run_01000110(ushort opcode) {
     ubyte rd = cast(ubyte) (get_nth_bits(opcode, 0, 3) | (get_nth_bit(opcode, 7) << 3));
     cpu.regs[rd] = cpu.read_reg(rm);
 
-    if (rm == 15) cpu.regs[rd] -= 2;
-
     if (rd == 15) {
         // the least significant bit of pc (cpu.regs[15]) must be clear.
         cpu.regs[rd] &= 0xFFFFFFFE;

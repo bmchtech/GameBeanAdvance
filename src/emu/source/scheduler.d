@@ -28,10 +28,18 @@ class Scheduler {
         current_timestamp = 0;
     }
 
-    ulong add_event(void delegate() callback, int delta_cycles) {
-        int insert_at = 0;
-        ulong timestamp = events[0].timestamp + delta_cycles;
+    ulong add_event_relative_to_clock(void delegate() callback, int delta_cycles) {
+        return add_event(callback, current_timestamp + delta_cycles);
+    }
 
+    ulong add_event_relative_to_self(void delegate() callback, int delta_cycles) {
+        return add_event(callback, events[0].timestamp + delta_cycles);
+    }
+
+    private ulong add_event(void delegate() callback, ulong timestamp) {
+        // writefln("Inserting event at %x + %x", events[0].timestamp, current_timestamp);
+
+        int insert_at;
         // TODO: use binary search
         for (; insert_at < events_in_queue; insert_at++) {
             if (timestamp < events[insert_at].timestamp) {
@@ -81,6 +89,10 @@ class Scheduler {
 
     pragma(inline, true) bool should_cycle() {
         return current_timestamp < events[0].timestamp;
+    }
+
+    pragma(inline, true) ulong get_current_time() {
+        return events[0].timestamp;
     }
 
     pragma(inline, true) void process_event() {

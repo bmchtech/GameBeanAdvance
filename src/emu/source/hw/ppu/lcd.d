@@ -51,8 +51,8 @@ public:
         canvas = new Canvas(this);
 
         this.scheduler = scheduler;
-        scheduler.add_event(&on_hblank_start, 240 * 4);
-        scheduler.add_event(&on_vblank_start, 308 * 160 * 4);
+        scheduler.add_event_relative_to_self(&on_hblank_start, 240 * 4);
+        scheduler.add_event_relative_to_self(&on_vblank_start, 308 * 160 * 4);
 
         // background_init(memory);
     }
@@ -73,7 +73,7 @@ public:
 
         if (!vblank) on_hblank_callback();
 
-        scheduler.add_event(&on_hblank_end, 68 * 4);
+        scheduler.add_event_relative_to_self(&on_hblank_end, 68 * 4);
     }
 
     void on_hblank_end() {
@@ -84,21 +84,21 @@ public:
         hblank = false;
         scanline++;
 
-        scheduler.add_event(&on_hblank_start, 240 * 4);
+        scheduler.add_event_relative_to_self(&on_hblank_start, 240 * 4);
     }
 
     void on_vblank_start() {
         vblank = true;
         if (vblank_irq_enabled) interrupt_cpu(Interrupt.LCD_VBLANK);
 
-        scheduler.add_event(&on_vblank_end, 308 * 68 * 4);
+        scheduler.add_event_relative_to_self(&on_vblank_end, 308 * 68 * 4);
     }
 
     void on_vblank_end() {
         scanline = 0;
         vblank = false;
 
-        scheduler.add_event(&on_vblank_start, 308 * 160 * 4);
+        scheduler.add_event_relative_to_self(&on_vblank_start, 308 * 160 * 4);
     }
 
     void render() {

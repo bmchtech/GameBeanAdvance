@@ -37,7 +37,7 @@ class NoiseChannel {
         cycles_elapsed = 0;
 
         if (shifter_event) scheduler.remove_event(shifter_event);
-        if (enabled)       shifter_event = scheduler.add_event(&shift, interval);
+        if (enabled)       shifter_event = scheduler.add_event_relative_to_self(&shift, interval);
     }
 
     short sample(int delta_cycles) {
@@ -59,7 +59,7 @@ class NoiseChannel {
             current_shifter_out = -1;
         }
 
-        shifter_event = scheduler.add_event(&shift, interval);
+        shifter_event = scheduler.add_event_relative_to_self(&shift, interval);
     }
 
     void set_counter_width(int counter_width) {
