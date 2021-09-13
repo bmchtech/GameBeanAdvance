@@ -45,7 +45,6 @@ public:
     }
 
     void timer_overflow(int x) {
-        import std.stdio;
         reload_timer(x);
         on_timer_overflow(x);
         // writefln("Overflow. IRQ Enable is %x", timers[x].irq_enable);
@@ -109,6 +108,7 @@ private:
 
 public:
     void write_TMXCNT_L(int target_byte, ubyte data, int x) {
+        writefln("TIMERCNT_L WRITE %x %x %x", target_byte, data, x);
         final switch (target_byte) {
             case 0b0: timers[x].reload_value = (timers[x].reload_value & 0xFF00) | (data << 0); break;
             case 0b1: timers[x].reload_value = (timers[x].reload_value & 0x00FF) | (data << 8); break;
@@ -116,6 +116,7 @@ public:
     }
 
     void write_TMXCNT_H(int target_byte, ubyte data, int x) {
+        writefln("TIMERCNT_H WRITE %x %x %x", target_byte, data, x);
         final switch (target_byte) {
             case 0b0: 
                 timers[x].increment  = increment_shifts[get_nth_bits(data, 0, 2)];
