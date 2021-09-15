@@ -524,10 +524,10 @@ private:
 
             bool doesnt_use_color_palettes = get_nth_bit(attribute_0, 13);
 
-            bool flipped_x = get_nth_bit(attribute_1, 12);
-            bool flipped_y = get_nth_bit(attribute_1, 13);
+            bool scaled    = get_nth_bit(attribute_0, 8);
+            bool flipped_x = !scaled && get_nth_bit(attribute_1, 12);
+            bool flipped_y = !scaled && get_nth_bit(attribute_1, 13);
 
-            bool scaled        = get_nth_bit(attribute_0, 8);
             int scaling_number = get_nth_bits(attribute_1, 9, 14);
 
             PMatrix p_matrix = PMatrix(
