@@ -20,7 +20,7 @@ class Logger {
     }
 
     void print() {
-        writeln("HEY!");
+        writeln("error!");
         cpu_trace.print_trace();
     }
     
