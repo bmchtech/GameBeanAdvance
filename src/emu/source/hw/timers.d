@@ -35,21 +35,26 @@ public:
 
     void reload_timer(int timer_id) {
         // check for cancellation
-        if (!timers[timer_id].enabled) return;
+        if (!timers[timer_id].enabled || timers[timer_id].countup) return;
 
         timers[timer_id].value = timers[timer_id].reload_value;
         ulong timestamp = scheduler.get_current_time();
         // writeln(format("%x TS: %x. Scheduling another at %x", timer_id, timestamp, timestamp + ((0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment)));
         timers[timer_id].timer_event = scheduler.add_event_relative_to_clock(() => timer_overflow(timer_id), (0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment);
 
-        timers[timer_id].timestamp = num_cycles;
+        timers[timer_id].timestamp = scheduler.get_current_time();
     }
 
     void timer_overflow(int x) {
         reload_timer(x);
         on_timer_overflow(x);
-        // writefln("Overflow. IRQ Enable is %x", timers[x].irq_enable);
         if (timers[x].irq_enable) interrupt_cpu(get_interrupt_from_timer_id(x));
+
+        // if the next timer is a slave (countup), then increment it
+        if (x < 3 && timers[x + 1].countup) {
+            if (timers[x + 1].value == 0xFFFF) timer_overflow(x + 1);
+            else timers[x + 1].value++;
+        }
     }
 
     Interrupt get_interrupt_from_timer_id(int x) {
@@ -63,10 +68,12 @@ public:
 
     ushort calculate_timer_value(int x) {
         // am i enabled? if not just return without calculation
-        if (!timers[x].enabled) return timers[x].value;
+        // also, if i'm countup, then im a slave timer. timers[x - 1] will
+        // control my value instead
+        if (!timers[x].enabled || timers[x].countup) return timers[x].value;
 
         // how many clock cycles has it been since we've been enabled?
-        ulong cycles_elapsed = timers[x].timestamp - num_cycles;
+        ulong cycles_elapsed = timers[x].timestamp - scheduler.get_current_time();
 
         // use timer increments to get the relevant bits, and mod by the reload value
         return cast(ushort) (cycles_elapsed >> timers[x].increment);
@@ -82,6 +89,7 @@ private:
         ushort  reload_value;
         ushort  value;
         int     increment;
+        int     increment_index;
         bool    enabled;
         bool    countup;
         bool    irq_enable;
@@ -120,6 +128,7 @@ public:
         writefln("TIMERCNT_H WRITE %x %x %x", target_byte, data, x);
         final switch (target_byte) {
             case 0b0: 
+                timers[x].increment_index = get_nth_bits(data, 0, 2);
                 timers[x].increment  = increment_shifts[get_nth_bits(data, 0, 2)];
                 timers[x].countup    = get_nth_bit (data, 2);
                 timers[x].irq_enable = get_nth_bit (data, 6);
@@ -134,7 +143,6 @@ public:
 
                 if (!get_nth_bit(data, 7)) {
                     timers[x].enabled = false;
-                    timers[x].value   = calculate_timer_value(x);
                 }
 
                 break;
@@ -155,10 +163,10 @@ public:
     ubyte read_TMXCNT_H(int target_byte, int x) {
         final switch (target_byte) {
             case 0b0: 
-                return cast(ubyte) ((timers[x].increment  << 0) | 
-                                    (timers[x].countup    << 2) |
-                                    (timers[x].irq_enable << 6) |
-                                    (timers[x].enabled    << 7));
+                return cast(ubyte) ((timers[x].increment_index  << 0) | 
+                                    (timers[x].countup          << 2) |
+                                    (timers[x].irq_enable       << 6) |
+                                    (timers[x].enabled          << 7));
             case 0b1: 
                 return 0;
         }
