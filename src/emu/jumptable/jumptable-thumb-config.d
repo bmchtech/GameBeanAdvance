@@ -568,6 +568,7 @@ void run_01000111(ushort opcode) {
     uint pointer = cpu.read_reg(get_nth_bits(opcode, 3, 7));
 //    warning(format("%x %x", pointer, get_nth_bits(opcode, 3, 7)));
     *cpu.pc = pointer & ((pointer & 1) ? ~1 : ~3); // the PC must be even, so we & with 0xFFFFFFFE.
+
     cpu.set_bit_T(pointer & 1);
     
     cpu.refill_pipeline_partial();
@@ -791,7 +792,7 @@ void run_11001REG(ushort opcode) {
                 update_rn = false;
             }
 
-            cpu.regs[i] = read_word_and_rotate(cpu.memory, current_address);
+            cpu.regs[i] = cpu.memory.read_word(current_address);
             current_address += 4;
             num_pushed++;
         }
