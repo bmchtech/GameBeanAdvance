@@ -40,7 +40,7 @@ public:
         timers[timer_id].value = timers[timer_id].reload_value;
         ulong timestamp = scheduler.get_current_time();
         // writeln(format("%x TS: %x. Scheduling another at %x", timer_id, timestamp, timestamp + ((0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment)));
-        timers[timer_id].timer_event = scheduler.add_event_relative_to_clock(() => timer_overflow(timer_id), (0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment);
+        timers[timer_id].timer_event = scheduler.add_event_relative_to_self(() => timer_overflow(timer_id), (0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment);
 
         timers[timer_id].timestamp = scheduler.get_current_time();
     }
