@@ -331,9 +331,9 @@ class ARM7TDMI {
         if (halted) return 1;
         // writefln("1");
 
-        // if ((*pc >> 24) == 0x0) _g_num_log += 1000000;
+        if (*pc == 0x0801E106) { _g_num_log += 1000; writefln("CPUSET");}
 
-        Logger.instance.capture_cpu();
+        // Logger.instance.capture_cpu();
         // if ( && !get_nth_bit(*cpsr, 7)) {
             // exception(CpuException.IRQ);
         // }
@@ -348,21 +348,21 @@ class ARM7TDMI {
             error("PC out of range!");
         }
 
-        // if (_g_num_log > 0) {
-        //     _g_num_log--;
-        //     write("%04x", _g_num_log);
-        //     if (get_bit_T()) write("THM ");
-        //     else write("ARM ");
+        if (_g_num_log > 0) {
+            _g_num_log--;
+            write("%04x", _g_num_log);
+            if (get_bit_T()) write("THM ");
+            else write("ARM ");
 
-        //     write(format("0x%x ", opcode));
+            write(format("0x%x ", opcode));
             
-        //     for (int j = 0; j < 16; j++)
-        //         write(format("%x ", regs[j]));
+            for (int j = 0; j < 16; j++)
+                write(format("%x ", regs[j]));
 
-        //     // write(format("%x ", *cpsr));
-        //     write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
-        //     writeln();
-        // }
+            // write(format("%x ", *cpsr));
+            write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
+            writeln();
+        }
 
         memory.can_read_from_bios = (*pc >> 24) == 0;
         execute(opcode);
@@ -402,6 +402,7 @@ class ARM7TDMI {
 
     void refill_pipeline() {
         memory.can_read_from_bios = (*pc >> 24) == 0;
+
         pipeline[0] = fetch();
         pipeline[1] = fetch();
 

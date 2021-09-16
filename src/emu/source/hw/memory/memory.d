@@ -27,6 +27,7 @@ class Memory {
     Fifo!ubyte fifo_b;
 
     MMIO mmio;
+    uint[2]* cpu_pipeline;
 
     ubyte[] bios;
     ubyte[] wram_board;
@@ -185,16 +186,21 @@ class Memory {
         this.mmio = mmio;
     }
 
+    // MUST BE CALLED BEFORE "REGULAR" OPEN BUS IS ACCESSED!
+    void set_cpu_pipeline(uint[2]* cpu_pipeline) {
+        this.cpu_pipeline = cpu_pipeline;
+    }
+
     pragma(inline, true) ubyte read_byte(uint address, AccessType access_type = AccessType.SEQUENTIAL) {
         return read!ubyte(address, access_type);
     }
 
     pragma(inline, true) ushort read_halfword(uint address, AccessType access_type = AccessType.SEQUENTIAL) {    
-        return read!ushort(address, access_type);
+        return read!ushort(address & ~1, access_type);
     }
 
     pragma(inline, true) uint read_word(uint address, AccessType access_type = AccessType.SEQUENTIAL) {
-        return read!uint(address, access_type);
+        return read!uint(address & ~3, access_type);
     }
 
     pragma(inline, true) void write_byte(uint address, ubyte value, AccessType access_type = AccessType.SEQUENTIAL) {
@@ -202,16 +208,21 @@ class Memory {
     }
 
     pragma(inline, true) void write_halfword(uint address, ushort value, AccessType access_type = AccessType.SEQUENTIAL) {
-        write!ushort(address, value, access_type);
+        write!ushort(address & ~1, value, access_type);
     }
 
     pragma(inline, true) void write_word(uint address, uint value, AccessType access_type = AccessType.SEQUENTIAL) {
-        write!uint(address, value, access_type);
+        write!uint(address & ~3, value, access_type);
     }
 
     private template read(T) {
         pragma(inline, true) T read(uint address, AccessType access_type = AccessType.SEQUENTIAL) {
             uint region = (address >> 24) & 0xF;
+
+            if (address >> 28) {
+                writeln(format("OPEN BUS. %x %x", cast(T) (*cpu_pipeline)[1], read_word(0x0300686c)));
+                return cast(T) (*cpu_pipeline)[1];
+            }
 
             // handle waitstates
             static if (is(T == uint  )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.WORD];
@@ -248,7 +259,7 @@ class Memory {
                         static if (is(T == ubyte))  return (bios_open_bus_latch >> (8  * ((address >> 1) & 3))) & 0xFF;
                     } else {
                     
-                        // writefln("OPEN BUS: %x", bios_open_bus_latch);
+                        writefln("OPEN BUS: %x", bios_open_bus_latch);
                         // _g_num_log += 20;
                         static if (is(T == uint  )) return bios_open_bus_latch;
                         static if (is(T == ushort)) return bios_open_bus_latch & 0xFFFF;
@@ -256,15 +267,17 @@ class Memory {
                     }
                 
                 case 0xE: 
-                    writefln("Reading from %x", address);  
-                        static if (is(T == uint  )) writefln("uint");
-                        static if (is(T == ushort)) writefln("ushort");
-                        static if (is(T == ubyte )) writefln("ubyte");
-                    _g_num_log += 200;
+                    // writefln("Reading from %x", address);  
+                    //     static if (is(T == uint  )) writefln("uint");
+                    //     static if (is(T == ushort)) writefln("ushort");
+                    //     static if (is(T == ubyte )) writefln("ubyte");
+                    // _g_num_log += 200;
 
                     // error("debug");
 
-                    return cast(T) 0x09C2;
+                    // flash stub
+                    if (address == 0x0E00_0000) return 0xC2;
+                    return 0x09; 
 
                 default:
                     return *((cast(T*) (&rom[0] + (address & (SIZE_ROM - 1)))));
@@ -325,7 +338,7 @@ class Memory {
         }
     }
 
-    void set_rgb(uint x, uint y, ubyte r, ubyte g, ubyte b) {
+    pragma(inline, true) void set_rgb(uint x, uint y, ubyte r, ubyte g, ubyte b) {
         video_buffer[x][y] = (r << 24) | (g << 16) | (b << 8) | (0xff);
     }
 }
