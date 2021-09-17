@@ -315,8 +315,8 @@ class MMIO {
             case WININ       + 1: ppu.write_WININ      (1, data); break;
             case WINOUT      + 0: ppu.write_WINOUT     (0, data); break;
             case WINOUT      + 1: ppu.write_WINOUT     (1, data); break;
-            // case MOSAIC      + 0: ppu.write_MOSAIC(data); break;
-            // case MOSAIC      + 1: ppu.write_MOSAIC(data); break;
+            case MOSAIC      + 0: ppu.write_MOSAIC     (0, data); break;
+            case MOSAIC      + 1: ppu.write_MOSAIC     (1, data); break;
             case BLDCNT      + 0: ppu.write_BLDCNT     (0, data); break;
             case BLDCNT      + 1: ppu.write_BLDCNT     (1, data); break;
             case BLDALPHA    + 0: ppu.write_BLDALPHA   (0, data); break;
