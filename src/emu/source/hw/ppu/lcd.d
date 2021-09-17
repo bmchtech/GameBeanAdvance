@@ -65,7 +65,8 @@ public:
         if (!vblank) {
             canvas.reset();
             render();
-            
+            canvas.apply_horizontal_mosaic(bg_mosaic_h, obj_mosaic_h);
+
             if (bg_mode != 3) canvas.composite();
 
             display_scanline();
@@ -742,6 +743,24 @@ public:
             case 0b1:
                 canvas.obj_window_bg_enable      = get_nth_bits(data, 0, 4);
                 canvas.obj_window_obj_enable     = get_nth_bit (data, 4);
+                break;
+        }
+    }
+
+    int bg_mosaic_h  = 0;
+    int bg_mosaic_v  = 0;
+    int obj_mosaic_h = 0;
+    int obj_mosaic_v = 0;
+    void write_MOSAIC(int target_byte, ubyte data) {
+        final switch (target_byte) {
+            case 0b0:
+                bg_mosaic_h = (data & 0xF) + 1;
+                bg_mosaic_v = (data >> 4)  + 1;
+                break;
+
+            case 0b1:
+                obj_mosaic_h = (data & 0xF) + 1;
+                obj_mosaic_v = (data >> 4)  + 1;
                 break;
         }
     }
