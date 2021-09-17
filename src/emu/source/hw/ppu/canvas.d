@@ -127,8 +127,8 @@ class Canvas {
         // priority is overwritten anyway. which is why we don't care if this obj pixel is transparent
         // or not, we just care about its priority
 
-        if (priority < obj_scanline[x].priority ||
-            (priority == obj_scanline[x].priority && obj_scanline[x].transparent)) {
+        if (obj_scanline[x].transparent ||
+            priority < obj_scanline[x].priority) {
             obj_scanline[x].transparent = transparent;
             obj_scanline[x].index       = index;
             obj_scanline[x].priority    = priority;
