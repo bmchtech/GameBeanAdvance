@@ -135,6 +135,43 @@ class Canvas {
         }
     }
 
+    public void apply_horizontal_mosaic(int bg_mosaic, int obj_mosaic) {
+        int mosaic_counter = 1;
+        int mosaic_x       = 0;
+
+        // mosaic is not applied often at all. lets check if its even applied in this scanline
+        if (bg_mosaic != 1) {
+            for (int x = 0; x < 240; x++) {
+                mosaic_counter--;
+
+                if (mosaic_counter == 0) {
+                    mosaic_counter = bg_mosaic;
+                    mosaic_x = x;
+                }
+
+                for (int bg = 0; bg < 4; bg++) {
+                    bg_scanline[bg][x] = bg_scanline[bg][mosaic_x];
+                }
+            }
+        } 
+
+        mosaic_counter = 1;
+        mosaic_x       = 0;
+
+        if (obj_mosaic != 1) {
+            for (int x = 0; x < 240; x++) {
+                mosaic_counter--;
+
+                if (mosaic_counter == 0) {
+                    mosaic_counter = obj_mosaic;
+                    mosaic_x = x;
+                }
+
+                obj_scanline[x] = obj_scanline[mosaic_x];
+            }
+        }
+    }
+
     public void composite() {
         // step 1: sort the backgrounds by priority
         sorted_backgrounds = backgrounds;
