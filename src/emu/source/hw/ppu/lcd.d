@@ -64,7 +64,14 @@ public:
 
         if (!vblank) {
             canvas.reset();
+
+            // horizontal mosaic is a post processing effect done on the canvas
+            // whereas vertical mosaic is a pre processing effect done on the
+            // lcd itself.
+            apply_vertical_mosaic();
+
             render();
+
             canvas.apply_horizontal_mosaic(bg_mosaic_h, obj_mosaic_h);
 
             if (bg_mode != 3) canvas.composite();
@@ -120,7 +127,7 @@ public:
                 // in mode 3, the dot and scanline (x and y) simply tell us where to read from in VRAM. The colors
                 // are stored directly, so we just read from VRAM and interpret as a 15bit highcolor
                 for (uint x = 0; x < 240; x++) {
-                    canvas.pixels_output[x] = get_pixel_from_color(memory.read_halfword(memory.OFFSET_VRAM + (x + scanline * 240) * 2));
+                    canvas.pixels_output[x] = get_pixel_from_color(memory.read_halfword(memory.OFFSET_VRAM + (x + apparent_bg_scanline * 240) * 2));
                 }
                     // writefln("%x", memory.read_halfword(memory.OFFSET_VRAM + (0 + 200 * 240) * 2));
                 // writefln("%x %x %x", memory.read_halfword(memory.OFFSET_VRAM + (0 + scanline * 240) * 2), memory.read_halfword(memory.OFFSET_VRAM + (120 * 230 * 2)), memory.vram[120 * 230 * 2]);
@@ -138,7 +145,7 @@ public:
 
                 for (uint x = 0; x < 240; x++) {
                     // the index in palette ram that we need to lookinto  is then found in the base frame.
-                    ubyte index = memory.read_byte(base_frame_address + (x + scanline * 240));
+                    ubyte index = memory.read_byte(base_frame_address + (x + apparent_bg_scanline * 240));
                     canvas.draw_bg_pixel(x, 2, index, 0, false);
                 }
 
@@ -201,6 +208,13 @@ private:
     //         maybe_draw_pixel_on_layer(layer, texture.palette_base_address, index, 0, draw_pos.x, draw_pos.y, index == 0);
     //     }
     // }
+
+    ushort apparent_bg_scanline;
+    ushort apparent_obj_scanline;
+    void apply_vertical_mosaic() {
+        apparent_bg_scanline  = cast(ushort) (scanline - (scanline % bg_mosaic_v));
+        apparent_obj_scanline = cast(ushort) (scanline - (scanline % obj_mosaic_v));
+    }
 
     pragma(inline, true) int get_tile_address__text(int tile_x, int tile_y, int screens_per_row, int screens_per_col) {
         // each screen is 32 x 32 tiles. so to get the tile offset within its screen
@@ -367,7 +381,7 @@ private:
 
         // the coordinates at the topleft of the background that we are drawing
         int topleft_x      = background.x_offset;
-        int topleft_y      = background.y_offset + scanline;
+        int topleft_y      = background.y_offset + apparent_bg_scanline;
 
         // the tile number at the topleft of the background that we are drawing
         int topleft_tile_x = topleft_x >> 3;
@@ -394,7 +408,7 @@ private:
             int tile = memory.read_halfword(screen_base_address + tile_address);
 
             int draw_x = tile_x_offset * 8 - tile_dx;
-            int draw_y = scanline;
+            int draw_y = apparent_bg_scanline;
 
             bool flipped_x = (tile >> 10) & 1;
             bool flipped_y = (tile >> 11) & 1;
@@ -424,7 +438,7 @@ private:
 
         // the coordinates at the topleft of the background that we are drawing
         Point texture_point = Point(background.x_offset_rotation,
-                                    background.y_offset_rotation + (scanline << 8)); // << 8 because _offset_rotation is 8-bit fixed point.
+                                    background.y_offset_rotation + (apparent_bg_scanline << 8)); // << 8 because _offset_rotation is 8-bit fixed point.
         
         // rotation/scaling backgrounds are squares
         int tiles_per_row = BG_ROTATION_SCALING_TILE_DIMENSIONS[background.screen_size];
@@ -515,7 +529,7 @@ private:
             int middle_x = topleft_x + width  * 4;
             int middle_y = topleft_y + height * 4;
 
-            if (scanline < topleft_y || scanline >= topleft_y + (height << 3)) continue;
+            if (apparent_obj_scanline < topleft_y || apparent_obj_scanline >= topleft_y + (height << 3)) continue;
 
             OBJMode obj_mode = cast(OBJMode) get_nth_bits(attribute_0, 10, 12);
 
@@ -553,8 +567,8 @@ private:
                                         get_nth_bits(attribute_2, 12, 16),
                                         flipped_x, flipped_y, get_nth_bit(attribute_0, 9));
 
-            if (doesnt_use_color_palettes) Render!(true,  false, false).texture(given_priority, texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline), obj_mode);
-            else                           Render!(false, false, false).texture(given_priority, texture, Point(topleft_x, topleft_y), Point(topleft_x, scanline), obj_mode);
+            if (doesnt_use_color_palettes) Render!(true,  false, false).texture(given_priority, texture, Point(topleft_x, topleft_y), Point(topleft_x, apparent_obj_scanline), obj_mode);
+            else                           Render!(false, false, false).texture(given_priority, texture, Point(topleft_x, topleft_y), Point(topleft_x, apparent_obj_scanline), obj_mode);
         }
     }
 
@@ -747,10 +761,10 @@ public:
         }
     }
 
-    int bg_mosaic_h  = 0;
-    int bg_mosaic_v  = 0;
-    int obj_mosaic_h = 0;
-    int obj_mosaic_v = 0;
+    int bg_mosaic_h  = 1;
+    int bg_mosaic_v  = 1;
+    int obj_mosaic_h = 1;
+    int obj_mosaic_v = 1;
     void write_MOSAIC(int target_byte, ubyte data) {
         final switch (target_byte) {
             case 0b0:
