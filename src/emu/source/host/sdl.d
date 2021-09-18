@@ -193,7 +193,7 @@ class GameBeanSDLHost {
                 ulong cycles_elapsed = _gba.scheduler.get_current_time() - cycle_timestamp;
                 cycle_timestamp = _gba.scheduler.get_current_time();
                 double speed = ((cast(double) cycles_elapsed) / (cast(double) cycles_per_second));
-                writefln("faps: %x", cast(char*) format("Speed: %f", speed));
+                // writefln("fps: %x", cast(char*) format("Speed: %f", speed));
                 // SDL_SetWindowTitle(window, cast(char*) format("FPS: %d", fps));
                 SDL_SetWindowTitle(window, cast(char*) format("Speed: %f", speed));
                 clockfor_log = 0;

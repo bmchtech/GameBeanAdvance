@@ -7,6 +7,7 @@ import hw.dma;
 import hw.timers;
 import hw.interrupts;
 import hw.keyinput;
+import hw.memory;
 
 import std.stdio;
 
@@ -131,7 +132,7 @@ class MMIO {
         mixin("void read_" ~ register_name ~ "_");
     }
 
-    this(GBA gba, PPU ppu, APU apu, DMAManager dma, TimerManager timers, InterruptManager interrupt, KeyInput keyinput) {
+    this(GBA gba, PPU ppu, APU apu, DMAManager dma, TimerManager timers, InterruptManager interrupt, KeyInput keyinput, Memory memory) {
         this.gba       = gba;
         this.ppu       = ppu;
         this.apu       = apu;
@@ -139,6 +140,7 @@ class MMIO {
         this.timers    = timers;
         this.interrupt = interrupt;
         this.keyinput  = keyinput;
+        this.memory    = memory;
     }
 
     ubyte read(uint address) {
@@ -454,8 +456,8 @@ class MMIO {
             case IME         + 0: interrupt.write_IME  (0, data); break;
             case IME         + 1: interrupt.write_IME  (1, data); break;
 
-            case WAITCNT     + 0: break; // TODO
-            case WAITCNT     + 1: break;
+            case WAITCNT     + 0: memory.write_WAITCNT (0, data); break;
+            case WAITCNT     + 1: memory.write_WAITCNT (1, data); break;
             case HALTCNT     + 0: gba.write_HALTCNT    (data); break;
 
             default: /*warning(format("MMIO Register %x written to with value %x; doesn't exist.", address, data));*/ break;
@@ -471,4 +473,5 @@ private:
     TimerManager     timers;
     InterruptManager interrupt;
     KeyInput         keyinput;
+    Memory           memory;
 }

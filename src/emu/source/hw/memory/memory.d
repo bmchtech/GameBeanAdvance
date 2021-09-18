@@ -28,6 +28,7 @@ class Memory {
 
     MMIO mmio;
     uint[2]* cpu_pipeline;
+    bool prefetch_enabled = false;
 
     ubyte[] bios;
     ubyte[] wram_board;
@@ -143,6 +144,9 @@ class Memory {
                 int ws_2_N  = (cast(int[]) [4, 3, 2, 8])[get_nth_bits(data, 0, 2)];
                 int ws_2_S  = (cast(int[]) [8, 1])      [get_nth_bit (data, 2)];
 
+                prefetch_enabled = get_nth_bit(data, 6);
+                writefln("%x", data);
+
                 set_waitstate_ROM(2, ws_2_N, ws_2_S);
                 break;
         }
@@ -220,14 +224,16 @@ class Memory {
             uint region = (address >> 24) & 0xF;
 
             if (address >> 28) {
-                writeln(format("OPEN BUS. %x %x", cast(T) (*cpu_pipeline)[1], read_word(0x0300686c)));
+                // writeln(format("OPEN BUS. %x %x", cast(T) (*cpu_pipeline)[1], read_word(0x0300686c)));
                 return cast(T) (*cpu_pipeline)[1];
             }
 
             // handle waitstates
-            static if (is(T == uint  )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.WORD];
-            static if (is(T == ushort)) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.HALFWORD];
-            static if (is(T == ubyte )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.BYTE];
+            if (region < 0x8 || !prefetch_enabled) {
+                static if (is(T == uint  )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.WORD];
+                static if (is(T == ushort)) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.HALFWORD];
+                static if (is(T == ubyte )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.BYTE];
+            }
 
             switch (region) {
                 case 0x1:                 return 0x0; // nothing is mapped here
@@ -256,10 +262,10 @@ class Memory {
 
                         static if (is(T == uint))   return (bios_open_bus_latch);
                         static if (is(T == ushort)) return (bios_open_bus_latch >> (16 * ((address >> 1) & 1))) & 0xFFFF;
-                        static if (is(T == ubyte))  return (bios_open_bus_latch >> (8  * ((address >> 1) & 3))) & 0xFF;
+                        static if (is(T == ubyte))  return (bios_open_bus_latch >> (8  * ((address >> 0) & 3))) & 0xFF;
                     } else {
                     
-                        writefln("OPEN BUS: %x", bios_open_bus_latch);
+                        // writefln("OPEN BUS: %x", bios_open_bus_latch);
                         // _g_num_log += 20;
                         static if (is(T == uint  )) return bios_open_bus_latch;
                         static if (is(T == ushort)) return bios_open_bus_latch & 0xFFFF;
@@ -290,9 +296,11 @@ class Memory {
             uint region = (address >> 24) & 0xF;
 
             // handle waitstates
-            static if (is(T == uint  )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.WORD];
-            static if (is(T == ushort)) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.HALFWORD];
-            static if (is(T == ubyte )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.BYTE];
+            if (region < 0x8 || !prefetch_enabled) {
+                static if (is(T == uint  )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.WORD];
+                static if (is(T == ushort)) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.HALFWORD];
+                static if (is(T == ubyte )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.BYTE];
+            }
 
             switch ((address >> 24) & 0xF) {
                 case Region.BIOS:         break; // incorrect - implement properly later
