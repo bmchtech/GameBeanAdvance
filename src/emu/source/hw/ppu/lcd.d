@@ -126,8 +126,10 @@ public:
             case 3: {
                 // in mode 3, the dot and scanline (x and y) simply tell us where to read from in VRAM. The colors
                 // are stored directly, so we just read from VRAM and interpret as a 15bit highcolor
+                uint bg_scanline = backgrounds[2].is_mosaic ? apparent_bg_scanline : scanline;
+
                 for (uint x = 0; x < 240; x++) {
-                    canvas.pixels_output[x] = get_pixel_from_color(memory.read_halfword(memory.OFFSET_VRAM + (x + apparent_bg_scanline * 240) * 2));
+                    canvas.pixels_output[x] = get_pixel_from_color(memory.read_halfword(memory.OFFSET_VRAM + (x + bg_scanline * 240) * 2));
                 }
                     // writefln("%x", memory.read_halfword(memory.OFFSET_VRAM + (0 + 200 * 240) * 2));
                 // writefln("%x %x %x", memory.read_halfword(memory.OFFSET_VRAM + (0 + scanline * 240) * 2), memory.read_halfword(memory.OFFSET_VRAM + (120 * 230 * 2)), memory.vram[120 * 230 * 2]);
@@ -142,10 +144,11 @@ public:
                 // be found using DISPCNT.
                 uint base_frame_address = memory.OFFSET_VRAM + disp_frame_select * 0xA000;
 
+                uint bg_scanline = backgrounds[2].is_mosaic ? apparent_bg_scanline : scanline;
 
                 for (uint x = 0; x < 240; x++) {
                     // the index in palette ram that we need to lookinto  is then found in the base frame.
-                    ubyte index = memory.read_byte(base_frame_address + (x + apparent_bg_scanline * 240));
+                    ubyte index = memory.read_byte(base_frame_address + (x + bg_scanline * 240));
                     canvas.draw_bg_pixel(x, 2, index, 0, false);
                 }
 
@@ -375,13 +378,15 @@ private:
         Background background = backgrounds[background_id];
         if (!background.enabled) return;
 
+        uint bg_scanline = background.is_mosaic ? apparent_bg_scanline : scanline;
+
         // relevant addresses for the background's tilemap and screen
         int screen_base_address = memory.OFFSET_VRAM + background.screen_base_block    * 0x800;
         int tile_base_address   = background.character_base_block * 0x4000;
 
         // the coordinates at the topleft of the background that we are drawing
         int topleft_x      = background.x_offset;
-        int topleft_y      = background.y_offset + apparent_bg_scanline;
+        int topleft_y      = background.y_offset + bg_scanline;
 
         // the tile number at the topleft of the background that we are drawing
         int topleft_tile_x = topleft_x >> 3;
@@ -408,7 +413,7 @@ private:
             int tile = memory.read_halfword(screen_base_address + tile_address);
 
             int draw_x = tile_x_offset * 8 - tile_dx;
-            int draw_y = apparent_bg_scanline;
+            int draw_y = bg_scanline;
 
             bool flipped_x = (tile >> 10) & 1;
             bool flipped_y = (tile >> 11) & 1;
@@ -432,13 +437,15 @@ private:
         Background background = backgrounds[background_id];
         if (!background.enabled) return;
 
+        uint bg_scanline = background.is_mosaic ? apparent_bg_scanline : scanline;
+
         // relevant addresses for the background's tilemap and screen
         int screen_base_address = memory.OFFSET_VRAM + background.screen_base_block * 0x800;
         int tile_base_address   = background.character_base_block * 0x4000;
 
         // the coordinates at the topleft of the background that we are drawing
         Point texture_point = Point(background.x_offset_rotation,
-                                    background.y_offset_rotation + (apparent_bg_scanline << 8)); // << 8 because _offset_rotation is 8-bit fixed point.
+                                    background.y_offset_rotation + (bg_scanline << 8)); // << 8 because _offset_rotation is 8-bit fixed point.
         
         // rotation/scaling backgrounds are squares
         int tiles_per_row = BG_ROTATION_SCALING_TILE_DIMENSIONS[background.screen_size];

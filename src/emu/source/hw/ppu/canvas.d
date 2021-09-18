@@ -150,7 +150,7 @@ class Canvas {
                 }
 
                 for (int bg = 0; bg < 4; bg++) {
-                    bg_scanline[bg][x] = bg_scanline[bg][mosaic_x];
+                    if (backgrounds[bg].is_mosaic) bg_scanline[bg][x] = bg_scanline[bg][mosaic_x];
                 }
             }
         } 
