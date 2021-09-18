@@ -348,16 +348,16 @@ class ARM7TDMI {
             error("PC out of range!");
         }
 
-        // if (_g_num_log > 0) {
+        // if (_g_num_log > 0 || true) {
         //     _g_num_log--;
-        //     write("%04x", _g_num_log);
+        //     // write("%04x", _g_num_log);
         //     if (get_bit_T()) write("THM ");
         //     else write("ARM ");
 
         //     write(format("0x%x ", opcode));
             
         //     for (int j = 0; j < 16; j++)
-        //         write(format("%x ", regs[j]));
+        //         write(format("%08x ", regs[j]));
 
         //     // write(format("%x ", *cpsr));
         //     write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
