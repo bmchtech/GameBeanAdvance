@@ -532,6 +532,7 @@ private:
 
             int topleft_x = sign_extend(cast(ubyte) get_nth_bits(attribute_1,  0,  9), 9);
             int topleft_y = get_nth_bits(attribute_0,  0,  8);
+            if (topleft_y > 160) topleft_y -= 256; 
 
             int middle_x = topleft_x + width  * 4;
             int middle_y = topleft_y + height * 4;

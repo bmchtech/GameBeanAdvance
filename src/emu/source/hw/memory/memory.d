@@ -229,11 +229,11 @@ class Memory {
             }
 
             // handle waitstates
-            if (region < 0x8 || !prefetch_enabled) {
+            // if (region < 0x8 || !prefetch_enabled) {
                 static if (is(T == uint  )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.WORD];
                 static if (is(T == ushort)) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.HALFWORD];
                 static if (is(T == ubyte )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.BYTE];
-            }
+            // }
 
             switch (region) {
                 case 0x1:                 return 0x0; // nothing is mapped here
