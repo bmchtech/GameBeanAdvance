@@ -106,18 +106,22 @@ private:
         short mixed_sample_L;
         short mixed_sample_R;
 
+        if (get_nth_bit(analog_channels_enable_L, 1)) mixed_sample_L += tone_channel .sample(sample_rate);
+        if (get_nth_bit(analog_channels_enable_R, 1)) mixed_sample_R += tone_channel .sample(sample_rate);
+        if (get_nth_bit(analog_channels_enable_L, 2)) mixed_sample_L += wave_channel .sample(sample_rate);
+        if (get_nth_bit(analog_channels_enable_R, 2)) mixed_sample_R += wave_channel .sample(sample_rate);
+        if (get_nth_bit(analog_channels_enable_L, 3)) mixed_sample_L += noise_channel.sample(sample_rate);
+        if (get_nth_bit(analog_channels_enable_R, 3)) mixed_sample_R += noise_channel.sample(sample_rate);
+
+        mixed_sample_L = cast(short) ((mixed_sample_L >> 3) * analog_channels_volume_L);
+        mixed_sample_R = cast(short) ((mixed_sample_R >> 3) * analog_channels_volume_R);
+
         if (dma_sounds[DirectSound.A].enabled_left ) mixed_sample_L += (cast(byte) dma_sounds[DirectSound.A].popped_sample);
         if (dma_sounds[DirectSound.A].enabled_right) mixed_sample_R += (cast(byte) dma_sounds[DirectSound.A].popped_sample);
         if (dma_sounds[DirectSound.B].enabled_left ) mixed_sample_L += (cast(byte) dma_sounds[DirectSound.B].popped_sample);
         if (dma_sounds[DirectSound.B].enabled_right) mixed_sample_R += (cast(byte) dma_sounds[DirectSound.B].popped_sample);
 
         // todo: make this code less repetitive
-        mixed_sample_L += noise_channel.sample(sample_rate);
-        mixed_sample_R += noise_channel.sample(sample_rate);
-        mixed_sample_L += wave_channel .sample(sample_rate);
-        mixed_sample_R += wave_channel .sample(sample_rate);
-        mixed_sample_L += tone_channel .sample(sample_rate);
-        mixed_sample_R += tone_channel .sample(sample_rate);
 
         mixed_sample_L += bias * 2;
         mixed_sample_R += bias * 2;
@@ -304,6 +308,24 @@ public:
         }
     }
 
+    ushort analog_channels_volume_L = 0b111;
+    ushort analog_channels_volume_R = 0b111;
+    uint analog_channels_enable_L   = 0b1111;
+    uint analog_channels_enable_R   = 0b1111;
+    void write_SOUNDCNT_L(int target_byte, ubyte data) {
+        final switch (target_byte) {
+            case 0b0:
+                analog_channels_volume_R = cast(ushort) get_nth_bits(data, 0, 3);
+                analog_channels_volume_L = cast(ushort) get_nth_bits(data, 4, 7);
+                break;
+
+            case 0b1:
+                analog_channels_enable_R = get_nth_bits(data, 0, 4); 
+                analog_channels_enable_L = get_nth_bits(data, 4, 8); 
+                break;
+        }
+    }
+
     ubyte read_SOUNDCNT_H(int target_byte) {
         final switch (target_byte) {
             case 0b0:
@@ -327,6 +349,17 @@ public:
                 return (bias & 0x00FF) >> 0;
             case 0b1:
                 return (bias & 0xFF00) >> 8;
+        }
+    }
+
+    ubyte read_SOUNDCNT_L(ubyte target_byte) {
+        final switch (target_byte) {
+            case 0b0:
+                return cast(ubyte) ((analog_channels_volume_R) |
+                                    (analog_channels_volume_L << 4));
+            case 0b1:
+                return cast(ubyte) ((analog_channels_enable_R) |
+                                    (analog_channels_enable_L << 4));
         }
     }
 }

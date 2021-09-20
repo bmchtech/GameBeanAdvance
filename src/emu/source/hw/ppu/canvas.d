@@ -46,7 +46,15 @@ enum WindowType {
 }
 
 enum Layer {
-    INVALID
+    A = 0,
+    B = 1
+}
+
+enum Blending {
+    NONE = 0,
+    ALPHA = 1,
+    BRIGHTNESS_INCREASE = 2,
+    BRIGHTNESS_DECREASE = 3
 }
 
 struct Window {
@@ -79,6 +87,22 @@ class Canvas {
         bool obj_window_obj_enable;
         bool obj_window_enable;
 
+        // fields for blending
+        Blending blending_type;
+        uint evy_coeff;
+        uint blend_a;
+        uint blend_b;
+
+        bool[SCREEN_WIDTH] obj_semitransparent;
+
+        // accessed as bg_target_pixel[layer][bg_id]. tells you if
+        // the bg is a target pixel on that layer
+        bool[4][2] bg_target_pixel;
+
+        // these are the same as bg_target_pixel, just without the need for a bg_id
+        bool[2]    obj_target_pixel;
+        bool[2]    backdrop_target_pixel;
+
     private:
         PPU ppu;
         Background[4] sorted_backgrounds;
@@ -99,9 +123,10 @@ class Canvas {
                 bg_scanline[bg][x].transparent = true;
             }
 
-            obj_scanline[x].transparent = true;
-            obj_scanline[x].priority    = 4;
-            obj_window  [x]             = false;
+            obj_scanline       [x].transparent = true;
+            obj_scanline       [x].priority    = 4;
+            obj_window         [x]             = false;
+            obj_semitransparent[x]             = false;
         }
     }
 
@@ -118,7 +143,7 @@ class Canvas {
         bg_scanline[bg][x].priority    = priority;
     }
 
-    public pragma(inline, true) void draw_obj_pixel(uint x, ushort index, int priority, bool transparent) {
+    public pragma(inline, true) void draw_obj_pixel(uint x, ushort index, int priority, bool transparent, bool semi_transparent) {
         if (x >= SCREEN_WIDTH) return;
         
         // obj rendeWindowTypering on the gba has a weird bug where if there are two overlapping obj pixels
@@ -132,6 +157,7 @@ class Canvas {
             obj_scanline[x].transparent = transparent;
             obj_scanline[x].index       = index;
             obj_scanline[x].priority    = priority;
+            obj_semitransparent[x]      = semi_transparent;
         }
     }
 
@@ -215,28 +241,91 @@ class Canvas {
 
             // now that we know which window type we're in, let's calculate the color index for this pixel
 
-            int index    = 0; // 0 is the backdrop index
-            int priority = 4;
+            int[2] index    = [0, 0]; // 0 is the backdrop index
+            int    priority = 4;
 
+            int blendable_pixels = 0;
+            int total_pixels     = 0;
+            bool processed_obj   = false;
+
+            // i hate it here
+            int current_bg_id;
             for (int i = 0; i < 4; i++) {
-                int current_bg_id = sorted_backgrounds[i].id;
+                if (!processed_obj && !obj_scanline[x].transparent && is_obj_pixel_visible(current_window_type) &&
+                        sorted_backgrounds[i].priority >= obj_scanline[x].priority) {
+                    index[total_pixels] = obj_scanline[x].index;
+
+                    if (obj_target_pixel[total_pixels] || obj_semitransparent[x]) {
+                        blendable_pixels++;
+                    }
+                    total_pixels++;
+
+                    processed_obj = true;
+                }
+
+                if (total_pixels == 2) break;
+
+                current_bg_id = sorted_backgrounds[i].id;
                 if (!bg_scanline[current_bg_id][x].transparent) {
                     if (is_bg_pixel_visible(current_bg_id, current_window_type)) {
-                        index = bg_scanline[current_bg_id][x].index;
+                        index[total_pixels] = bg_scanline[current_bg_id][x].index;
                         priority = sorted_backgrounds[i].priority;
-                        break;
+
+                        if (bg_target_pixel[total_pixels][current_bg_id]) {
+                            blendable_pixels++;
+                        }
+                        total_pixels++;
+                        break; 
                     }
                 }
+
+                if (total_pixels == 2) break;
             }
 
-            if (!obj_scanline[x].transparent && is_obj_pixel_visible(current_window_type) &&
-                    priority >= obj_scanline[x].priority)
-                index = obj_scanline[x].index;
-
-            pixels_output[x] = hw.ppu.palette.get_color(index);
+            // now to blend the two values together
+            // if (should_blend) writefln("fuck word");
+            pixels_output[x] = blend(index, blendable_pixels);
         }
+    }
 
-        // step 3: here's where i would do blending when i get around to it
+    // blends the two colors together based on blending type
+    private pragma(inline, true) Pixel blend(int[] index, int blendable_pixels) {
+        final switch (blending_type) {
+            case Blending.NONE:
+                return hw.ppu.palette.get_color(index[0]);
+
+            case Blending.BRIGHTNESS_INCREASE:
+                if (blendable_pixels < 1) goto case Blending.NONE;
+
+                Pixel output = hw.ppu.palette.get_color(index[0]);
+
+                output.r += cast(ubyte) (((31 - output.r) * evy_coeff) >> 4);
+                output.g += cast(ubyte) (((31 - output.g) * evy_coeff) >> 4);
+                output.b += cast(ubyte) (((31 - output.b) * evy_coeff) >> 4);
+                return output;
+
+            case Blending.BRIGHTNESS_DECREASE:
+                if (blendable_pixels < 1) goto case Blending.NONE;
+
+                Pixel output = hw.ppu.palette.get_color(index[0]);
+
+                output.r -= cast(ubyte) (((output.r) * evy_coeff) >> 4);
+                output.g -= cast(ubyte) (((output.g) * evy_coeff) >> 4);
+                output.b -= cast(ubyte) (((output.b) * evy_coeff) >> 4);
+                return output;
+
+            case Blending.ALPHA:
+                if (blendable_pixels < 2) goto case Blending.NONE;
+
+                Pixel input_A = hw.ppu.palette.get_color(index[0]);
+                Pixel input_B = hw.ppu.palette.get_color(index[1]);
+                Pixel output;
+
+                output.r = min(31, (blend_a * input_A.r + blend_b * input_B.r) >> 4);
+                output.g = min(31, (blend_a * input_A.g + blend_b * input_B.g) >> 4);
+                output.b = min(31, (blend_a * input_A.b + blend_b * input_B.b) >> 4);
+                return output;
+        }
     }
     
     // calculates if the bg pixel is visible under the effects of windowing
