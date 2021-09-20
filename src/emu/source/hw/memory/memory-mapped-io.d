@@ -188,8 +188,8 @@ class MMIO {
             // case SOUND4CNT_L + 1: return apu.read_SOUND4CNT_L(); 
             // case SOUND4CNT_H + 0: return apu.read_SOUND4CNT_H(); 
             // case SOUND4CNT_H + 1: return apu.read_SOUND4CNT_H(); 
-            case SOUNDCNT_L  + 0: //error(format("read from %x", address)); // ; // TODO: return apu.read_SOUNDCNT_L(); 
-            case SOUNDCNT_L  + 1: //error(format("read from %x", address)); // ; //       return apu.read_SOUNDCNT_L(); 
+            case SOUNDCNT_L  + 0: return apu.read_SOUNDCNT_L(0); 
+            case SOUNDCNT_L  + 1: return apu.read_SOUNDCNT_L(1); 
             case SOUNDCNT_H  + 0: return apu.read_SOUNDCNT_H(0); 
             case SOUNDCNT_H  + 1: return apu.read_SOUNDCNT_H(1); 
             case SOUNDCNT_X  + 0: //error(format("read from %x", address)); // return apu.read_SOUNDCNT_X(0); 
@@ -346,8 +346,8 @@ class MMIO {
             case SOUND4CNT_L + 1: apu.write_SOUND4CNT_L(1, data); break; 
             case SOUND4CNT_H + 0: apu.write_SOUND4CNT_H(0, data); break; 
             case SOUND4CNT_H + 1: apu.write_SOUND4CNT_H(1, data); break; 
-            case SOUNDCNT_L  + 0: break; // TODO: apu.write_SOUNDCNT_L (0, data); break; 
-            case SOUNDCNT_L  + 1: break; //       apu.write_SOUNDCNT_L (1, data); break; 
+            case SOUNDCNT_L  + 0: apu.write_SOUNDCNT_L (0, data); break; 
+            case SOUNDCNT_L  + 1: apu.write_SOUNDCNT_L (1, data); break; 
             case SOUNDCNT_H  + 0: apu.write_SOUNDCNT_H (0, data); break; 
             case SOUNDCNT_H  + 1: apu.write_SOUNDCNT_H (1, data); break; 
             // case SOUNDCNT_X  + 0: apu.write_SOUNDCNT_X (0, data); break; 

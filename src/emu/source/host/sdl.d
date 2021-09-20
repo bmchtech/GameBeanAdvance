@@ -60,6 +60,10 @@ class GameBeanSDLHost {
         gba_batch_enable_mutex = new Mutex();
     }
 
+    extern(C) int test(void* uwu) nothrow {
+        return 0;
+    }
+
     void init() {
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
             assert(0, "sdl init failed");
@@ -80,7 +84,7 @@ class GameBeanSDLHost {
         SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest"); // scale with pixel-perfect interpolation
 
         SDL_AudioSpec wanted;
-        SDL_AudioSpec received;
+        SDL_AudioSpec received;\
 
         /* Set the audio format */
         wanted.freq = 44100;
@@ -182,11 +186,11 @@ class GameBeanSDLHost {
             while (_audio_data.buffer[0].offset < _samples_per_callback * 4) {
                 _gba.cycle_at_least_n_times(_cycles_per_batch);
             }
-            fps++;
 
             if (clockfor_frame > nsec_per_frame) {
                 clockfor_frame = 0;
                 frame();
+                fps++;
             }
 
             if (clockfor_log > nsec_per_log) {
@@ -194,8 +198,8 @@ class GameBeanSDLHost {
                 cycle_timestamp = _gba.scheduler.get_current_time();
                 double speed = ((cast(double) cycles_elapsed) / (cast(double) cycles_per_second));
                 // writefln("fps: %x", cast(char*) format("Speed: %f", speed));
-                // SDL_SetWindowTitle(window, cast(char*) format("FPS: %d", fps));
-                SDL_SetWindowTitle(window, cast(char*) format("Speed: %f", speed));
+                SDL_SetWindowTitle(window, cast(char*) ("FPS: " ~ format("%d", fps)));
+                // SDL_SetWindowTitle(window, cast(char*) format("Speed: %f", speed));
                 clockfor_log = 0;
                 cycles_since_last_log = 0;
                 fps = 0;

@@ -22,7 +22,6 @@ configuration "default" {
 configuration "gperf" {
     dependency "gperftools_d" version="~>0.1.0"
     versions "gperf"
-    dflags "-g"
 }
 
 configuration "debug" {

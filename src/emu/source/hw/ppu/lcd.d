@@ -340,8 +340,8 @@ private:
                 static if (bpp8) {
                     ubyte index = memory.read_byte(texture.tile_base_address + ((tile_number & 0x3ff) * 64) + ofs_y * 8 + ofs_x);
                     
-                    if (obj_mode == OBJMode.NORMAL) {
-                        canvas.draw_obj_pixel(draw_pos.x, index + 256, priority, index == 0);
+                    if (obj_mode != OBJMode.OBJ_WINDOW) {
+                        canvas.draw_obj_pixel(draw_pos.x, index + 256, priority, index == 0, obj_mode == OBJMode.SEMI_TRANSPARENT);
                     } else {
                         if (index != 0) canvas.set_obj_window(draw_pos.x);
                     }
@@ -352,8 +352,8 @@ private:
                     index = !(ofs_x % 2) ? index & 0xF : index >> 4;
                     index += texture.palette * 16;
 
-                    if (obj_mode == OBJMode.NORMAL) {
-                        canvas.draw_obj_pixel(draw_pos.x, index + 256, priority, (index & 0xF) == 0);
+                    if (obj_mode != OBJMode.OBJ_WINDOW) {
+                        canvas.draw_obj_pixel(draw_pos.x, index + 256, priority, (index & 0xF) == 0, obj_mode == OBJMode.SEMI_TRANSPARENT);
                     } else {
                         if ((index & 0xF) != 0) canvas.set_obj_window(draw_pos.x);
                     }
@@ -542,11 +542,10 @@ private:
             OBJMode obj_mode = cast(OBJMode) get_nth_bits(attribute_0, 10, 12);
 
             uint base_tile_number = cast(ushort) get_nth_bits(attribute_2, 0, 10);
-
-            int tile_number_increment_per_row = obj_character_vram_mapping ? (get_nth_bit(attribute_0, 9) ? width >> 1: width) : 32;
+            int tile_number_increment_per_row = obj_character_vram_mapping ? (get_nth_bit(attribute_0, 9) ? width >> 1 : width) : 32;
 
             bool doesnt_use_color_palettes = get_nth_bit(attribute_0, 13);
-
+            if (obj_character_vram_mapping && doesnt_use_color_palettes) base_tile_number >>= 1;
             bool scaled    = get_nth_bit(attribute_0, 8);
             bool flipped_x = !scaled && get_nth_bit(attribute_1, 12);
             bool flipped_y = !scaled && get_nth_bit(attribute_1, 13);
@@ -662,14 +661,6 @@ private:
     bool  hblank_irq_enabled;
     bool  vcounter_irq_enabled;
     ubyte vcount_lyc;
-
-    // BLDCNT
-    SpecialEffect special_effect;
-    Layer         layer_backdrop;
-    Layer         layer_obj;
-
-    // BLDY
-    int evy_coeff;
 
 public:
     void write_DISPCNT(int target_byte, ubyte data) {
@@ -851,37 +842,29 @@ public:
     void write_BLDCNT(int target_byte, ubyte data) {
         final switch (target_byte) {
             case 0b0:
-                backgrounds[0].layer = cast(Layer) ((backgrounds[0].layer & 0x17) | (get_nth_bit(data, 0) << 3));
-                backgrounds[1].layer = cast(Layer) ((backgrounds[1].layer & 0x17) | (get_nth_bit(data, 1) << 3));
-                backgrounds[2].layer = cast(Layer) ((backgrounds[2].layer & 0x17) | (get_nth_bit(data, 2) << 3));
-                backgrounds[3].layer = cast(Layer) ((backgrounds[3].layer & 0x17) | (get_nth_bit(data, 3) << 3));
-                layer_obj            = cast(Layer) ((layer_obj            & 0x17) | (get_nth_bit(data, 4) << 3));
-                layer_backdrop       = cast(Layer) ((layer_backdrop       & 0x17) | (get_nth_bit(data, 5) << 3));
+                for (int bg = 0; bg < 4; bg++)
+                    canvas.bg_target_pixel[Layer.A][bg] = get_nth_bit(data, bg);
+                canvas.obj_target_pixel[Layer.A] = get_nth_bit(data, 4);
 
-                special_effect = cast(SpecialEffect) get_nth_bits(data, 6, 8);
+                canvas.blending_type = cast(Blending) get_nth_bits(data, 6, 8);
 
                 break;
             case 0b1:
-                backgrounds[0].layer = cast(Layer) ((backgrounds[0].layer & 0x0F) | (get_nth_bit(data, 0) << 4));
-                backgrounds[1].layer = cast(Layer) ((backgrounds[1].layer & 0x0F) | (get_nth_bit(data, 1) << 4));
-                backgrounds[2].layer = cast(Layer) ((backgrounds[2].layer & 0x0F) | (get_nth_bit(data, 2) << 4));
-                backgrounds[3].layer = cast(Layer) ((backgrounds[3].layer & 0x0F) | (get_nth_bit(data, 3) << 4));
-                layer_obj            = cast(Layer) ((layer_obj            & 0x17) | (get_nth_bit(data, 4) << 3));
-                layer_backdrop       = cast(Layer) ((layer_backdrop       & 0x0F) | (get_nth_bit(data, 5) << 4));
+                for (int bg = 0; bg < 4; bg++)
+                    canvas.bg_target_pixel[Layer.B][bg] = get_nth_bit(data, bg);
+                canvas.obj_target_pixel[Layer.B] = get_nth_bit(data, 4);
+
                 break;
         }
     }
 
-    int bld_a = 0;
-    int bld_b = 0;
-
     void write_BLDALPHA(int target_byte, ubyte data) {
         final switch (target_byte) {
             case 0b0:
-                bld_a = min(get_nth_bits(data, 0, 4), 16);
+                canvas.blend_a = min(get_nth_bits(data, 0, 4), 16);
                 break;
             case 0b1:
-                bld_b = min(get_nth_bits(data, 0, 4), 16);
+                canvas.blend_b = min(get_nth_bits(data, 0, 4), 16);
                 break;
         }
     }
@@ -889,8 +872,8 @@ public:
     void write_BLDY(int target_byte, ubyte data) {
         final switch (target_byte) {
             case 0b0:
-                evy_coeff = get_nth_bits(data, 0, 5);
-                if (evy_coeff > 16) evy_coeff = 16;
+                canvas.evy_coeff = get_nth_bits(data, 0, 5);
+                if (canvas.evy_coeff > 16) canvas.evy_coeff = 16;
                 break;
             case 0b1:
                 break;
@@ -951,31 +934,30 @@ public:
 
         final switch (target_byte) {
             case 0b0:
-                return cast(ubyte) (
-                (((cast(ubyte) backgrounds[0].layer >> 3) & 1) << 0) |
-                (((cast(ubyte) backgrounds[1].layer >> 3) & 1) << 1) |
-                (((cast(ubyte) backgrounds[2].layer >> 3) & 1) << 2) |
-                (((cast(ubyte) backgrounds[3].layer >> 3) & 1) << 3) |
-                (((cast(ubyte) layer_obj            >> 3) & 1) << 4) |
-                (((cast(ubyte) layer_backdrop       >> 3) & 1) << 5) |
-                (cast(ubyte) special_effect << 6));
+                ubyte return_value;
+                for (int bg = 0; bg < 4; bg++)
+                    return_value |= (canvas.bg_target_pixel[Layer.A][bg] << bg);
+                return_value |= canvas.obj_target_pixel[Layer.A] << 4;
+                return_value |= (cast(ubyte) canvas.blending_type) << 6;
+
+                return return_value;
+
             case 0b1:
-                return cast(ubyte) (
-                (((cast(ubyte) backgrounds[0].layer >> 4) & 1) << 0) |
-                (((cast(ubyte) backgrounds[1].layer >> 4) & 1) << 1) |
-                (((cast(ubyte) backgrounds[2].layer >> 4) & 1) << 2) |
-                (((cast(ubyte) backgrounds[3].layer >> 4) & 1) << 3) |
-                (((cast(ubyte) layer_obj            >> 4) & 1) << 4) |
-                (((cast(ubyte) layer_backdrop       >> 4) & 1) << 5));
+                ubyte return_value;
+                for (int bg = 0; bg < 4; bg++)
+                    return_value |= (canvas.bg_target_pixel[Layer.B][bg] << bg);
+                return_value |= (canvas.obj_target_pixel[Layer.B] << 4);
+
+                return return_value;
         }
     }
 
     ubyte read_BLDALPHA(int target_byte) {
         final switch (target_byte) {
             case 0b0:
-                return cast(ubyte) bld_a;
+                return cast(ubyte) canvas.blend_a;
             case 0b1:
-                return cast(ubyte) bld_b;
+                return cast(ubyte) canvas.blend_b;
         }
     }
 
