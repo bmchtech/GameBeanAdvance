@@ -5,7 +5,6 @@ public {
     import hw.ppu.canvas;
     import hw.ppu.pixel;
     import hw.ppu.lcd;
-    import hw.ppu.effects;
     import hw.ppu.point;
     import hw.ppu.layer;
     import hw.ppu.palette;

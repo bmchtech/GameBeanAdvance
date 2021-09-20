@@ -145,7 +145,7 @@ class Memory {
                 int ws_2_S  = (cast(int[]) [8, 1])      [get_nth_bit (data, 2)];
 
                 prefetch_enabled = get_nth_bit(data, 6);
-                writefln("%x", data);
+                // writefln("%x", data);
 
                 set_waitstate_ROM(2, ws_2_N, ws_2_S);
                 break;
