@@ -3,6 +3,7 @@ import hw.memory;
 import hw.keyinput;
 
 import util;
+import save_detector;
 
 import std.stdio;
 import std.conv;
@@ -44,6 +45,8 @@ void main(string[] args) {
 	GBA gba = new GBA(mem, key_input, a.option("bios"));
 	writeln("init gba");
 	gba.load_rom(a.arg("rompath"));
+	writefln("UwU: %s", to!string(detect_savetype(gba.memory.rom)));
+
 	writeln("loaded rom");
 
 	writeln("running sdl2 renderer");
