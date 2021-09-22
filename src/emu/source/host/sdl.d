@@ -84,7 +84,7 @@ class GameBeanSDLHost {
         SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest"); // scale with pixel-perfect interpolation
 
         SDL_AudioSpec wanted;
-        SDL_AudioSpec received;\
+        SDL_AudioSpec received;
 
         /* Set the audio format */
         wanted.freq = 44100;
