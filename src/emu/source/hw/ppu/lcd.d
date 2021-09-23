@@ -113,6 +113,7 @@ public:
         switch (bg_mode) {
             case 0: 
             case 1:
+            case 2:
                 render_sprites(0);
                 render_background(0);
                 render_sprites(1);
@@ -165,6 +166,8 @@ private:
     Memory memory;
     ushort dot; // the horizontal counterpart to scanlines.
     // uint[][] pixel_priorities; // the associated priorities with each pixel.
+
+    // some basic ways to access VRAM easier
     
 
     static int[][] BG_TEXT_SCREENS_DIMENSIONS = [
@@ -370,6 +373,7 @@ private:
             final switch (background.mode) {
                 case BackgroundMode.TEXT:             render_background__text(i);             break;
                 case BackgroundMode.ROTATION_SCALING: render_background__rotation_scaling(i); break;
+                case BackgroundMode.NONE:             break;
             }
         }
     }
@@ -614,12 +618,12 @@ private:
                 backgrounds[0].mode = BackgroundMode.TEXT;
                 backgrounds[1].mode = BackgroundMode.TEXT;
                 backgrounds[2].mode = BackgroundMode.ROTATION_SCALING;
-                backgrounds[3].mode = BackgroundMode.ROTATION_SCALING;
+                backgrounds[3].mode = BackgroundMode.NONE;
                 break;
 
             case 2:
-                backgrounds[0].mode = BackgroundMode.ROTATION_SCALING;
-                backgrounds[1].mode = BackgroundMode.ROTATION_SCALING;
+                backgrounds[0].mode = BackgroundMode.NONE;
+                backgrounds[1].mode = BackgroundMode.NONE;
                 backgrounds[2].mode = BackgroundMode.ROTATION_SCALING;
                 backgrounds[3].mode = BackgroundMode.ROTATION_SCALING;
                 break;
@@ -664,6 +668,7 @@ private:
 
 public:
     void write_DISPCNT(int target_byte, ubyte data) {
+        // writefln("PLEASAE");
         if (target_byte == 0) {
             bg_mode                    = get_nth_bits(data, 0, 3);
             disp_frame_select          = get_nth_bit (data, 4);

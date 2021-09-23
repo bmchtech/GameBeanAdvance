@@ -162,6 +162,7 @@ class GameBeanSDLHost {
 
         // // 16.6666 ms
         enum nsec_per_frame = 16_666_660;
+        enum msec_per_frame = 16;
 
         auto stopwatch = new NSStopwatch();
         // long clockfor_cycle = 0;
@@ -170,6 +171,7 @@ class GameBeanSDLHost {
 
         enum sec_per_log = 1;
         enum nsec_per_log = sec_per_log * 1_000_000_000;
+        enum msec_per_log = sec_per_log * 1_000;
         enum cycles_per_log = cycles_per_second * sec_per_log;
         long clockfor_log = 0;
         ulong cycles_since_last_log = 0;
@@ -178,8 +180,14 @@ class GameBeanSDLHost {
 
         int fps = 0;
         ulong cycle_timestamp = 0;
+
+        ulong start_timestamp = SDL_GetTicks();
+
         while (running) {
-            long elapsed = stopwatch.update();
+            ulong end_timestamp = SDL_GetTicks();
+            ulong elapsed = end_timestamp - start_timestamp;
+            start_timestamp = end_timestamp;
+
             clockfor_log   += elapsed;
             clockfor_frame += elapsed;
 
@@ -187,13 +195,13 @@ class GameBeanSDLHost {
                 _gba.cycle_at_least_n_times(_cycles_per_batch);
             }
 
-            if (clockfor_frame > nsec_per_frame) {
+            if (clockfor_frame > msec_per_frame) {
                 clockfor_frame = 0;
                 frame();
                 fps++;
             }
 
-            if (clockfor_log > nsec_per_log) {
+            if (clockfor_log > msec_per_log) {
                 ulong cycles_elapsed = _gba.scheduler.get_current_time() - cycle_timestamp;
                 cycle_timestamp = _gba.scheduler.get_current_time();
                 double speed = ((cast(double) cycles_elapsed) / (cast(double) cycles_per_second));

@@ -35,7 +35,8 @@ struct Background {
 
 enum BackgroundMode {
     TEXT,
-    ROTATION_SCALING
+    ROTATION_SCALING,
+    NONE
 }
 
 static Background[] backgrounds = [

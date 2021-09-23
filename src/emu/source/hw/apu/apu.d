@@ -346,9 +346,9 @@ public:
     ubyte read_SOUNDBIAS(int target_byte) {
         final switch (target_byte) {
             case 0b0:
-                return (bias & 0x00FF) >> 0;
+                return (bias & 0x007F) << 1;
             case 0b1:
-                return (bias & 0xFF00) >> 8;
+                return (bias & 0x0180) >> 7;
         }
     }
 

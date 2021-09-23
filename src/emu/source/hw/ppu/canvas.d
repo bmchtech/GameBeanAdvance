@@ -283,7 +283,6 @@ class Canvas {
             }
 
             // now to blend the two values together
-            // if (should_blend) writefln("fuck word");
             pixels_output[x] = blend(index, blendable_pixels);
         }
     }
