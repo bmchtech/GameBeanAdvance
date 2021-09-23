@@ -67,8 +67,8 @@ private:
 public:
     void write_IF(int target_byte, ubyte data) {
         final switch (target_byte) {
-            case 0b0: interrupt_request &= (0xFF00) | ((~data) << 0); break;
-            case 0b1: interrupt_request &= (0x00FF) | ((~data) << 8); break;
+            case 0b0: interrupt_request &= (0xFF00) | (~(cast(uint) (data)) << 0); break;
+            case 0b1: interrupt_request &= (0x00FF) | (~(cast(uint) (data)) << 8); break;
         }
     }
 

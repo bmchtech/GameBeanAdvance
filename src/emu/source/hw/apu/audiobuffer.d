@@ -57,7 +57,6 @@ auto __gshared _stopwatch = new StopWatch(AutoStart.no);
 
 extern (C) {
     static void callback(void* userdata, ubyte* stream, int len) nothrow {
-
         AudioData* audio_data = cast(AudioData*) userdata;
         if (audio_data.mutex is null) return;
 
