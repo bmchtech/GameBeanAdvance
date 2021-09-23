@@ -235,13 +235,18 @@ class Memory {
                 static if (is(T == ubyte )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.BYTE];
             // }
 
+            uint shift;
+            static if (is(T == uint  )) shift = 2;
+            static if (is(T == ushort)) shift = 1;
+            static if (is(T == ubyte )) shift = 0;
+
             switch (region) {
                 case 0x1:                 return 0x0; // nothing is mapped here
-                case Region.WRAM_BOARD:   return *((cast(T*) (&wram_board[0]  + (address & (SIZE_WRAM_BOARD  - 1)))));
-                case Region.WRAM_CHIP:    return *((cast(T*) (&wram_chip[0]   + (address & (SIZE_WRAM_CHIP   - 1)))));
-                case Region.PALETTE_RAM:  return *((cast(T*) (&palette_ram[0] + (address & (SIZE_PALETTE_RAM - 1)))));
-                case Region.VRAM:         return *((cast(T*) (&vram[0]        + (address % SIZE_VRAM))));
-                case Region.OAM:          return *((cast(T*) (&oam[0]         + (address & (SIZE_OAM         - 1)))));
+                case Region.WRAM_BOARD:   return (cast(T*) wram_board) [(address & (SIZE_WRAM_BOARD  - 1)) >> shift]; 
+                case Region.WRAM_CHIP:    return (cast(T*) wram_chip)  [(address & (SIZE_WRAM_CHIP   - 1)) >> shift];
+                case Region.PALETTE_RAM:  return (cast(T*) palette_ram)[(address & (SIZE_PALETTE_RAM - 1)) >> shift];
+                case Region.VRAM:         return (cast(T*) vram)       [(address & (SIZE_VRAM        - 1)) >> shift];
+                case Region.OAM:          return (cast(T*) oam)        [(address & (SIZE_OAM         - 1)) >> shift]; 
 
                 case Region.IO_REGISTERS:
                     static if (is(T == uint)) return 
@@ -286,7 +291,7 @@ class Memory {
                     return 0x09; 
 
                 default:
-                    return *((cast(T*) (&rom[0] + (address & (SIZE_ROM - 1)))));
+                    return (cast(T*) rom)[(address & (SIZE_ROM - 1)) >> shift];
             }
         }
     }
@@ -294,6 +299,11 @@ class Memory {
     private template write(T) {
         pragma(inline, true) void write(uint address, T value, AccessType access_type = AccessType.SEQUENTIAL) {
             uint region = (address >> 24) & 0xF;
+
+            uint shift;
+            static if (is(T == uint  )) shift = 2;
+            static if (is(T == ushort)) shift = 1;
+            static if (is(T == ubyte )) shift = 0;
 
             // handle waitstates
             if (region < 0x8 || !prefetch_enabled) {
@@ -305,10 +315,10 @@ class Memory {
             switch ((address >> 24) & 0xF) {
                 case Region.BIOS:         break; // incorrect - implement properly later
                 case 0x1:                 break; // nothing is mapped here
-                case Region.WRAM_BOARD:   *(cast(T*) (&wram_board[0]  + (address & (SIZE_WRAM_BOARD  - 1)))) = value; break;
-                case Region.WRAM_CHIP:    *(cast(T*) (&wram_chip[0]   + (address & (SIZE_WRAM_CHIP   - 1)))) = value; break;
+                case Region.WRAM_BOARD:   (cast(T*) wram_board) [(address & (SIZE_WRAM_BOARD  - 1)) >> shift] = value; break;
+                case Region.WRAM_CHIP:    (cast(T*) wram_chip)  [(address & (SIZE_WRAM_CHIP   - 1)) >> shift] = value; break;
                 case Region.PALETTE_RAM:  
-                    *(cast(T*) (&palette_ram[0] + (address & (SIZE_PALETTE_RAM - 1)))) = value; 
+                    (cast(T*) palette_ram) [(address & (SIZE_PALETTE_RAM  - 1)) >> shift] = value; 
                     uint index = (address & (SIZE_PALETTE_RAM - 1)) >> 1;
 
                     static if (is(T == uint)) {
@@ -321,8 +331,8 @@ class Memory {
                     }
                     break;
 
-                case Region.VRAM:         *(cast(T*) (&vram[0]        + (address % SIZE_VRAM)))              = value; break;
-                case Region.OAM:          *(cast(T*) (&oam[0]         + (address & (SIZE_OAM         - 1)))) = value; break;
+                case Region.VRAM:         (cast(T*) vram) [(address & (SIZE_VRAM  - 1)) >> shift] = value; break;
+                case Region.OAM:          (cast(T*) oam) [(address & (SIZE_OAM   - 1)) >> shift] = value; break;
 
                 case Region.IO_REGISTERS: 
                     static if (is(T == uint)) {
