@@ -1,6 +1,7 @@
 module hw.keyinput;
 
 import hw.memory;
+import hw.cpu;
 
 import std.stdio;
 
@@ -41,6 +42,7 @@ class KeyInput {
     }
 
     void set_key(int code, bool pressed) {
+        if (code == 3) _g_num_log += 10000000;
         if (pressed) {
             keyinput &= ~(0b1 << code);
         } else {
