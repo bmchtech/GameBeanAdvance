@@ -22,6 +22,8 @@ version (LDC) {
 ulong _g_num_log              = 0;
 ulong _g_cpu_cycles_remaining = 0;
 
+__gshared bool  _g_log = false;
+
 class ARM7TDMI {
 
     Memory memory;
@@ -348,25 +350,29 @@ class ARM7TDMI {
             error("PC out of range!");
         }
 
-        if (*pc == 0) {
+        if (*pc == 0xC) {
             error("rebooting");
         }
 
-        if (_g_num_log > 0) {
-            _g_num_log--;
-            // write("%04x", _g_num_log);
-            if (get_bit_T()) write("THM ");
-            else write("ARM ");
-
-            write(format("0x%x ", opcode));
-            
-            for (int j = 0; j < 16; j++)
-                write(format("%08x ", regs[j]));
-
-            // write(format("%x ", *cpsr));
-            write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
-            writeln();
+        if (memory.read_word(0x0300_000C) == 0x60840000) {
+            writefln("something weird happened right here!!!!!");
         }
+
+        // if (_g_log) {
+        //     _g_num_log--;
+        //     // write("%04x", _g_num_log);
+        //     if (get_bit_T()) write("THM ");
+        //     else write("ARM ");
+
+        //     write(format("0x%x ", opcode));
+            
+        //     for (int j = 0; j < 16; j++)
+        //         write(format("%08x ", regs[j]));
+
+        //     // write(format("%x ", *cpsr));
+        //     write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
+        //     writeln();
+        // }
 
         memory.can_read_from_bios = (*pc >> 24) == 0;
         execute(opcode);

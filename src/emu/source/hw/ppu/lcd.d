@@ -30,6 +30,7 @@ class PPU {
 public:
     void delegate(uint) interrupt_cpu;
     void delegate()     on_hblank_callback;
+    void delegate()     frontend_vblank_callback;
     
     enum Pixel RESET_PIXEL = Pixel(0, 0, 0);
 
@@ -55,6 +56,10 @@ public:
         scheduler.add_event_relative_to_self(&on_vblank_start, 308 * 160 * 4);
 
         // background_init(memory);
+    }
+
+    void set_frontend_vblank_callback(void delegate() frontend_vblank_callback) {
+        this.frontend_vblank_callback = frontend_vblank_callback;
     }
 
     void on_hblank_start() {
@@ -105,6 +110,7 @@ public:
     void on_vblank_end() {
         scanline = 0;
         vblank = false;
+        frontend_vblank_callback();
 
         scheduler.add_event_relative_to_self(&on_vblank_start, 308 * 160 * 4);
     }
@@ -509,6 +515,8 @@ private:
     }
 
     void render_sprites(int given_priority) {
+        if (!sprites_enabled) return;
+
         // Very useful guide for attributes! https://problemkaputt.de/gbatek.htm#lcdobjoamattributes
         for (int sprite = 0; sprite < 128; sprite++) {
             if (get_nth_bits(memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 4), 10, 12) != given_priority) continue;
@@ -657,6 +665,7 @@ private:
     bool is_character_vram_mapping_one_dimensional; // 2 = 2-dimensional
     bool obj_character_vram_mapping;
     bool forced_blank;
+    bool sprites_enabled;
 
     // DISPSTAT
     public bool  vblank;
@@ -681,6 +690,7 @@ public:
             backgrounds[1].enabled     = get_nth_bit (data, 1);
             backgrounds[2].enabled     = get_nth_bit (data, 2);
             backgrounds[3].enabled     = get_nth_bit (data, 3);
+            sprites_enabled            = get_nth_bit (data, 4);
             canvas.windows[0].enabled  = get_nth_bit (data, 5);
             canvas.windows[1].enabled  = get_nth_bit (data, 6);
             canvas.obj_window_enable   = get_nth_bit (data, 7);
@@ -896,7 +906,8 @@ public:
             return (backgrounds[0].enabled << 0) |
                    (backgrounds[1].enabled << 1) |
                    (backgrounds[2].enabled << 2) |
-                   (backgrounds[3].enabled << 3);
+                   (backgrounds[3].enabled << 3) |
+                   (sprites_enabled        << 4);
         }
     }
 
@@ -935,7 +946,6 @@ public:
     }
 
     ubyte read_BLDCNT(int target_byte) {
-        // writefln("help");
 
         final switch (target_byte) {
             case 0b0:
