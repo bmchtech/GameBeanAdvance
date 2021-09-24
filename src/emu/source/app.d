@@ -9,6 +9,7 @@ import std.stdio;
 import std.conv;
 
 import bindbc.sdl;
+import bindbc.opengl;
 
 import host.sdl;
 
@@ -28,12 +29,12 @@ void main(string[] args) {
 
 	util.verbosity_level = a.occurencesOf("verbose");
 
-	SDLSupport ret = loadSDL();
-	if (ret != sdlSupport) {
-		if (ret == SDLSupport.badLibrary) {
-			stderr.writeln("bad sdl library");
-		} else if (ret == SDLSupport.noLibrary) {
-			stderr.writeln("no sdl library");
+	auto ret_SDL = loadSDL();
+	if (ret_SDL != sdlSupport) {
+		if (ret_SDL == SDLSupport.badLibrary) {
+			error("bad sdl library");
+		} else if (ret_SDL == SDLSupport.noLibrary) {
+			error("no sdl library");
 		}
 	}
 	writeln("loaded sdl2");

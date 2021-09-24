@@ -57,8 +57,15 @@ auto __gshared _stopwatch = new StopWatch(AutoStart.no);
 
 extern (C) {
     static void callback(void* userdata, ubyte* stream, int len) nothrow {
+
         AudioData* audio_data = cast(AudioData*) userdata;
         if (audio_data.mutex is null) return;
+
+        try {
+            while (_audio_data.buffer[0].offset < _samples_per_callback * 4) {
+                _gba.cycle_at_least_n_times(_cycles_per_batch);
+            }
+        } catch (Exception e) {}
 
         short* out_stream = cast(short*) stream;
         memset(out_stream, 0, len);
