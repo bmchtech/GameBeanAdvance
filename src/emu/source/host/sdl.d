@@ -125,7 +125,7 @@ class GameBeanSDLHost {
         if( glerror != GL_NO_ERROR ) {
             error("what the FUCK");
         }
-        renderer = SDL_CreateRenderer(window, -1, SDL_RendererFlags.SDL_RENDERER_PRESENTVSYNC);
+        renderer = SDL_CreateRenderer(window, -1, SDL_RendererFlags.SDL_RENDERER_ACCELERATED | SDL_RendererFlags.SDL_RENDERER_PRESENTVSYNC);
 
         screen_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                 SDL_TextureAccess.SDL_TEXTUREACCESS_STREAMING,
@@ -161,6 +161,7 @@ class GameBeanSDLHost {
         writeln("Complete.");
     }
 
+    int fps = 0;
     void run() {
         running = true;
 
@@ -200,10 +201,11 @@ class GameBeanSDLHost {
 
         // writefln("ns for single: %s, ns for batch: %s, ", nsec_per_cycle, nsec_per_gba_cyclebatch);
 
-        int fps = 0;
         ulong cycle_timestamp = 0;
 
         ulong start_timestamp = SDL_GetTicks();
+
+        _gba.set_frontend_vblank_callback(&frame);
 
         while (running) {
             ulong end_timestamp = SDL_GetTicks();
@@ -213,15 +215,24 @@ class GameBeanSDLHost {
             clockfor_log   += elapsed;
             clockfor_frame += elapsed;
 
-            // while (_audio_data.buffer[0].offset < _samples_per_callback * 4) {
-            //     _gba.cycle_at_least_n_times(_cycles_per_batch);
-            // }
+            _gba.cycle_at_least_n_times(_cycles_per_batch);
 
-            // if (clockfor_frame > msec_per_frame) {
-                clockfor_frame = 0;
-                frame();
-                fps++;
-            // }
+            SDL_Event event;
+            while (SDL_PollEvent(&event)) {
+                switch (event.type) {
+                case SDL_QUIT:
+                    exit();
+                    break;
+                case SDL_KEYDOWN:
+                    on_input(event.key.keysym.sym, true);
+                    break;
+                case SDL_KEYUP:
+                    on_input(event.key.keysym.sym, false);
+                    break;
+                default:
+                    break;
+                }
+            }
 
             if (clockfor_log > msec_per_log) {
                 ulong cycles_elapsed = _gba.scheduler.get_current_time() - cycle_timestamp;
@@ -277,28 +288,7 @@ private:
     uint sample_rate;
 
     void frame() {
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            switch (event.type) {
-            case SDL_QUIT:
-                exit();
-                break;
-            case SDL_KEYDOWN:
-                on_input(event.key.keysym.sym, true);
-                if (event.key.keysym.sym == SDL_Keycode.SDLK_ESCAPE) {
-                    exit();
-                }
-                break;
-            case SDL_KEYUP:
-                on_input(event.key.keysym.sym, false);
-                break;
-            default:
-                break;
-            }
-        }
-
-        frame_count++;
-
+        fps++;
         // sync from GBA video buffer
         for (int j = 0; j < GBA_SCREEN_HEIGHT; j++) {
             for (int i = 0; i < GBA_SCREEN_WIDTH; i++) {
@@ -307,48 +297,48 @@ private:
             }
         }
 
-        // SDL_RenderClear(renderer);
+        SDL_RenderClear(renderer);
 
-        // // copy pixel buffer to texture
-        // auto px_vp = cast(void*) pixels;
-        // SDL_UpdateTexture(screen_tex, null, px_vp, GBA_SCREEN_WIDTH * 4);
+        // copy pixel buffer to texture
+        auto px_vp = cast(void*) pixels;
+        SDL_UpdateTexture(screen_tex, null, px_vp, GBA_SCREEN_WIDTH * 4);
 
-        // // copy texture to scren
-        // const SDL_Rect dest = SDL_Rect(0, 0, GBA_SCREEN_WIDTH * screen_scale, GBA_SCREEN_HEIGHT * screen_scale);
-        // SDL_RenderCopy(renderer, screen_tex, null, &dest);
+        // copy texture to scren
+        const SDL_Rect dest = SDL_Rect(0, 0, GBA_SCREEN_WIDTH * screen_scale, GBA_SCREEN_HEIGHT * screen_scale);
+        SDL_RenderCopy(renderer, screen_tex, null, &dest);
 
-        // // render present
-        // SDL_RenderPresent(renderer);
+        // render present
+        SDL_RenderPresent(renderer);
         // glTexImage2D(GL_TEXTURE_2D,0,GL_RGB5_A1,GBA_SCREEN_WIDTH,GBA_SCREEN_HEIGHT,0,GL_BGRA,GL_UNSIGNED_INT_8_8_8_8, cast(void*) pixels);
         // glDrawArrays(GL_TRIANGLE_STRIP,0,4);
-        glClear(GL_COLOR_BUFFER_BIT);
-        glBindTexture(GL_TEXTURE_2D, g_gl_texture);
-        glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RGBA,
-        GBA_SCREEN_WIDTH,
-        GBA_SCREEN_HEIGHT,
-        0,
-        GL_BGRA,
-        GL_UNSIGNED_INT_8_8_8_8,
-        cast(void*) pixels
-        );
-        glBegin(GL_QUADS);
-        glTexCoord2f(0, 0);
-        glVertex2f(-1.0f, 1.0f);
-        glTexCoord2f(1.0f, 0);
-        glVertex2f(1.0f, 1.0f);
-        glTexCoord2f(1.0f, 1.0f);
-        glVertex2f(1.0f, -1.0f);
-        glTexCoord2f(0, 1.0f);
-        glVertex2f(-1.0f, -1.0f);
-        glEnd();
+        // glClear(GL_COLOR_BUFFER_BIT);
+        // glBindTexture(GL_TEXTURE_2D, g_gl_texture);
+        // glTexImage2D(
+        // GL_TEXTURE_2D,
+        // 0,
+        // GL_RGBA,
+        // GBA_SCREEN_WIDTH,
+        // GBA_SCREEN_HEIGHT,
+        // 0,
+        // GL_BGRA,
+        // GL_UNSIGNED_INT_8_8_8_8,
+        // cast(void*) pixels
+        // );
+        // glBegin(GL_QUADS);
+        // glTexCoord2f(0, 0);
+        // glVertex2f(-1.0f, 1.0f);
+        // glTexCoord2f(1.0f, 0);
+        // glVertex2f(1.0f, 1.0f);
+        // glTexCoord2f(1.0f, 1.0f);
+        // glVertex2f(1.0f, -1.0f);
+        // glTexCoord2f(0, 1.0f);
+        // glVertex2f(-1.0f, -1.0f);
+        // glEnd();
 
-        auto glerror = glGetError();
-        if( glerror != GL_NO_ERROR ) {
-            error(format("what the FUCK, %s", glerror));
-        }
+        // auto glerror = glGetError();
+        // if( glerror != GL_NO_ERROR ) {
+        //     error(format("what the FUCK, %s", glerror));
+        // }
 
         SDL_GL_SwapWindow(window);
     }

@@ -34,7 +34,7 @@ enum Channel {
     R = 1
 }
 
-enum BUFFER_SIZE = 0x100000;
+enum BUFFER_SIZE = 0x1000;
 // enum INDEX_MASK  = BUFFER_SIZE - 1;
 
 __gshared AudioData _audio_data;
@@ -61,21 +61,15 @@ extern (C) {
         AudioData* audio_data = cast(AudioData*) userdata;
         if (audio_data.mutex is null) return;
 
-        try {
-            while (_audio_data.buffer[0].offset < _samples_per_callback * 4) {
-                _gba.cycle_at_least_n_times(_cycles_per_batch);
-            }
-        } catch (Exception e) {}
-
         short* out_stream = cast(short*) stream;
         memset(out_stream, 0, len);
         audio_data.mutex.lock_nothrow();
 
             // try { writefln("Details: %x %x", len, audio_data.buffer[0].offset);} catch (Exception e) {}
 
-            if (len / 4 > audio_data.buffer[Channel.L].offset) {
-                // try { writefln("Emulator too slow!"); } catch (Exception e) {}
-            }
+            // if (len / 4 > audio_data.buffer[Channel.L].offset) {
+            //     try { writefln("Emulator too slow!"); } catch (Exception e) {}
+            // }
 
             len = cast(int) (len > (audio_data.buffer[Channel.L].offset * 4) ? (audio_data.buffer[Channel.L].offset * 4) : len);
 
@@ -105,6 +99,7 @@ extern (C) {
 }
 
 __gshared void push_to_buffer(Channel channel, short[] data) {
+    if ((_audio_data.buffer[channel].offset + data.length) >= BUFFER_SIZE) return;
     for (int i = 0; i < data.length; i++) {
         _audio_data.buffer[channel].data[_audio_data.buffer[channel].offset + i] = data[i];
     }
