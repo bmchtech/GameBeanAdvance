@@ -294,7 +294,7 @@ class Canvas {
                 return hw.ppu.palette.get_color(index[0]);
 
             case Blending.BRIGHTNESS_INCREASE:
-                if (blendable_pixels < 1) goto case Blending.NONE;
+                // if (blendable_pixels < 1) goto case Blending.NONE;
 
                 Pixel output = hw.ppu.palette.get_color(index[0]);
 
@@ -304,7 +304,7 @@ class Canvas {
                 return output;
 
             case Blending.BRIGHTNESS_DECREASE:
-                if (blendable_pixels < 1) goto case Blending.NONE;
+                // if (blendable_pixels < 1) goto case Blending.NONE;
 
                 Pixel output = hw.ppu.palette.get_color(index[0]);
 

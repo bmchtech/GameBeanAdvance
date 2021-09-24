@@ -79,6 +79,10 @@ public:
         cpu.memory.bios[0 .. bios.length] = bios[0 .. bios.length];
     }
 
+    void set_frontend_vblank_callback(void delegate() frontend_vblank_callback) {
+        ppu.set_frontend_vblank_callback(frontend_vblank_callback);
+    }
+
     void set_internal_sample_rate(uint sample_rate) {
         apu.set_internal_sample_rate(sample_rate);
     }
