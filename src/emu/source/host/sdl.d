@@ -10,6 +10,8 @@ import diag.logger;
 import util;
 
 import bindbc.sdl;
+import bindbc.opengl;
+import bindbc.sdl.image;
 
 import std.stdio;
 import std.conv;
@@ -68,11 +70,61 @@ class GameBeanSDLHost {
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
             assert(0, "sdl init failed");
 
-        window = SDL_CreateWindow("GameBean Advance", SDL_WINDOWPOS_UNDEFINED,
-                SDL_WINDOWPOS_UNDEFINED, GBA_SCREEN_WIDTH * screen_scale,
-                GBA_SCREEN_HEIGHT * screen_scale, SDL_WindowFlags.SDL_WINDOW_SHOWN);
+        window = SDL_CreateWindow(
+                "GameBean Advance", 
+                SDL_WINDOWPOS_UNDEFINED,
+                SDL_WINDOWPOS_UNDEFINED, 
+                GBA_SCREEN_WIDTH * screen_scale,
+                GBA_SCREEN_HEIGHT * screen_scale, 
+                SDL_WindowFlags.SDL_WINDOW_SHOWN | SDL_WindowFlags.SDL_WINDOW_OPENGL);
         assert(window !is null, "sdl window init failed!");
 
+
+        SDL_GLContext gContext = SDL_GL_CreateContext(window);
+        auto ret_GL = loadOpenGL();
+
+        if (ret_GL != glSupport) {
+            error(format("shit happened %s", ret_GL));
+        }
+
+        if(ret_GL == GLSupport.noLibrary) {
+            error("This application requires the GLFW library.");
+        }
+
+        else if (ret_GL == GLSupport.badLibrary) {
+            error("The version of the GLFW library on your system is too low. Please upgrade.");
+        }
+
+        writefln("loaded opengl");
+
+        SDL_GL_MakeCurrent(window, gContext);
+        SDL_GL_SetSwapInterval(0);
+    
+        SDL_GL_SetAttribute(SDL_GL_RED_SIZE,    8);
+        SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,  8);
+        SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,   8);
+        SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE, 32);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1 );  
+        
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        glEnable(GL_TEXTURE_2D);
+        glGenTextures(1, &g_gl_texture);
+        glBindTexture(GL_TEXTURE_2D, g_gl_texture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glClearColor(0, 100, 0, 1);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        auto glerror = glGetError();
+        if( glerror != GL_NO_ERROR ) {
+            error("what the FUCK");
+        }
         renderer = SDL_CreateRenderer(window, -1, SDL_RendererFlags.SDL_RENDERER_PRESENTVSYNC);
 
         screen_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
@@ -106,40 +158,10 @@ class GameBeanSDLHost {
         this.sample_rate      = received.freq;
         _samples_per_callback = received.samples;
 
-        version (Imgui) {
-            writefln("Setting up imgui");
-            
-            loadSDL();
-	        // DerelictImgui.load();
-            // loadImGui();
-            // loadOpenGL();
-            igCreateContext();
-            // ImGuiIO* io = igGetIO();
-            // igStyleColorsDark(null);
-
-            // ImGui_ImplSDL2_InitForOpenGL(window, null);
-
-            // Setup Dear ImGui context
-            // IMGUI_CHECKVERSION();
-	        // DerelictImgui.load("cimgui.so");
-            // igCreateContext();
-            // ImGuiIO& io = ImGui::GetIO(); (void)io;
-
-            // // Setup Dear ImGui style
-            // ImGui::StyleColorsDark();
-
-            // // Setup Platform/Renderer bindings
-            // // window is the SDL_Window*
-            // // context is the SDL_GLContext
-            // ImGui_ImplSDL2_InitForOpenGL(window, context);
-            // ImGui_ImplOpenGL3_Init();
-        }
-
         writeln("Complete.");
     }
 
     void run() {
-        readln();
         running = true;
 
         int num_batches       = this.sample_rate / _samples_per_callback;
@@ -191,15 +213,15 @@ class GameBeanSDLHost {
             clockfor_log   += elapsed;
             clockfor_frame += elapsed;
 
-            while (_audio_data.buffer[0].offset < _samples_per_callback * 4) {
-                _gba.cycle_at_least_n_times(_cycles_per_batch);
-            }
+            // while (_audio_data.buffer[0].offset < _samples_per_callback * 4) {
+            //     _gba.cycle_at_least_n_times(_cycles_per_batch);
+            // }
 
-            if (clockfor_frame > msec_per_frame) {
+            // if (clockfor_frame > msec_per_frame) {
                 clockfor_frame = 0;
                 frame();
                 fps++;
-            }
+            // }
 
             if (clockfor_log > msec_per_log) {
                 ulong cycles_elapsed = _gba.scheduler.get_current_time() - cycle_timestamp;
@@ -234,6 +256,8 @@ class GameBeanSDLHost {
 
     bool cpu_tracing_enabled = false;
     CpuTrace trace;
+
+    GLuint g_gl_texture;
 
     void enable_cpu_tracing(int trace_length) {
         cpu_tracing_enabled = true;
@@ -283,37 +307,50 @@ private:
             }
         }
 
-        SDL_RenderClear(renderer);
+        // SDL_RenderClear(renderer);
 
-        // copy pixel buffer to texture
-        auto px_vp = cast(void*) pixels;
-        SDL_UpdateTexture(screen_tex, null, px_vp, GBA_SCREEN_WIDTH * 4);
+        // // copy pixel buffer to texture
+        // auto px_vp = cast(void*) pixels;
+        // SDL_UpdateTexture(screen_tex, null, px_vp, GBA_SCREEN_WIDTH * 4);
 
-        // copy texture to scren
-        const SDL_Rect dest = SDL_Rect(0, 0, GBA_SCREEN_WIDTH * screen_scale, GBA_SCREEN_HEIGHT * screen_scale);
-        SDL_RenderCopy(renderer, screen_tex, null, &dest);
+        // // copy texture to scren
+        // const SDL_Rect dest = SDL_Rect(0, 0, GBA_SCREEN_WIDTH * screen_scale, GBA_SCREEN_HEIGHT * screen_scale);
+        // SDL_RenderCopy(renderer, screen_tex, null, &dest);
 
-        // render present
-        SDL_RenderPresent(renderer);
+        // // render present
+        // SDL_RenderPresent(renderer);
+        // glTexImage2D(GL_TEXTURE_2D,0,GL_RGB5_A1,GBA_SCREEN_WIDTH,GBA_SCREEN_HEIGHT,0,GL_BGRA,GL_UNSIGNED_INT_8_8_8_8, cast(void*) pixels);
+        // glDrawArrays(GL_TRIANGLE_STRIP,0,4);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glBindTexture(GL_TEXTURE_2D, g_gl_texture);
+        glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA,
+        GBA_SCREEN_WIDTH,
+        GBA_SCREEN_HEIGHT,
+        0,
+        GL_BGRA,
+        GL_UNSIGNED_INT_8_8_8_8,
+        cast(void*) pixels
+        );
+        glBegin(GL_QUADS);
+        glTexCoord2f(0, 0);
+        glVertex2f(-1.0f, 1.0f);
+        glTexCoord2f(1.0f, 0);
+        glVertex2f(1.0f, 1.0f);
+        glTexCoord2f(1.0f, 1.0f);
+        glVertex2f(1.0f, -1.0f);
+        glTexCoord2f(0, 1.0f);
+        glVertex2f(-1.0f, -1.0f);
+        glEnd();
 
-        version (Imgui) {
-            igBegin("Hello, world!", null, cast(ImGuiWindowFlags)0);                          // Create a window called "Hello, world!" and append into it.
-
-            igText("This is some useful text.");               // Display some text (you can use a format strings too)
-            // igCheckbox("Demo Window", true);      // Edit bools storing our window open/close state
-            // igCheckbox("Another Window", true);
-
-            igSliderFloat("float", &f, 0.0f, 1.0f, null, 0);            // Edit 1 float using a slider from 0.0f to 1.0f
-            //igColorEdit3("clear color", cast(float*)&clear_color.x); // Edit 3 floats representing a color
-
-            if (igButton("Button", ImVec2(0,0)))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            igSameLine(0,0);
-            igText("counter = %d", counter);
-
-            igText("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / igGetIO().Framerate, igGetIO().Framerate);
-            igEnd();
+        auto glerror = glGetError();
+        if( glerror != GL_NO_ERROR ) {
+            error(format("what the FUCK, %s", glerror));
         }
+
+        SDL_GL_SwapWindow(window);
     }
 
     enum KEYMAP = [

@@ -7,13 +7,15 @@ targetType "executable"
 
 dependency "commandr" version="~>0.2.0"
 dependency "bindbc-sdl" version="~>0.20.0"
+dependency "bindbc-opengl" version="~>1.0.0"
 dependency "silly" version="~>1.1.1"
 
 sourceFiles "jumptable/jumptable_arm.d" "jumptable/jumptable_thumb.d"
 importPaths "./jumptable" "./source" "../../lib"
 preGenerateCommands "bash ./generate_jumptables.sh"
 
-dflags "--boundscheck=off" "-O3" "-inline"
+// dflags "--boundscheck=off" "-O3" "-inline"
+versions "GL_AllowDeprecated"
 
 configuration "default" {
     versions "default"
