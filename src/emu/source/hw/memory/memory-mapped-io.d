@@ -236,8 +236,8 @@ class MMIO {
             case IME         + 0: return interrupt.read_IME  (0); 
             case IME         + 1: return interrupt.read_IME  (1); 
 
-            case WAITCNT     + 0: return 0; // TODO
-            case WAITCNT     + 1: return 0;
+            case WAITCNT     + 0: return memory.read_WAITCNT (0); // TODO
+            case WAITCNT     + 1: return memory.read_WAITCNT (1);
 
             default: /*warning(format("MMIO Register %x read from; doesn't exist.", address));*/ return 0;
         }
