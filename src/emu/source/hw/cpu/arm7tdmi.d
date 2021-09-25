@@ -351,7 +351,7 @@ class ARM7TDMI {
         }
 
         if (*pc == 0xC) {
-            // error("rebooting");
+            error("rebooting");
         }
 
         if (memory.read_word(0x0300_000C) == 0x60840000) {
