@@ -23,13 +23,17 @@ version (gperf) {
 }
 
 void main(string[] args) {
-	auto a = new Program("gamebean-emu", "0.1").summary("GameBean Advance").add(new Flag("v", "verbose",
-			"turns on more verbose output").repeating).add(new Option("s", "scale", "render scale")
-			.optional.defaultValue("1")).add(new Argument("rompath", "path to rom file")).add(new Option("b",
-			"bios", "path to bios file").optional.defaultValue("./gba_bios.bin")).add(
-			new Flag("p", "pause", "pause until enter on stdin"))
-		.add(new Option("t", "cputrace", "display cpu trace on crash").optional.defaultValue("0")).parse(
-				args);
+	// dfmt off
+	auto a = new Program("gamebean-emu", "0.1").summary("GameBean Advance")
+		.add(new Flag("v", "verbose", "turns on more verbose output").repeating)
+		.add(new Option("s", "scale", "render scale").optional.defaultValue("1"))
+		.add(new Argument("rompath", "path to rom file"))
+		.add(new Option("b", "bios", "path to bios file").optional.defaultValue("./gba_bios.bin"))
+		.add(new Flag("p", "pause", "pause until enter on stdin"))
+		.add(new Flag("k", "bootscreen", "skips bios bootscreen and starts the rom directly"))
+		.add(new Option("t", "cputrace", "display cpu trace on crash").optional.defaultValue("0"))
+		.parse(args);
+	// dfmt on
 
 	util.verbosity_level = a.occurencesOf("verbose");
 
@@ -49,6 +53,8 @@ void main(string[] args) {
 	KeyInput key_input = new KeyInput(mem);
 	auto bios_data = load_rom_as_bytes(a.option("bios"));
 	GBA gba = new GBA(mem, key_input, bios_data);
+	if (a.flag("bootscreen")) gba.skip_bios_bootscreen();
+	
 	writeln("init gba");
 
 	// load rom
