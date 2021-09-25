@@ -542,7 +542,7 @@ private:
             if (get_nth_bit(attribute_0, 9)) width  *= 2;
             if (get_nth_bit(attribute_0, 9)) height *= 2;
 
-            int topleft_x = sign_extend(cast(ubyte) get_nth_bits(attribute_1,  0,  9), 9);
+            int topleft_x = sign_extend(cast(ushort) get_nth_bits(attribute_1,  0,  9), 9);
             int topleft_y = get_nth_bits(attribute_0,  0,  8);
             if (topleft_y > 160) topleft_y -= 256; 
 
@@ -876,10 +876,10 @@ public:
     void write_BLDALPHA(int target_byte, ubyte data) {
         final switch (target_byte) {
             case 0b0:
-                canvas.blend_a = min(get_nth_bits(data, 0, 4), 16);
+                canvas.blend_a = min(get_nth_bits(data, 0, 5), 16);
                 break;
             case 0b1:
-                canvas.blend_b = min(get_nth_bits(data, 0, 4), 16);
+                canvas.blend_b = min(get_nth_bits(data, 0, 5), 16);
                 break;
         }
     }

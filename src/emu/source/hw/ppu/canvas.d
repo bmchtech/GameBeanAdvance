@@ -251,12 +251,16 @@ class Canvas {
             // i hate it here
             int current_bg_id;
             for (int i = 0; i < 4; i++) {
+                if (total_pixels == 2) break;
+
                 if (!processed_obj && !obj_scanline[x].transparent && is_obj_pixel_visible(current_window_type) &&
                         sorted_backgrounds[i].priority >= obj_scanline[x].priority) {
                     index[total_pixels] = obj_scanline[x].index;
 
                     if (obj_target_pixel[total_pixels] || obj_semitransparent[x]) {
                         blendable_pixels++;
+                        total_pixels++;
+                        continue;
                     }
                     total_pixels++;
 
@@ -273,6 +277,8 @@ class Canvas {
 
                         if (bg_target_pixel[total_pixels][current_bg_id]) {
                             blendable_pixels++;
+                            total_pixels++;
+                            continue;
                         }
                         total_pixels++;
                         break; 
