@@ -76,7 +76,7 @@ class GameBeanSDLHost {
                 SDL_WINDOWPOS_UNDEFINED, 
                 GBA_SCREEN_WIDTH * screen_scale,
                 GBA_SCREEN_HEIGHT * screen_scale, 
-                SDL_WindowFlags.SDL_WINDOW_SHOWN | SDL_WindowFlags.SDL_WINDOW_OPENGL);
+                SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
         assert(window !is null, "sdl window init failed!");
 
 
@@ -97,7 +97,7 @@ class GameBeanSDLHost {
 
         writefln("loaded opengl");
 
-        renderer = SDL_CreateRenderer(window, -1, SDL_RendererFlags.SDL_RENDERER_ACCELERATED | SDL_RendererFlags.SDL_RENDERER_PRESENTVSYNC);
+        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
         screen_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                 SDL_TextureAccess.SDL_TEXTUREACCESS_STREAMING,
