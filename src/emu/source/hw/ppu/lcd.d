@@ -344,9 +344,17 @@ private:
                 int ofs_x  = ((texture_pos.x - topleft_texture_pos.x) & 0b111);
                 int ofs_y  = ((texture_pos.y - topleft_texture_pos.y) & 0b111);
 
-                int tile_number = tile_x + texture.increment_per_row * tile_y + texture.base_tile_number;
+                int tile_number;
+                if (bpp8 && !obj_character_vram_mapping) {
+                    tile_number = 2 * tile_x + texture.increment_per_row * tile_y + texture.base_tile_number;
+                    tile_number >>= 1;
+                } else {
+                    tile_number = tile_x + texture.increment_per_row * tile_y + texture.base_tile_number;
+                }
 
                 static if (bpp8) {
+                    // writefln("%x", texture.tile_base_address + ((tile_number & 0x3ff) * 64) );
+
                     ubyte index = memory.read_byte(texture.tile_base_address + ((tile_number & 0x3ff) * 64) + ofs_y * 8 + ofs_x);
                     
                     if (obj_mode != OBJMode.OBJ_WINDOW) {
@@ -519,6 +527,7 @@ private:
 
         // Very useful guide for attributes! https://problemkaputt.de/gbatek.htm#lcdobjoamattributes
         for (int sprite = 0; sprite < 128; sprite++) {
+
             if (get_nth_bits(memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 4), 10, 12) != given_priority) continue;
 
             // first of all, we need to figure out if we render this sprite in the first place.
@@ -557,12 +566,12 @@ private:
             int tile_number_increment_per_row = obj_character_vram_mapping ? (get_nth_bit(attribute_0, 9) ? width >> 1 : width) : 32;
 
             bool doesnt_use_color_palettes = get_nth_bit(attribute_0, 13);
-            if (obj_character_vram_mapping && doesnt_use_color_palettes) base_tile_number >>= 1;
             bool scaled    = get_nth_bit(attribute_0, 8);
             bool flipped_x = !scaled && get_nth_bit(attribute_1, 12);
             bool flipped_y = !scaled && get_nth_bit(attribute_1, 13);
 
             int scaling_number = get_nth_bits(attribute_1, 9, 14);
+            // if (!obj_character_vram_mapping && doesnt_use_color_palettes) base_tile_number >>= 1;
 
             PMatrix p_matrix = PMatrix(
                 convert_from_8_8f_to_double(memory.read_halfword(memory.OFFSET_OAM + 0x06 + 0x20 * scaling_number)),
