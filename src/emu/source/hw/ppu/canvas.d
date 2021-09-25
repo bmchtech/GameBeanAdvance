@@ -288,6 +288,15 @@ class Canvas {
                 if (total_pixels == 2) break;
             }
 
+            if (total_pixels < 2 && !processed_obj && !obj_scanline[x].transparent && is_obj_pixel_visible(current_window_type)) {
+                index[total_pixels] = obj_scanline[x].index;
+
+                if (obj_target_pixel[total_pixels] || obj_semitransparent[x]) {
+                    blendable_pixels++;
+                }
+                total_pixels++;
+            }
+
             // now to blend the two values together
             pixels_output[x] = blend(index, blendable_pixels);
         }

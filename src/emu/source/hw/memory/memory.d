@@ -61,7 +61,7 @@ class Memory {
     enum SIZE_WRAM_BOARD     = 0x40000;
     enum SIZE_WRAM_CHIP      = 0x8000;
     enum SIZE_PALETTE_RAM    = 0x400;
-    enum SIZE_VRAM           = 0x20000; // its actually 0x18000, but this tiny change makes it easy to bitmask for mirroring
+    enum SIZE_VRAM           = 0x18000;
     enum SIZE_OAM            = 0x400;
     enum SIZE_ROM            = 0x2000000;
 
@@ -261,7 +261,7 @@ class Memory {
                 case Region.WRAM_BOARD:   return (cast(T*) wram_board) [(address & (SIZE_WRAM_BOARD  - 1)) >> shift]; 
                 case Region.WRAM_CHIP:    return (cast(T*) wram_chip)  [(address & (SIZE_WRAM_CHIP   - 1)) >> shift];
                 case Region.PALETTE_RAM:  return (cast(T*) palette_ram)[(address & (SIZE_PALETTE_RAM - 1)) >> shift];
-                case Region.VRAM:         return (cast(T*) vram)       [(address & (SIZE_VRAM        - 1)) >> shift];
+                case Region.VRAM:         return (cast(T*) vram)       [(address %  SIZE_VRAM            ) >> shift];
                 case Region.OAM:          return (cast(T*) oam)        [(address & (SIZE_OAM         - 1)) >> shift]; 
 
                 case Region.IO_REGISTERS:
@@ -347,7 +347,7 @@ class Memory {
                     }
                     break;
 
-                case Region.VRAM:         (cast(T*) vram) [(address & (SIZE_VRAM  - 1)) >> shift] = value; break;
+                case Region.VRAM:         (cast(T*) vram)[(address % (SIZE_VRAM    )) >> shift] = value; break;
                 case Region.OAM:          (cast(T*) oam) [(address & (SIZE_OAM   - 1)) >> shift] = value; break;
 
                 case Region.IO_REGISTERS: 
