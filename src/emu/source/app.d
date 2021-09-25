@@ -44,7 +44,8 @@ void main(string[] args) {
 	writeln("init mem");
 
 	KeyInput key_input = new KeyInput(mem);
-	GBA gba = new GBA(mem, key_input, a.option("bios"));
+	auto bios_data = load_rom_as_bytes(a.option("bios"));
+	GBA gba = new GBA(mem, key_input, bios_data);
 	writeln("init gba");
 	gba.load_rom(a.arg("rompath"));
 	// writefln("UwU: %s", to!string(detect_savetype(gba.memory.rom)));
