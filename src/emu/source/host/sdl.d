@@ -97,34 +97,6 @@ class GameBeanSDLHost {
 
         writefln("loaded opengl");
 
-        SDL_GL_MakeCurrent(window, gContext);
-        SDL_GL_SetSwapInterval(0);
-    
-        SDL_GL_SetAttribute(SDL_GL_RED_SIZE,    8);
-        SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,  8);
-        SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,   8);
-        SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE, 32);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1 );  
-        
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        glEnable(GL_TEXTURE_2D);
-        glGenTextures(1, &g_gl_texture);
-        glBindTexture(GL_TEXTURE_2D, g_gl_texture);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glClearColor(0, 100, 0, 1);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        auto glerror = glGetError();
-        if( glerror != GL_NO_ERROR ) {
-            error("what the FUCK");
-        }
         renderer = SDL_CreateRenderer(window, -1, SDL_RendererFlags.SDL_RENDERER_ACCELERATED | SDL_RendererFlags.SDL_RENDERER_PRESENTVSYNC);
 
         screen_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
