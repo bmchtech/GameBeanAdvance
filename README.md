@@ -36,7 +36,7 @@ dub build
 Build with support for [gperftools_d](https://github.com/prasunanand/gperftools_d). This requires the LDC2 compiler.
 
 ```sh
-dub build -c gperf -b release --compiler=ldc2
+dub build -c gperf --compiler=ldc2 -b release-debug
 ```
 
 Then, run with the `CPUPROFILE=/tmp/prof.out` environment var to write a profile log.
