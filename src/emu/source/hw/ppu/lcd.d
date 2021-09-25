@@ -383,18 +383,15 @@ private:
         }
     }
 
-    void render_background(uint priority) {
-        for (int i = 0; i < 4; i++) {
-            Background background = backgrounds[i];
-            if (background.priority != priority || !background.enabled) continue;
-
-            final switch (background.mode) {
-                case BackgroundMode.TEXT:             render_background__text(i);             break;
-                case BackgroundMode.ROTATION_SCALING: render_background__rotation_scaling(i); break;
-                case BackgroundMode.NONE:             break;
-            }
+    void render_background(uint i) {
+        Background background = backgrounds[i];
+        final switch (background.mode) {
+            case BackgroundMode.TEXT:             render_background__text(i);             break;
+            case BackgroundMode.ROTATION_SCALING: render_background__rotation_scaling(i); break;
+            case BackgroundMode.NONE:             break;
         }
     }
+    
     void render_background__text(uint background_id) {
         // do we even render?
         Background background = backgrounds[background_id];
