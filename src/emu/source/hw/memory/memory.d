@@ -122,6 +122,7 @@ class Memory {
         [[5, 5, 8], [3, 3, 6]]  // ROM SRAM
     ];
 
+    ushort waitcnt;
     void write_WAITCNT(uint target_byte, ubyte data) {
         final switch (target_byte) {
             case 0b0:
@@ -138,6 +139,9 @@ class Memory {
 
                 set_waitstate_ROM(0, ws_0_N, ws_0_S);
                 set_waitstate_ROM(1, ws_1_N, ws_1_S);
+
+                waitcnt &= 0xFF00;
+                waitcnt |= data;
                 break;
             
             case 0b1:
@@ -145,10 +149,22 @@ class Memory {
                 int ws_2_S  = (cast(int[]) [8, 1])      [get_nth_bit (data, 2)];
 
                 prefetch_enabled = get_nth_bit(data, 6);
-                // writefln("%x", data);
 
                 set_waitstate_ROM(2, ws_2_N, ws_2_S);
+
+                waitcnt &= 0x00FF;
+                waitcnt |= data << 8;
                 break;
+        }
+    }
+    
+    ubyte read_WAITCNT(uint target_byte) {
+        final switch (target_byte) {
+            case 0b0:
+                return waitcnt & 0xFF;
+            
+            case 0b1:
+                return waitcnt >> 8;
         }
     }
 
@@ -229,11 +245,11 @@ class Memory {
             }
 
             // handle waitstates
-            // if (region < 0x8 || !prefetch_enabled) {
+            if (region < 0x8 || !prefetch_enabled) {
                 static if (is(T == uint  )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.WORD];
                 static if (is(T == ushort)) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.HALFWORD];
                 static if (is(T == ubyte )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.BYTE];
-            // }
+            }
 
             uint shift;
             static if (is(T == uint  )) shift = 2;
