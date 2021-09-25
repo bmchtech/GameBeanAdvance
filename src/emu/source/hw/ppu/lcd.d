@@ -320,6 +320,8 @@ private:
             int texture_bound_y_upper = texture.double_sized ? texture.height >> 1 : texture.height;
             int texture_bound_x_lower = 0;
             int texture_bound_y_lower = 0;
+            
+            if (obj_character_vram_mapping && bpp8) texture.base_tile_number >>= 1;
 
             if (texture.double_sized) {
                 topleft_texture_pos.x += texture.width  >> 2;
@@ -345,12 +347,14 @@ private:
                 int ofs_y  = ((texture_pos.y - topleft_texture_pos.y) & 0b111);
 
                 int tile_number;
-                if (bpp8 && !obj_character_vram_mapping) {
+                if (!obj_character_vram_mapping) {
                     tile_number = 2 * tile_x + texture.increment_per_row * tile_y + texture.base_tile_number;
-                    tile_number >>= 1;
+                    if (bpp8) tile_number >>= 1;
+
                 } else {
                     tile_number = tile_x + texture.increment_per_row * tile_y + texture.base_tile_number;
                 }
+                    
 
                 static if (bpp8) {
                     // writefln("%x", texture.tile_base_address + ((tile_number & 0x3ff) * 64) );
@@ -686,7 +690,6 @@ private:
 
 public:
     void write_DISPCNT(int target_byte, ubyte data) {
-        // writefln("PLEASAE");
         if (target_byte == 0) {
             bg_mode                    = get_nth_bits(data, 0, 3);
             disp_frame_select          = get_nth_bit (data, 4);
