@@ -52,7 +52,7 @@ public:
 
     Scheduler        scheduler;
 
-    this(Memory memory, KeyInput key_input, string bios_path) {
+    this(Memory memory, KeyInput key_input, ubyte[] bios) {
         scheduler = new Scheduler();
 
         this.memory            = memory;
@@ -74,8 +74,7 @@ public:
 
         cpu.set_mode(cpu.MODE_SYSTEM);
 
-        // load bios
-        ubyte[] bios = get_rom_as_bytes(bios_path);
+        // bios
         cpu.memory.bios[0 .. bios.length] = bios[0 .. bios.length];
     }
 
@@ -87,8 +86,11 @@ public:
         apu.set_internal_sample_rate(sample_rate);
     }
 
-    void load_rom(string rom_name) {
-        ubyte[] rom = get_rom_as_bytes(rom_name);
+    void load_rom(string rom_path) {
+        load_rom(load_rom_as_bytes(rom_path));
+    }
+
+    void load_rom(ubyte[] rom) {
         cpu.memory.rom[0 ..  rom.length] = rom[0 .. rom.length];
 
         *cpu.pc = 0; //0x0800_0000;

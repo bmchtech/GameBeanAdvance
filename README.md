@@ -31,12 +31,19 @@ Optionally add `-b release --compiler=ldc2` for optimized build. (Recommended)
 dub build
 ```
 
-### Profiling Build
+### Profiling
 
 Build with support for [gperftools_d](https://github.com/prasunanand/gperftools_d). This requires the LDC2 compiler.
 
+```sh
+dub build -c gperf --compiler=ldc2 -b release-debug
 ```
-dub build -c gperf -b release --compiler=ldc2
+
+Then, run with the `CPUPROFILE=/tmp/prof.out` environment var to write a profile log.
+
+Finally, convert the log to human readable graph:
+```sh
+pprof --pdf gamebean-emu /tmp/prof.out > ~/Downloads/gamebean_profile.pdf
 ```
 
 ## Run
