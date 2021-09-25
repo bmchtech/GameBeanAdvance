@@ -19,7 +19,8 @@ import host.sdl;
 
 struct Buffer {
     short[] data;
-    ulong    offset;
+    ulong   offset;
+    short   last_sample;
 }
 
 struct AudioData {
@@ -74,18 +75,15 @@ extern (C) {
             int cut_len = cast(int) (len > (audio_data.buffer[Channel.L].offset * 4) ? (audio_data.buffer[Channel.L].offset * 4) : len);
 
             for (int channel = 0; channel < 2; channel++) {
-
-                short last_sample = 0;
                 for (int i = 0; i < len / 4; i++) {
-                    
+                    ushort sample;
                         // try { writefln("%x %x %x", channel, i, audio_data.buffer[channel].offset); } catch (Exception e) {}
-                    short sample;
                     if (i < audio_data.buffer[channel].offset) {
                         sample = cast(short) (audio_data.buffer[channel].data[i] * 0x2A);
-                        last_sample = sample;
+                        audio_data.buffer[channel].last_sample = sample;
                         audio_data.buffer[channel].data[i] = 0;
                     } else {
-                        sample = last_sample;
+                        sample = audio_data.buffer[channel].last_sample;
                     }
 
                     out_stream[2 * i + channel] = sample;
