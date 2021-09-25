@@ -62,7 +62,7 @@ extern (C) {
         if (audio_data.mutex is null) return;
 
         short* out_stream = cast(short*) stream;
-        memset(out_stream, 0, len);
+
         audio_data.mutex.lock_nothrow();
 
             // try { writefln("Details: %x %x", len, audio_data.buffer[0].offset);} catch (Exception e) {}
@@ -71,12 +71,23 @@ extern (C) {
             //     try { writefln("Emulator too slow!"); } catch (Exception e) {}
             // }
 
-            len = cast(int) (len > (audio_data.buffer[Channel.L].offset * 4) ? (audio_data.buffer[Channel.L].offset * 4) : len);
+            int cut_len = cast(int) (len > (audio_data.buffer[Channel.L].offset * 4) ? (audio_data.buffer[Channel.L].offset * 4) : len);
 
-            for (int i = 0; i < len / 4; i++) {
-                for (int channel = 0; channel < 2; channel++) {
-                    short sample = cast(short) (audio_data.buffer[channel].data[i] * 0x2A);
-                    audio_data.buffer[channel].data[i] = 0;
+            for (int channel = 0; channel < 2; channel++) {
+
+                short last_sample = 0;
+                for (int i = 0; i < len / 4; i++) {
+                    
+                        // try { writefln("%x %x %x", channel, i, audio_data.buffer[channel].offset); } catch (Exception e) {}
+                    short sample;
+                    if (i < audio_data.buffer[channel].offset) {
+                        sample = cast(short) (audio_data.buffer[channel].data[i] * 0x2A);
+                        last_sample = sample;
+                        audio_data.buffer[channel].data[i] = 0;
+                    } else {
+                        sample = last_sample;
+                    }
+
                     out_stream[2 * i + channel] = sample;
                     // try { writefln("%x", 2 * i + channel); } catch (Exception e) {}
                 }
@@ -84,12 +95,14 @@ extern (C) {
                 // try { writefln("%x", out_stream[i]); } catch (Exception e) {}
             }
 
+            // writefln("hi");
+
             for (int channel = 0; channel < 2; channel++) {
-                for (int i = 0; i < audio_data.buffer[channel].offset - (len / 4); i++) {
-                    audio_data.buffer[channel].data[i] = audio_data.buffer[channel].data[i + (len / 4)];
+                for (int i = 0; i < audio_data.buffer[channel].offset - (cut_len / 4); i++) {
+                    audio_data.buffer[channel].data[i] = audio_data.buffer[channel].data[i + (cut_len / 4)];
                 }
 
-                audio_data.buffer[channel].offset -= len / 4;
+                audio_data.buffer[channel].offset -= cut_len / 4;
             }
 
         
