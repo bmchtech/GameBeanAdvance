@@ -25,6 +25,7 @@ void main(string[] args) {
 			.add(new Option("s", "scale", "render scale").optional.defaultValue("1"))
 			.add(new Argument("rompath", "path to rom file"))
 			.add(new Option("b", "bios", "path to bios file").optional.defaultValue("./gba_bios.bin"))
+			.add(new Flag("p", "pause", "pause until enter on stdin"))
 			.add(new Option("t", "cputrace", "display cpu trace on crash").optional.defaultValue("0")).parse(args);
 
 	util.verbosity_level = a.occurencesOf("verbose");
@@ -57,6 +58,10 @@ void main(string[] args) {
 	int cpu_trace_length = to!int(a.option("cputrace"));
 	if (cpu_trace_length != 0) {
 		host.enable_cpu_tracing(cpu_trace_length);
+	}
+
+	if (a.flag("pause")) {
+		readln();
 	}
 
 	version (gperf) {
