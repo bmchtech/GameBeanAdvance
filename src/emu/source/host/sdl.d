@@ -139,7 +139,6 @@ class GameBeanSDLHost {
     }
 
     void run() {
-        readln();
         running = true;
 
         int num_batches       = this.sample_rate / _samples_per_callback;
