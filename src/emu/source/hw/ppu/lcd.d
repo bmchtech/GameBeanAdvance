@@ -768,6 +768,7 @@ public:
         // the target_byte happens to specify the window here
         canvas.windows[target_byte].bg_enable  = get_nth_bits(data, 0, 4);
         canvas.windows[target_byte].obj_enable = get_nth_bit (data, 4);
+        canvas.windows[target_byte].blended    = get_nth_bit (data, 5);
     }
 
     void write_WINOUT(int target_byte, ubyte data) {
@@ -775,11 +776,13 @@ public:
             case 0b0:
                 canvas.outside_window_bg_enable  = get_nth_bits(data, 0, 4);
                 canvas.outside_window_obj_enable = get_nth_bit (data, 4);
+                canvas.outside_window_blended    = get_nth_bit (data, 5);
                 break;
 
             case 0b1:
                 canvas.obj_window_bg_enable      = get_nth_bits(data, 0, 4);
                 canvas.obj_window_obj_enable     = get_nth_bit (data, 4);
+                canvas.obj_window_blended        = get_nth_bit (data, 5);
                 break;
         }
     }
@@ -988,17 +991,20 @@ public:
     ubyte read_WININ(int target_byte) {
         // target_byte here is conveniently the window index
         return cast(ubyte) ((canvas.windows[target_byte].bg_enable) |
-                            (canvas.windows[target_byte].obj_enable << 4));
+                            (canvas.windows[target_byte].obj_enable << 4) |
+                            (canvas.windows[target_byte].blended    << 5));
     }
 
     ubyte read_WINOUT(int target_byte) {
         final switch (target_byte) {
             case 0b0:
                 return cast(ubyte) ((canvas.outside_window_bg_enable) |
-                                    (canvas.outside_window_obj_enable << 4));
+                                    (canvas.outside_window_obj_enable << 4) |
+                                    (canvas.outside_window_blended    << 5));
             case 0b1:
                 return cast(ubyte) ((canvas.obj_window_bg_enable) |
-                                    (canvas.obj_window_obj_enable << 4));
+                                    (canvas.obj_window_obj_enable << 4) |
+                                    (canvas.obj_window_blended    << 5));
         }
     }
 }
