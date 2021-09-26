@@ -64,6 +64,7 @@ struct Window {
     int bottom;
 
     bool enabled;
+    bool blended;
 
     // bg_enable is 4 bits
     int  bg_enable;
@@ -92,6 +93,9 @@ class Canvas {
         uint evy_coeff;
         uint blend_a;
         uint blend_b;
+
+        bool obj_window_blended;
+        bool outside_window_blended;
 
         bool[SCREEN_WIDTH] obj_semitransparent;
 
@@ -296,20 +300,22 @@ class Canvas {
                 }
                 total_pixels++;
             }
+            
+            Blending effective_blending_type = is_blended(current_window_type) ? blending_type : Blending.NONE;
 
             // now to blend the two values together
-            pixels_output[x] = blend(index, blendable_pixels);
+            pixels_output[x] = blend(index, blendable_pixels, effective_blending_type);
         }
     }
 
     // blends the two colors together based on blending type
-    private pragma(inline, true) Pixel blend(int[] index, int blendable_pixels) {
-        final switch (blending_type) {
+    private pragma(inline, true) Pixel blend(int[] index, int blendable_pixels, Blending effective_blending_type) {
+        final switch (effective_blending_type) {
             case Blending.NONE:
                 return hw.ppu.palette.get_color(index[0]);
 
             case Blending.BRIGHTNESS_INCREASE:
-                // if (blendable_pixels < 1) goto case Blending.NONE;
+                if (blendable_pixels < 1) goto case Blending.NONE;
 
                 Pixel output = hw.ppu.palette.get_color(index[0]);
 
@@ -319,7 +325,7 @@ class Canvas {
                 return output;
 
             case Blending.BRIGHTNESS_DECREASE:
-                // if (blendable_pixels < 1) goto case Blending.NONE;
+                if (blendable_pixels < 1) goto case Blending.NONE;
 
                 Pixel output = hw.ppu.palette.get_color(index[0]);
 
@@ -339,6 +345,16 @@ class Canvas {
                 output.g = min(31, (blend_a * input_A.g + blend_b * input_B.g) >> 4);
                 output.b = min(31, (blend_a * input_A.b + blend_b * input_B.b) >> 4);
                 return output;
+        }
+    }
+
+    private pragma(inline, true) bool is_blended(WindowType window_type) {
+        final switch (window_type) {
+            case WindowType.ZERO:    return windows[0].blended;
+            case WindowType.ONE:     return windows[1].blended;
+            case WindowType.OBJ:     return obj_window_blended;
+            case WindowType.OUTSIDE: return outside_window_blended;
+            case WindowType.NONE:    return true;
         }
     }
     
