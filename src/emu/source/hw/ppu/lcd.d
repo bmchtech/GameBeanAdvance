@@ -348,8 +348,8 @@ private:
 
                 int tile_number;
                 if (!obj_character_vram_mapping) {
-                    tile_number = 2 * tile_x + texture.increment_per_row * tile_y + texture.base_tile_number;
-                    if (bpp8) tile_number >>= 1;
+                    if (bpp8) tile_number = (2 * tile_x + texture.increment_per_row * tile_y + texture.base_tile_number) >> 1;
+                    else tile_number = tile_x + texture.increment_per_row * tile_y + texture.base_tile_number;
 
                 } else {
                     tile_number = tile_x + texture.increment_per_row * tile_y + texture.base_tile_number;
