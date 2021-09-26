@@ -350,9 +350,9 @@ class ARM7TDMI {
             error("PC out of range!");
         }
 
-        if (*pc == 0xC) {
-            error("rebooting");
-        }
+        // if (*pc == 0xC) {
+        //     error("rebooting");
+        // }
 
         if (memory.read_word(0x0300_000C) == 0x60840000) {
             writefln("something weird happened right here!!!!!");
