@@ -872,6 +872,7 @@ public:
                 for (int bg = 0; bg < 4; bg++)
                     canvas.bg_target_pixel[Layer.A][bg] = get_nth_bit(data, bg);
                 canvas.obj_target_pixel[Layer.A] = get_nth_bit(data, 4);
+                canvas.backdrop_target_pixel[Layer.A] = get_nth_bit(data, 5);
 
                 canvas.blending_type = cast(Blending) get_nth_bits(data, 6, 8);
 
@@ -880,6 +881,7 @@ public:
                 for (int bg = 0; bg < 4; bg++)
                     canvas.bg_target_pixel[Layer.B][bg] = get_nth_bit(data, bg);
                 canvas.obj_target_pixel[Layer.B] = get_nth_bit(data, 4);
+                canvas.backdrop_target_pixel[Layer.B] = get_nth_bit(data, 5);
 
                 break;
         }
@@ -958,13 +960,13 @@ public:
     }
 
     ubyte read_BLDCNT(int target_byte) {
-
         final switch (target_byte) {
             case 0b0:
                 ubyte return_value;
                 for (int bg = 0; bg < 4; bg++)
                     return_value |= (canvas.bg_target_pixel[Layer.A][bg] << bg);
                 return_value |= canvas.obj_target_pixel[Layer.A] << 4;
+                return_value |= (canvas.backdrop_target_pixel[Layer.A] << 5);
                 return_value |= (cast(ubyte) canvas.blending_type) << 6;
 
                 return return_value;
@@ -974,6 +976,7 @@ public:
                 for (int bg = 0; bg < 4; bg++)
                     return_value |= (canvas.bg_target_pixel[Layer.B][bg] << bg);
                 return_value |= (canvas.obj_target_pixel[Layer.B] << 4);
+                return_value |= (canvas.backdrop_target_pixel[Layer.B] << 5);
 
                 return return_value;
         }
