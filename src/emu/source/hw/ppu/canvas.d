@@ -231,7 +231,7 @@ class Canvas {
         for (int x = 0; x < SCREEN_WIDTH; x++) {
             // which window are we in?
             WindowType current_window_type = default_window_type;
-            if (obj_window[x]) current_window_type = WindowType.OBJ;
+            if (obj_window[x] && obj_window_enable) current_window_type = WindowType.OBJ;
 
             for (int i = 0; i < 2; i++) {
                 if (windows[i].enabled) {
@@ -245,7 +245,7 @@ class Canvas {
 
             // now that we know which window type we're in, let's calculate the color index for this pixel
 
-            int[2] index    = [0, 0]; // 0 is the backdrop index
+            int[2] index    = [0, 0];
             int    priority = 4;
 
             int blendable_pixels = 0;
@@ -261,14 +261,13 @@ class Canvas {
                         sorted_backgrounds[i].priority >= obj_scanline[x].priority) {
                     index[total_pixels] = obj_scanline[x].index;
 
+                    processed_obj = true;
                     if (obj_target_pixel[total_pixels] || obj_semitransparent[x]) {
                         blendable_pixels++;
                         total_pixels++;
                         continue;
                     }
                     total_pixels++;
-
-                    processed_obj = true;
                 }
 
                 if (total_pixels == 2) break;
@@ -292,13 +291,21 @@ class Canvas {
                 if (total_pixels == 2) break;
             }
 
-            if (total_pixels < 2 && !processed_obj && !obj_scanline[x].transparent && is_obj_pixel_visible(current_window_type)) {
+            if (priority >= obj_scanline[x].priority && total_pixels < 2 && !processed_obj && !obj_scanline[x].transparent && is_obj_pixel_visible(current_window_type)) {
                 index[total_pixels] = obj_scanline[x].index;
 
                 if (obj_target_pixel[total_pixels] || obj_semitransparent[x]) {
                     blendable_pixels++;
                 }
                 total_pixels++;
+            }
+
+            // add the backdrop
+            if (total_pixels < 2) {
+                // total_pixels++; we can increment this, but it wont affect the rest of the loop
+                if (backdrop_target_pixel[blendable_pixels]) {
+                    blendable_pixels++;
+                }
             }
             
             Blending effective_blending_type = is_blended(current_window_type) ? blending_type : Blending.NONE;
