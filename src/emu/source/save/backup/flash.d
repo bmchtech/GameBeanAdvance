@@ -17,6 +17,7 @@ class Flash : Backup {
 
         IDENTIFICATION,            // chip identification mode, returns device ID / manufacturer
         BANK_SWITCHING,            // allows you to switch the bank number
+        WRITING_SINGLE_BYTE
     }
 
     // thanks Dillon! :) https://dillonbeliveau.com/2020/06/05/GBA-FLASH.html
@@ -32,13 +33,21 @@ class Flash : Backup {
         SET_MEMORY_BANK      = 0xB0
     }
 
-    this(int num_sectors, int sector_size) {
+    ubyte[] data;
+
+    this(int num_sectors, bool banked) {
         this.num_sectors = num_sectors;
-        this.sector_size = sector_size;
+        this.sector_size = 4096;
+        this.banked      = banked;
+
+        data = new ubyte[num_sectors * sector_size];
+        erase_entire_chip();
     }
 
     override void write(T)(uint address, T data) {
-        static if (data != )
+        static if (is(T == uint  )) return;
+        static if (is(T == ushort)) return;
+
         final switch (state) {
             case WAITING_FOR_COMMAND: handle_command_header_0(address, data);
             case RECEIVING_COMMAND_0: handle_command_header_1(address, data);
@@ -46,7 +55,21 @@ class Flash : Backup {
 
             case IDENTIFICATION:      return;
             case BANK_SWITCHING:      handle_bank_switching  (address, data);
+            case WRITING_SINGLE_BYTE: write_single_byte      (address, data);
         }
+    }
+
+    override T read(T)(uint address, T data) {
+        static if (is(T == ubyte)) return data[bank * sector_size * num_sectors + address];
+        return 0;
+    }
+
+    override ubyte[] serialize() {
+        return data;
+    }
+
+    override void deserialize(ubyte[] data) {
+        this.data = data;
     }
 
     private void handle_command_header_0(uint address, uint data) {
@@ -79,21 +102,41 @@ class Flash : Backup {
             
             case Command.ERASE_SECTOR:
                 if (preparing_erase)
-                    erase_sector()
+                    erase_sector(get_nth_bits(address, 12, 16));
+                preparing_erase = false;
+                break;
             
             case Command.SET_MEMORY_BANK:
                 state = State.BANK_SWITCHING;
                 break;
+
+            case Command.WRITE_SINGLE_BYTE:
+                state = State.WRITING_SINGLE_BYTE;
         }
     }
 
     private void handle_bank_switching(uint address, uint data) {
+        if (!banked) return;
         if (address == 0) bank = data & 1;
+    }
+
+    private void write_single_byte(uint address, ubyte data) {
+        this.data[bank * sector_size * num_sectors + address] = data;
+        state = State.WAITING_FOR_COMMAND;
+    }
+
+    private void erase_entire_chip() {
+        memset(data, 0xFF, num_sectors * sector_size);
+    }
+
+    private void erase_sector(int sector) {
+        memset(&data[sector * sector_size], 0xFF, sector_size);
     }
 
     private int num_sectors;
     private int sector_size;
     private int bank;
+    private bool banked;
 
     private State state;
     private bool preparing_erase;
