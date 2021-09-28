@@ -2,6 +2,8 @@ module save.save_detector;
 
 import save;
 
+import std.stdio;
+
 public Savetype detect_savetype(ubyte[] rom) {
 
     // try to use the lut to get the savetype
@@ -10,11 +12,13 @@ public Savetype detect_savetype(ubyte[] rom) {
 
     if (savetype == Savetype.UNKNOWN) {
         // okay, we're going to have to try to guess the savetype then.
+        writefln("Couldn't find in LUT");
         savetype = guess_savetype(rom);
     }
 
     if (savetype == Savetype.UNKNOWN) {
         // guess_savetype couldn't find anything? fine, take the default value
+        writefln("Couldn't guess either");
         savetype = Savetype.NONE;
     }
 
@@ -57,8 +61,8 @@ shared static this() {
         "EEPROM_V":   Savetype.EEPROM_8k,
         "SRAM_V":     Savetype.SRAM_256K,
         "SRAM_F_V":   Savetype.SRAM_256K,
-        "FLASH_V":    Savetype.Flash_512k_Atmel,
-        "FLASH512_V": Savetype.Flash_512k_Atmel,
+        "FLASH_V":    Savetype.Flash_512k_SST,
+        "FLASH512_V": Savetype.Flash_512k_SST,
         "Flash1M_V":  Savetype.Flash_1M_Macronix
     ];
 
