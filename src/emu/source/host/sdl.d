@@ -3,6 +3,7 @@ module host.sdl;
 import hw.gba;
 import hw.apu;
 import hw.cpu;
+import save;
 
 import diag.cputrace;
 import diag.logger;
@@ -62,10 +63,6 @@ class GameBeanSDLHost {
         gba_batch_enable_mutex = new Mutex();
     }
 
-    extern(C) int test(void* uwu) nothrow {
-        return 0;
-    }
-
     void init() {
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
             assert(0, "sdl init failed");
@@ -82,10 +79,6 @@ class GameBeanSDLHost {
 
         SDL_GLContext gContext = SDL_GL_CreateContext(window);
         auto ret_GL = loadOpenGL();
-
-        if (ret_GL != glSupport) {
-            error(format("shit happened %s", ret_GL));
-        }
 
         if(ret_GL == GLSupport.noLibrary) {
             error("This application requires the GLFW library.");
@@ -109,7 +102,7 @@ class GameBeanSDLHost {
 
         SDL_AudioSpec wanted;
         SDL_AudioSpec received;
-
+        
         /* Set the audio format */
         wanted.freq = 44100;
         wanted.format = AUDIO_S16LSB;
@@ -129,6 +122,15 @@ class GameBeanSDLHost {
         _gba.set_internal_sample_rate(16_780_000 / received.freq);
         this.sample_rate      = received.freq;
         _samples_per_callback = received.samples;
+
+
+        // time to detect the savetype
+        Savetype savetype = detect_savetype(_gba.memory.rom);
+        
+        if (savetype != Savetype.NONE && savetype != Savetype.UNKNOWN) {
+            Backup save = create_savetype(savetype);
+            _gba.memory.add_backup(save);
+        }
 
         writeln("Complete.");
     }

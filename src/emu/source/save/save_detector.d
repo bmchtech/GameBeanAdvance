@@ -1,5 +1,7 @@
 module save.save_detector;
 
+import save;
+
 public Savetype detect_savetype(ubyte[] rom) {
 
     // try to use the lut to get the savetype
