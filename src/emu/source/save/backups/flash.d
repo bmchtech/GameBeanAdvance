@@ -50,24 +50,23 @@ class Flash : Backup {
         erase_entire_chip();
     }
 
-    override void write(T)(uint address, T data) {
-        static if (is(T == uint  )) return;
-        static if (is(T == ushort)) return;
+    override void write_byte(uint address, ubyte data) {
+        writefln("WRITE: %x %x", address, data);
 
         final switch (state) {
-            case WAITING_FOR_COMMAND: handle_command_header_0(address, data);
-            case RECEIVING_COMMAND_0: handle_command_header_1(address, data);
-            case RECEIVING_COMMAND_1: handle_command_data    (address, data);
+            case State.WAITING_FOR_COMMAND: handle_command_header_0(address, data); break;
+            case State.RECEIVING_COMMAND_0: handle_command_header_1(address, data); break;
+            case State.RECEIVING_COMMAND_1: handle_command_data    (address, data); break;
 
-            case IDENTIFICATION:      return;
-            case BANK_SWITCHING:      handle_bank_switching  (address, data);
-            case WRITING_SINGLE_BYTE: write_single_byte      (address, data);
+            case State.IDENTIFICATION:      break;
+            case State.BANK_SWITCHING:      handle_bank_switching  (address, data); break;
+            case State.WRITING_SINGLE_BYTE: write_single_byte      (address, data); break;
         }
     }
 
-    override T read(T)(uint address, T data) {
-        static if (is(T == ubyte)) return data[bank * sector_size * num_sectors + address];
-        return 0;
+    override ubyte read_byte(uint address) {
+        // writefln("READ: %x", address);
+        return data[bank * sector_size * num_sectors + address];
     }
 
     override ubyte[] serialize() {
@@ -93,7 +92,7 @@ class Flash : Backup {
     }
 
     private void handle_command_data(uint address, uint data) {
-        final switch (cast(Command) data) {
+        switch (cast(Command) data) {
             case Command.ENTER_IDENTIFICATION:
                 state = State.IDENTIFICATION; break;
             
@@ -122,6 +121,9 @@ class Flash : Backup {
 
             case Command.WRITE_SINGLE_BYTE:
                 state = State.WRITING_SINGLE_BYTE;
+                break;
+            
+            default: break;
         }
     }
 
