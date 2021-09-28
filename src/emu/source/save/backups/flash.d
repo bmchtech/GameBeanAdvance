@@ -1,4 +1,9 @@
-module save.backup.flash;
+module save.backups.flash;
+
+import save;
+import util;
+
+import core.stdc.string;
 
 class Flash : Backup {
     // https://mgba-emu.github.io/gbatek/#gbacartbackupflashrom
@@ -126,11 +131,11 @@ class Flash : Backup {
     }
 
     private void erase_entire_chip() {
-        memset(data, 0xFF, num_sectors * sector_size);
+        memset(cast(void*) data, cast(ulong) 0xFF, num_sectors * sector_size);
     }
 
     private void erase_sector(int sector) {
-        memset(&data[sector * sector_size], 0xFF, sector_size);
+        memset(cast(void*) &data[sector * sector_size], cast(ulong) 0xFF, sector_size);
     }
 
     private int num_sectors;

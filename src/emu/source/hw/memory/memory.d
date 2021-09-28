@@ -4,6 +4,7 @@ import hw.apu;
 import hw.memory;
 import hw.cpu;
 import hw.ppu;
+import save;
 
 import util;
 
@@ -293,18 +294,12 @@ class Memory {
                         static if (is(T == ubyte )) return bios_open_bus_latch & 0xFF;
                     }
                 
-                case 0xE: 
-                    // writefln("Reading from %x", address);  
-                    //     static if (is(T == uint  )) writefln("uint");
-                    //     static if (is(T == ushort)) writefln("ushort");
-                    //     static if (is(T == ubyte )) writefln("ubyte");
-                    // _g_num_log += 200;
+                case Region.ROM_WAITSTATE_2_L:
+                    return (cast(T*) rom)[(address & (SIZE_ROM - 1)) >> shift];
 
-                    // error("debug");
-
-                    // flash stub
-                    if (address == 0x0E00_0000) return 0xC2;
-                    return 0x09; 
+                case Region.ROM_WAITSTATE_2_H:
+                    if (flash) return backup.read!T(address);
+                    else return (cast(T*) rom)[(address & (SIZE_ROM - 1)) >> shift];
 
                 default:
                     return (cast(T*) rom)[(address & (SIZE_ROM - 1)) >> shift];
@@ -366,10 +361,26 @@ class Memory {
 
                     break;
 
+                case Region.ROM_WAITSTATE_2_L:
+                    break;
+
+                case Region.ROM_WAITSTATE_2_H:
+                    if (flash) backup.write!T(address, value);
+                    break;
+
                 default:
                     break;
             }
         }
+    }
+
+    bool flash = false;
+    Backup backup;
+
+    void add_backup(Backup backup) {
+        this.backup = backup;
+        flash = is(typeof(backup) == Flash);
+        writefln("Flash recognized? %x", flash);
     }
 
     pragma(inline, true) void set_rgb(uint x, uint y, ubyte r, ubyte g, ubyte b) {
