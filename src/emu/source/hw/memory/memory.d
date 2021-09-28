@@ -293,13 +293,15 @@ class Memory {
                         static if (is(T == ushort)) return bios_open_bus_latch & 0xFFFF;
                         static if (is(T == ubyte )) return bios_open_bus_latch & 0xFF;
                     }
-                
-                case Region.ROM_WAITSTATE_2_L:
-                    return (cast(T*) rom)[(address & (SIZE_ROM - 1)) >> shift];
 
-                case Region.ROM_WAITSTATE_2_H:
-                    if (flash) return backup.read!T(address);
-                    else return (cast(T*) rom)[(address & (SIZE_ROM - 1)) >> shift];
+                case Region.ROM_SRAM_L:
+                    // writefln("attempting backup read at %x", address);
+                    if (flash) {
+                        static if (is(T == uint  )) return backup.read_word    (address & 0xFFFF);
+                        static if (is(T == ushort)) return backup.read_halfword(address & 0xFFFF);
+                        static if (is(T == ubyte )) return backup.read_byte    (address & 0xFFFF);
+                    }
+                    goto default;
 
                 default:
                     return (cast(T*) rom)[(address & (SIZE_ROM - 1)) >> shift];
@@ -361,11 +363,13 @@ class Memory {
 
                     break;
 
-                case Region.ROM_WAITSTATE_2_L:
-                    break;
-
-                case Region.ROM_WAITSTATE_2_H:
-                    if (flash) backup.write!T(address, value);
+                case Region.ROM_SRAM_L:
+                    writefln("attempting backup write at %x %x", address & 0xFFFF, value);
+                    if (flash) {
+                        static if (is(T == uint  )) return backup.write_word    (address & 0xFFFF, value);
+                        static if (is(T == ushort)) return backup.write_halfword(address & 0xFFFF, value);
+                        static if (is(T == ubyte )) return backup.write_byte    (address & 0xFFFF, value);
+                    }
                     break;
 
                 default:
