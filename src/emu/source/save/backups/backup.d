@@ -6,4 +6,11 @@ class Backup {
 
     ubyte[] serialize()                 { return [];}
     void    deserialize(ubyte[] data)   { return; }
+
+    BackupType get_backup_type()        { return BackupType.NONE; }
+}
+
+enum BackupType {
+    FLASH,
+    NONE
 }

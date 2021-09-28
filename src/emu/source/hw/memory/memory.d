@@ -379,7 +379,7 @@ class Memory {
 
     void add_backup(Backup backup) {
         this.backup = backup;
-        flash = is(typeof(backup) == Flash);
+        flash = backup.get_backup_type() == BackupType.FLASH;
         writefln("Flash recognized? %x", flash);
     }
 

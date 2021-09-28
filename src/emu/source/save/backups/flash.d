@@ -3,6 +3,7 @@ module save.backups.flash;
 import save;
 import util;
 
+import std.stdio;
 import core.stdc.string;
 
 class Flash : Backup {
@@ -75,6 +76,10 @@ class Flash : Backup {
 
     override void deserialize(ubyte[] data) {
         this.data = data;
+    }
+
+    override BackupType get_backup_type() {
+        return BackupType.FLASH;
     }
 
     private void handle_command_header_0(uint address, uint data) {
