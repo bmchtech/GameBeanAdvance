@@ -38,12 +38,16 @@ private Savetype lookup_savetype_from_lut(ubyte[] rom) {
 
 private Savetype guess_savetype(ubyte[] rom) {
     foreach (id, savetype; savetype_ids) {
-        ubyte[] search_value = cast(ubyte[]) id;
+        ubyte[] search_value = (cast(ubyte[]) id)[0 .. id.length - 1];
+        writefln("%s", id);
+        for (int i = 0; i < search_value.length; i++) {
+            writefln("%x", search_value[i]);
+        }
 
         // search for this id in the rom
         for (int i = 0; i < rom.length / 4; i++) {
             // id must be word-aligned
-            if (rom[i .. i + id.length] == search_value) {
+            if (rom[i .. i + search_value.length] == search_value) {
                 return savetype;
             }
         }
@@ -63,7 +67,7 @@ shared static this() {
         "SRAM_F_V":   Savetype.SRAM_256K,
         "FLASH_V":    Savetype.Flash_512k_SST,
         "FLASH512_V": Savetype.Flash_512k_SST,
-        "Flash1M_V":  Savetype.Flash_1M_Macronix
+        "FLASH1M_V":  Savetype.Flash_1M_Macronix
     ];
 
     // lut derived from https://github.com/profi200/open_agb_firm/issues/9
