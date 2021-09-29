@@ -364,7 +364,6 @@ class Memory {
                     break;
 
                 case Region.ROM_SRAM_L:
-                    writefln("attempting backup write at %x %x", address & 0xFFFF, value);
                     if (flash) {
                         static if (is(T == uint  )) return backup.write_word    (address & 0xFFFF, value);
                         static if (is(T == ushort)) return backup.write_halfword(address & 0xFFFF, value);
