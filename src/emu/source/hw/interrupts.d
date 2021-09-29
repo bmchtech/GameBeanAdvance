@@ -17,7 +17,8 @@ enum Interrupt {
     DMA_2                = 1024,
     DMA_3                = 2048,
     KEYPAD               = 4096,
-    GAMEPAK              = 8192
+    GAMEPAK              = 8192,
+    PASTA                = 16384
 }
 
 
