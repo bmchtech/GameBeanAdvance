@@ -1,12 +1,15 @@
 .PHONY: clean
 
-all: jumptable_arm.d jumptable_thumb.d
+JUMPTABLE_OUT_DIR := ../source
+PYTHON := python3
 
-jumptable_thumb.d: jumptable-thumb-config.d make-jumptable.py
-	python3 make-jumptable.py $< $@ $@ 16 8 jumptable_thumb JUMPTABLE_THUMB_H ushort instruction_thumb
+all: $(JUMPTABLE_OUT_DIR)/jumptable_arm.d $(JUMPTABLE_OUT_DIR)/jumptable_thumb.d
 
-jumptable_arm.d: jumptable-arm.jpp
-	python3 ../../d-jump/source/compile.py $< $@
+$(JUMPTABLE_OUT_DIR)/jumptable_thumb.d: jumptable-thumb-config.d make-jumptable.py
+	$(PYTHON) make-jumptable.py $< $@ $@ 16 8 jumptable_thumb JUMPTABLE_THUMB_H ushort instruction_thumb
+
+$(JUMPTABLE_OUT_DIR)/jumptable_arm.d: jumptable-arm.jpp
+	$(PYTHON) ../../d-jump/source/compile.py $< $@
 
 clean:
 	rm jumptable_thumb.d
