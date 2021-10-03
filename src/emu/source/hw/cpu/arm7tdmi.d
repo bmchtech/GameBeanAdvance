@@ -15,6 +15,8 @@ import jumptable_thumb;
 import std.stdio;
 import std.conv;
 
+import core.exception;
+
 version (LDC) {
     import ldc.intrinsics;
 }
@@ -335,7 +337,7 @@ class ARM7TDMI {
 
         // if (*pc == 0x0801E106) { _g_num_log += 1000; writefln("CPUSET");}
 
-        // Logger.instance.capture_cpu();
+        Logger.instance.capture_cpu();
         // if ( && !get_nth_bit(*cpsr, 7)) {
             // exception(CpuException.IRQ);
         // }
@@ -395,10 +397,14 @@ class ARM7TDMI {
     }
 
     void execute(uint opcode) {
-        if (get_bit_T()) {
-            jumptable_thumb.jumptable[opcode >> 8](this, cast(ushort)opcode);
-        } else {
-            jumptable_arm.execute_instruction(opcode, this);
+        try {
+            if (get_bit_T()) {
+                jumptable_thumb.jumptable[opcode >> 8](this, cast(ushort)opcode);
+            } else {
+                jumptable_arm.execute_instruction(opcode, this);
+            }
+        } catch (RangeError) {
+            error("o no");
         }
     }
 

@@ -43,7 +43,7 @@ template VERBOSE_LOG(string Level, string Content) {
 
 // a warning will not terminate the program
 void warning(string message) {
-    stderr.writefln(message);
+    stderr.writefln("%sWARNING: %s%s", YELLOW, RESET, message);
 }
 
 // an error terminates the program and calls exit(EXIT_FAILURE);

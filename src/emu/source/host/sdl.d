@@ -131,13 +131,13 @@ class GameBeanSDLHost {
         
         if (savetype != Savetype.NONE && savetype != Savetype.UNKNOWN) {
             Backup save = create_savetype(savetype);
-            _gba.memory.add_backup(save);
+            // _gba.memory.add_backup(save);
 
-            bool file_exists = "test.beansave".exists;
+            // bool file_exists = "test.beansave".exists;
 
-	        MmFile mm_file = new MmFile("test.beansave", MmFile.Mode.readWrite, save.get_backup_size(), null, 0);
-            if (file_exists) save.deserialize(cast(ubyte[]) mm_file[]);
-            save.set_backup_file(mm_file);
+	        // MmFile mm_file = new MmFile("test.beansave", MmFile.Mode.readWrite, save.get_backup_size(), null, 0);
+            // if (file_exists) save.deserialize(cast(ubyte[]) mm_file[]);
+            // save.set_backup_file(mm_file);
         }
 
 
