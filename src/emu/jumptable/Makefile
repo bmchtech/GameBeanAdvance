@@ -1,6 +1,6 @@
 .PHONY: clean
 
-JUMPTABLE_OUT_DIR := ../source
+JUMPTABLE_OUT_DIR := source
 PYTHON := python3
 
 all: $(JUMPTABLE_OUT_DIR)/jumptable_arm.d $(JUMPTABLE_OUT_DIR)/jumptable_thumb.d

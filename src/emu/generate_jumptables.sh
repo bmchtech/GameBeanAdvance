@@ -5,5 +5,5 @@
 pushd .
 cd ./jumptable
 echo "Generating jumptable..."
-make all
+make -e all
 popd
