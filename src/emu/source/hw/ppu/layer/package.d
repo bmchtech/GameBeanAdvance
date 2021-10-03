@@ -1,6 +1,6 @@
-module ppu.layer;
+module hw.ppu.layer;
 
 public {
-    import ppu.layer.layer;
-    import ppu.layer.background_layer;
+    import hw.ppu.layer.layer;
+    import hw.ppu.layer.background_layer;
 }

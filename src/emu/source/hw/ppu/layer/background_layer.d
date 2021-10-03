@@ -1,4 +1,4 @@
-module ppu.layer.background_layer;
+module hw.ppu.layer.background_layer;
 
 // import ppu;
 // import memory;
