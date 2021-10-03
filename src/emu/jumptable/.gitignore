@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/jumptable
+jumptable.so
+jumptable.dylib
+jumptable.dll
+jumptable.a
+jumptable.lib
+jumptable-test-*
+*.exe
+*.o
+*.obj
+*.lst
