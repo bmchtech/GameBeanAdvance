@@ -1,0 +1,8 @@
+name "jumptable"
+description "jumptable"
+authors "bean"
+copyright "Copyright © 2021, bean"
+license "proprietary"
+targetType "library"
+
+preGenerateCommands "bash ./generate_jumptables.sh"
