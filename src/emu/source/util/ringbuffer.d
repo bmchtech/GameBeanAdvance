@@ -1,4 +1,4 @@
-module ringbuffer;
+module util.ringbuffer;
 
 class RingBuffer(T) {
     T[] buffer;

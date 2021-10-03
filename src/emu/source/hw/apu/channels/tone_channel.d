@@ -1,4 +1,4 @@
-module apu.channels.tone_channel;
+module hw.apu.channels.tone_channel;
 
 class ToneChannel {
     
