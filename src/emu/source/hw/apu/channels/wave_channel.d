@@ -1,4 +1,4 @@
-module apu.channels.wave_channel;
+module hw.apu.channels.wave_channel;
 
 class WaveChannel {
     

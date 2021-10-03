@@ -4,9 +4,9 @@ import hw.apu;
 import hw.memory;
 import hw.gba;
 
-import apu.channels.noise_channel;
-import apu.channels.wave_channel;
-import apu.channels.tone_channel;
+import hw.apu.channels.noise_channel;
+import hw.apu.channels.wave_channel;
+import hw.apu.channels.tone_channel;
 
 import util;
 import scheduler;

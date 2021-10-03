@@ -1,4 +1,4 @@
-module apu.channels.noise_channel;
+module hw.apu.channels.noise_channel;
 
 // import apu.channels.noise_lut;
 import scheduler;

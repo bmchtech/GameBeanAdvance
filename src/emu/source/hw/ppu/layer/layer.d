@@ -1,4 +1,4 @@
-module ppu.layer.layer;
+module hw.ppu.layer.layer;
 
 // import ppu;
 // import memory;

@@ -2,7 +2,7 @@ module diag.cputrace;
 
 import hw.cpu;
 
-import ringbuffer;
+import util.ringbuffer;
 
 import std.stdio;
 import std.format;
