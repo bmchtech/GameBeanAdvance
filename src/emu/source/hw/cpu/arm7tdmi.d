@@ -26,7 +26,9 @@ __gshared bool  _g_log = false;
 
 class ARM7TDMI {
 
-    Memory memory;
+    Memory m_memory;
+
+    @property Memory memory() { return m_memory; }
 
     CpuMode current_mode;
 
@@ -249,16 +251,27 @@ class ARM7TDMI {
     }
 
     uint[] register_file;
-    uint[] regs;
+    uint[] m_regs;
+
+    @property uint[] regs() { return m_regs; }
 
     uint* pc;
     uint* lr;
     uint* sp;
-    uint* cpsr;
-    uint* spsr; // not valid in USER or SYSTEM modes
+    uint* m_cpsr;
+    uint* m_spsr; // not valid in USER or SYSTEM modes
     
-    uint shifter_operand;
-    bool shifter_carry_out;
+    uint m_shifter_operand;
+    bool m_shifter_carry_out;
+
+    @property uint* cpsr() { return m_cpsr;}
+    @property uint* spsr() { return m_spsr;}
+
+    @property uint shifter_carry_out() { return m_shifter_carry_out;}
+    @property uint shifter_carry_out(uint value) { return m_shifter_carry_out = value;}
+
+    @property uint shifter_operand() { return m_shifter_operand;}
+    @property uint shifter_operand(uint value) { return m_shifter_operand = value;}
 
     pragma(inline, true) uint read_reg(int reg) {
         // when reading register PC (15), the pipeline will cause the read value to be
