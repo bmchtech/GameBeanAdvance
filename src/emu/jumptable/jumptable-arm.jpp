@@ -1,7 +1,7 @@
 [SETTINGS]
 - NAMESPACE: jumptable_arm
 - OPCODE_FORMAT: IIIIIIIIIIII------------DDDD----
-- INCLUDES: util cpu
+- INCLUDES: util abstracthw.cpu
 - ARGUMENTS: IARM7TDMI cpu
 [/SETTINGS]
 

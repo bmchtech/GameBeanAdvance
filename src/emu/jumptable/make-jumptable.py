@@ -28,8 +28,8 @@ LOCAL_INLINE_HEADER     = "@LOCAL_INLINE("
 # formatting for the output files
 FILE_HEADER      = '''
 import util;
-import memory;
-import cpu;\n\n'''[1:] # the [1:] is used to remove the beginning \n
+import abstracthw.memory;
+import abstracthw.cpu;\n\n'''[1:] # the [1:] is used to remove the beginning \n
 
 FILE_FOOTER      = '''
 '''[1:]
