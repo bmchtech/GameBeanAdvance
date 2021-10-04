@@ -18,11 +18,13 @@ Emulator main project is in `src/emu`.
 
 ### Requirements
 + Dlang + DUB
-+ PyPy3 (and `ply` package)
++ Python3/PyPy3 (packages: `ply`)
 
 ### Standard Build
 
-Optionally add `-b release --compiler=ldc2` for optimized build. (Recommended)
+Optionally add `-b release --compiler=ldc2` for optimized build.
+To speed up jumptable generation, you can set environment variable `PYTHON=pypy3` to use PyPy3 JIT.
+
 ```
 dub build
 ```
