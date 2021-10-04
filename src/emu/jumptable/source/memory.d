@@ -1,5 +1,0 @@
-module memory;
-
-interface IMemory {
-    
-}

@@ -10,7 +10,8 @@ dependency "bindbc-sdl" version="~>1.0.1"
 dependency "bindbc-opengl" version="~>1.0.0"
 dependency "silly" version="~>1.1.1"
 
-dependency "jumptable" path="jumptable"
+dependency "gamebean-jumptable" path="jumptable"
+dependency "gamebean-common" path="common"
 
 // dflags "--boundscheck=off" "-O3" "-inline"
 versions "GL_AllowDeprecated"
