@@ -1,5 +1,7 @@
 module abstracthw.cpu;
 
+import abstracthw.memory;
+
 interface IARM7TDMI {
     uint read_reg(int reg);
     void write_reg(int reg, uint value);
@@ -35,4 +37,5 @@ interface IARM7TDMI {
     @property uint shifter_carry_out(uint value);
 
     @property uint[] regs();
+    @property IMemory memory();
 }
