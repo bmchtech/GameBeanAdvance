@@ -1,4 +1,4 @@
-module memory;
+module abstracthw.memory;
 
 interface IMemory {
     

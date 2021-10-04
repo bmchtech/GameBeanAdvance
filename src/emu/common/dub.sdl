@@ -1,0 +1,6 @@
+name "gamebean-common"
+description "common"
+authors "bean"
+copyright "Copyright © 2021, bean"
+license "proprietary"
+targetType "library"

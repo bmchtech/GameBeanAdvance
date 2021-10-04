@@ -1,4 +1,4 @@
-module cpu;
+module abstracthw.cpu;
 
 interface IARM7TDMI {
     

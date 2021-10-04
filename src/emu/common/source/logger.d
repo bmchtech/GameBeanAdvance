@@ -3,14 +3,15 @@ module logger;
 import std.stdio;
 import std.conv;
 
-import hw.gba;
+import abstracthw.gba;
 import util;
+
 import diag.cputrace;
 
 class Logger {
     static Logger instance;
 
-    static Logger singleton(CpuTrace cpu_trace) {
+    static Logger singleton(ICpuTrace cpu_trace) {
         if (!instance)
             instance = new Logger(cpu_trace);
         
@@ -26,9 +27,9 @@ class Logger {
     }
 
 private:
-    this(CpuTrace cpu_trace) {
+    this(ICpuTrace cpu_trace) {
         this.cpu_trace = cpu_trace;
     }
 
-    CpuTrace cpu_trace;
+    ICpuTrace cpu_trace;
 }
