@@ -5,6 +5,9 @@ import hw.cpu.state;
 import hw.cpu.exception;
 import hw.memory;
 
+import abstracthw.cpu;
+import abstracthw.memory;
+
 import diag.logger;
 
 import util;
@@ -24,11 +27,11 @@ ulong _g_cpu_cycles_remaining = 0;
 
 __gshared bool  _g_log = false;
 
-class ARM7TDMI {
+class ARM7TDMI : IARM7TDMI {
 
     Memory m_memory;
 
-    @property Memory memory() { return m_memory; }
+    @property IMemory memory() { return m_memory; }
 
     CpuMode current_mode;
 
