@@ -2,7 +2,7 @@
 docs.json
 __dummy.html
 docs/
-/jumptable
+/common
 *.so
 *.dylib
 *.dll
