@@ -270,6 +270,7 @@ class ARM7TDMI : IARM7TDMI {
     @property uint* pc() { return m_pc;}
     @property uint* lr() { return m_lr;}
     @property uint* sp() { return m_sp;}
+    @property uint* cpsr() { return m_cpsr;}
     @property uint* spsr() { return m_spsr;}
 
     @property uint shifter_carry_out() { return m_shifter_carry_out;}
