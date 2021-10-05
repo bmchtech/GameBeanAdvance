@@ -2,12 +2,14 @@ module diag.cputrace;
 
 import hw.cpu;
 
+import abstracthw.cputrace;
+
 import util.ringbuffer;
 
 import std.stdio;
 import std.format;
 
-class CpuTrace {
+class CpuTrace : ICpuTrace {
     ARM7TDMI cpu;
     RingBuffer!CpuState ringbuffer;
 
