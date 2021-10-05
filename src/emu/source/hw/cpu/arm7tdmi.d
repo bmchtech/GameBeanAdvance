@@ -1,6 +1,5 @@
 module hw.cpu.arm7tdmi;
 
-import hw.cpu.mode;
 import hw.cpu.state;
 import hw.cpu.exception;
 import hw.memory;
@@ -238,7 +237,7 @@ class ARM7TDMI : IARM7TDMI {
     // reads the CPSR and figures out what the current mode is. then, it updates it using new_mode.
     void update_mode() {
         int mode_bits = get_nth_bits(*cpsr, 0, 5);
-        for (int i = 0; i < NUM_MODES; i++) {
+        for (int i = 0; i < NUM_CPU_MODES; i++) {
             if (MODES[i].CPSR_ENCODING == mode_bits) {
                 set_mode(MODES[i]);
             }
@@ -253,21 +252,24 @@ class ARM7TDMI : IARM7TDMI {
         return current_mode != MODE_USER;
     }
 
-    uint[] register_file;
+    uint[] m_register_file;
     uint[] m_regs;
 
     @property uint[] regs() { return m_regs; }
+    @property uint[] register_file() { return m_register_file; }
 
-    uint* pc;
-    uint* lr;
-    uint* sp;
+    uint* m_pc;
+    uint* m_lr;
+    uint* m_sp;
     uint* m_cpsr;
     uint* m_spsr; // not valid in USER or SYSTEM modes
     
     uint m_shifter_operand;
     bool m_shifter_carry_out;
 
-    @property uint* cpsr() { return m_cpsr;}
+    @property uint* pc() { return m_pc;}
+    @property uint* lr() { return m_lr;}
+    @property uint* sp() { return m_sp;}
     @property uint* spsr() { return m_spsr;}
 
     @property uint shifter_carry_out() { return m_shifter_carry_out;}
@@ -481,16 +483,7 @@ class ARM7TDMI : IARM7TDMI {
 
     // an explanation of these constants is partially in here as well as cpu-mode.h
 
-    enum MODE_USER       = CpuMode(0b10000, 0b011111111111111111, 18 * 0);
-    enum MODE_SYSTEM     = CpuMode(0b11111, 0b011111111111111111, 18 * 0);
-    enum MODE_SUPERVISOR = CpuMode(0b10011, 0b011001111111111111, 18 * 1);
-    enum MODE_ABORT      = CpuMode(0b10111, 0b011001111111111111, 18 * 2);
-    enum MODE_UNDEFINED  = CpuMode(0b11011, 0b011001111111111111, 18 * 3);
-    enum MODE_IRQ        = CpuMode(0b10010, 0b011001111111111111, 18 * 4);
-    enum MODE_FIQ        = CpuMode(0b10001, 0b011000000011111111, 18 * 5);
-
-    enum NUM_MODES = 7;
-    static CpuMode[NUM_MODES] MODES = [
+    static CpuMode[NUM_CPU_MODES] MODES = [
         MODE_USER, MODE_FIQ, MODE_IRQ, MODE_SUPERVISOR, MODE_ABORT, MODE_UNDEFINED,
         MODE_SYSTEM
     ];
