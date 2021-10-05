@@ -42,7 +42,7 @@ template VERBOSE_LOG(string Level, string Content) {
 
 // a warning will not terminate the program
 void warning(string message) {
-    stderr.writefln(message);
+    stderr.writefln("%sWARNING: %s%s", YELLOW, RESET, message);
 }
 
 // an error terminates the program and calls exit(EXIT_FAILURE);
@@ -89,26 +89,4 @@ pragma(inline) double convert_from_8_8f_to_double(ushort input) {
 
 pragma(inline) ushort convert_from_double_to_8_8f(double input) {
     return (cast(ushort) ((cast(ushort) (input / 1)) << 8)) | ((cast(ushort) ((input % 1) * 256)) & 0xFF);
-}
-
-class NSStopwatch {
-    import core.time;
-
-    this() {
-        last_ticks = MonoTime.currTime();
-    }
-
-    long update() {
-        auto ticks = MonoTime.currTime();
-        auto elapsed_dur = ticks - last_ticks;
-        long elapsed = elapsed_dur.total!"nsecs";
-        last_ticks = ticks;
-
-        total_time += elapsed;
-
-        return elapsed;
-    }
-
-    MonoTimeImpl!(ClockType.normal) last_ticks;
-    long total_time = 0;
 }
