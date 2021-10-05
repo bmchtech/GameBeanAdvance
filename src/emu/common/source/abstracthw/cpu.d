@@ -47,7 +47,7 @@ interface IARM7TDMI {
 
     @property uint[] register_file();
     @property uint[] regs();
-    @property IMemory memory();
+    @property IMemory imemory();
 }
 
 // CPU modes will be described as the following:
@@ -105,7 +105,7 @@ CpuState get_cpu_state(IARM7TDMI cpu) {
     cpu_state.type = cpu.get_bit_T() ? CpuType.THUMB : CpuType.ARM;
     cpu_state.opcode = cpu.pipeline[0];
     cpu_state.mode = *cpu.cpsr;
-    cpu_state.mem_0x03000003 = cpu.memory.read_byte(0x03000003);
+    cpu_state.mem_0x03000003 = cpu.imemory.read_byte(0x03000003);
 
     for (int i = 0; i < 16; i++) {
         cpu_state.regs[i] = cpu.regs[i];
@@ -124,5 +124,5 @@ void set_cpu_state(IARM7TDMI cpu, CpuState cpu_state) {
     // *cpu.cpsr = (*cpu.cpsr & 0xFFFFFFE0) | (cpu_state.mode & 0x1F);
     // cpu.update_mode();
 
-    cpu.memory.write_byte(cast(uint) 0x03000003, cast(ubyte) cpu_state.mem_0x03000003);
+    cpu.imemory.write_byte(cast(uint) 0x03000003, cast(ubyte) cpu_state.mem_0x03000003);
 }

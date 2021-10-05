@@ -26,9 +26,9 @@ __gshared bool  _g_log = false;
 
 class ARM7TDMI : IARM7TDMI {
 
-    Memory m_memory;
+    Memory memory;
 
-    @property IMemory memory() { return m_memory; }
+    @property IMemory imemory() { return memory; }
 
     CpuMode current_mode;
 
@@ -43,7 +43,7 @@ class ARM7TDMI : IARM7TDMI {
     uint current_instruction_size;
 
     this(Memory memory) {
-        this.m_memory        = memory;
+        this.memory        = memory;
 
         this.m_regs          = new uint[18];
         this.m_register_file = new uint[18 * 6];
@@ -80,7 +80,7 @@ class ARM7TDMI : IARM7TDMI {
         CpuMode mode = get_mode_from_exception(exception);
         // writefln("Interrupt! Setting LR to %x", *pc);
         // writefln("Interrupt type: %s", get_exception_name(exception));
-        // writefln("IF: %x", m_memory.read_halfword(0x4000202));
+        // writefln("IF: %x", memory.read_halfword(0x4000202));
 
         register_file[mode.OFFSET + 14] = *pc - 2 * (get_bit_T() ? 2 : 4);
         if (exception == CpuException.IRQ) {
@@ -99,7 +99,7 @@ class ARM7TDMI : IARM7TDMI {
 
         *pc = get_address_from_exception(exception);
         set_bit_T(false);
-        m_memory.can_read_from_bios = true;
+        memory.can_read_from_bios = true;
         
         if (exception == CpuException.SoftwareInterrupt) {
             refill_pipeline_partial();
@@ -229,7 +229,7 @@ class ARM7TDMI : IARM7TDMI {
         *cpsr = (*cpsr & 0xFFFFFFE0) | new_mode.CPSR_ENCODING;
         current_mode = new_mode;
 
-        if (had_interrupts_disabled && (*cpsr >> 7) && m_memory.read_halfword(0x4000202)) {
+        if (had_interrupts_disabled && (*cpsr >> 7) && memory.read_halfword(0x4000202)) {
             exception(CpuException.IRQ);
         }
     }
@@ -373,7 +373,7 @@ class ARM7TDMI : IARM7TDMI {
         //     error("rebooting");
         // }
 
-        if (m_memory.read_word(0x0300_000C) == 0x60840000) {
+        if (memory.read_word(0x0300_000C) == 0x60840000) {
             writefln("something weird happened right here!!!!!");
         }
 
@@ -393,7 +393,7 @@ class ARM7TDMI : IARM7TDMI {
         //     writeln();
         // }
 
-        m_memory.can_read_from_bios = (*pc >> 24) == 0;
+        memory.can_read_from_bios = (*pc >> 24) == 0;
         execute(opcode);
 
         pipeline_access_type = AccessType.SEQUENTIAL;
@@ -403,11 +403,11 @@ class ARM7TDMI : IARM7TDMI {
 
     uint fetch() {
         if (get_bit_T()) { // thumb mode: grab a halfword and return it
-            uint opcode = cast(uint) m_memory.read_halfword(*pc & 0xFFFFFFFE, pipeline_access_type);
+            uint opcode = cast(uint) memory.read_halfword(*pc & 0xFFFFFFFE, pipeline_access_type);
             *pc += 2;
             return opcode;
         } else {           // arm mode: grab a word and return it
-            uint opcode = m_memory.read_word(*pc & 0xFFFFFFFC, pipeline_access_type);
+            uint opcode = memory.read_word(*pc & 0xFFFFFFFC, pipeline_access_type);
             *pc += 4;
             return opcode;
         }
@@ -430,7 +430,7 @@ class ARM7TDMI : IARM7TDMI {
     }
 
     void refill_pipeline() {
-        m_memory.can_read_from_bios = (*pc >> 24) == 0;
+        memory.can_read_from_bios = (*pc >> 24) == 0;
 
         m_pipeline[0] = fetch();
         m_pipeline[1] = fetch();
