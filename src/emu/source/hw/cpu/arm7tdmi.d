@@ -1,7 +1,5 @@
 module hw.cpu.arm7tdmi;
 
-import hw.cpu.state;
-import hw.cpu.exception;
 import hw.memory;
 
 import abstracthw.cpu;
@@ -37,7 +35,9 @@ class ARM7TDMI : IARM7TDMI {
     enum CPU_STATE_LOG_LENGTH = 1;
     CpuState[CPU_STATE_LOG_LENGTH] cpu_states;
 
-    uint[2] pipeline;
+    uint[2] m_pipeline;
+    @property uint[2] pipeline() { return m_pipeline; }
+
     Memory.AccessType pipeline_access_type;
 
     uint current_instruction_size;
