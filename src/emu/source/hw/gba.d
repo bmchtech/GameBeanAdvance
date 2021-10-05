@@ -75,7 +75,7 @@ public:
         cpu.set_mode(MODE_SYSTEM);
 
         // bios
-        cpu.m_memory.bios[0 .. bios.length] = bios[0 .. bios.length];
+        cpu.memory.bios[0 .. bios.length] = bios[0 .. bios.length];
         *cpu.pc = 0;
     }
 
@@ -96,7 +96,7 @@ public:
     }
 
     void load_rom(ubyte[] rom) {
-        cpu.m_memory.rom[0 ..  rom.length] = rom[0 .. rom.length];
+        cpu.memory.rom[0 ..  rom.length] = rom[0 .. rom.length];
 
         cpu.refill_pipeline();
         enabled = true; 
