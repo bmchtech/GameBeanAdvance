@@ -42,8 +42,8 @@ interface IARM7TDMI {
 
     @property uint shifter_operand();
     @property uint shifter_operand(uint value);
-    @property uint shifter_carry_out();
-    @property uint shifter_carry_out(uint value);
+    @property bool shifter_carry_out();
+    @property bool shifter_carry_out(bool value);
 
     @property uint[] register_file();
     @property uint[] regs();
