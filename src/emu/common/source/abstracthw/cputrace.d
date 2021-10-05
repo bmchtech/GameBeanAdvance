@@ -1,4 +1,4 @@
-module diag.cputrace;
+module abstracthw.cputrace;
 
 interface ICpuTrace {
     void print_trace();
