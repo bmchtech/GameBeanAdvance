@@ -38,7 +38,7 @@ class ARM7TDMI : IARM7TDMI {
     uint[2] m_pipeline;
     @property uint[2] pipeline() { return m_pipeline; }
 
-    Memory.AccessType pipeline_access_type;
+    AccessType pipeline_access_type;
 
     uint current_instruction_size;
 
