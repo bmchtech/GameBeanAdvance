@@ -610,7 +610,7 @@
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
-    @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out != 0);
+    @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out);
     @IF( S) }
 }
 [/COMPONENT]
@@ -628,7 +628,7 @@
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
-    @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out != 0);
+    @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out);
     @IF( S) }
 }
 [/COMPONENT]
@@ -710,7 +710,7 @@
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
-    @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out != 0);
+    @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out);
     @IF( S) }
 }
 [/COMPONENT]
@@ -884,7 +884,7 @@
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
-    @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out != 0);
+    @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out);
     @IF( S) }
 }
 [/COMPONENT]
@@ -905,8 +905,6 @@
     @IF( I) uint  operand     = cpu.ROR(get_nth_bits(opcode, 0, 8), cast(ubyte) (get_nth_bits(opcode, 8, 12) * 2));
     @IF(!I) uint  operand     = cpu.read_reg(get_nth_bits(opcode, 0, 4));
 
-    bool bit_T_changed = get_nth_bit(operand, 5) ^ cpu.get_bit_T();
-
     @IF( R) if (cpu.has_spsr()) {
     @IF( R) if (get_nth_bit(opcode, 16)) *cpu.spsr = (*cpu.spsr & 0xFFFFFF00) | (operand & 0x000000FF);
     @IF( R) if (get_nth_bit(opcode, 17)) *cpu.spsr = (*cpu.spsr & 0xFFFF00FF) | (operand & 0x0000FF00);
@@ -920,10 +918,6 @@
     @IF(!R)     if (get_nth_bit(opcode, 18)) *cpu.cpsr = (*cpu.cpsr & 0xFF00FFFF) | (operand & 0x00FF0000);
     @IF(!R) }
     @IF(!R)     if (get_nth_bit(opcode, 19)) *cpu.cpsr = (*cpu.cpsr & 0x00FFFFFF) | (operand & 0xFF000000);
-
-    @IF(!R) if (get_nth_bit(opcode, 16) && cpu.in_a_privileged_mode()) {
-    @IF(!R)     if (bit_T_changed) cpu.refill_pipeline();
-    @IF(!R) }
 
     @IF(!R) cpu.update_mode();
     // _g_cpu_cycles_remaining++;
@@ -963,7 +957,7 @@
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
-    @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out != 0);
+    @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out);
     @IF( S) }
 }
 [/COMPONENT]
