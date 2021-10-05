@@ -1,18 +1,19 @@
 module diag.logger;
 
-import hw.gba;
+import std.stdio;
+import std.conv;
 
-import diag.cputrace;
+import abstracthw.gba;
+import abstracthw.cpu;
 
 import util;
 
-import std.stdio;
-import std.conv;
+import diag.cputrace;
 
 class Logger {
     static Logger instance;
 
-    static Logger singleton(CpuTrace cpu_trace) {
+    static Logger singleton(ICpuTrace cpu_trace) {
         if (!instance)
             instance = new Logger(cpu_trace);
         
@@ -20,7 +21,6 @@ class Logger {
     }
 
     void print() {
-        writeln("error!");
         cpu_trace.print_trace();
     }
     
@@ -29,9 +29,9 @@ class Logger {
     }
 
 private:
-    this(CpuTrace cpu_trace) {
+    this(ICpuTrace cpu_trace) {
         this.cpu_trace = cpu_trace;
     }
 
-    CpuTrace cpu_trace;
+    ICpuTrace cpu_trace;
 }
