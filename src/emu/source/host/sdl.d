@@ -16,6 +16,8 @@ import bindbc.sdl.image;
 
 import std.stdio;
 import std.conv;
+import std.mmfile;
+import std.file;
 
 import core.sync.mutex;
 
@@ -129,8 +131,15 @@ class GameBeanSDLHost {
         
         if (savetype != Savetype.NONE && savetype != Savetype.UNKNOWN) {
             Backup save = create_savetype(savetype);
-            _gba.memory.add_backup(save);
+            // _gba.memory.add_backup(save);
+
+            // bool file_exists = "test.beansave".exists;
+
+	        // MmFile mm_file = new MmFile("test.beansave", MmFile.Mode.readWrite, save.get_backup_size(), null, 0);
+            // if (file_exists) save.deserialize(cast(ubyte[]) mm_file[]);
+            // save.set_backup_file(mm_file);
         }
+
 
         writeln("Complete.");
     }
@@ -161,7 +170,7 @@ class GameBeanSDLHost {
         enum nsec_per_frame = 16_666_660;
         enum msec_per_frame = 16;
 
-        auto stopwatch = new NSStopwatch();
+        // auto stopwatch = new NSStopwatch();
         // long clockfor_cycle = 0;
         long clockfor_frame = 0;
         // auto total_cycles = 0;
