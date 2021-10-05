@@ -68,14 +68,14 @@ public:
 
         MMIO mmio = new MMIO(this, ppu, apu, dma_manager, timers, interrupt_manager, key_input, memory);
         memory.set_mmio(mmio);
-        memory.set_cpu_pipeline(&cpu.pipeline);
+        memory.set_cpu_pipeline(&cpu.m_pipeline);
 
         this.enabled = false;
 
-        cpu.set_mode(cpu.MODE_SYSTEM);
+        cpu.set_mode(MODE_SYSTEM);
 
         // bios
-        cpu.memory.bios[0 .. bios.length] = bios[0 .. bios.length];
+        cpu.m_memory.bios[0 .. bios.length] = bios[0 .. bios.length];
         *cpu.pc = 0;
     }
 
@@ -96,7 +96,7 @@ public:
     }
 
     void load_rom(ubyte[] rom) {
-        cpu.memory.rom[0 ..  rom.length] = rom[0 .. rom.length];
+        cpu.m_memory.rom[0 ..  rom.length] = rom[0 .. rom.length];
 
         cpu.refill_pipeline();
         enabled = true; 

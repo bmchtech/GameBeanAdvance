@@ -43,14 +43,14 @@ class ARM7TDMI : IARM7TDMI {
     uint current_instruction_size;
 
     this(Memory memory) {
-        this.memory        = memory;
+        this.m_memory        = memory;
 
-        this.regs          = new uint[18];
-        this.register_file = new uint[18 * 6];
+        this.m_regs          = new uint[18];
+        this.m_register_file = new uint[18 * 6];
 
-        register_file[MODE_USER.OFFSET       + 13] = 0x03007f00;
-        register_file[MODE_IRQ.OFFSET        + 13] = 0x03007fa0;
-        register_file[MODE_SUPERVISOR.OFFSET + 13] = 0x03007fe0;
+        m_register_file[MODE_USER.OFFSET       + 13] = 0x03007f00;
+        m_register_file[MODE_IRQ.OFFSET        + 13] = 0x03007fa0;
+        m_register_file[MODE_SUPERVISOR.OFFSET + 13] = 0x03007fe0;
 
         // the current mode
         current_mode = MODES[0];
@@ -59,13 +59,13 @@ class ARM7TDMI : IARM7TDMI {
         }
         regs[0 .. 18] = register_file[MODE_USER.OFFSET .. MODE_USER.OFFSET + 18];
 
-        pc   = &regs[15];
-        lr   = &regs[14];
-        sp   = &regs[13];
-        cpsr = &regs[16];
-        spsr = &regs[17];
+        m_pc   = &regs[15];
+        m_lr   = &regs[14];
+        m_sp   = &regs[13];
+        m_cpsr = &regs[16];
+        m_spsr = &regs[17];
 
-        pipeline_access_type = Memory.AccessType.NONSEQUENTIAL;
+        pipeline_access_type = AccessType.NONSEQUENTIAL;
         set_bit_T(false);
     }
 
@@ -80,7 +80,7 @@ class ARM7TDMI : IARM7TDMI {
         CpuMode mode = get_mode_from_exception(exception);
         // writefln("Interrupt! Setting LR to %x", *pc);
         // writefln("Interrupt type: %s", get_exception_name(exception));
-        // writefln("IF: %x", memory.read_halfword(0x4000202));
+        // writefln("IF: %x", m_memory.read_halfword(0x4000202));
 
         register_file[mode.OFFSET + 14] = *pc - 2 * (get_bit_T() ? 2 : 4);
         if (exception == CpuException.IRQ) {
@@ -99,7 +99,7 @@ class ARM7TDMI : IARM7TDMI {
 
         *pc = get_address_from_exception(exception);
         set_bit_T(false);
-        memory.can_read_from_bios = true;
+        m_memory.can_read_from_bios = true;
         
         if (exception == CpuException.SoftwareInterrupt) {
             refill_pipeline_partial();
@@ -215,9 +215,9 @@ class ARM7TDMI : IARM7TDMI {
 
         // user and system modes dont have spsr. spsr reads return cpsr.
         if (new_mode == MODE_USER || new_mode == MODE_SYSTEM) {
-            spsr = cpsr;
+            m_spsr = cpsr;
         } else {
-            spsr = &regs[17];
+            m_spsr = &regs[17];
         }
 
         // bool old_bit_T = get_bit_T();
@@ -229,7 +229,7 @@ class ARM7TDMI : IARM7TDMI {
         *cpsr = (*cpsr & 0xFFFFFFE0) | new_mode.CPSR_ENCODING;
         current_mode = new_mode;
 
-        if (had_interrupts_disabled && (*cpsr >> 7) && memory.read_halfword(0x4000202)) {
+        if (had_interrupts_disabled && (*cpsr >> 7) && m_memory.read_halfword(0x4000202)) {
             exception(CpuException.IRQ);
         }
     }
@@ -273,8 +273,8 @@ class ARM7TDMI : IARM7TDMI {
     @property uint* cpsr() { return m_cpsr;}
     @property uint* spsr() { return m_spsr;}
 
-    @property uint shifter_carry_out() { return m_shifter_carry_out;}
-    @property uint shifter_carry_out(uint value) { return m_shifter_carry_out = value;}
+    @property bool shifter_carry_out() { return m_shifter_carry_out;}
+    @property bool shifter_carry_out(bool value) { return m_shifter_carry_out = value;}
 
     @property uint shifter_operand() { return m_shifter_operand;}
     @property uint shifter_operand(uint value) { return m_shifter_operand = value;}
@@ -361,9 +361,9 @@ class ARM7TDMI : IARM7TDMI {
 
         _g_cpu_cycles_remaining = 0;
 
-        uint opcode = pipeline[0];
-        pipeline[0] = pipeline[1];
-        pipeline[1] = fetch();
+        uint opcode = m_pipeline[0];
+        m_pipeline[0] = m_pipeline[1];
+        m_pipeline[1] = fetch();
 
         if (*pc > 0x0FFF_FFFF) {
             error("PC out of range!");
@@ -373,7 +373,7 @@ class ARM7TDMI : IARM7TDMI {
         //     error("rebooting");
         // }
 
-        if (memory.read_word(0x0300_000C) == 0x60840000) {
+        if (m_memory.read_word(0x0300_000C) == 0x60840000) {
             writefln("something weird happened right here!!!!!");
         }
 
@@ -393,21 +393,21 @@ class ARM7TDMI : IARM7TDMI {
         //     writeln();
         // }
 
-        memory.can_read_from_bios = (*pc >> 24) == 0;
+        m_memory.can_read_from_bios = (*pc >> 24) == 0;
         execute(opcode);
 
-        pipeline_access_type = Memory.AccessType.SEQUENTIAL;
+        pipeline_access_type = AccessType.SEQUENTIAL;
 
         return _g_cpu_cycles_remaining;
     }
 
     uint fetch() {
         if (get_bit_T()) { // thumb mode: grab a halfword and return it
-            uint opcode = cast(uint) memory.read_halfword(*pc & 0xFFFFFFFE, pipeline_access_type);
+            uint opcode = cast(uint) m_memory.read_halfword(*pc & 0xFFFFFFFE, pipeline_access_type);
             *pc += 2;
             return opcode;
         } else {           // arm mode: grab a word and return it
-            uint opcode = memory.read_word(*pc & 0xFFFFFFFC, pipeline_access_type);
+            uint opcode = m_memory.read_word(*pc & 0xFFFFFFFC, pipeline_access_type);
             *pc += 4;
             return opcode;
         }
@@ -430,12 +430,12 @@ class ARM7TDMI : IARM7TDMI {
     }
 
     void refill_pipeline() {
-        memory.can_read_from_bios = (*pc >> 24) == 0;
+        m_memory.can_read_from_bios = (*pc >> 24) == 0;
 
-        pipeline[0] = fetch();
-        pipeline[1] = fetch();
+        m_pipeline[0] = fetch();
+        m_pipeline[1] = fetch();
 
-        pipeline_access_type = Memory.AccessType.NONSEQUENTIAL;
+        pipeline_access_type = AccessType.NONSEQUENTIAL;
     }
 
     pragma(inline, true) void refill_pipeline_partial() {

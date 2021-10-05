@@ -136,10 +136,10 @@ public:
                 uint bg_scanline = backgrounds[2].is_mosaic ? apparent_bg_scanline : scanline;
 
                 for (uint x = 0; x < 240; x++) {
-                    canvas.pixels_output[x] = get_pixel_from_color(memory.read_halfword(memory.OFFSET_VRAM + (x + bg_scanline * 240) * 2));
+                    canvas.pixels_output[x] = get_pixel_from_color(memory.read_halfword(OFFSET_VRAM + (x + bg_scanline * 240) * 2));
                 }
-                    // writefln("%x", memory.read_halfword(memory.OFFSET_VRAM + (0 + 200 * 240) * 2));
-                // writefln("%x %x %x", memory.read_halfword(memory.OFFSET_VRAM + (0 + scanline * 240) * 2), memory.read_halfword(memory.OFFSET_VRAM + (120 * 230 * 2)), memory.vram[120 * 230 * 2]);
+                    // writefln("%x", memory.read_halfword(OFFSET_VRAM + (0 + 200 * 240) * 2));
+                // writefln("%x %x %x", memory.read_halfword(OFFSET_VRAM + (0 + scanline * 240) * 2), memory.read_halfword(OFFSET_VRAM + (120 * 230 * 2)), memory.vram[120 * 230 * 2]);
 
                 // writefln("c: %x", layer_backgrounds[0][0][0].r);
                 break;
@@ -149,7 +149,7 @@ public:
             case 5: {
                 // modes 4 and 5 are a step up from mode 3. the address of where the colors are stored can
                 // be found using DISPCNT.
-                uint base_frame_address = memory.OFFSET_VRAM + disp_frame_select * 0xA000;
+                uint base_frame_address = OFFSET_VRAM + disp_frame_select * 0xA000;
 
                 uint bg_scanline = backgrounds[2].is_mosaic ? apparent_bg_scanline : scanline;
 
@@ -400,7 +400,7 @@ private:
         uint bg_scanline = background.is_mosaic ? apparent_bg_scanline : scanline;
 
         // relevant addresses for the background's tilemap and screen
-        int screen_base_address = memory.OFFSET_VRAM + background.screen_base_block    * 0x800;
+        int screen_base_address = OFFSET_VRAM + background.screen_base_block    * 0x800;
         int tile_base_address   = background.character_base_block * 0x4000;
 
         // the coordinates at the topleft of the background that we are drawing
@@ -459,7 +459,7 @@ private:
         uint bg_scanline = background.is_mosaic ? apparent_bg_scanline : scanline;
 
         // relevant addresses for the background's tilemap and screen
-        int screen_base_address = memory.OFFSET_VRAM + background.screen_base_block * 0x800;
+        int screen_base_address = OFFSET_VRAM + background.screen_base_block * 0x800;
         int tile_base_address   = background.character_base_block * 0x4000;
 
         // the coordinates at the topleft of the background that we are drawing
@@ -529,19 +529,19 @@ private:
         // Very useful guide for attributes! https://problemkaputt.de/gbatek.htm#lcdobjoamattributes
         for (int sprite = 0; sprite < 128; sprite++) {
 
-            if (get_nth_bits(memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 4), 10, 12) != given_priority) continue;
+            if (get_nth_bits(memory.read_halfword(OFFSET_OAM + sprite * 8 + 4), 10, 12) != given_priority) continue;
 
             // first of all, we need to figure out if we render this sprite in the first place.
             // so, we collect a bunch of info that'll help us figure that out.
-            ushort attribute_0 = memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 0);
+            ushort attribute_0 = memory.read_halfword(OFFSET_OAM + sprite * 8 + 0);
 
             // is this sprite even enabled
             if (get_nth_bits(attribute_0, 8, 10) == 0b10) continue;
 
             // it is enabled? great. let's get the other two attributes and collect some
             // relevant information.
-            int attribute_1 = memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 2);
-            int attribute_2 = memory.read_halfword(memory.OFFSET_OAM + sprite * 8 + 4);
+            int attribute_1 = memory.read_halfword(OFFSET_OAM + sprite * 8 + 2);
+            int attribute_2 = memory.read_halfword(OFFSET_OAM + sprite * 8 + 4);
 
             int size   = get_nth_bits(attribute_1, 14, 16);
             int shape  = get_nth_bits(attribute_0, 14, 16);
@@ -575,10 +575,10 @@ private:
             // if (!obj_character_vram_mapping && doesnt_use_color_palettes) base_tile_number >>= 1;
 
             PMatrix p_matrix = PMatrix(
-                convert_from_8_8f_to_double(memory.read_halfword(memory.OFFSET_OAM + 0x06 + 0x20 * scaling_number)),
-                convert_from_8_8f_to_double(memory.read_halfword(memory.OFFSET_OAM + 0x0E + 0x20 * scaling_number)),
-                convert_from_8_8f_to_double(memory.read_halfword(memory.OFFSET_OAM + 0x16 + 0x20 * scaling_number)),
-                convert_from_8_8f_to_double(memory.read_halfword(memory.OFFSET_OAM + 0x1E + 0x20 * scaling_number))
+                convert_from_8_8f_to_double(memory.read_halfword(OFFSET_OAM + 0x06 + 0x20 * scaling_number)),
+                convert_from_8_8f_to_double(memory.read_halfword(OFFSET_OAM + 0x0E + 0x20 * scaling_number)),
+                convert_from_8_8f_to_double(memory.read_halfword(OFFSET_OAM + 0x16 + 0x20 * scaling_number)),
+                convert_from_8_8f_to_double(memory.read_halfword(OFFSET_OAM + 0x1E + 0x20 * scaling_number))
             );
 
             // for (int tile_x_offset = 0; tile_x_offset < width; tile_x_offset++) {
@@ -592,7 +592,7 @@ private:
          
             Texture texture = Texture(base_tile_number, width << 3, height << 3, tile_number_increment_per_row, 
                                         scaled, p_matrix, Point(middle_x, middle_y),
-                                        memory.OFFSET_VRAM + 0x10000, 0x200,
+                                        OFFSET_VRAM + 0x10000, 0x200,
                                         get_nth_bits(attribute_2, 12, 16),
                                         flipped_x, flipped_y, get_nth_bit(attribute_0, 9));
 
