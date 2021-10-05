@@ -7,7 +7,7 @@ import core.stdc.math; //core.stdc.math.pow
 import std.stdio;
 import std.conv;
 
-import logger;
+import diag.logger;
 
 public {
     import std.format;
