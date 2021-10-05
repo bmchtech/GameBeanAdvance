@@ -835,12 +835,12 @@
             @IF(!S !L) }
 
             @IF( S  L) if (pc_included) cpu.regs         [i]                        = cpu.memory.read_word(address);
-            @IF( S  L) else             cpu.register_file[cpu.MODE_USER.OFFSET + i] = cpu.memory.read_word(address);
+            @IF( S  L) else             cpu.register_file[MODE_USER.OFFSET + i] = cpu.memory.read_word(address);
 
             @IF( S !L) if (i == 15) {
-            @IF( S !L)     cpu.memory.write_word(address, cpu.register_file[cpu.MODE_USER.OFFSET + 15] + 4);
+            @IF( S !L)     cpu.memory.write_word(address, cpu.register_file[MODE_USER.OFFSET + 15] + 4);
             @IF( S !L) } else {
-            @IF( S !L)     cpu.memory.write_word(address, cpu.register_file[cpu.MODE_USER.OFFSET + i]);
+            @IF( S !L)     cpu.memory.write_word(address, cpu.register_file[MODE_USER.OFFSET + i]);
             @IF( S !L) }
 
             @IF(!P  U) address += 4;
