@@ -12,6 +12,26 @@ import util;
 
 import std.stdio;
 
+enum SIZE_BIOS = 0x4000;
+enum SIZE_WRAM_BOARD = 0x40000;
+enum SIZE_WRAM_CHIP = 0x8000;
+enum SIZE_PALETTE_RAM = 0x400;
+enum SIZE_VRAM = 0x18000;
+enum SIZE_OAM = 0x400;
+enum SIZE_ROM = 0x2000000;
+
+enum OFFSET_BIOS = 0x0000000;
+enum OFFSET_WRAM_BOARD = 0x2000000;
+enum OFFSET_WRAM_CHIP = 0x3000000;
+enum OFFSET_IO_REGISTERS = 0x4000000;
+enum OFFSET_PALETTE_RAM = 0x5000000;
+enum OFFSET_VRAM = 0x6000000;
+enum OFFSET_OAM = 0x7000000;
+enum OFFSET_ROM_1 = 0x8000000;
+enum OFFSET_ROM_2 = 0xA000000;
+enum OFFSET_ROM_3 = 0xC000000;
+enum OFFSET_SRAM = 0xE000000;
+
 Memory memory;
 
 // assume abbreviation "ws" = "waitstate" because these lines are getting long
@@ -63,6 +83,9 @@ class Memory : IMemory {
         [[5, 5, 8], [3, 3, 6]], // ROM SRAM
         [[5, 5, 8], [3, 3, 6]]  // ROM SRAM
     ];
+
+    bool can_read_from_bios = false;
+    OpenBusBiosState open_bus_bios_state = OpenBusBiosState.STARTUP;
 
     ushort waitcnt;
     void write_WAITCNT(uint target_byte, ubyte data) {
