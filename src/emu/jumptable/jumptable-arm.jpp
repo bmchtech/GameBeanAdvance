@@ -610,7 +610,7 @@
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
-    @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out);
+    @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out != 0);
     @IF( S) }
 }
 [/COMPONENT]
@@ -628,7 +628,7 @@
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
-    @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out);
+    @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out != 0);
     @IF( S) }
 }
 [/COMPONENT]
@@ -710,7 +710,7 @@
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
-    @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out);
+    @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out != 0);
     @IF( S) }
 }
 [/COMPONENT]
@@ -884,7 +884,7 @@
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
-    @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out);
+    @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out != 0);
     @IF( S) }
 }
 [/COMPONENT]
@@ -963,7 +963,7 @@
     @IF( S) } else {
     @IF( S)     cpu.set_flag_N(result >> 31);
     @IF( S)     cpu.set_flag_Z(result == 0);
-    @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out);
+    @IF( S)     cpu.set_flag_C(cpu.shifter_carry_out != 0);
     @IF( S) }
 }
 [/COMPONENT]
