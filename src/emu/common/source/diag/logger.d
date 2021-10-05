@@ -8,7 +8,7 @@ import abstracthw.cpu;
 
 import util;
 
-import diag.cputrace;
+import abstracthw.cputrace;
 
 class Logger {
     static Logger instance;
