@@ -23,7 +23,6 @@ interface IARM7TDMI {
     uint LSR(uint value, ubyte shift);
     uint ROR(uint value, ubyte shift);
     uint ASR(uint value, ubyte shift);
-    uint ASL(uint value, ubyte shift);
 
     void refill_pipeline_partial();
     void refill_pipeline();
