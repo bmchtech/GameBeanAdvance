@@ -33,7 +33,7 @@ struct Background {
 
     Layer layer;
     
-    int[4] p;
+    short[4] p;
 }
 
 enum BackgroundMode {
