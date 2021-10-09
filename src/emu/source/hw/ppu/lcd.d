@@ -200,6 +200,10 @@ private:
         16, 32, 64, 128
     ];
 
+    static int[] BG_ROTATION_SCALING_TILE_DIMENSIONS_MASKS = [
+        0xF, 0x1F, 0x3F, 0x7F      
+    ];
+
     // a texture is a width x height set of tiles
     struct Texture {
         int base_tile_number;   // the tile number of the topleft tile
@@ -481,7 +485,8 @@ private:
         // writefln("%x, %x", background.internal_reference_x, background.internal_reference_y);
         // writefln("%x, %x", background.x_offset_rotation, background.y_offset_rotation + (bg_scanline << 8));
         // rotation/scaling backgrounds are squares
-        int tiles_per_row = BG_ROTATION_SCALING_TILE_DIMENSIONS[background.screen_size];
+        int tiles_per_row = BG_ROTATION_SCALING_TILE_DIMENSIONS      [background.screen_size];
+        int tile_mask     = BG_ROTATION_SCALING_TILE_DIMENSIONS_MASKS[background.screen_size];
 
         for (int x = 0; x < 240; x++) {
             // truncate the decimal because texture_point is 8-bit fixed point
@@ -492,8 +497,12 @@ private:
             int fine_x = truncated_texture_point.x & 0b111;
             int fine_y = truncated_texture_point.y & 0b111;
 
-            if ((0 <= tile_x && tile_x < tiles_per_row) &&
-                (0 <= tile_y && tile_y < tiles_per_row)) {
+            if (background.does_display_area_overflow ||
+                ((0 <= tile_x && tile_x < tiles_per_row) &&
+                 (0 <= tile_y && tile_y < tiles_per_row))) {
+                tile_x &= tile_mask;
+                tile_y &= tile_mask;
+                
                 int tile_address = get_tile_address__rotation_scaling(tile_x, tile_y, tiles_per_row);
                 int tile = memory.read_byte(screen_base_address + tile_address);
 
