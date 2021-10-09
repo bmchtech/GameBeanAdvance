@@ -836,9 +836,10 @@ public:
             case 0b11:
                 backgrounds[x].x_offset_rotation &= 0x00FFFFFF;
                 backgrounds[x].x_offset_rotation |= data << 24;
+                backgrounds[x].x_offset_rotation &= 0x0FFFFFFF;
 
                 // sign extension. bit 27 is the sign bit.
-                backgrounds[x].x_offset_rotation |= ((data >> 3) ? 0xF0 : 0x00);
+                backgrounds[x].x_offset_rotation |= (((data >> 3) & 1) ? 0xF000_0000 : 0x0000_0000);
                 break;
         }
     }
@@ -860,9 +861,10 @@ public:
             case 0b11:
                 backgrounds[x].y_offset_rotation &= 0x00FFFFFF;
                 backgrounds[x].y_offset_rotation |= data << 24;
+                backgrounds[x].y_offset_rotation &= 0x0FFFFFFF;
 
                 // sign extension. bit 27 is the sign bit.
-                backgrounds[x].x_offset_rotation |= ((data >> 3) ? 0xF0 : 0x00);
+                backgrounds[x].y_offset_rotation |= (((data >> 3) & 1) ? 0xF000_0000 : 0x0000_0000);
                 break;
         }
     }
