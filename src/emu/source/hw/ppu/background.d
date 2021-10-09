@@ -26,6 +26,9 @@ struct Background {
     int x_offset_rotation;
     int y_offset_rotation; 
 
+    long internal_reference_x;
+    long internal_reference_y;
+
     BackgroundMode mode;
 
     Layer layer;

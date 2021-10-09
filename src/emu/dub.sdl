@@ -13,7 +13,7 @@ dependency "silly" version="~>1.1.1"
 dependency "gamebean-jumptable" path="jumptable"
 dependency "gamebean-common" path="common"
 
-dflags "--boundscheck=off" "-O3" "-inline"
+// dflags "--boundscheck=off" "-O3" "-inline"
 versions "GL_AllowDeprecated"
 
 configuration "default" {

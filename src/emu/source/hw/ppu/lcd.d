@@ -82,11 +82,18 @@ public:
             if (bg_mode != 3) canvas.composite();
 
             display_scanline();
+
+            backgrounds[2].internal_reference_x += backgrounds[2].p[AffineParameter.B];
+            backgrounds[2].internal_reference_y += backgrounds[2].p[AffineParameter.D];
+            backgrounds[3].internal_reference_x += backgrounds[3].p[AffineParameter.B];
+            backgrounds[3].internal_reference_y += backgrounds[3].p[AffineParameter.D];
         }
 
         if (!vblank) on_hblank_callback();
 
         scheduler.add_event_relative_to_self(&on_hblank_end, 68 * 4);
+
+        // writefln("%x %x", backgrounds[2].internal_reference_x, backgrounds[2].internal_reference_y);
     }
 
     void on_hblank_end() {
@@ -105,6 +112,12 @@ public:
         if (vblank_irq_enabled) interrupt_cpu(Interrupt.LCD_VBLANK);
 
         scheduler.add_event_relative_to_self(&on_vblank_end, 308 * 68 * 4);
+
+        backgrounds[2].internal_reference_x = backgrounds[2].x_offset_rotation;
+        backgrounds[2].internal_reference_y = backgrounds[2].y_offset_rotation;
+        backgrounds[3].internal_reference_x = backgrounds[3].x_offset_rotation;
+        backgrounds[3].internal_reference_y = backgrounds[3].y_offset_rotation;
+
     }
 
     void on_vblank_end() {
@@ -463,16 +476,17 @@ private:
         int tile_base_address   = background.character_base_block * 0x4000;
 
         // the coordinates at the topleft of the background that we are drawing
-        Point texture_point = Point(background.x_offset_rotation,
-                                    background.y_offset_rotation + (bg_scanline << 8)); // << 8 because _offset_rotation is 8-bit fixed point.
-        
+        long texture_point_x = background.internal_reference_x;
+        long texture_point_y = background.internal_reference_y;
+        // writefln("%x, %x", background.internal_reference_x, background.internal_reference_y);
+        // writefln("%x, %x", background.x_offset_rotation, background.y_offset_rotation + (bg_scanline << 8));
         // rotation/scaling backgrounds are squares
         int tiles_per_row = BG_ROTATION_SCALING_TILE_DIMENSIONS[background.screen_size];
 
         for (int x = 0; x < 240; x++) {
             // truncate the decimal because texture_point is 8-bit fixed point
-            Point truncated_texture_point = Point(texture_point.x >> 8,
-                                                  texture_point.y >> 8);
+            Point truncated_texture_point = Point(cast(int) texture_point_x >> 8,
+                                                  cast(int) texture_point_y >> 8);
             int tile_x = truncated_texture_point.x >> 3;
             int tile_y = truncated_texture_point.y >> 3;
             int fine_x = truncated_texture_point.x & 0b111;
@@ -487,8 +501,8 @@ private:
                 canvas.draw_bg_pixel(x, background_id, color_index, background.priority, color_index == 0);
             }
 
-            texture_point.x += background.p[AffineParameter.A];
-            texture_point.y += background.p[AffineParameter.C];
+            texture_point_x += background.p[AffineParameter.A];
+            texture_point_y += background.p[AffineParameter.C];
         }
     }
 
