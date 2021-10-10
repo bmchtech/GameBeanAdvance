@@ -1,7 +1,0 @@
-cmake_minimum_required(VERSION 3.0)
-project(gamebean-emu D)
-include(/home/xdrie/Dev/Git/GameBeanAdvance/src/emu/bindbc-opengl.cmake)
-include(/home/xdrie/Dev/Git/GameBeanAdvance/src/emu/gamebean-emu.cmake)
-include(/home/xdrie/Dev/Git/GameBeanAdvance/src/emu/commandr.cmake)
-include(/home/xdrie/Dev/Git/GameBeanAdvance/src/emu/bindbc-loader.cmake)
-include(/home/xdrie/Dev/Git/GameBeanAdvance/src/emu/bindbc-sdl.cmake)
