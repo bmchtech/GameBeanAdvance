@@ -1,0 +1,9 @@
+xcat
+*.bin
+*.exe
+*dSYM
+pkg
+src
+*.pkg.tar.xz
+test
+gba_bios.bin
