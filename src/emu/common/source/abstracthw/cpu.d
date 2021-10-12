@@ -29,6 +29,7 @@ interface IARM7TDMI {
     void update_mode();
     bool in_a_privileged_mode();
     bool has_spsr();
+    void run_idle_cycle();
 
     bool exception(const CpuException exception);
 
