@@ -427,10 +427,11 @@ class ARM7TDMI : IARM7TDMI {
     void refill_pipeline() {
         m_memory.can_read_from_bios = (*pc >> 24) == 0;
 
-        m_pipeline[0] = fetch();
-        m_pipeline[1] = fetch();
-
         pipeline_access_type = AccessType.NONSEQUENTIAL;
+        m_pipeline[0] = fetch();
+
+        pipeline_access_type = AccessType.SEQUENTIAL;
+        m_pipeline[1] = fetch();
     }
 
     void run_idle_cycle() {
