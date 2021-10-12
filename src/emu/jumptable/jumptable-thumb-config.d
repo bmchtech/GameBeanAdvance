@@ -515,7 +515,7 @@ void run_01000100(ushort opcode) {
 
     if (rd == 15) {
         cpu.regs[15] &= ~1;
-        cpu.refill_pipeline_partial();
+        cpu.refill_pipeline();
     }
      
     // _g_cpu_cycles_remaining += 1;
@@ -557,7 +557,7 @@ void run_01000110(ushort opcode) {
     if (rd == 15) {
         // the least significant bit of pc (cpu.regs[15]) must be clear.
         cpu.regs[rd] &= 0xFFFFFFFE;
-        cpu.refill_pipeline_partial();
+        cpu.refill_pipeline();
     }
 
     // _g_cpu_cycles_remaining += 1;
@@ -571,7 +571,7 @@ void run_01000111(ushort opcode) {
 
     cpu.set_bit_T(pointer & 1);
     
-    cpu.refill_pipeline_partial();
+    cpu.refill_pipeline();
 
     // _g_cpu_cycles_remaining += 3;
 }
@@ -770,7 +770,7 @@ void run_1011110R(ushort opcode) {
     if (is_lr_included) {
         *cpu.pc = read_word_and_rotate(cpu.memory, *cpu.sp) & 0xFFFFFFFE;
         *cpu.sp += 4;
-        cpu.refill_pipeline_partial();
+        cpu.refill_pipeline();
     }
 
     // _g_cpu_cycles_remaining += num_pushed + 2;
@@ -849,7 +849,7 @@ void run_1101COND(ushort opcode) {
     @IF( C  O  N !D) if (true) { // the compiler will optimize this so it's fine
         // warning(format("Conditional Branch Taken at %x", *cpu.pc));
         *cpu.pc += (cast(byte)(opcode & 0xFF)) * 2 - 2;
-        cpu.refill_pipeline_partial();
+        cpu.refill_pipeline();
         
     } else {
         //DEBUG_MESSAGE("Conditional Branch Not Taken");
@@ -870,7 +870,7 @@ void run_11100OFS(ushort opcode) {
 
     int sign_extended = sign_extend(get_nth_bits(opcode, 0, 11) << 1, 12);
     *cpu.pc += sign_extended - 2;
-    cpu.refill_pipeline_partial();
+    cpu.refill_pipeline();
 
     // _g_cpu_cycles_remaining += 3;
 }
@@ -892,7 +892,7 @@ void run_11111OFS(ushort opcode) {
     *cpu.pc = (*cpu.lr + (get_nth_bits(opcode, 0, 11) << 1));
     *cpu.lr = (next_pc) | 1;
 
-    cpu.refill_pipeline_partial();
+    cpu.refill_pipeline();
 
     // _g_cpu_cycles_remaining += 3;
 }
