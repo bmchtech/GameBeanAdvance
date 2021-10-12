@@ -290,8 +290,8 @@ void run_01000000(ushort opcode) {
                 cpu.set_flag_C(false);
                 cpu.regs[rd] = 0;
             }
-
-            // _g_cpu_cycles_remaining += 1;
+            
+            cpu.run_idle_cycle();
             break;
         case 0b11:
             if ((cpu.regs[rm] & 0xFF) < 32 && (cpu.regs[rm] & 0xFF) != 0) {
@@ -305,7 +305,7 @@ void run_01000000(ushort opcode) {
                 cpu.regs[rd] = 0;
             }
 
-            // _g_cpu_cycles_remaining += 1;
+            cpu.run_idle_cycle();
             break;
         
         default: assert(0);
@@ -340,7 +340,7 @@ void run_01000001(ushort opcode) {
                 }
             }
 
-            // _g_cpu_cycles_remaining += 1;
+            cpu.run_idle_cycle();
             break;
         }
         
@@ -399,8 +399,7 @@ void run_01000001(ushort opcode) {
                 cpu.regs[rd] = rotated_in | (rotated_off << (32 - (cpu.regs[rm] & 0x1F)));
             }
 
-            // _g_cpu_cycles_remaining += 1;
-
+            cpu.run_idle_cycle();
             break;
         }
         
@@ -486,6 +485,14 @@ void run_01000011(ushort opcode) {
             cpu.regs[rd] |= cpu.regs[rm];
             break;
         case 0b01:
+            // m is the the number of extra cycles required by multiplication
+            int m = 4;
+            if      ((opcode >> 8)  == 0x0 || (opcode >> 8)  == 0xFFFFFF) m = 1;
+            else if ((opcode >> 16) == 0x0 || (opcode >> 16) == 0xFFFF)   m = 2;
+            else if ((opcode >> 24) == 0x0 || (opcode >> 24) == 0xFF)     m = 3;
+
+            for (int i = 0; i < m; i++) cpu.run_idle_cycle();
+
             cpu.regs[rd] *= cpu.regs[rm];
             break;
         case 0b10:
@@ -608,7 +615,7 @@ void run_0101LSBR(ushort opcode) {
     @IF( L  S !B) uint value = cast(uint)            (cpu.memory.read_byte    (address));
     @IF( L !S  B) uint value = cast(uint)            (cpu.memory.read_halfword(address & 0xFFFFFFFE));
     @IF( L !S !B) uint value = cast(uint)            (read_word_and_rotate(cpu.memory, (address & 0xFFFFFFFC)));
-    @IF(!L  S  B) int  value = cast(uint) sign_extend(cpu.memory.read_byte    (address),               8);
+    @IF(!L  S  B) int  value = cast(uint) sign_extend(cpu.memory.read_byte    (address), 8);
 
     @IF( L !S !B) if ((address & 0b11) == 0b01) value = ((value & 0xFF)     << 24) | (value >> 8);
     @IF( L !S !B) if ((address & 0b11) == 0b10) value = ((value & 0xFFFF)   << 16) | (value >> 16);
@@ -756,13 +763,11 @@ void run_1011110R(ushort opcode) {
     ubyte register_list  = cast(ubyte) (opcode & 0xFF);
     bool    is_lr_included = get_nth_bit(opcode, 8);
 
-    int num_pushed = 0;
     // loop forwards through the registers
     for (int i = 0; i < 8; i++) {
         if (get_nth_bit(register_list, i)) {
             cpu.regs[i] = read_word_and_rotate(cpu.memory, *cpu.sp);
             *cpu.sp += 4;
-            num_pushed++;
         }
     }
 
@@ -770,6 +775,8 @@ void run_1011110R(ushort opcode) {
     if (is_lr_included) {
         *cpu.pc = read_word_and_rotate(cpu.memory, *cpu.sp) & 0xFFFFFFFE;
         *cpu.sp += 4;
+
+        cpu.run_idle_cycle();
         cpu.refill_pipeline();
     }
 
