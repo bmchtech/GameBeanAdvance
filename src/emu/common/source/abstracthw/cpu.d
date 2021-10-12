@@ -24,12 +24,10 @@ interface IARM7TDMI {
     uint ROR(uint value, ubyte shift);
     uint ASR(uint value, ubyte shift);
 
-    void refill_pipeline_partial();
     void refill_pipeline();
     void update_mode();
     bool in_a_privileged_mode();
     bool has_spsr();
-    void run_idle_cycle();
 
     bool exception(const CpuException exception);
 

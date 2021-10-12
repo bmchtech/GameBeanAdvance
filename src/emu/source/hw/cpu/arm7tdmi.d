@@ -101,12 +101,7 @@ class ARM7TDMI : IARM7TDMI {
         set_bit_T(false);
         m_memory.can_read_from_bios = true;
         
-        if (exception == CpuException.SoftwareInterrupt) {
-            refill_pipeline_partial();
-        } else {
-            refill_pipeline();
-        }
-
+        refill_pipeline();
 
         halted = false;
 
@@ -436,10 +431,6 @@ class ARM7TDMI : IARM7TDMI {
         m_pipeline[1] = fetch();
 
         pipeline_access_type = AccessType.NONSEQUENTIAL;
-    }
-
-    pragma(inline, true) void refill_pipeline_partial() {
-        refill_pipeline();
     }
 
     void run_idle_cycle() {

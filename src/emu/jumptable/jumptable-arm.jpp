@@ -557,7 +557,7 @@
     if (should_writeback) {
         cpu.regs[get_nth_bits(opcode, 16, 20)] = addr_writeback; 
 
-        if (get_nth_bits(opcode, 16, 20) == 15) cpu.refill_pipeline_partial();
+        if (get_nth_bits(opcode, 16, 20) == 15) cpu.refill_pipeline();
     }
 }
 [/COMPONENT]
@@ -569,7 +569,7 @@
 
     if (get_nth_bits(opcode, 12, 16) == 15) {
         // _g_cpu_cycles_remaining += 2;
-        cpu.refill_pipeline_partial();
+        cpu.refill_pipeline();
     }
 }
 [/COMPONENT]
@@ -639,7 +639,7 @@
     @IF(L) *cpu.lr = *cpu.pc - 8;
     // unintuitive sign extension: http://graphics.stanford.edu/~seander/bithacks.html#FixedSignExtend
     *cpu.pc += ((((1 << 23) ^ get_nth_bits(opcode, 0, 24)) - (1 << 23)) << 2) - 4;
-    cpu.refill_pipeline_partial();
+    cpu.refill_pipeline();
 
     // _g_cpu_cycles_remaining += 3;
 }
@@ -650,7 +650,7 @@
 {
     cpu.set_bit_T(cpu.read_reg(get_nth_bits(opcode, 0, 4)) & 0x1);
     *cpu.pc = (cpu.read_reg(get_nth_bits(opcode, 0, 4)) & 0xFFFFFFFE);
-    cpu.refill_pipeline_partial();
+    cpu.refill_pipeline();
 }
 [/COMPONENT]
 
@@ -726,7 +726,7 @@
     ubyte rd = cast(ubyte) get_nth_bits(opcode, 12, 16);
     if (rd == 15) {
         *cpu.pc = value & 0xFFFFFFFC;
-        cpu.refill_pipeline_partial();
+        cpu.refill_pipeline();
         // _g_cpu_cycles_remaining += 2;
     } else {
         cpu.regs[rd] = value;
@@ -741,7 +741,7 @@
 {
     cpu.regs[get_nth_bits(opcode, 12, 16)] = cpu.memory.read_byte(address);
     if (get_nth_bits(opcode, 12, 16) == 15) {
-        cpu.refill_pipeline_partial();
+        cpu.refill_pipeline();
         // _g_cpu_cycles_remaining += 2;
     }
     // _g_cpu_cycles_remaining += 3;
@@ -756,7 +756,7 @@
 
     cpu.regs[get_nth_bits(opcode, 12, 16)] = value;
     if (get_nth_bits(opcode, 12, 16) == 15) {
-        cpu.refill_pipeline_partial();
+        cpu.refill_pipeline();
         // _g_cpu_cycles_remaining += 2;
     }
     // _g_cpu_cycles_remaining += 3;
@@ -768,7 +768,7 @@
 {
     cpu.regs[get_nth_bits(opcode, 12, 16)] = sign_extend(cpu.memory.read_byte(address), 8);
     if (get_nth_bits(opcode, 12, 16) == 15) {
-        cpu.refill_pipeline_partial();
+        cpu.refill_pipeline();
         // _g_cpu_cycles_remaining += 2;
     }
     // _g_cpu_cycles_remaining += 3;
@@ -787,7 +787,7 @@
 
     cpu.regs[get_nth_bits(opcode, 12, 16)] = value;
     if (get_nth_bits(opcode, 12, 16) == 15) {
-        cpu.refill_pipeline_partial();
+        cpu.refill_pipeline();
         // _g_cpu_cycles_remaining += 2;
     }
     // _g_cpu_cycles_remaining += 3;
@@ -800,7 +800,7 @@
     // this if statement emulates unpredictable ARM7TDMI behavior
     if (get_nth_bits(opcode, 0, 16) == 0) {
         *cpu.pc += 4; // skip the next instruction
-        cpu.refill_pipeline_partial();
+        cpu.refill_pipeline();
         cpu.regs[get_nth_bits(opcode, 16, 20)] += 4 * 16;
         if (get_nth_bits(opcode, 16, 20) == 15) *cpu.pc -= 4;
         return;
@@ -850,7 +850,7 @@
 
             @IF(L) if (i == 15) {
             @IF(L)     pc_loaded = true;
-            @IF(L)     cpu.refill_pipeline_partial();
+            @IF(L)     cpu.refill_pipeline();
             @IF(L) }
         }
 
@@ -1048,7 +1048,7 @@
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
     @IF( S)     cpu.update_mode();
-    @IF( S)     cpu.refill_pipeline_partial();
+    @IF( S)     cpu.refill_pipeline();
     @IF( S) } else {
     @IF( S)     cpu.set_flag_Z(result == 0);
     @IF( S)     cpu.set_flag_N(result >> 63);
@@ -1114,7 +1114,7 @@
     cpu.memory.write_byte(cpu.read_reg(get_nth_bits(opcode, 16, 20)), cpu.read_reg(get_nth_bits(opcode, 0, 4)) & 0xFF);
     cpu.regs[get_nth_bits(opcode, 12, 16)] = temp;
 
-    if (get_nth_bits(opcode, 12, 16) == 15) cpu.refill_pipeline_partial();
+    if (get_nth_bits(opcode, 12, 16) == 15) cpu.refill_pipeline();
 }
 [/COMPONENT]
 
@@ -1157,7 +1157,7 @@
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
     @IF( S)     cpu.update_mode();
-    @IF( S)     cpu.refill_pipeline_partial();
+    @IF( S)     cpu.refill_pipeline();
     @IF( S) } else {
     @IF( S)     cpu.set_flag_Z(result == 0);
     @IF( S)     cpu.set_flag_N(result >> 63);
