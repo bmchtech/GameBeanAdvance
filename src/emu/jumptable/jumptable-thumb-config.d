@@ -25,8 +25,8 @@ void nop(ushort opcode) {
 }
 
 @LOCAL()
-uint read_word_and_rotate(IMemory IMemory, uint address) {
-    uint value = IMemory.read_word(address & 0xFFFFFFFC);
+uint read_word_and_rotate(IMemory IMemory, uint address, AccessType access_type) {
+    uint value = IMemory.read_word(address & 0xFFFFFFFC, access_type);
     if ((address & 0b11) == 0b01) value = ((value & 0xFF)     << 24) | (value >> 8);
     if ((address & 0b11) == 0b10) value = ((value & 0xFFFF)   << 16) | (value >> 16);
     if ((address & 0b11) == 0b11) value = ((value & 0xFFFFFF) << 8)  | (value >> 24);
@@ -579,8 +579,6 @@ void run_01000111(ushort opcode) {
     cpu.set_bit_T(pointer & 1);
     
     cpu.refill_pipeline();
-
-    // _g_cpu_cycles_remaining += 3;
 }
 
 // pc-relative load
@@ -588,9 +586,9 @@ void run_01001REG(ushort opcode) {
     //DEBUG_MESSAGE("PC-Relative Load");
     ubyte reg = cast(ubyte) (get_nth_bits(opcode, 8,  11));
     uint loc = (get_nth_bits(opcode, 0,  8) << 2) + ((*cpu.pc - 2) & 0xFFFFFFFC);
-    cpu.regs[reg] = read_word_and_rotate(cpu.memory, loc);
 
-    // _g_cpu_cycles_remaining += 5;
+    cpu.run_idle_cycle();
+    cpu.regs[reg] = read_word_and_rotate(cpu.memory, loc, AccessType.NONSEQUENTIAL);
 }
 
 // load with relative offset
@@ -611,11 +609,13 @@ void run_0101LSBR(ushort opcode) {
     ubyte rd = cast(ubyte) get_nth_bits(opcode, 0, 3);
     uint address = cpu.regs[rm] + cpu.regs[rn];
 
-    @IF( L  S  B) int  value = cast(uint)            (cpu.memory.read_halfword(address & 0xFFFFFFFE));
-    @IF( L  S !B) uint value = cast(uint)            (cpu.memory.read_byte    (address));
-    @IF( L !S  B) uint value = cast(uint)            (cpu.memory.read_halfword(address & 0xFFFFFFFE));
-    @IF( L !S !B) uint value = cast(uint)            (read_word_and_rotate(cpu.memory, (address & 0xFFFFFFFC)));
-    @IF(!L  S  B) int  value = cast(uint) sign_extend(cpu.memory.read_byte    (address), 8);
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
+    @IF( L  S  B) int  value = cast(uint)            (cpu.memory.read_halfword(address & 0xFFFFFFFE, AccessType.NONSEQUENTIAL));
+    @IF( L  S !B) uint value = cast(uint)            (cpu.memory.read_byte    (address,              AccessType.NONSEQUENTIAL));
+    @IF( L !S  B) uint value = cast(uint)            (cpu.memory.read_halfword(address & 0xFFFFFFFE, AccessType.NONSEQUENTIAL));
+    @IF(!L  S  B) int  value = cast(uint) sign_extend(cpu.memory.read_byte    (address,              AccessType.NONSEQUENTIAL), 8);
+
+    @IF( L !S !B) uint value = cast(uint)            (read_word_and_rotate(cpu.memory, (address & 0xFFFFFFFC), AccessType.NONSEQUENTIAL));
 
     @IF( L !S !B) if ((address & 0b11) == 0b01) value = ((value & 0xFF)     << 24) | (value >> 8);
     @IF( L !S !B) if ((address & 0b11) == 0b10) value = ((value & 0xFFFF)   << 16) | (value >> 16);
@@ -645,10 +645,12 @@ void run_01010SBR(ushort opcode) {
     @IF( S !B) uint value = cpu.regs[rd] & 0xFF;
     @IF(!S  B) uint value = cpu.regs[rd] & 0xFFFF;
     @IF(!S !B) uint value = cpu.regs[rd];
+    
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 
-    @IF( S !B) cpu.memory.write_byte    (cpu.regs[rm] + cpu.regs[rn], cast(ubyte)  value);
-    @IF(!S  B) cpu.memory.write_halfword(cpu.regs[rm] + cpu.regs[rn], cast(ushort) value);
-    @IF(!S !B) cpu.memory.write_word    (cpu.regs[rm] + cpu.regs[rn], value);
+    @IF( S !B) cpu.memory.write_byte    (cpu.regs[rm] + cpu.regs[rn], cast(ubyte)  value, AccessType.NONSEQUENTIAL);
+    @IF(!S  B) cpu.memory.write_halfword(cpu.regs[rm] + cpu.regs[rn], cast(ushort) value, AccessType.NONSEQUENTIAL);
+    @IF(!S !B) cpu.memory.write_word    (cpu.regs[rm] + cpu.regs[rn], value,              AccessType.NONSEQUENTIAL);
 
     // _g_cpu_cycles_remaining += 2;
 }
@@ -664,14 +666,17 @@ void run_011BLOFS(ushort opcode) {
     ubyte rd = cast(ubyte) get_nth_bits(opcode, 0, 3);
     ubyte immediate_value = cast(ubyte) get_nth_bits(opcode, 6, 11);
 
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
     // looking at the table above, the B bit determines the size of the store/load, and the L bit determines whether we store or load.
-    @IF(!B !L) cpu.memory.write_word(cpu.regs[rn] + (immediate_value << 2), cpu.regs[rd]);
-    @IF( B !L) cpu.memory.write_byte(cpu.regs[rn] + (immediate_value), cast(ubyte) (cpu.regs[rd] & 0xFF));
-    @IF(!B  L) cpu.regs[rd] = read_word_and_rotate(cpu.memory, cpu.regs[rn] + (immediate_value << 2));
-    @IF( B  L) cpu.regs[rd] = cpu.memory.read_byte(cpu.regs[rn] + immediate_value);
+    @IF(!B !L) cpu.memory.write_word(cpu.regs[rn] + (immediate_value << 2), cpu.regs[rd],                      AccessType.NONSEQUENTIAL);
+    @IF( B !L) cpu.memory.write_byte(cpu.regs[rn] + (immediate_value),      cast(ubyte) (cpu.regs[rd] & 0xFF), AccessType.NONSEQUENTIAL);
+    
+    
+    @IF(L)  cpu.run_idle_cycle();
+    @IF(!L) cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 
-    // _g_cpu_cycles_remaining += 2;
-    @IF( L) // _g_cpu_cycles_remaining += 1;
+    @IF(!B  L) cpu.regs[rd] = read_word_and_rotate(cpu.memory, cpu.regs[rn] + (immediate_value << 2), AccessType.NONSEQUENTIAL);
+    @IF( B  L) cpu.regs[rd] = cpu.memory.read_byte(cpu.regs[rn] + immediate_value, AccessType.NONSEQUENTIAL);
 }
 
 // store halfword
@@ -680,7 +685,7 @@ void run_10000OFS(ushort opcode) {
     ubyte rd     = cast(ubyte) get_nth_bits(opcode, 0, 3);
     ubyte offset = cast(ubyte) get_nth_bits(opcode, 6, 11);
     
-    cpu.memory.write_halfword(cpu.regs[rn] + (offset << 1), cast(ushort) cpu.regs[rd]);
+    cpu.memory.write_halfword(cpu.regs[rn] + (offset << 1), cast(ushort) cpu.regs[rd], AccessType.NONSEQUENTIAL);
 
     // _g_cpu_cycles_remaining += 2;
 }
@@ -691,7 +696,7 @@ void run_10001OFS(ushort opcode) {
     ubyte rd     = cast(ubyte) get_nth_bits(opcode, 0, 3);
     ubyte offset = cast(ubyte) get_nth_bits(opcode, 6, 11);
     
-    cpu.regs[rd] = cpu.memory.read_halfword(cpu.regs[rn] + offset * 2);
+    cpu.regs[rd] = cpu.memory.read_halfword(cpu.regs[rn] + offset * 2, AccessType.NONSEQUENTIAL);
 
     // _g_cpu_cycles_remaining += 3;
 }
@@ -702,8 +707,8 @@ void run_1001LREG(ushort opcode) {
     ubyte immediate_value = cast(ubyte) (opcode & 0xFF);
 
     // if L is set, we load. if L is not set, we store.
-    @IF(L)  cpu.regs[rd] = read_word_and_rotate(cpu.memory, *cpu.sp + (immediate_value << 2));
-    @IF(!L) cpu.memory.write_word(*cpu.sp + (immediate_value << 2), cpu.regs[rd]);
+    @IF(L)  cpu.regs[rd] = read_word_and_rotate(cpu.memory, *cpu.sp + (immediate_value << 2), AccessType.NONSEQUENTIAL);
+    @IF(!L) cpu.memory.write_word(*cpu.sp + (immediate_value << 2), cpu.regs[rd], AccessType.NONSEQUENTIAL);
 
     // _g_cpu_cycles_remaining += 2;
     @IF( L) // _g_cpu_cycles_remaining += 1;
@@ -739,10 +744,12 @@ void run_1011010R(ushort opcode) {
     ubyte register_list  = cast(ubyte) (opcode & 0xFF);
     bool    is_lr_included = get_nth_bit(opcode, 8);
 
+    AccessType access_type = AccessType.NONSEQUENTIAL;
     // deal with the linkage register (LR)
     if (is_lr_included) {
         *cpu.sp -= 4;
-        cpu.memory.write_word(*cpu.sp, *cpu.lr);
+        cpu.memory.write_word(*cpu.sp, *cpu.lr, access_type);
+        access_type = AccessType.SEQUENTIAL;
     }
 
     int num_pushed = 0;
@@ -750,8 +757,9 @@ void run_1011010R(ushort opcode) {
     for (int i = 7; i >= 0; i--) {
         if (get_nth_bit(register_list, i)) {
             *cpu.sp -= 4;
-            cpu.memory.write_word(*cpu.sp, cpu.regs[i]);
+            cpu.memory.write_word(*cpu.sp, cpu.regs[i], access_type);
             num_pushed++;
+            access_type = AccessType.SEQUENTIAL;
         }
     }
 
@@ -763,17 +771,20 @@ void run_1011110R(ushort opcode) {
     ubyte register_list  = cast(ubyte) (opcode & 0xFF);
     bool    is_lr_included = get_nth_bit(opcode, 8);
 
+    AccessType access_type = AccessType.NONSEQUENTIAL;
     // loop forwards through the registers
     for (int i = 0; i < 8; i++) {
         if (get_nth_bit(register_list, i)) {
-            cpu.regs[i] = read_word_and_rotate(cpu.memory, *cpu.sp);
+            cpu.regs[i] = read_word_and_rotate(cpu.memory, *cpu.sp, access_type);
             *cpu.sp += 4;
+
+            access_type = AccessType.SEQUENTIAL;
         }
     }
 
     // now deal with the linkage register (LR) and set it to the PC if it exists.
     if (is_lr_included) {
-        *cpu.pc = read_word_and_rotate(cpu.memory, *cpu.sp) & 0xFFFFFFFE;
+        *cpu.pc = read_word_and_rotate(cpu.memory, *cpu.sp, access_type) & 0xFFFFFFFE;
         *cpu.sp += 4;
 
         cpu.run_idle_cycle();
@@ -799,7 +810,7 @@ void run_11001REG(ushort opcode) {
                 update_rn = false;
             }
 
-            cpu.regs[i] = cpu.memory.read_word(current_address);
+            cpu.regs[i] = cpu.memory.read_word(current_address, AccessType.NONSEQUENTIAL);
             current_address += 4;
             num_pushed++;
         }
@@ -819,6 +830,8 @@ void run_11000REG(ushort opcode) {
     uint* start_address = &cpu.regs[0] + get_nth_bits(opcode, 8, 11);
     ubyte   register_list = cast(ubyte) get_nth_bits(opcode, 0, 8);
 
+    AccessType access_type = AccessType.NONSEQUENTIAL;
+
     int num_pushed          = 0;
     for (int i = 0; i < 8; i++) {
         // should we store this register?
@@ -826,8 +839,9 @@ void run_11000REG(ushort opcode) {
             // don't optimize this by moving the bitwise and over to the initialization of start_address
             // it has to be this way for when we writeback to cpu.regs after the loop
             *start_address += 4;
-            cpu.memory.write_word(((*start_address - 4) & 0xFFFFFFFC),  cpu.regs[i]);
+            cpu.memory.write_word(((*start_address - 4) & 0xFFFFFFFC),  cpu.regs[i], access_type);
             num_pushed++;
+            access_type = AccessType.SEQUENTIAL;
         }
     }
 

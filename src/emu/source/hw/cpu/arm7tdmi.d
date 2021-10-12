@@ -38,7 +38,9 @@ class ARM7TDMI : IARM7TDMI {
     uint[2] m_pipeline;
     @property uint[2] pipeline() { return m_pipeline; }
 
-    AccessType pipeline_access_type;
+    AccessType m_pipeline_access_type;
+    @property AccessType pipeline_access_type() { return m_pipeline_access_type; };
+    @property AccessType pipeline_access_type(AccessType access_type) { return m_pipeline_access_type = access_type;}
 
     uint current_instruction_size;
 
@@ -65,7 +67,7 @@ class ARM7TDMI : IARM7TDMI {
         m_cpsr = &regs[16];
         m_spsr = &regs[17];
 
-        pipeline_access_type = AccessType.NONSEQUENTIAL;
+        m_pipeline_access_type = AccessType.NONSEQUENTIAL;
         set_bit_T(false);
     }
 
@@ -391,18 +393,18 @@ class ARM7TDMI : IARM7TDMI {
         m_memory.can_read_from_bios = (*pc >> 24) == 0;
         execute(opcode);
 
-        pipeline_access_type = AccessType.SEQUENTIAL;
+        m_pipeline_access_type = AccessType.SEQUENTIAL;
 
         return _g_cpu_cycles_remaining;
     }
 
     uint fetch() {
         if (get_bit_T()) { // thumb mode: grab a halfword and return it
-            uint opcode = cast(uint) m_memory.read_halfword(*pc & 0xFFFFFFFE, pipeline_access_type);
+            uint opcode = cast(uint) m_memory.read_halfword(*pc & 0xFFFFFFFE, m_pipeline_access_type);
             *pc += 2;
             return opcode;
         } else {           // arm mode: grab a word and return it
-            uint opcode = m_memory.read_word(*pc & 0xFFFFFFFC, pipeline_access_type);
+            uint opcode = m_memory.read_word(*pc & 0xFFFFFFFC, m_pipeline_access_type);
             *pc += 4;
             return opcode;
         }
@@ -427,10 +429,10 @@ class ARM7TDMI : IARM7TDMI {
     void refill_pipeline() {
         m_memory.can_read_from_bios = (*pc >> 24) == 0;
 
-        pipeline_access_type = AccessType.NONSEQUENTIAL;
+        m_pipeline_access_type = AccessType.NONSEQUENTIAL;
         m_pipeline[0] = fetch();
 
-        pipeline_access_type = AccessType.SEQUENTIAL;
+        m_pipeline_access_type = AccessType.SEQUENTIAL;
         m_pipeline[1] = fetch();
     }
 
