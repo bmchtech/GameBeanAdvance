@@ -92,7 +92,7 @@ class Scheduler {
     }
 
     pragma(inline, true) ulong get_current_time() {
-        return events[0].timestamp;
+        return current_timestamp;
     }
 
     pragma(inline, true) void process_event() {

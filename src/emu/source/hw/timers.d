@@ -81,7 +81,7 @@ public:
         if (!timers[x].enabled || timers[x].countup) return timers[x].value;
 
         // how many clock cycles has it been since we've been enabled?
-        ulong cycles_elapsed = timers[x].timestamp - scheduler.get_current_time();
+        ulong cycles_elapsed = scheduler.get_current_time() - timers[x].timestamp;
 
         // use timer increments to get the relevant bits, and mod by the reload value
         return cast(ushort) (cycles_elapsed >> timers[x].increment);
