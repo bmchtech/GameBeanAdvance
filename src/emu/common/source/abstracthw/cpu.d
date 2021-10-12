@@ -33,6 +33,8 @@ interface IARM7TDMI {
     bool exception(const CpuException exception);
 
     @property uint[2] pipeline();
+    @property AccessType pipeline_access_type();
+    @property AccessType pipeline_access_type(AccessType access_type);
 
     @property uint* pc();
     @property uint* lr();
