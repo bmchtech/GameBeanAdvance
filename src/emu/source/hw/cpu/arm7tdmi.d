@@ -442,7 +442,9 @@ class ARM7TDMI : IARM7TDMI {
         refill_pipeline();
     }
 
-    pragma(inline, true)
+    void run_idle_cycle() {
+        _g_cpu_cycles_remaining++;
+    }
     
     pragma(inline) uint ASR(uint value, ubyte shift) {
         if ((value >> 31) == 1) {
