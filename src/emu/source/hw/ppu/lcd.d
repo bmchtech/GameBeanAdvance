@@ -113,11 +113,8 @@ public:
 
         scheduler.add_event_relative_to_self(&on_vblank_end, 308 * 68 * 4);
 
-        backgrounds[2].internal_reference_x = backgrounds[2].x_offset_rotation;
-        backgrounds[2].internal_reference_y = backgrounds[2].y_offset_rotation;
-        backgrounds[3].internal_reference_x = backgrounds[3].x_offset_rotation;
-        backgrounds[3].internal_reference_y = backgrounds[3].y_offset_rotation;
-
+        reload_background_internal_affine_registers(2);
+        reload_background_internal_affine_registers(3);
     }
 
     void on_vblank_end() {
@@ -674,6 +671,11 @@ private:
         }
     }
 
+    void reload_background_internal_affine_registers(uint bg_id) {
+        backgrounds[bg_id].internal_reference_x = backgrounds[bg_id].x_offset_rotation;
+        backgrounds[bg_id].internal_reference_y = backgrounds[bg_id].y_offset_rotation;
+    }
+
 // .......................................................................................................................
 // .RRRRRRRRRRR...EEEEEEEEEEEE....GGGGGGGGG....IIII...SSSSSSSSS...TTTTTTTTTTTTT.EEEEEEEEEEEE..RRRRRRRRRRR....SSSSSSSSS....
 // .RRRRRRRRRRRR..EEEEEEEEEEEE...GGGGGGGGGGG...IIII..SSSSSSSSSSS..TTTTTTTTTTTTT.EEEEEEEEEEEE..RRRRRRRRRRRR..SSSSSSSSSSS...
@@ -877,6 +879,8 @@ public:
                 backgrounds[x].y_offset_rotation |= (((data >> 3) & 1) ? 0xF000_0000 : 0x0000_0000);
                 break;
         }
+
+        reload_background_internal_affine_registers(x);
     }
 
     void write_BGxPy(int target_byte, ubyte data, int x, AffineParameter y) {
