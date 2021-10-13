@@ -12,6 +12,11 @@ struct Background {
     bool  does_display_area_overflow;
     int   screen_size;                // 0 - 3
 
+    // these aren't used (except in NDS mode, according to GBATek)
+    // yet, the GBA still saves their value and returns them. therefore
+    // my emulator must do so too.
+    uint  bgcnt_bits_4_and_5;
+
     ushort x_offset;
     ushort y_offset;
     bool   enabled;
