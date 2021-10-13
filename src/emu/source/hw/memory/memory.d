@@ -50,7 +50,10 @@ class Memory : IMemory {
     Fifo!ubyte fifo_b;
 
     MMIO mmio;
+
     uint[2]* cpu_pipeline;
+    uint*    pipeline_size;
+
     bool prefetch_enabled = false;
 
     ubyte[] bios;
@@ -172,8 +175,9 @@ class Memory : IMemory {
     }
 
     // MUST BE CALLED BEFORE "REGULAR" OPEN BUS IS ACCESSED!
-    void set_cpu_pipeline(uint[2]* cpu_pipeline) {
-        this.cpu_pipeline = cpu_pipeline;
+    void set_cpu_pipeline(uint[2]* cpu_pipeline, uint* pipeline_size) {
+        this.cpu_pipeline  = cpu_pipeline;
+        this.pipeline_size = pipeline_size;
     }
 
     pragma(inline, true) ubyte read_byte(uint address, AccessType access_type = AccessType.SEQUENTIAL) {
@@ -269,20 +273,26 @@ class Memory : IMemory {
     }
 
     T read_open_bus(T)(uint address) {
-        if (address > 0x0FFF_FFFF) return cast(T) (*cpu_pipeline)[1];
-
-        switch ((address >> 24) & 0xF) {
-            case 0x0: // BIOS open bus
-                // writefln("OPEN BUS: %x", bios_open_bus_latch);
-                // _g_num_log += 20;
-                static if (is(T == uint  )) return bios_open_bus_latch;
-                static if (is(T == ushort)) return bios_open_bus_latch & 0xFFFF;
-                static if (is(T == ubyte )) return bios_open_bus_latch & 0xFF;
-
-            default:
-                // NOT 100% accurate. TODO: add all the open bus types
-                return cast(T) ((*cpu_pipeline)[1] >> (8 * (address & 3)));
+        if (address < 0x1000_0000) {
+            switch ((address >> 24) & 0xF) {
+                case Region.BIOS:
+                    static if (is(T == uint  )) return bios_open_bus_latch;
+                    static if (is(T == ushort)) return bios_open_bus_latch & 0xFFFF;
+                    static if (is(T == ubyte )) return bios_open_bus_latch & 0xFF;
+                
+                default: break;
+            }
         }
+        
+        // "regular" open bus
+        uint open_bus_value;
+        if (*pipeline_size == 4) {
+            open_bus_value = (*cpu_pipeline)[1];
+        } else {
+            open_bus_value = ((*cpu_pipeline)[1] & 0xFFFF) | ((*cpu_pipeline)[1] << 16);
+        }
+
+        return cast(T) (open_bus_value >> (8 * (address & 3)));
     }
 
     private template write(T) {
