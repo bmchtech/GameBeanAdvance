@@ -978,9 +978,16 @@ public:
                                 (backgrounds[x].is_mosaic                 << 6) |
                                 (backgrounds[x].doesnt_use_color_palettes << 7));
         } else { // target_byte == 1
-            return cast(ubyte) ((backgrounds[x].screen_base_block          << 0) |
-                                (backgrounds[x].does_display_area_overflow << 5) |
-                                (backgrounds[x].screen_size                << 6));
+            // i think this method of handling register reads is cleaner than the cast(ubyte)
+            // one-line method. but i dont want to change all mmio registers. maybe a task
+            // for the future?
+            ubyte result = 0x00;
+            result |= backgrounds[x].screen_base_block          << 0;
+            result |= backgrounds[x].screen_size                << 6;
+
+            // this bit is only used in bg 2/3
+            if (x == 2 || x == 3) result |= backgrounds[x].does_display_area_overflow << 5;
+            return result;
         }
     }
 
