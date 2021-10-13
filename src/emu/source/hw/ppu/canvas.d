@@ -91,6 +91,8 @@ class Canvas {
         // fields for blending
         Blending blending_type;
         uint evy_coeff;
+        
+        // these are the blend values given to us
         uint blend_a;
         uint blend_b;
 
