@@ -913,13 +913,21 @@ public:
         }
     }
 
+    // raw blend values will be set directly during writes to BLDALPHA. these differ
+    // from the canvas blend value because the canvas blend values cap at 16 while
+    // the raw blend values cap at 31. we need to store the raw values so we can
+    // return them on reads from BLDALPHA
+    uint raw_blend_a;
+    uint raw_blend_b;
     void write_BLDALPHA(int target_byte, ubyte data) {
         final switch (target_byte) {
             case 0b0:
-                canvas.blend_a = min(get_nth_bits(data, 0, 5), 16);
+                raw_blend_a = get_nth_bits(data, 0, 5);
+                canvas.blend_a = min(raw_blend_a, 16);
                 break;
             case 0b1:
-                canvas.blend_b = min(get_nth_bits(data, 0, 5), 16);
+                raw_blend_b = get_nth_bits(data, 0, 5);
+                canvas.blend_b = min(raw_blend_b, 16);
                 break;
         }
     }
@@ -1022,9 +1030,9 @@ public:
     ubyte read_BLDALPHA(int target_byte) {
         final switch (target_byte) {
             case 0b0:
-                return cast(ubyte) canvas.blend_a;
+                return cast(ubyte) raw_blend_a;
             case 0b1:
-                return cast(ubyte) canvas.blend_b;
+                return cast(ubyte) raw_blend_b;
         }
     }
 
