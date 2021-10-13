@@ -206,7 +206,7 @@ class Memory : IMemory {
 
             if (address >> 28) {
                 // writeln(format("OPEN BUS. %x %x", cast(T) (*cpu_pipeline)[1], read_word(0x0300686c)));
-                return cast(T) (*cpu_pipeline)[1];
+                return read_open_bus!T(address);
             }
 
             // handle waitstates
@@ -250,12 +250,7 @@ class Memory : IMemory {
                         static if (is(T == ushort)) return (bios_open_bus_latch >> (16 * ((address >> 1) & 1))) & 0xFFFF;
                         static if (is(T == ubyte))  return (bios_open_bus_latch >> (8  * ((address >> 0) & 3))) & 0xFF;
                     } else {
-                    
-                        // writefln("OPEN BUS: %x", bios_open_bus_latch);
-                        // _g_num_log += 20;
-                        static if (is(T == uint  )) return bios_open_bus_latch;
-                        static if (is(T == ushort)) return bios_open_bus_latch & 0xFFFF;
-                        static if (is(T == ubyte )) return bios_open_bus_latch & 0xFF;
+                        return read_open_bus!T(address);
                     }
 
                 case Region.ROM_SRAM_L:
@@ -270,6 +265,23 @@ class Memory : IMemory {
                 default:
                     return (cast(T*) rom)[(address & (SIZE_ROM - 1)) >> shift];
             }
+        }
+    }
+
+    T read_open_bus(T)(uint address) {
+        if (address > 0x0FFF_FFFF) return cast(T) (*cpu_pipeline)[1];
+
+        switch ((address >> 24) & 0xF) {
+            case 0x0: // BIOS open bus
+                // writefln("OPEN BUS: %x", bios_open_bus_latch);
+                // _g_num_log += 20;
+                static if (is(T == uint  )) return bios_open_bus_latch;
+                static if (is(T == ushort)) return bios_open_bus_latch & 0xFFFF;
+                static if (is(T == ubyte )) return bios_open_bus_latch & 0xFF;
+
+            default:
+                // NOT 100% accurate. TODO: add all the open bus types
+                return cast(T) ((*cpu_pipeline)[1] >> (8 * (address & 3)));
         }
     }
 

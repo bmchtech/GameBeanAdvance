@@ -239,7 +239,7 @@ class MMIO {
             case WAITCNT     + 0: return memory.read_WAITCNT (0); // TODO
             case WAITCNT     + 1: return memory.read_WAITCNT (1);
 
-            default: /*warning(format("MMIO Register %x read from; doesn't exist.", address));*/ return 0;
+            default: return memory.read_open_bus!ubyte(address);
         }
     }
 
