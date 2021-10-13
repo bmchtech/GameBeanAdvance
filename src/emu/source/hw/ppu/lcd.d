@@ -743,6 +743,7 @@ public:
         if (target_byte == 0) {
             backgrounds[x].priority                   = get_nth_bits(data, 0, 2);
             backgrounds[x].character_base_block       = get_nth_bits(data, 2, 4);
+            backgrounds[x].bgcnt_bits_4_and_5         = get_nth_bits(data, 4, 6);
             backgrounds[x].is_mosaic                  = get_nth_bit (data, 6);
             backgrounds[x].doesnt_use_color_palettes  = get_nth_bit (data, 7);
         } else { // target_byte == 1
@@ -973,10 +974,14 @@ public:
 
     ubyte read_BGXCNT(int target_byte, int x) {
         if (target_byte == 0) {
-            return cast(ubyte) ((backgrounds[x].priority                  << 0) |
-                                (backgrounds[x].character_base_block      << 2) |
-                                (backgrounds[x].is_mosaic                 << 6) |
-                                (backgrounds[x].doesnt_use_color_palettes << 7));
+            ubyte result = 0x00;
+            result |= backgrounds[x].priority                  << 0;
+            result |= backgrounds[x].character_base_block      << 2;
+            result |= backgrounds[x].bgcnt_bits_4_and_5        << 4;
+            result |= backgrounds[x].is_mosaic                 << 6;
+            result |= backgrounds[x].doesnt_use_color_palettes << 7;
+            return result;
+
         } else { // target_byte == 1
             // i think this method of handling register reads is cleaner than the cast(ubyte)
             // one-line method. but i dont want to change all mmio registers. maybe a task
