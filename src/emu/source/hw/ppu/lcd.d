@@ -281,7 +281,7 @@ private:
                 int draw_dx = 0;
 
                 static if (bpp8) {
-                    for (int tile_dx = 7; tile_dx < 0; tile_dx--) {
+                    for (int tile_dx = 7; tile_dx >= 0; tile_dx--) {
                         ubyte index = tile_data[tile_dx];
                         canvas.draw_bg_pixel(left_x + draw_dx, bg, index, priority, index == 0);
                         draw_dx++;

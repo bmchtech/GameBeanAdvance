@@ -73,24 +73,15 @@ class GameBeanSDLHost {
                 SDL_WINDOWPOS_UNDEFINED, 
                 GBA_SCREEN_WIDTH * screen_scale,
                 GBA_SCREEN_HEIGHT * screen_scale, 
-                SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+                SDL_WINDOW_SHOWN);
         assert(window !is null, "sdl window init failed!");
 
 
-        SDL_GLContext gContext = SDL_GL_CreateContext(window);
-        auto ret_GL = loadOpenGL();
-
-        if(ret_GL == GLSupport.noLibrary) {
-            error("This application requires the GLFW library.");
-        }
-
-        else if (ret_GL == GLSupport.badLibrary) {
-            error("The version of the GLFW library on your system is too low. Please upgrade.");
-        }
-
-        writefln("loaded opengl");
-
-        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+        SDL_GL_SetSwapInterval(0);
+        // SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");
+        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+        SDL_GL_SetSwapInterval(0);
+        // SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");
 
         screen_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                 SDL_TextureAccess.SDL_TEXTUREACCESS_STREAMING,
@@ -99,7 +90,7 @@ class GameBeanSDLHost {
         pixels = new uint[GBA_SCREEN_WIDTH* GBA_SCREEN_HEIGHT];
 
         SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest"); // scale with pixel-perfect interpolation
-
+        
         SDL_AudioSpec wanted;
         SDL_AudioSpec received;
         
