@@ -205,6 +205,8 @@ class Canvas {
     }
 
     public void composite() {
+        // for (int x = 0; x < 240; x++) pixels_output[x] = hw.ppu.get_pixel_from_color(bg_scanline[1][x].index);
+        // return;
         // step 1: sort the backgrounds by priority
         sorted_backgrounds = backgrounds;
 
