@@ -197,13 +197,20 @@ class MMIO {
             case SOUNDBIAS   + 0: return apu.read_SOUNDBIAS (0); 
             case SOUNDBIAS   + 1: return apu.read_SOUNDBIAS (1); 
 
-
+            case DMA0CNT_L   + 0: return 0;
+            case DMA0CNT_L   + 1: return 0;
             case DMA0CNT_H   + 0: return dma.read_DMAXCNT_H(0, 0); 
             case DMA0CNT_H   + 1: return dma.read_DMAXCNT_H(1, 0); 
+            case DMA1CNT_L   + 0: return 0;
+            case DMA1CNT_L   + 1: return 0;
             case DMA1CNT_H   + 0: return dma.read_DMAXCNT_H(0, 1); 
             case DMA1CNT_H   + 1: return dma.read_DMAXCNT_H(1, 1); 
+            case DMA2CNT_L   + 0: return 0;
+            case DMA2CNT_L   + 1: return 0;
             case DMA2CNT_H   + 0: return dma.read_DMAXCNT_H(0, 2); 
             case DMA2CNT_H   + 1: return dma.read_DMAXCNT_H(1, 2); 
+            case DMA3CNT_L   + 0: return 0;
+            case DMA3CNT_L   + 1: return 0;
             case DMA3CNT_H   + 0: return dma.read_DMAXCNT_H(0, 3); 
             case DMA3CNT_H   + 1: return dma.read_DMAXCNT_H(1, 3); 
 
