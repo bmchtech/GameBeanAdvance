@@ -311,7 +311,7 @@ public:
                 dma_channels[x].source_addr_control = cast(SourceAddrMode) ((get_nth_bit (data, 0) << 1) | (dma_channels[x].source_addr_control & 0b01));
                 dma_channels[x].repeat              =  get_nth_bit (data, 1);
                 dma_channels[x].transferring_words  =  get_nth_bit (data, 2);
-                dma_channels[x].gamepak_drq         =  get_nth_bit (data, 3);
+                dma_channels[x].gamepak_drq         =  x == 3 ? get_nth_bit (data, 3) : 0;
                 dma_channels[x].dma_start_timing    =  cast(DMAStartTiming) get_nth_bits(data, 4, 6);
                 dma_channels[x].irq_on_end          =  get_nth_bit (data, 6);
                 dma_channels[x].enabled             =  get_nth_bit (data, 7);
