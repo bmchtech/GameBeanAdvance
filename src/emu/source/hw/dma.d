@@ -79,7 +79,9 @@ public:
             default: assert(0);
         }
 
-        switch (dma_channels[current_channel].dest_addr_control) {
+        DestAddrMode interpretted_dest_addr_control = is_dma_channel_fifo(current_channel) ? DestAddrMode.Fixed : dma_channels[current_channel].dest_addr_control;
+
+        switch (interpretted_dest_addr_control) {
             case DestAddrMode.Increment:       dest_increment =  1; break;
             case DestAddrMode.Decrement:       dest_increment = -1; break;
             case DestAddrMode.Fixed:           dest_increment =  0; break;
@@ -93,7 +95,7 @@ public:
         int source_offset = 0;
         int dest_offset   = 0;
 
-        if (dma_channels[current_channel].transferring_words) {
+        if (dma_channels[current_channel].transferring_words || is_dma_channel_fifo(current_channel)) {
             bytes_to_transfer *= 4;
             for (int i = 0; i < bytes_to_transfer; i += 4) {
                 // writefln("DMA Channel %x successfully transfered %x from %x to %x. %x words done.", current_channel, memory.read_word(dma_channels[current_channel].source_buf + source_offset), dma_channels[current_channel].source_buf + source_offset, dma_channels[current_channel].dest_buf, i);
@@ -123,8 +125,8 @@ public:
         }
 
 
-        if (dma_channels[current_channel].repeat) {
-            if (dma_channels[current_channel].dest_addr_control == DestAddrMode.IncrementReload) {
+        if (is_dma_channel_fifo(current_channel) || dma_channels[current_channel].repeat) {
+            if (interpretted_dest_addr_control == DestAddrMode.IncrementReload) {
                 dma_channels[current_channel].dest_buf = dma_channels[current_channel].dest;
             }
 
@@ -186,10 +188,7 @@ public:
         if (dma_id == 3) dma_channels[dma_id].num_units &= 0x07FFFFFF;
 
         if (is_dma_channel_fifo(dma_id)) {
-            dma_channels[dma_id].num_units          = 4;
-            dma_channels[dma_id].repeat             = true;
-            dma_channels[dma_id].transferring_words = true;
-            dma_channels[dma_id].dest_addr_control  = DestAddrMode.Fixed;
+            dma_channels[dma_id].num_units = 4;
         }
         dma_channels[dma_id].enabled  = true;
         dma_channels[dma_id].size_buf = dma_channels[dma_id].num_units;
@@ -329,8 +328,8 @@ public:
     ubyte read_DMAXCNT_H(int target_byte, int x) {
         final switch (target_byte) {
             case 0b00:
-                return cast(ubyte) ((dma_channels[x].dest_addr_control          << 5) |
-                                    (dma_channels[x].source_addr_control & 0b01 << 7));
+                return cast(ubyte) ((dma_channels[x].dest_addr_control            << 5) |
+                                    ((dma_channels[x].source_addr_control & 0b01) << 7));
             case 0b01:
                 return cast(ubyte) (((dma_channels[x].source_addr_control & 0b10) >> 1) |
                                      (dma_channels[x].repeat                      << 1) |
