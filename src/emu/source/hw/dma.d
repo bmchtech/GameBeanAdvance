@@ -169,9 +169,15 @@ public:
         return idle_cycles;
     }
 
+    const uint[4] DMA_SOURCE_BUF_MASK = [0x07FF_FFFF, 0x0FFF_FFFF, 0x0FFF_FFFF, 0x0FFF_FFFF];
+    const uint[4] DMA_DEST_BUF_MASK   = [0x07FF_FFFF, 0x07FF_FFFF, 0x07FF_FFFF, 0x0FFF_FFFF];
+
     void initialize_dma(int dma_id) {
         dma_channels[dma_id].source_buf = dma_channels[dma_id].source & (dma_channels[dma_id].transferring_words ? ~3 : ~1);
         dma_channels[dma_id].dest_buf   = dma_channels[dma_id].dest   & (dma_channels[dma_id].transferring_words ? ~3 : ~1);
+    
+        dma_channels[dma_id].source_buf &= DMA_SOURCE_BUF_MASK[dma_id];
+        dma_channels[dma_id].dest_buf   &= DMA_DEST_BUF_MASK[dma_id];
     }
 
     void enable_dma(int dma_id) {
