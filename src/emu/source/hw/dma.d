@@ -24,10 +24,10 @@ public:
         this.idle_cycles   = 0;
 
         dma_channels = [
-            DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately),
-            DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately),
-            DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately),
-            DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately)
+            DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, 0, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately),
+            DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, 0, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately),
+            DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, 0, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately),
+            DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, 0, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately)
         ];
     }
 
@@ -98,20 +98,41 @@ public:
         if (dma_channels[current_channel].transferring_words || is_dma_channel_fifo(current_channel)) {
             bytes_to_transfer *= 4;
             for (int i = 0; i < bytes_to_transfer; i += 4) {
-                // writefln("DMA Channel %x successfully transfered %x from %x to %x. %x words done.", current_channel, memory.read_word(dma_channels[current_channel].source_buf + source_offset), dma_channels[current_channel].source_buf + source_offset, dma_channels[current_channel].dest_buf, i);
+                uint read_address = dma_channels[current_channel].source_buf + source_offset;
 
-                memory.write_word(dma_channels[current_channel].dest_buf + dest_offset, memory.read_word(dma_channels[current_channel].source_buf + source_offset));
+                if (read_address >= 0x0200_0000) { // make sure we are not accessing DMA open bus
+                    dma_channels[current_channel].open_bus_latch = memory.read_word(dma_channels[current_channel].source_buf + source_offset);
+                }
+                
+                memory.write_word(dma_channels[current_channel].dest_buf + dest_offset, dma_channels[current_channel].open_bus_latch);
                 source_offset += source_increment;
                 dest_offset   += dest_increment;
             }
         } else {
             bytes_to_transfer *= 2;
-            for (int i = 0; i < bytes_to_transfer; i += 2) {
-                // writefln("DMA Channel %x successfully transfered %x from %x to %x. %x halfwords done.", current_channel, memory.read_word(dma_channels[current_channel].source), dma_channels[current_channel].source, dma_channels[current_channel].dest, i);
+            bool is_aligned = dma_channels[current_channel].source_buf & 1;
 
-                memory.write_halfword(dma_channels[current_channel].dest_buf + dest_offset, memory.read_halfword(dma_channels[current_channel].source_buf + source_offset));
+            for (int i = 0; i < bytes_to_transfer; i += 2) {
+                uint read_address = dma_channels[current_channel].source_buf + source_offset;
+
+                if (read_address >= 0x0200_0000) { // make sure we are not accessing DMA open bus
+                    auto shift      = is_aligned * 16;
+                    auto read_value = memory.read_halfword(dma_channels[current_channel].source_buf + source_offset);
+
+                    dma_channels[current_channel].open_bus_latch &= 0xFFFF << shift;
+                    dma_channels[current_channel].open_bus_latch |= read_value << shift;
+                    memory.write_halfword(dma_channels[current_channel].dest_buf + dest_offset, read_value);
+                } else {
+                    auto shift = is_aligned * 16;
+                    ushort open_bus_value = (dma_channels[current_channel].open_bus_latch >> shift) & 0xFFFF;
+
+                    memory.write_halfword(dma_channels[current_channel].dest_buf + dest_offset, open_bus_value);
+                }
+
                 source_offset += source_increment;
                 dest_offset   += dest_increment;
+
+                is_aligned ^= 1;
             }
         }
 
@@ -357,6 +378,8 @@ struct DMAChannel {
     bool   transferring_words;
     bool   gamepak_drq;
     bool   irq_on_end;
+
+    uint   open_bus_latch;
 
     DMAManager.DestAddrMode   dest_addr_control;
     DMAManager.SourceAddrMode source_addr_control;
