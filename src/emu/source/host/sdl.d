@@ -80,7 +80,7 @@ class GameBeanSDLHost {
         SDL_GL_SetSwapInterval(0);
         // SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");
         renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-        SDL_GL_SetSwapInterval(0);
+        SDL_GL_SetSwapInterval(1);
         // SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");
 
         screen_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
