@@ -69,7 +69,7 @@ class Memory : IMemory {
 
     int[3][2][16] waitstates = [
         [[1, 1, 1], [1, 1, 1]], // BIOS
-        [[0, 0, 0], [0, 0, 0]], // Invalid
+        [[1, 1, 1], [1, 1, 1]], // Invalid
         [[3, 3, 6], [3, 3, 6]], // Work Ram Board
         [[1, 1, 1], [1, 1, 1]], // Work Ram Chip
         [[1, 1, 1], [1, 1, 1]], // IO Registers
