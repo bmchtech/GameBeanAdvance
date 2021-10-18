@@ -487,7 +487,7 @@ void run_01000011(ushort opcode) {
         case 0b01:
             // m is the the number of extra cycles required by multiplication
             int m = 4;
-            uint operand = cpu.regs[rm];
+            uint operand = cpu.regs[rd];
             if      ((operand >> 8)  == 0x0 || (operand >> 8)  == 0xFFFFFF) m = 1;
             else if ((operand >> 16) == 0x0 || (operand >> 16) == 0xFFFF)   m = 2;
             else if ((operand >> 24) == 0x0 || (operand >> 24) == 0xFF)     m = 3;
