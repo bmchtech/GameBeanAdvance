@@ -136,17 +136,20 @@ class Memory : IMemory {
         }
     }
 
-    // waitstate_region is one of: 0, 1, 2
+    // ws_region is one of: 0, 1, 2
     void set_waitstate_ROM(int ws_region, int ws_N, int ws_S) {
         int rom_region = Region.ROM_WAITSTATE_0_L + ws_region * 2;
 
-        waitstates[rom_region][AccessType.NONSEQUENTIAL][AccessSize.BYTE    ] = ws_N + 1;
-        waitstates[rom_region][AccessType.NONSEQUENTIAL][AccessSize.HALFWORD] = ws_N + 1;
-        waitstates[rom_region][AccessType.NONSEQUENTIAL][AccessSize.WORD    ] = ws_N + 1 + ws_S + 1;
+        // waitstate regions have a size of 2
+        for (int i = 0; i < 2; i++) {
+            waitstates[rom_region + i][AccessType.NONSEQUENTIAL][AccessSize.BYTE    ] = ws_N + 1;
+            waitstates[rom_region + i][AccessType.NONSEQUENTIAL][AccessSize.HALFWORD] = ws_N + 1;
+            waitstates[rom_region + i][AccessType.NONSEQUENTIAL][AccessSize.WORD    ] = ws_N + 1 + ws_S + 1;
 
-        waitstates[rom_region][AccessType.SEQUENTIAL   ][AccessSize.BYTE    ] = ws_S + 1;
-        waitstates[rom_region][AccessType.SEQUENTIAL   ][AccessSize.HALFWORD] = ws_S + 1;
-        waitstates[rom_region][AccessType.SEQUENTIAL   ][AccessSize.WORD    ] = ws_S + 1 + ws_S + 1;
+            waitstates[rom_region + i][AccessType.SEQUENTIAL   ][AccessSize.BYTE    ] = ws_S + 1;
+            waitstates[rom_region + i][AccessType.SEQUENTIAL   ][AccessSize.HALFWORD] = ws_S + 1;
+            waitstates[rom_region + i][AccessType.SEQUENTIAL   ][AccessSize.WORD    ] = ws_S + 1 + ws_S + 1;
+        }
     }
 
     uint bios_open_bus_latch = 0;
@@ -166,6 +169,8 @@ class Memory : IMemory {
         this.oam         = new ubyte[SIZE_OAM];
         this.rom         = new ubyte[SIZE_ROM];
 
+        write_WAITCNT(0, 0);
+        write_WAITCNT(1, 0);
         memory = this;
     }
 
