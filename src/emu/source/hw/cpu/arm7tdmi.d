@@ -361,6 +361,7 @@ class ARM7TDMI : IARM7TDMI {
         uint opcode = m_pipeline[0];
         m_pipeline[0] = m_pipeline[1];
         m_pipeline[1] = fetch();
+        m_pipeline_access_type = AccessType.SEQUENTIAL;
 
         if (*pc > 0x0FFF_FFFF) {
             error("PC out of range!");
@@ -369,10 +370,6 @@ class ARM7TDMI : IARM7TDMI {
         // if (*pc == 0xC) {
         //     error("rebooting");
         // }
-
-        if (m_memory.read_word(0x0300_000C) == 0x60840000) {
-            writefln("something weird happened right here!!!!!");
-        }
 
         // if (_g_log) {
         //     _g_num_log--;
@@ -392,8 +389,6 @@ class ARM7TDMI : IARM7TDMI {
 
         m_memory.can_read_from_bios = (*pc >> 24) == 0;
         execute(opcode);
-
-        m_pipeline_access_type = AccessType.SEQUENTIAL;
 
         return _g_cpu_cycles_remaining;
     }
