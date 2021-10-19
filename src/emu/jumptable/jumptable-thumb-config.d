@@ -674,7 +674,6 @@ void run_011BLOFS(ushort opcode) {
     @IF(!B !L) cpu.memory.write_word(cpu.regs[rn] + (immediate_value << 2), cpu.regs[rd],                      AccessType.NONSEQUENTIAL);
     @IF( B !L) cpu.memory.write_byte(cpu.regs[rn] + (immediate_value),      cast(ubyte) (cpu.regs[rd] & 0xFF), AccessType.NONSEQUENTIAL);
     
-    
     @IF(L)  cpu.run_idle_cycle();
 
     @IF(!B  L) cpu.regs[rd] = read_word_and_rotate(cpu.memory, cpu.regs[rn] + (immediate_value << 2), AccessType.NONSEQUENTIAL);
@@ -715,6 +714,8 @@ void run_1001LREG(ushort opcode) {
     // if L is set, we load. if L is not set, we store.
     @IF(L)  cpu.regs[rd] = read_word_and_rotate(cpu.memory, *cpu.sp + (immediate_value << 2), AccessType.NONSEQUENTIAL);
     @IF(!L) cpu.memory.write_word(*cpu.sp + (immediate_value << 2), cpu.regs[rd], AccessType.NONSEQUENTIAL);
+
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 
     // _g_cpu_cycles_remaining += 2;
     @IF( L) // _g_cpu_cycles_remaining += 1;
