@@ -609,14 +609,15 @@ void run_0101LSBR(ushort opcode) {
     ubyte rn = cast(ubyte) get_nth_bits(opcode, 3, 6);
     ubyte rd = cast(ubyte) get_nth_bits(opcode, 0, 3);
     uint address = cpu.regs[rm] + cpu.regs[rn];
+    cpu.run_idle_cycle();
 
-    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
     @IF( L  S  B) int  value = cast(uint)            (cpu.memory.read_halfword(address & 0xFFFFFFFE, AccessType.NONSEQUENTIAL));
     @IF( L  S !B) uint value = cast(uint)            (cpu.memory.read_byte    (address,              AccessType.NONSEQUENTIAL));
     @IF( L !S  B) uint value = cast(uint)            (cpu.memory.read_halfword(address & 0xFFFFFFFE, AccessType.NONSEQUENTIAL));
     @IF(!L  S  B) int  value = cast(uint) sign_extend(cpu.memory.read_byte    (address,              AccessType.NONSEQUENTIAL), 8);
 
     @IF( L !S !B) uint value = cast(uint)            (read_word_and_rotate(cpu.memory, (address & 0xFFFFFFFC), AccessType.NONSEQUENTIAL));
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 
     @IF( L !S !B) if ((address & 0b11) == 0b01) value = ((value & 0xFF)     << 24) | (value >> 8);
     @IF( L !S !B) if ((address & 0b11) == 0b10) value = ((value & 0xFFFF)   << 16) | (value >> 16);
@@ -687,6 +688,7 @@ void run_10000OFS(ushort opcode) {
     ubyte offset = cast(ubyte) get_nth_bits(opcode, 6, 11);
     
     cpu.memory.write_halfword(cpu.regs[rn] + (offset << 1), cast(ushort) cpu.regs[rd], AccessType.NONSEQUENTIAL);
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 
     // _g_cpu_cycles_remaining += 2;
 }
@@ -695,9 +697,11 @@ void run_10000OFS(ushort opcode) {
 void run_10001OFS(ushort opcode) {
     ubyte rn     = cast(ubyte) get_nth_bits(opcode, 3, 6);
     ubyte rd     = cast(ubyte) get_nth_bits(opcode, 0, 3);
-    ubyte offset = cast(ubyte) get_nth_bits(opcode, 6, 11);
-    
+    ubyte offset = cast(ubyte) get_nth_bits(opcode, 6, 11);    
+    cpu.run_idle_cycle();
+
     cpu.regs[rd] = cpu.memory.read_halfword(cpu.regs[rn] + offset * 2, AccessType.NONSEQUENTIAL);
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 
     // _g_cpu_cycles_remaining += 3;
 }
@@ -706,6 +710,7 @@ void run_10001OFS(ushort opcode) {
 void run_1001LREG(ushort opcode) {
     ubyte rd = cast(ubyte) (get_nth_bits(opcode, 8, 11));
     ubyte immediate_value = cast(ubyte) (opcode & 0xFF);
+    cpu.run_idle_cycle();
 
     // if L is set, we load. if L is not set, we store.
     @IF(L)  cpu.regs[rd] = read_word_and_rotate(cpu.memory, *cpu.sp + (immediate_value << 2), AccessType.NONSEQUENTIAL);
@@ -783,6 +788,9 @@ void run_1011110R(ushort opcode) {
         }
     }
 
+    // TODO: review this?
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
+
     // now deal with the linkage register (LR) and set it to the PC if it exists.
     if (is_lr_included) {
         *cpu.pc = read_word_and_rotate(cpu.memory, *cpu.sp, access_type) & 0xFFFFFFFE;
@@ -790,6 +798,8 @@ void run_1011110R(ushort opcode) {
 
         cpu.run_idle_cycle();
         cpu.refill_pipeline();
+    } else {
+        cpu.run_idle_cycle();
     }
 
     // _g_cpu_cycles_remaining += num_pushed + 2;
