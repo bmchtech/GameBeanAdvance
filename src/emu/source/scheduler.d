@@ -1,6 +1,7 @@
 module scheduler;
 
 import util;
+import hw.cpu.arm7tdmi;
 
 import std.stdio;
 
@@ -93,6 +94,10 @@ class Scheduler {
 
     pragma(inline, true) ulong get_current_time() {
         return current_timestamp;
+    }
+
+    pragma(inline, true) ulong get_current_time_relative_to_cpu() {
+        return current_timestamp + _g_cpu_cycles_remaining;
     }
 
     pragma(inline, true) void process_event() {
