@@ -558,6 +558,7 @@ void run_01000101(ushort opcode) {
 
 // MOV #3 - high registers, does not change flags
 void run_01000110(ushort opcode) {
+
     ubyte rm = cast(ubyte) get_nth_bits(opcode, 3, 7);
     ubyte rd = cast(ubyte) (get_nth_bits(opcode, 0, 3) | (get_nth_bit(opcode, 7) << 3));
     cpu.regs[rd] = cpu.read_reg(rm);
@@ -675,7 +676,6 @@ void run_011BLOFS(ushort opcode) {
     
     
     @IF(L)  cpu.run_idle_cycle();
-    @IF(!L) cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 
     @IF(!B  L) cpu.regs[rd] = read_word_and_rotate(cpu.memory, cpu.regs[rn] + (immediate_value << 2), AccessType.NONSEQUENTIAL);
     @IF( B  L) cpu.regs[rd] = cpu.memory.read_byte(cpu.regs[rn] + immediate_value, AccessType.NONSEQUENTIAL);

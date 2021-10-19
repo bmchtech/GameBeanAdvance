@@ -38,11 +38,11 @@ public:
         if (!timers[timer_id].enabled || timers[timer_id].countup) return;
 
         timers[timer_id].value = timers[timer_id].reload_value;
-        ulong timestamp = scheduler.get_current_time();
+        ulong timestamp = scheduler.get_current_time_relative_to_cpu();
         // writeln(format("%x TS: %x. Scheduling another at %x", timer_id, timestamp, timestamp + ((0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment)));
         timers[timer_id].timer_event = scheduler.add_event_relative_to_self(() => timer_overflow(timer_id), (0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment);
 
-        timers[timer_id].timestamp = scheduler.get_current_time();
+        timers[timer_id].timestamp = scheduler.get_current_time_relative_to_cpu();
     }
 
 
@@ -50,7 +50,7 @@ public:
         if (timers[timer_id].countup) return;
         timers[timer_id].value = timers[timer_id].reload_value;
         timers[timer_id].timer_event = scheduler.add_event_relative_to_clock(() => timer_overflow(timer_id), (0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment);
-        timers[timer_id].timestamp = scheduler.get_current_time();
+        timers[timer_id].timestamp = scheduler.get_current_time_relative_to_cpu();
     }
 
     void timer_overflow(int x) {
@@ -81,7 +81,7 @@ public:
         if (!timers[x].enabled || timers[x].countup) return timers[x].value;
 
         // how many clock cycles has it been since we've been enabled?
-        ulong cycles_elapsed = scheduler.get_current_time() - timers[x].timestamp;
+        ulong cycles_elapsed = scheduler.get_current_time_relative_to_cpu() - timers[x].timestamp;
 
         // use timer increments to get the relevant bits, and mod by the reload value
         return cast(ushort) (cycles_elapsed >> timers[x].increment);
