@@ -98,6 +98,17 @@ public:
     void load_rom(ubyte[] rom) {
         cpu.m_memory.rom[0 ..  rom.length] = rom[0 .. rom.length];
 
+        uint rom_mask_size = 0;
+        ulong rom_length = rom.length;
+
+        while (rom_length > 1) {
+            rom_length >>= 1;
+            rom_mask_size++;
+        }
+
+        cpu.m_memory.rom_mask = (1 << rom_mask_size) - 1;
+        writefln("rom length: %x, rom mask: %x", rom.length, cpu.m_memory.rom_mask);
+
         cpu.refill_pipeline();
         enabled = true; 
     }
