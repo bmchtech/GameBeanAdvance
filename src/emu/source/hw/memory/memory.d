@@ -62,6 +62,8 @@ class Memory : IMemory {
     ubyte[] palette_ram;
     ubyte[] vram;
     ubyte[] oam;
+
+    uint   rom_mask;
     ubyte[] rom;
 
     // the number of cycles to idle on a given memory access is given by
@@ -272,7 +274,7 @@ class Memory : IMemory {
                     goto default;
 
                 default:
-                    return (cast(T*) rom)[(address & (SIZE_ROM - 1)) >> shift];
+                    return (cast(T*) rom)[(address & rom_mask) >> shift];
             }
         }
     }
