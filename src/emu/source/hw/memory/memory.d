@@ -326,17 +326,19 @@ class Memory : IMemory {
                 case Region.PALETTE_RAM:  
                     uint palette_ram_address = (address & (SIZE_PALETTE_RAM  - 1)) >> shift;
 
-                    (cast(T*) palette_ram) [palette_ram_address] = value; 
                     uint index = (address & (SIZE_PALETTE_RAM - 1)) >> 1;
 
                     static if (is(T == uint)) {
                         hw.ppu.palette.set_color(index,     cast(ushort) (value & 0xFFFF));
                         hw.ppu.palette.set_color(index + 1, cast(ushort) (value >> 16));
+                        (cast(T*) palette_ram) [palette_ram_address] = value; 
                     } else static if (is(T == ushort)) {
                         hw.ppu.palette.set_color(index, value);
+                        (cast(T*) palette_ram) [palette_ram_address] = value; 
                     } else static if (is(T == ubyte)) {
                         hw.ppu.palette.set_color(index, value | (value << 8));
-                        (cast(T*) palette_ram) [palette_ram_address + 1] = value; 
+                        (cast(T*) palette_ram) [(palette_ram_address & ~1)] = value; 
+                        (cast(T*) palette_ram) [(palette_ram_address & ~1) + 1] = value; 
                     }
                     break;
 
