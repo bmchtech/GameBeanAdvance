@@ -283,6 +283,7 @@ class Memory : IMemory {
         if (address < 0x1000_0000) {
             switch ((address >> 24) & 0xF) {
                 case Region.BIOS:
+                    if (address >= SIZE_BIOS) break;
                     static if (is(T == uint  )) return bios_open_bus_latch;
                     static if (is(T == ushort)) return bios_open_bus_latch & 0xFFFF;
                     static if (is(T == ubyte )) return bios_open_bus_latch & 0xFF;
