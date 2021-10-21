@@ -324,7 +324,9 @@ class Memory : IMemory {
                 case Region.WRAM_BOARD:   (cast(T*) wram_board) [(address & (SIZE_WRAM_BOARD  - 1)) >> shift] = value; break;
                 case Region.WRAM_CHIP:    (cast(T*) wram_chip)  [(address & (SIZE_WRAM_CHIP   - 1)) >> shift] = value; break;
                 case Region.PALETTE_RAM:  
-                    (cast(T*) palette_ram) [(address & (SIZE_PALETTE_RAM  - 1)) >> shift] = value; 
+                    uint palette_ram_address = (address & (SIZE_PALETTE_RAM  - 1)) >> shift;
+
+                    (cast(T*) palette_ram) [palette_ram_address] = value; 
                     uint index = (address & (SIZE_PALETTE_RAM - 1)) >> 1;
 
                     static if (is(T == uint)) {
@@ -334,6 +336,7 @@ class Memory : IMemory {
                         hw.ppu.palette.set_color(index, value);
                     } else static if (is(T == ubyte)) {
                         hw.ppu.palette.set_color(index, value | (value << 8));
+                        (cast(T*) palette_ram) [palette_ram_address + 1] = value; 
                     }
                     break;
 
