@@ -12,25 +12,30 @@ import util;
 
 import std.stdio;
 
-enum SIZE_BIOS = 0x4000;
-enum SIZE_WRAM_BOARD = 0x40000;
-enum SIZE_WRAM_CHIP = 0x8000;
+enum SIZE_BIOS        = 0x4000;
+enum SIZE_WRAM_BOARD  = 0x40000;
+enum SIZE_WRAM_CHIP   = 0x8000;
 enum SIZE_PALETTE_RAM = 0x400;
-enum SIZE_VRAM = 0x18000;
-enum SIZE_OAM = 0x400;
-enum SIZE_ROM = 0x2000000;
+enum SIZE_VRAM        = 0x18000 + 0x8000;
+// note: in reality, VRAM's size is 0x18000. But, the sizes are used for mirroring purposes.
+// accesses are and'd by (size - 1) to handle mirroring. VRAM mirrors weirdly because it isn't
+// a power of 2 - it mirrors as if its size was 0x20000. Additionally, the empty 0x8000 bytes
+// are mirrors of the last 0x8000 bytes.
 
-enum OFFSET_BIOS = 0x0000000;
-enum OFFSET_WRAM_BOARD = 0x2000000;
-enum OFFSET_WRAM_CHIP = 0x3000000;
+enum SIZE_OAM         = 0x400;
+enum SIZE_ROM         = 0x2000000;
+
+enum OFFSET_BIOS         = 0x0000000;
+enum OFFSET_WRAM_BOARD   = 0x2000000;
+enum OFFSET_WRAM_CHIP    = 0x3000000;
 enum OFFSET_IO_REGISTERS = 0x4000000;
-enum OFFSET_PALETTE_RAM = 0x5000000;
-enum OFFSET_VRAM = 0x6000000;
-enum OFFSET_OAM = 0x7000000;
-enum OFFSET_ROM_1 = 0x8000000;
-enum OFFSET_ROM_2 = 0xA000000;
-enum OFFSET_ROM_3 = 0xC000000;
-enum OFFSET_SRAM = 0xE000000;
+enum OFFSET_PALETTE_RAM  = 0x5000000;
+enum OFFSET_VRAM         = 0x6000000;
+enum OFFSET_OAM          = 0x7000000;
+enum OFFSET_ROM_1        = 0x8000000;
+enum OFFSET_ROM_2        = 0xA000000;
+enum OFFSET_ROM_3        = 0xC000000;
+enum OFFSET_SRAM         = 0xE000000;
 
 Memory memory;
 
@@ -155,13 +160,14 @@ class Memory : IMemory {
     }
 
     uint bios_open_bus_latch = 0;
-
+    
     this() {
         video_buffer = new uint[][](240, 160);
         fifo_a = new Fifo!ubyte(0x20, 0x00);
         fifo_b = new Fifo!ubyte(0x20, 0x00);
 
         this.mmio = null;
+        this.ppu  = ppu;
 
         this.bios        = new ubyte[SIZE_BIOS];
         this.wram_board  = new ubyte[SIZE_WRAM_BOARD];
@@ -185,6 +191,11 @@ class Memory : IMemory {
     void set_cpu_pipeline(uint[2]* cpu_pipeline, uint* pipeline_size) {
         this.cpu_pipeline  = cpu_pipeline;
         this.pipeline_size = pipeline_size;
+    }
+
+    PPU ppu;
+    void set_ppu(PPU ppu) {
+        this.ppu = ppu;
     }
 
     pragma(inline, true) ubyte read_byte(uint address, AccessType access_type = AccessType.SEQUENTIAL) {
@@ -345,8 +356,30 @@ class Memory : IMemory {
                     }
                     break;
 
-                case Region.VRAM:         (cast(T*) vram)[(address % (SIZE_VRAM    )) >> shift] = value; break;
-                case Region.OAM:          (cast(T*) oam) [(address & (SIZE_OAM   - 1)) >> shift] = value; break;
+                case Region.VRAM:
+                    uint wrapped_address = address & (SIZE_VRAM - 1);
+                    if (wrapped_address > 0x18000) wrapped_address -= 0x8000;
+
+                    static if (is(T == ubyte)) { // byte writes are ignored if writing to OBJ memory
+
+                        bool writing_to_obj = (ppu.bg_mode >= 3) ? wrapped_address >= 0x14000 : wrapped_address >= 0x10000;
+                        
+                        if (!writing_to_obj) {
+                            uint wrapped_masked_address = wrapped_address & ~1;
+                            vram[wrapped_masked_address + 0] = value;
+                            vram[wrapped_masked_address + 1] = value;
+                        }
+                        return;
+                    } else {
+                        (cast(T*) vram)[wrapped_address >> shift] = value; break;
+                    }
+
+                case Region.OAM:
+                    
+                    static if (is(T == ubyte)) return; // byte writes are ignored
+                    else {
+                        (cast(T*) oam) [(address & (SIZE_OAM - 1)) >> shift] = value; break;
+                    }
 
                 case Region.IO_REGISTERS: 
                     static if (is(T == uint)) {
