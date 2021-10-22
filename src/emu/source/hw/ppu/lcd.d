@@ -694,7 +694,7 @@ private:
 
 private:
     // DISPCNT
-    int  bg_mode;                                   // 0 - 5
+    public int bg_mode;                             // 0 - 5
     int  disp_frame_select;                         // 0 - 1
     bool hblank_interval_free;                      // 1 = OAM can be accessed during h-blank
     bool is_character_vram_mapping_one_dimensional; // 2 = 2-dimensional
