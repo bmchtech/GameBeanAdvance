@@ -69,6 +69,7 @@ public:
         MMIO mmio = new MMIO(this, ppu, apu, dma_manager, timers, interrupt_manager, key_input, memory);
         memory.set_mmio(mmio);
         memory.set_cpu_pipeline(&cpu.m_pipeline, &cpu.current_instruction_size);
+        memory.set_ppu(this.ppu);
 
         this.enabled = false;
 
