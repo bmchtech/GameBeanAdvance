@@ -26,7 +26,7 @@ void nop(ushort opcode) {
 
 @LOCAL()
 uint read_word_and_rotate(IMemory IMemory, uint address, AccessType access_type) {
-    uint value = IMemory.read_word(address & 0xFFFFFFFC, access_type);
+    uint value = IMemory.read_word(address, access_type);
     if ((address & 0b11) == 0b01) value = ((value & 0xFF)     << 24) | (value >> 8);
     if ((address & 0b11) == 0b10) value = ((value & 0xFFFF)   << 16) | (value >> 16);
     if ((address & 0b11) == 0b11) value = ((value & 0xFFFFFF) << 8)  | (value >> 24);
@@ -612,12 +612,12 @@ void run_0101LSBR(ushort opcode) {
     uint address = cpu.regs[rm] + cpu.regs[rn];
     cpu.run_idle_cycle();
 
-    @IF( L  S  B) int  value = cast(uint)            (cpu.memory.read_halfword(address & 0xFFFFFFFE, AccessType.NONSEQUENTIAL));
+    @IF( L  S  B) int  value = cast(uint)            (cpu.memory.read_halfword(address, AccessType.NONSEQUENTIAL));
     @IF( L  S !B) uint value = cast(uint)            (cpu.memory.read_byte    (address,              AccessType.NONSEQUENTIAL));
-    @IF( L !S  B) uint value = cast(uint)            (cpu.memory.read_halfword(address & 0xFFFFFFFE, AccessType.NONSEQUENTIAL));
+    @IF( L !S  B) uint value = cast(uint)            (cpu.memory.read_halfword(address, AccessType.NONSEQUENTIAL));
     @IF(!L  S  B) int  value = cast(uint) sign_extend(cpu.memory.read_byte    (address,              AccessType.NONSEQUENTIAL), 8);
 
-    @IF( L !S !B) uint value = cast(uint)            (read_word_and_rotate(cpu.memory, (address & 0xFFFFFFFC), AccessType.NONSEQUENTIAL));
+    @IF( L !S !B) uint value = cast(uint)            (read_word_and_rotate(cpu.memory, address, AccessType.NONSEQUENTIAL));
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 
     @IF( L !S !B) if ((address & 0b11) == 0b01) value = ((value & 0xFF)     << 24) | (value >> 8);
@@ -851,7 +851,7 @@ void run_11000REG(ushort opcode) {
             // don't optimize this by moving the bitwise and over to the initialization of start_address
             // it has to be this way for when we writeback to cpu.regs after the loop
             *start_address += 4;
-            cpu.memory.write_word(((*start_address - 4) & 0xFFFFFFFC),  cpu.regs[i], access_type);
+            cpu.memory.write_word((*start_address - 4),  cpu.regs[i], access_type);
             num_pushed++;
             access_type = AccessType.SEQUENTIAL;
         }

@@ -720,7 +720,7 @@
 [COMPONENT LDR]
 - FORMAT:  ----01---0-1--------------------
 {
-    uint value = cpu.memory.read_word(address & 0xFFFFFFFC);
+    uint value = cpu.memory.read_word(address);
     if ((address & 0b11) == 0b01) value = ((value & 0xFF)     << 24) | (value >> 8);
     if ((address & 0b11) == 0b10) value = ((value & 0xFFFF)   << 16) | (value >> 16);
     if ((address & 0b11) == 0b11) value = ((value & 0xFFFFFF) << 8)  | (value >> 24);
@@ -753,8 +753,8 @@
 [COMPONENT LDRH]
 - FORMAT:  ----000----1--------------------
 {
-    uint value = cpu.memory.read_halfword(address & 0xFFFFFFFE);
-    if ((address & 0b11) == 0b01) value = ((value & 0xFF) << 24) | (value >> 8);
+    uint value = cpu.memory.read_halfword(address);
+    if ((address & 0b1) == 0b1) value = ((value & 0xFF) << 24) | (value >> 8);
 
     cpu.regs[get_nth_bits(opcode, 12, 16)] = value;
     if (get_nth_bits(opcode, 12, 16) == 15) {
@@ -780,7 +780,7 @@
 [COMPONENT LDRSH]
 - FORMAT:  ----000----1------------1111----
 {
-    uint value = cpu.memory.read_halfword(address & 0xFFFFFFFE);
+    uint value = cpu.memory.read_halfword(address);
     if (address & 1) { 
         value = sign_extend(value >> 8, 8);
     } else {
@@ -836,7 +836,7 @@
             @IF(!S !L)     cpu.memory.write_word(address, cpu.read_reg(i));
             @IF(!S !L) }
 
-            @IF( S  L) if (pc_included) cpu.regs         [i]                        = cpu.memory.read_word(address);
+            @IF( S  L) if (pc_included) cpu.regs         [i]                    = cpu.memory.read_word(address);
             @IF( S  L) else             cpu.register_file[MODE_USER.OFFSET + i] = cpu.memory.read_word(address);
 
             @IF( S !L) if (i == 15) {
@@ -1071,7 +1071,7 @@
 {
     uint result = cpu.read_reg(get_nth_bits(opcode, 12, 16));
     if (get_nth_bits(opcode, 12, 16) == 15) result += 4;
-    cpu.memory.write_word(address & 0xFFFFFFFC, result);
+    cpu.memory.write_word(address, result);
     // _g_cpu_cycles_remaining += 2;
 }
 [/COMPONENT]
@@ -1089,7 +1089,7 @@
 [COMPONENT STRH]
 - FORMAT:  ----000PUIW0------------1011----
 {
-    cpu.memory.write_halfword(address & ~1, cpu.read_reg(get_nth_bits(opcode, 12, 16)) & 0xFFFF);
+    cpu.memory.write_halfword(address, cpu.read_reg(get_nth_bits(opcode, 12, 16)) & 0xFFFF);
     // _g_cpu_cycles_remaining += 2;
 }
 [/COMPONENT]
@@ -1105,12 +1105,12 @@
 - FORMAT:  ----00010000------------1001----
 {
     uint address = cpu.read_reg(get_nth_bits(opcode, 16, 20));
-    uint value   = cpu.memory.read_word(address & 0xFFFFFFFC);
+    uint value   = cpu.memory.read_word(address);
     if ((address & 0b11) == 0b01) value = ((value & 0xFF)     << 24) | (value >> 8);
     if ((address & 0b11) == 0b10) value = ((value & 0xFFFF)   << 16) | (value >> 16);
     if ((address & 0b11) == 0b11) value = ((value & 0xFFFFFF) << 8)  | (value >> 24);
     
-    cpu.memory.write_word(address & 0xFFFFFFFC, cpu.read_reg(get_nth_bits(opcode, 0, 4)));
+    cpu.memory.write_word(address, cpu.read_reg(get_nth_bits(opcode, 0, 4)));
     cpu.regs[get_nth_bits(opcode, 12, 16)] = value;
 
     // _g_cpu_cycles_remaining += 4;

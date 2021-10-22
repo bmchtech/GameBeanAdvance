@@ -16,5 +16,6 @@ class Backup {
 
 enum BackupType {
     FLASH,
+    SRAM,
     NONE
 }

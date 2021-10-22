@@ -265,11 +265,12 @@ class Memory : IMemory {
                     }
 
                 case Region.ROM_SRAM_L:
+                case Region.ROM_SRAM_H:
                     // writefln("attempting backup read at %x", address);
-                    if (flash) {
-                        static if (is(T == uint  )) return backup.read_word    (address & 0xFFFF);
-                        static if (is(T == ushort)) return backup.read_halfword(address & 0xFFFF);
-                        static if (is(T == ubyte )) return backup.read_byte    (address & 0xFFFF);
+                    if (backup_enabled) {
+                        static if (is(T == uint  )) return backup.read_word    (address);
+                        static if (is(T == ushort)) return backup.read_halfword(address);
+                        static if (is(T == ubyte )) return backup.read_byte    (address);
                     }
                     goto default;
 
@@ -363,10 +364,11 @@ class Memory : IMemory {
                     break;
 
                 case Region.ROM_SRAM_L:
-                    if (flash) {
-                        static if (is(T == uint  )) return backup.write_word    (address & 0xFFFF, value);
-                        static if (is(T == ushort)) return backup.write_halfword(address & 0xFFFF, value);
-                        static if (is(T == ubyte )) return backup.write_byte    (address & 0xFFFF, value);
+                case Region.ROM_SRAM_H:
+                    if (backup_enabled) {
+                        static if (is(T == uint  )) return backup.write_word    (address, value);
+                        static if (is(T == ushort)) return backup.write_halfword(address, value);
+                        static if (is(T == ubyte )) return backup.write_byte    (address, value);
                     }
                     break;
 
@@ -376,13 +378,13 @@ class Memory : IMemory {
         }
     }
 
-    bool flash = false;
+    bool backup_enabled = false;
     Backup backup;
 
     void add_backup(Backup backup) {
         this.backup = backup;
-        flash = backup.get_backup_type() == BackupType.FLASH;
-        writefln("Flash recognized? %x", flash);
+        backup_enabled = backup.get_backup_type() != BackupType.NONE;
+        writefln("Savetype found? %x", backup_enabled);
     }
 
     pragma(inline, true) void set_rgb(uint x, uint y, ubyte r, ubyte g, ubyte b) {
