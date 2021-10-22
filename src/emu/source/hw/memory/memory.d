@@ -192,11 +192,11 @@ class Memory : IMemory {
     }
 
     pragma(inline, true) ushort read_halfword(uint address, AccessType access_type = AccessType.SEQUENTIAL) {    
-        return read!ushort(address & ~1, access_type);
+        return read!ushort(address, access_type);
     }
 
     pragma(inline, true) uint read_word(uint address, AccessType access_type = AccessType.SEQUENTIAL) {
-        return read!uint(address & ~3, access_type);
+        return read!uint(address, access_type);
     }
 
     pragma(inline, true) void write_byte(uint address, ubyte value, AccessType access_type = AccessType.SEQUENTIAL) {
@@ -204,11 +204,11 @@ class Memory : IMemory {
     }
 
     pragma(inline, true) void write_halfword(uint address, ushort value, AccessType access_type = AccessType.SEQUENTIAL) {
-        write!ushort(address & ~1, value, access_type);
+        write!ushort(address, value, access_type);
     }
 
     pragma(inline, true) void write_word(uint address, uint value, AccessType access_type = AccessType.SEQUENTIAL) {
-        write!uint(address & ~3, value, access_type);
+        write!uint(address, value, access_type);
     }
 
     private template read(T) {
@@ -326,7 +326,7 @@ class Memory : IMemory {
                 case Region.WRAM_BOARD:   (cast(T*) wram_board) [(address & (SIZE_WRAM_BOARD  - 1)) >> shift] = value; break;
                 case Region.WRAM_CHIP:    (cast(T*) wram_chip)  [(address & (SIZE_WRAM_CHIP   - 1)) >> shift] = value; break;
                 case Region.PALETTE_RAM:  
-                    uint palette_ram_address = (address & (SIZE_PALETTE_RAM  - 1)) >> shift;
+                    uint palette_ram_address = (address & (SIZE_PALETTE_RAM - 1)) >> shift;
 
                     uint index = (address & (SIZE_PALETTE_RAM - 1)) >> 1;
 
