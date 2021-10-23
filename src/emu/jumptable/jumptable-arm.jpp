@@ -720,7 +720,9 @@
 [COMPONENT LDR]
 - FORMAT:  ----01---0-1--------------------
 {
-    uint value = cpu.memory.read_word(address);
+    cpu.run_idle_cycle();
+
+    uint value = cpu.memory.read_word(address, AccessType.NONSEQUENTIAL);
     if ((address & 0b11) == 0b01) value = ((value & 0xFF)     << 24) | (value >> 8);
     if ((address & 0b11) == 0b10) value = ((value & 0xFFFF)   << 16) | (value >> 16);
     if ((address & 0b11) == 0b11) value = ((value & 0xFFFFFF) << 8)  | (value >> 24);
@@ -734,57 +736,61 @@
         cpu.regs[rd] = value;
     }
 
-    // _g_cpu_cycles_remaining += 3;
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 }
 [/COMPONENT]
 
 [COMPONENT LDRB]
 - FORMAT:  ----01---1-1--------------------
 {
-    cpu.regs[get_nth_bits(opcode, 12, 16)] = cpu.memory.read_byte(address);
+    cpu.run_idle_cycle();
+
+    cpu.regs[get_nth_bits(opcode, 12, 16)] = cpu.memory.read_byte(address, AccessType.NONSEQUENTIAL);
     if (get_nth_bits(opcode, 12, 16) == 15) {
         cpu.refill_pipeline();
-        // _g_cpu_cycles_remaining += 2;
     }
-    // _g_cpu_cycles_remaining += 3;
+    
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 }
 [/COMPONENT]
 
 [COMPONENT LDRH]
 - FORMAT:  ----000----1--------------------
 {
-    uint value = cpu.memory.read_halfword(address);
+    cpu.run_idle_cycle();
+
+    uint value = cpu.memory.read_halfword(address, AccessType.NONSEQUENTIAL);
     if ((address & 0b1) == 0b1) value = ((value & 0xFF) << 24) | (value >> 8);
 
-    cpu.run_idle_cycle();
-    
     cpu.regs[get_nth_bits(opcode, 12, 16)] = value;
     if (get_nth_bits(opcode, 12, 16) == 15) {
         cpu.refill_pipeline();
-        // _g_cpu_cycles_remaining += 2;
     }
 
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
-    // _g_cpu_cycles_remaining += 3;
 }
 [/COMPONENT]
 
 [COMPONENT LDRSB]
 - FORMAT:  ----000----1------------1101----
 {
-    cpu.regs[get_nth_bits(opcode, 12, 16)] = sign_extend(cpu.memory.read_byte(address), 8);
+    cpu.run_idle_cycle();
+
+    cpu.regs[get_nth_bits(opcode, 12, 16)] = sign_extend(cpu.memory.read_byte(address, AccessType.NONSEQUENTIAL), 8);
     if (get_nth_bits(opcode, 12, 16) == 15) {
         cpu.refill_pipeline();
-        // _g_cpu_cycles_remaining += 2;
     }
-    // _g_cpu_cycles_remaining += 3;
+
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 }
 [/COMPONENT]
 
 [COMPONENT LDRSH]
 - FORMAT:  ----000----1------------1111----
 {
-    uint value = cpu.memory.read_halfword(address);
+    cpu.run_idle_cycle();
+
+    uint value = cpu.memory.read_halfword(address, AccessType.NONSEQUENTIAL);
     if (address & 1) { 
         value = sign_extend(value >> 8, 8);
     } else {
@@ -794,9 +800,9 @@
     cpu.regs[get_nth_bits(opcode, 12, 16)] = value;
     if (get_nth_bits(opcode, 12, 16) == 15) {
         cpu.refill_pipeline();
-        // _g_cpu_cycles_remaining += 2;
     }
-    // _g_cpu_cycles_remaining += 3;
+
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 }
 [/COMPONENT]
 
@@ -825,6 +831,8 @@
 
     bool register_in_rlist = (opcode >> get_nth_bits(opcode, 16, 20)) & 1;
 
+    AccessType access_type = AccessType.NONSEQUENTIAL;
+
     @IF( U) for (int i = 0;  i <  16; i++) {
     @IF(!U) for (int i = 15; i >= 0;  i--) {
 
@@ -832,21 +840,21 @@
             @IF( P  U) address += 4;
             @IF( P !U) address -= 4;
 
-            @IF(!S  L) cpu.regs[i] = cpu.memory.read_word(address);
+            @IF(!S  L) cpu.regs[i] = cpu.memory.read_word(address, access_type);
 
             @IF(!S !L) if (i == 15) {
-            @IF(!S !L)     cpu.memory.write_word(address, cpu.read_reg(15) + 4);
+            @IF(!S !L)     cpu.memory.write_word(address, cpu.read_reg(15) + 4, access_type);
             @IF(!S !L) } else {
-            @IF(!S !L)     cpu.memory.write_word(address, cpu.read_reg(i));
+            @IF(!S !L)     cpu.memory.write_word(address, cpu.read_reg(i), access_type);
             @IF(!S !L) }
 
-            @IF( S  L) if (pc_included) cpu.regs         [i]                    = cpu.memory.read_word(address);
-            @IF( S  L) else             cpu.register_file[MODE_USER.OFFSET + i] = cpu.memory.read_word(address);
+            @IF( S  L) if (pc_included) cpu.regs         [i]                    = cpu.memory.read_word(address, access_type);
+            @IF( S  L) else             cpu.register_file[MODE_USER.OFFSET + i] = cpu.memory.read_word(address, access_type);
 
             @IF( S !L) if (i == 15) {
-            @IF( S !L)     cpu.memory.write_word(address, cpu.register_file[MODE_USER.OFFSET + 15] + 4);
+            @IF( S !L)     cpu.memory.write_word(address, cpu.register_file[MODE_USER.OFFSET + 15] + 4, access_type);
             @IF( S !L) } else {
-            @IF( S !L)     cpu.memory.write_word(address, cpu.register_file[MODE_USER.OFFSET + i]);
+            @IF( S !L)     cpu.memory.write_word(address, cpu.register_file[MODE_USER.OFFSET + i], access_type);
             @IF( S !L) }
 
             @IF(!P  U) address += 4;
@@ -858,21 +866,21 @@
             @IF(L)     pc_loaded = true;
             @IF(L)     cpu.refill_pipeline();
             @IF(L) }
+
+            access_type = AccessType.SEQUENTIAL;
         }
 
         @IF(U)  mask <<= 1; 
         @IF(!U) mask >>= 1;
     }
 
+    // TODO: does pipeline reset when empty rlist?
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
+    @IF(L) cpu.run_idle_cycle();
+
     *cpu.pc &= 0xFFFFFFFE;
 
     @IF( L  S) if (pc_loaded) *cpu.cpsr = *cpu.spsr;
-
-    @IF( L) // _g_cpu_cycles_remaining += num_transactions + 2;
-    // @IF( L) if (pc_loaded) // _g_cpu_cycles_remaining += 2;
-
-    @IF(!L) // _g_cpu_cycles_remaining += num_transactions + 1;
-    
     @IF( W  L) if (!register_in_rlist) cpu.regs[get_nth_bits(opcode, 16, 20)] = address;
     @IF( W !L) cpu.regs[get_nth_bits(opcode, 16, 20)] = address;
 }
@@ -1075,7 +1083,7 @@
 {
     uint result = cpu.read_reg(get_nth_bits(opcode, 12, 16));
     if (get_nth_bits(opcode, 12, 16) == 15) result += 4;
-    cpu.memory.write_word(address, result);
+    cpu.memory.write_word(address, result, AccessType.NONSEQUENTIAL);
     // _g_cpu_cycles_remaining += 2;
 }
 [/COMPONENT]
@@ -1085,16 +1093,16 @@
 {
     uint result = cpu.read_reg(get_nth_bits(opcode, 12, 16));
     if (get_nth_bits(opcode, 12, 16) == 15) result += 4;
-    cpu.memory.write_byte(address, result & 0xFF);
-    // _g_cpu_cycles_remaining += 2;
+    cpu.memory.write_byte(address, result & 0xFF, AccessType.NONSEQUENTIAL);
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 }
 [/COMPONENT]
 
 [COMPONENT STRH]
 - FORMAT:  ----000PUIW0------------1011----
 {
-    cpu.memory.write_halfword(address, cpu.read_reg(get_nth_bits(opcode, 12, 16)) & 0xFFFF);
-    // _g_cpu_cycles_remaining += 2;
+    cpu.memory.write_halfword(address, cpu.read_reg(get_nth_bits(opcode, 12, 16)) & 0xFFFF, AccessType.NONSEQUENTIAL);
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 }
 [/COMPONENT]
 
