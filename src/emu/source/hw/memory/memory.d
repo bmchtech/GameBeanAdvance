@@ -244,7 +244,7 @@ class Memory : IMemory {
             static if (is(T == ubyte )) shift = 0;
 
             switch (region) {
-                case 0x1:                 return 0x0; // nothing is mapped here
+                case 0x1:                 return read_open_bus!T(address); // nothing is mapped here
                 case Region.WRAM_BOARD:   return (cast(T*) wram_board) [(address & (SIZE_WRAM_BOARD  - 1)) >> shift]; 
                 case Region.WRAM_CHIP:    return (cast(T*) wram_chip)  [(address & (SIZE_WRAM_CHIP   - 1)) >> shift];
                 case Region.PALETTE_RAM:  return (cast(T*) palette_ram)[(address & (SIZE_PALETTE_RAM - 1)) >> shift];
@@ -375,7 +375,6 @@ class Memory : IMemory {
                     }
 
                 case Region.OAM:
-                    
                     static if (is(T == ubyte)) return; // byte writes are ignored
                     else {
                         (cast(T*) oam) [(address & (SIZE_OAM - 1)) >> shift] = value; break;
