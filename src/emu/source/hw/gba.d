@@ -53,7 +53,7 @@ public:
     Scheduler        scheduler;
 
     this(Memory memory, KeyInput key_input, ubyte[] bios) {
-        scheduler = new Scheduler();
+        scheduler = new Scheduler(memory);
 
         this.memory            = memory;
         this.cpu               = new ARM7TDMI(memory);
