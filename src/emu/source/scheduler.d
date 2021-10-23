@@ -2,6 +2,7 @@ module scheduler;
 
 import util;
 import hw.cpu.arm7tdmi;
+import hw.memory;
 
 import std.stdio;
 
@@ -20,13 +21,17 @@ class Scheduler {
 
     ulong current_timestamp;
 
-    this() {
+    Memory memory;
+
+    this(Memory memory) {
         for (int i = 0; i < TOTAL_NUMBER_OF_EVENTS; i++) {
         	events[i] = new Event(null, 0, 0, false);
         }
         
-        events_in_queue      = 0;
+        events_in_queue   = 0;
         current_timestamp = 0;
+        
+        this.memory = memory;
     }
 
     ulong add_event_relative_to_clock(void delegate() callback, int delta_cycles) {
@@ -97,7 +102,7 @@ class Scheduler {
     }
 
     pragma(inline, true) ulong get_current_time_relative_to_cpu() {
-        return current_timestamp + _g_cpu_cycles_remaining;
+        return current_timestamp + memory.cycles;
     }
 
     pragma(inline, true) void process_event() {
