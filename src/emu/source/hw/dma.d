@@ -44,6 +44,7 @@ public:
 
     // returns the amount of cycles to idle
     int handle_dma() {
+        memory.cycles = 0;
         idle_cycles = 0;
         
         // get the channel with highest priority that wants to start dma
@@ -161,7 +162,6 @@ public:
         } else {
             // writefln("DMA Channel %x Finished", current_channel);
             dma_channels[current_channel].enabled = false;
-            return idle_cycles;
         }
 
         // if (current_channel == 1) writefln("DMA Channel %x successfully transfered %x from %x to %x. %x units left.", current_channel, memory.read_word(dma_channels[current_channel].source_buf), dma_channels[current_channel].source_buf, dma_channels[current_channel].dest_buf, dma_channels[current_channel].size_buf);
@@ -189,7 +189,7 @@ public:
         //     default: {}
         // }
 
-        return idle_cycles;
+        return 2 + memory.cycles;
     }
 
     const uint[4] DMA_SOURCE_BUF_MASK = [0x07FF_FFFF, 0x0FFF_FFFF, 0x0FFF_FFFF, 0x0FFF_FFFF];
