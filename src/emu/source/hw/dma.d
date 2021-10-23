@@ -44,7 +44,6 @@ public:
 
     // returns the amount of cycles to idle
     int handle_dma() {
-        memory.cycles = 0;
         idle_cycles = 0;
         
         // get the channel with highest priority that wants to start dma
@@ -58,6 +57,7 @@ public:
 
         // writefln("[%016x] Running DMA Channel %x", num_cycles, current_channel);
 
+        memory.cycles = 0;
         if (current_channel == -1) return 0; //error("DMA requested but no active channels found");
 
         uint bytes_to_transfer  = dma_channels[current_channel].size_buf;
