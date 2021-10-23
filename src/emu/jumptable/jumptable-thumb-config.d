@@ -709,7 +709,7 @@ void run_10001OFS(ushort opcode) {
 void run_1001LREG(ushort opcode) {
     ubyte rd = cast(ubyte) (get_nth_bits(opcode, 8, 11));
     ubyte immediate_value = cast(ubyte) (opcode & 0xFF);
-    cpu.run_idle_cycle();
+    @IF(L) cpu.run_idle_cycle();
 
     // if L is set, we load. if L is not set, we store.
     @IF(L)  cpu.regs[rd] = read_word_and_rotate(cpu.memory, *cpu.sp + (immediate_value << 2), AccessType.NONSEQUENTIAL);
