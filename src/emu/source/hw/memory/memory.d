@@ -339,7 +339,9 @@ class Memory : IMemory {
             open_bus_value = ((*cpu_pipeline)[1] & 0xFFFF) | ((*cpu_pipeline)[1] << 16);
         }
 
-        return cast(T) (open_bus_value >> (8 * (address & 3)));
+        static if (is(T == uint  )) return open_bus_value;
+        static if (is(T == ushort)) return cast(T) (open_bus_value >> (8 * (address & 3)));
+        static if (is(T == ubyte )) return cast(T) (open_bus_value >> (8 * (address & 1)));
     }
 
     private template write(T) {
