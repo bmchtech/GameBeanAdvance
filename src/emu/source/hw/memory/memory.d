@@ -374,7 +374,7 @@ class Memory : IMemory {
                     uint index = (address & (SIZE_PALETTE_RAM - 1)) >> 1;
 
                     static if (is(T == uint)) {
-                        index &= ~3;
+                        index &= ~1;
                         hw.ppu.palette.set_color(index,     cast(ushort) (value & 0xFFFF));
                         hw.ppu.palette.set_color(index + 1, cast(ushort) (value >> 16));
                         (cast(T*) palette_ram) [palette_ram_address] = value; 
