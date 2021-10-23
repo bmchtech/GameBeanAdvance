@@ -49,4 +49,7 @@ interface IMemory {
     void write_halfword(uint address, ushort value, AccessType access_type = AccessType.SEQUENTIAL);
     pragma(inline, true) void write_word(uint address, uint value,
             AccessType access_type = AccessType.SEQUENTIAL);
+
+    @property uint cycles();
+    @property uint cycles(uint cycles);
 }

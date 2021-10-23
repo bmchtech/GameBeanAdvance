@@ -71,6 +71,10 @@ class Memory : IMemory {
     uint   rom_mask;
     ubyte[] rom;
 
+    @property uint cycles()            { return m_cycles; };
+    @property uint cycles(uint cycles) { return m_cycles = cycles; };
+    uint m_cycles = 0;
+
     // the number of cycles to idle on a given memory access is given by
     // waitstates[memory region][access type][byte = 0 | halfword = 1 | word = 2]
 
@@ -233,9 +237,9 @@ class Memory : IMemory {
 
             // handle waitstates
             if (region < 0x8 || !prefetch_enabled) {
-                static if (is(T == uint  )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.WORD];
-                static if (is(T == ushort)) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.HALFWORD];
-                static if (is(T == ubyte )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.BYTE];
+                static if (is(T == uint  )) this.m_cycles += waitstates[region][access_type][AccessSize.WORD];
+                static if (is(T == ushort)) this.m_cycles += waitstates[region][access_type][AccessSize.HALFWORD];
+                static if (is(T == ubyte )) this.m_cycles += waitstates[region][access_type][AccessSize.BYTE];
             }
 
             uint shift;
@@ -358,9 +362,9 @@ class Memory : IMemory {
 
             // handle waitstates
             if (region < 0x8 || !prefetch_enabled) {
-                static if (is(T == uint  )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.WORD];
-                static if (is(T == ushort)) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.HALFWORD];
-                static if (is(T == ubyte )) _g_cpu_cycles_remaining += waitstates[region][access_type][AccessSize.BYTE];
+                static if (is(T == uint  )) this.m_cycles += waitstates[region][access_type][AccessSize.WORD];
+                static if (is(T == ushort)) this.m_cycles += waitstates[region][access_type][AccessSize.HALFWORD];
+                static if (is(T == ubyte )) this.m_cycles += waitstates[region][access_type][AccessSize.BYTE];
             }
 
             switch ((address >> 24) & 0xF) {

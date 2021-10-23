@@ -347,6 +347,8 @@ class ARM7TDMI : IARM7TDMI {
 
     ulong cycle() {
         if (halted) return 1;
+        memory.cycles = 0;
+        
         // writefln("1");
 
         // if (*pc == 0x0801E106) { _g_num_log += 1000; writefln("CPUSET");}
@@ -390,7 +392,7 @@ class ARM7TDMI : IARM7TDMI {
         m_memory.can_read_from_bios = (*pc >> 24) == 0;
         execute(opcode);
 
-        return _g_cpu_cycles_remaining;
+        return _g_cpu_cycles_remaining + memory.cycles;
     }
 
     uint fetch() {
