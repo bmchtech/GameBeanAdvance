@@ -248,7 +248,12 @@ class Memory : IMemory {
                 case Region.WRAM_BOARD:   return (cast(T*) wram_board) [(address & (SIZE_WRAM_BOARD  - 1)) >> shift]; 
                 case Region.WRAM_CHIP:    return (cast(T*) wram_chip)  [(address & (SIZE_WRAM_CHIP   - 1)) >> shift];
                 case Region.PALETTE_RAM:  return (cast(T*) palette_ram)[(address & (SIZE_PALETTE_RAM - 1)) >> shift];
-                case Region.VRAM:         return (cast(T*) vram)       [(address %  SIZE_VRAM            ) >> shift];
+                
+                case Region.VRAM:
+                    uint wrapped_address = address & (SIZE_VRAM - 1);
+                    if (wrapped_address >= 0x18000) wrapped_address -= 0x8000;
+                    return (cast(T*) vram)[wrapped_address >> shift];
+
                 case Region.OAM:          return (cast(T*) oam)        [(address & (SIZE_OAM         - 1)) >> shift]; 
 
                 case Region.IO_REGISTERS:
@@ -387,7 +392,7 @@ class Memory : IMemory {
 
                 case Region.VRAM:
                     uint wrapped_address = address & (SIZE_VRAM - 1);
-                    if (wrapped_address > 0x18000) wrapped_address -= 0x8000;
+                    if (wrapped_address >= 0x18000) wrapped_address -= 0x8000;
 
                     static if (is(T == ubyte)) { // byte writes are ignored if writing to OBJ memory
 
