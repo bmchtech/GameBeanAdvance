@@ -286,9 +286,36 @@ class Memory : IMemory {
                     goto default;
 
                 default:
-                    return (cast(T*) rom)[(address & rom_mask) >> shift];
+                    // for classic NES games, the mask we want to use here is based on the actual size of the rom,
+                    // and not the size of the address space of the GBA. still have to figure out how to detect if
+                    // a game is classic NES. for now i'll assume false.
+                    bool is_classic_NES = false;
+                    
+                    if (is_classic_NES || !(address & (0xFF_FFFF ^ rom_mask))) {
+                        return (cast(T*) rom)[(address & rom_mask) >> shift];
+                    } else {
+
+                        static if (is(T == uint  )) {
+                            return
+                                (calculate_unmapped_rom_value((address & ~3) + 0)) |
+                                (calculate_unmapped_rom_value((address & ~3) + 2) << 16);
+                        }
+
+                        static if (is(T == ushort)) {
+                            return calculate_unmapped_rom_value(address & ~1);
+                        }
+
+                        static if (is(T == ubyte )) {
+                            return cast(ubyte) (calculate_unmapped_rom_value(address) >> (8 * (address & 1)));
+                        }
+                    }
             }
         }
+    }
+
+    // https://problemkaputt.de/gbatek.htm#gbaunpredictablethings
+    pragma(inline, true) ushort calculate_unmapped_rom_value(uint address) {
+        return (address / 2) & 0xFFFF;
     }
 
     T read_open_bus(T)(uint address) {
