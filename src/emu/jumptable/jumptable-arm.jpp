@@ -1,7 +1,7 @@
 [SETTINGS]
 - NAMESPACE: jumptable_arm
 - OPCODE_FORMAT: IIIIIIIIIIII------------DDDD----
-- INCLUDES: util abstracthw.cpu
+- INCLUDES: util abstracthw.cpu abstracthw.memory
 - ARGUMENTS: IARM7TDMI cpu
 [/SETTINGS]
 
@@ -756,11 +756,15 @@
     uint value = cpu.memory.read_halfword(address);
     if ((address & 0b1) == 0b1) value = ((value & 0xFF) << 24) | (value >> 8);
 
+    cpu.run_idle_cycle();
+    
     cpu.regs[get_nth_bits(opcode, 12, 16)] = value;
     if (get_nth_bits(opcode, 12, 16) == 15) {
         cpu.refill_pipeline();
         // _g_cpu_cycles_remaining += 2;
     }
+
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
     // _g_cpu_cycles_remaining += 3;
 }
 [/COMPONENT]
