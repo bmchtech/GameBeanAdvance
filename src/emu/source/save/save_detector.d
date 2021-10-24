@@ -41,9 +41,11 @@ private Savetype guess_savetype(ubyte[] rom) {
         ubyte[] search_value = (cast(ubyte[]) id)[0 .. id.length - 1];
 
         // search for this id in the rom
+        // id must be word-aligned
         for (int i = 0; i < rom.length / 4; i++) {
-            // id must be word-aligned
-            if (rom[i .. i + search_value.length] == search_value) {
+            if (i * 4 + search_value.length >= rom.length) break;
+
+            if (rom[(i * 4) .. (i * 4) + search_value.length] == search_value) {
                 return savetype;
             }
         }
