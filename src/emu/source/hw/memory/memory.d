@@ -59,7 +59,6 @@ class Memory : IMemory {
     uint[2]* cpu_pipeline;
     uint*    pipeline_size;
 
-    bool prefetch_enabled = false;
     PrefetchBuffer prefetch_buffer;
 
     ubyte[] bios;
@@ -127,7 +126,7 @@ class Memory : IMemory {
                 int ws_2_N  = (cast(int[]) [4, 3, 2, 8])[get_nth_bits(data, 0, 2)];
                 int ws_2_S  = (cast(int[]) [8, 1])      [get_nth_bit (data, 2)];
 
-                prefetch_enabled = get_nth_bit(data, 6);
+                prefetch_buffer.enabled = get_nth_bit(data, 6);
 
                 set_waitstate_ROM(2, ws_2_N, ws_2_S);
 
@@ -180,11 +179,11 @@ class Memory : IMemory {
         this.vram        = new ubyte[SIZE_VRAM];
         this.oam         = new ubyte[SIZE_OAM];
 
+        memory = this;
+        prefetch_buffer = new PrefetchBuffer(memory);
+
         write_WAITCNT(0, 0);
         write_WAITCNT(1, 0);
-        memory = this;
-
-        prefetch_buffer = new PrefetchBuffer(memory);
     }
 
     // MUST BE CALLED BEFORE READ/WRITE TO 0x0400_0000 ARE ACCESSED!
@@ -256,10 +255,10 @@ class Memory : IMemory {
             }
 
             // handle waitstates
-            if (region < 0x8 && prefetch_enabled) {
-                prefetch_buffer.run(calculate_stalls_for_access!T(region, access_type));
-            } else {
-                this.m_cycles += calculate_stalls_for_access!T(region, access_type);
+            if (region < 0x8) {
+                uint stalls = calculate_stalls_for_access!T(region, access_type);
+                prefetch_buffer.run(stalls);
+                this.m_cycles += stalls;
             }
 
             uint shift;
@@ -317,15 +316,16 @@ class Memory : IMemory {
                 default:
                     static if (is(T == uint  )) {
                         uint aligned_address = (address & ~3) >> 1;
-                        return rom.read(aligned_address) | (rom.read(aligned_address + 1) << 16);
+                        return (prefetch_buffer.request_data_from_rom(aligned_address,     access_type)) | 
+                               (prefetch_buffer.request_data_from_rom(aligned_address + 1, AccessType.SEQUENTIAL) << 16);
                     }
 
                     static if (is(T == ushort  )) {
-                        return rom.read(address >> 1);
+                        return prefetch_buffer.request_data_from_rom(address >> 1, access_type);
                     }
 
                     static if (is(T == ubyte )) {
-                        return cast(ubyte) (rom.read(address >> 1) >> (8 * (address & 1)));
+                        return cast(ubyte) (prefetch_buffer.request_data_from_rom(address >> 1, access_type) >> (8 * (address & 1)));
                     }
             }
         }
@@ -364,12 +364,7 @@ class Memory : IMemory {
             static if (is(T == ushort)) shift = 1;
             static if (is(T == ubyte )) shift = 0;
 
-            // handle waitstates
-            // if (region < 0x8 || !prefetch_enabled) {
-                // static if (is(T == uint  )) this.m_cycles += waitstates[region][access_type][AccessSize.WORD];
-                // static if (is(T == ushort)) this.m_cycles += waitstates[region][access_type][AccessSize.HALFWORD];
-                // static if (is(T == ubyte )) this.m_cycles += waitstates[region][access_type][AccessSize.BYTE];
-            // }
+            this.m_cycles += calculate_stalls_for_access!T(region, access_type);
 
             switch ((address >> 24) & 0xF) {
                 case Region.BIOS:         break; // incorrect - implement properly later
@@ -468,5 +463,9 @@ class Memory : IMemory {
         static if (is(T == uint  )) return waitstates[region][access_type][AccessSize.WORD];
         static if (is(T == ushort)) return waitstates[region][access_type][AccessSize.HALFWORD];
         static if (is(T == ubyte )) return waitstates[region][access_type][AccessSize.BYTE];
+    }
+
+    pragma(inline, true) void start_new_prefetch(uint address) {
+        prefetch_buffer.start_new_prefetch(address);
     }
 }

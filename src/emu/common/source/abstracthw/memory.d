@@ -50,6 +50,8 @@ interface IMemory {
     pragma(inline, true) void write_word(uint address, uint value,
             AccessType access_type = AccessType.SEQUENTIAL);
 
+    void start_new_prefetch(uint address);
+
     @property uint cycles();
     @property uint cycles(uint cycles);
 }
