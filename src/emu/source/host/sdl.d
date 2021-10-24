@@ -116,7 +116,7 @@ class GameBeanSDLHost {
 
 
         // time to detect the savetype
-        Savetype savetype = detect_savetype(_gba.memory.rom);
+        Savetype savetype = detect_savetype(_gba.memory.rom.get_bytes());
         
         if (savetype != Savetype.NONE && savetype != Savetype.UNKNOWN) {
             Backup save = create_savetype(savetype);

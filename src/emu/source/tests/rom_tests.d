@@ -80,7 +80,7 @@ void test_thumb_mode(string gba_file, string log_file, int num_instructions) {
     CpuState[] expected_output = produce_expected_cpu_states(log_file, num_instructions);
     
     ubyte[] rom = load_rom_as_bytes(gba_file);
-    cpu.m_memory.rom[0 .. rom.length] = rom[0 .. rom.length];
+    cpu.m_memory.load_rom(rom);
 
     set_cpu_state(cpu, expected_output[0]);
     cpu.refill_pipeline();
@@ -117,7 +117,7 @@ void test_arm_mode(string gba_file, string log_file, int num_instructions, int s
     CpuState[] expected_output = produce_expected_cpu_states(log_file, num_instructions);
     
     ubyte[] rom = load_rom_as_bytes(gba_file);
-    cpu.m_memory.rom[0 .. rom.length] = rom[0 .. rom.length];
+    cpu.m_memory.load_rom(rom);
 
     set_cpu_state(cpu, expected_output[0]);
     cpu.set_bit_T(true);

@@ -60,6 +60,7 @@ class Memory : IMemory {
     uint*    pipeline_size;
 
     bool prefetch_enabled = false;
+    PrefetchBuffer prefetch_buffer;
 
     ubyte[] bios;
     ubyte[] wram_board;
@@ -68,8 +69,7 @@ class Memory : IMemory {
     ubyte[] vram;
     ubyte[] oam;
 
-    uint   rom_mask;
-    ubyte[] rom;
+    ROM rom;
 
     @property uint cycles()            { return m_cycles; };
     @property uint cycles(uint cycles) { return m_cycles = cycles; };
@@ -179,11 +179,12 @@ class Memory : IMemory {
         this.palette_ram = new ubyte[SIZE_PALETTE_RAM];
         this.vram        = new ubyte[SIZE_VRAM];
         this.oam         = new ubyte[SIZE_OAM];
-        this.rom         = new ubyte[SIZE_ROM];
 
         write_WAITCNT(0, 0);
         write_WAITCNT(1, 0);
         memory = this;
+
+        prefetch_buffer = new PrefetchBuffer(memory);
     }
 
     // MUST BE CALLED BEFORE READ/WRITE TO 0x0400_0000 ARE ACCESSED!
@@ -197,9 +198,28 @@ class Memory : IMemory {
         this.pipeline_size = pipeline_size;
     }
 
+    // MUST BE CALLED BEFORE ROM IS ACCESSED!
+    void load_rom(ubyte[] rom_data) {
+        uint rom_mask_size = 0;
+        ulong rom_length = rom_data.length;
+
+        while (rom_length > 1) {
+            rom_length >>= 1;
+            rom_mask_size++;
+        }
+
+        uint rom_mask = (1 << rom_mask_size) - 1;
+
+        rom = new ROM(rom_data, rom_mask >> 1);
+    }
+
     PPU ppu;
     void set_ppu(PPU ppu) {
         this.ppu = ppu;
+    }
+
+    pragma(inline, true) uint get_region(uint address) {
+        return (address >> 24) & 0xF;
     }
 
     pragma(inline, true) ubyte read_byte(uint address, AccessType access_type = AccessType.SEQUENTIAL) {
@@ -228,7 +248,7 @@ class Memory : IMemory {
 
     private template read(T) {
         pragma(inline, true) T read(uint address, AccessType access_type = AccessType.SEQUENTIAL) {
-            uint region = (address >> 24) & 0xF;
+            uint region = get_region(address);
 
             if (address >> 28) {
                 // writeln(format("OPEN BUS. %x %x", cast(T) (*cpu_pipeline)[1], read_word(0x0300686c)));
@@ -236,10 +256,10 @@ class Memory : IMemory {
             }
 
             // handle waitstates
-            if (region < 0x8 || !prefetch_enabled) {
-                static if (is(T == uint  )) this.m_cycles += waitstates[region][access_type][AccessSize.WORD];
-                static if (is(T == ushort)) this.m_cycles += waitstates[region][access_type][AccessSize.HALFWORD];
-                static if (is(T == ubyte )) this.m_cycles += waitstates[region][access_type][AccessSize.BYTE];
+            if (region < 0x8 && prefetch_enabled) {
+                prefetch_buffer.run(calculate_stalls_for_access!T(region, access_type));
+            } else {
+                this.m_cycles += calculate_stalls_for_access!T(region, access_type);
             }
 
             uint shift;
@@ -248,7 +268,7 @@ class Memory : IMemory {
             static if (is(T == ubyte )) shift = 0;
 
             switch (region) {
-                case 0x1:                 return read_open_bus!T(address); // nothing is mapped here
+                case 0x1: return read_open_bus!T(address); // nothing is mapped here
                 case Region.WRAM_BOARD:   return (cast(T*) wram_board) [(address & (SIZE_WRAM_BOARD  - 1)) >> shift]; 
                 case Region.WRAM_CHIP:    return (cast(T*) wram_chip)  [(address & (SIZE_WRAM_CHIP   - 1)) >> shift];
                 case Region.PALETTE_RAM:  return (cast(T*) palette_ram)[(address & (SIZE_PALETTE_RAM - 1)) >> shift];
@@ -295,36 +315,20 @@ class Memory : IMemory {
                     goto default;
 
                 default:
-                    // for classic NES games, the mask we want to use here is based on the actual size of the rom,
-                    // and not the size of the address space of the GBA. still have to figure out how to detect if
-                    // a game is classic NES. for now i'll assume false.
-                    bool is_classic_NES = false;
-                    
-                    if (is_classic_NES || !(address & (0xFF_FFFF ^ rom_mask))) {
-                        return (cast(T*) rom)[(address & rom_mask) >> shift];
-                    } else {
+                    static if (is(T == uint  )) {
+                        uint aligned_address = (address & ~3) >> 1;
+                        return rom.read(aligned_address) | (rom.read(aligned_address + 1) << 16);
+                    }
 
-                        static if (is(T == uint  )) {
-                            return
-                                (calculate_unmapped_rom_value((address & ~3) + 0)) |
-                                (calculate_unmapped_rom_value((address & ~3) + 2) << 16);
-                        }
+                    static if (is(T == ushort  )) {
+                        return rom.read(address >> 1);
+                    }
 
-                        static if (is(T == ushort)) {
-                            return calculate_unmapped_rom_value(address & ~1);
-                        }
-
-                        static if (is(T == ubyte )) {
-                            return cast(ubyte) (calculate_unmapped_rom_value(address) >> (8 * (address & 1)));
-                        }
+                    static if (is(T == ubyte )) {
+                        return cast(ubyte) (rom.read(address >> 1) >> (8 * (address & 1)));
                     }
             }
         }
-    }
-
-    // https://problemkaputt.de/gbatek.htm#gbaunpredictablethings
-    pragma(inline, true) ushort calculate_unmapped_rom_value(uint address) {
-        return (address / 2) & 0xFFFF;
     }
 
     T read_open_bus(T)(uint address) {
@@ -353,7 +357,7 @@ class Memory : IMemory {
 
     private template write(T) {
         pragma(inline, true) void write(uint address, T value, AccessType access_type = AccessType.SEQUENTIAL) {
-            uint region = (address >> 24) & 0xF;
+            uint region = get_region(address);
 
             uint shift;
             static if (is(T == uint  )) shift = 2;
@@ -361,11 +365,11 @@ class Memory : IMemory {
             static if (is(T == ubyte )) shift = 0;
 
             // handle waitstates
-            if (region < 0x8 || !prefetch_enabled) {
-                static if (is(T == uint  )) this.m_cycles += waitstates[region][access_type][AccessSize.WORD];
-                static if (is(T == ushort)) this.m_cycles += waitstates[region][access_type][AccessSize.HALFWORD];
-                static if (is(T == ubyte )) this.m_cycles += waitstates[region][access_type][AccessSize.BYTE];
-            }
+            // if (region < 0x8 || !prefetch_enabled) {
+                // static if (is(T == uint  )) this.m_cycles += waitstates[region][access_type][AccessSize.WORD];
+                // static if (is(T == ushort)) this.m_cycles += waitstates[region][access_type][AccessSize.HALFWORD];
+                // static if (is(T == ubyte )) this.m_cycles += waitstates[region][access_type][AccessSize.BYTE];
+            // }
 
             switch ((address >> 24) & 0xF) {
                 case Region.BIOS:         break; // incorrect - implement properly later
@@ -455,8 +459,14 @@ class Memory : IMemory {
         backup_enabled = backup.get_backup_type() != BackupType.NONE;
         writefln("Savetype found? %x", backup_enabled);
     }
-
+    
     pragma(inline, true) void set_rgb(uint x, uint y, ubyte r, ubyte g, ubyte b) {
         video_buffer[x][y] = (r << 24) | (g << 16) | (b << 8) | (0xff);
+    }
+
+    pragma(inline, true) uint calculate_stalls_for_access(T)(uint region, AccessType access_type) {
+        static if (is(T == uint  )) return waitstates[region][access_type][AccessSize.WORD];
+        static if (is(T == ushort)) return waitstates[region][access_type][AccessSize.HALFWORD];
+        static if (is(T == ubyte )) return waitstates[region][access_type][AccessSize.BYTE];
     }
 }
