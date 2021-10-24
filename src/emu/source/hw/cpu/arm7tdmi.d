@@ -396,6 +396,11 @@ class ARM7TDMI : IARM7TDMI {
     }
 
     uint fetch() {
+        if (m_pipeline_access_type == AccessType.NONSEQUENTIAL) {
+            if (get_bit_T()) memory.start_new_prefetch(*pc & ~1);
+            else             memory.start_new_prefetch(*pc & ~3);
+        }
+
         if (get_bit_T()) { // thumb mode: grab a halfword and return it
             uint opcode = cast(uint) m_memory.read_halfword(*pc & 0xFFFFFFFE, m_pipeline_access_type);
             *pc += 2;
