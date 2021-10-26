@@ -102,6 +102,7 @@ class Memory : IMemory {
 
     ushort waitcnt;
     void write_WAITCNT(uint target_byte, ubyte data) {
+        
         final switch (target_byte) {
             case 0b0:
                 int ws_sram = (cast(int[]) [4, 3, 2, 8])[get_nth_bits(data, 0, 2)];
@@ -126,7 +127,7 @@ class Memory : IMemory {
                 int ws_2_N  = (cast(int[]) [4, 3, 2, 8])[get_nth_bits(data, 0, 2)];
                 int ws_2_S  = (cast(int[]) [8, 1])      [get_nth_bit (data, 2)];
 
-                prefetch_buffer.enabled = get_nth_bit(data, 6);
+                prefetch_buffer.set_enabled(get_nth_bit(data, 6));
 
                 set_waitstate_ROM(2, ws_2_N, ws_2_S);
 
@@ -467,5 +468,13 @@ class Memory : IMemory {
 
     pragma(inline, true) void start_new_prefetch(uint address) {
         prefetch_buffer.start_new_prefetch(address);
+    }
+
+    pragma(inline, true) void run_prefetcher(int number_of_times) {
+        prefetch_buffer.run(number_of_times);
+    }
+
+    pragma(inline, true) void invalidate_prefetch_buffer() {
+        prefetch_buffer.invalidate();
     }
 }

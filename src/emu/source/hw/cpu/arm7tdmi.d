@@ -373,21 +373,21 @@ class ARM7TDMI : IARM7TDMI {
         //     error("rebooting");
         // }
 
-        // if (_g_log) {
-        //     _g_num_log--;
-        //     // write("%04x", _g_num_log);
-        //     if (get_bit_T()) write("THM ");
-        //     else write("ARM ");
+        if (_g_print) {
+            _g_num_log--;
+            // write("%04x", _g_num_log);
+            if (get_bit_T()) write("THM ");
+            else write("ARM ");
 
-        //     write(format("0x%x ", opcode));
+            write(format("0x%x ", opcode));
             
-        //     for (int j = 0; j < 16; j++)
-        //         write(format("%08x ", regs[j]));
+            for (int j = 0; j < 16; j++)
+                write(format("%08x ", regs[j]));
 
-        //     // write(format("%x ", *cpsr));
-        //     write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
-        //     writeln();
-        // }
+            // write(format("%x ", *cpsr));
+            write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
+            writeln();
+        }
 
         m_memory.can_read_from_bios = (*pc >> 24) == 0;
         execute(opcode);
@@ -396,18 +396,25 @@ class ARM7TDMI : IARM7TDMI {
     }
 
     uint fetch() {
-        if (m_pipeline_access_type == AccessType.NONSEQUENTIAL) {
-            if (get_bit_T()) memory.start_new_prefetch(*pc & ~1);
-            else             memory.start_new_prefetch(*pc & ~3);
-        }
-
         if (get_bit_T()) { // thumb mode: grab a halfword and return it
             uint opcode = cast(uint) m_memory.read_halfword(*pc & 0xFFFFFFFE, m_pipeline_access_type);
             *pc += 2;
+
+            if (m_pipeline_access_type == AccessType.NONSEQUENTIAL) {
+                memory.invalidate_prefetch_buffer();
+                memory.start_new_prefetch((*pc & ~1) >> 1);
+            }
+
             return opcode;
         } else {           // arm mode: grab a word and return it
             uint opcode = m_memory.read_word(*pc & 0xFFFFFFFC, m_pipeline_access_type);
             *pc += 4;
+
+            if (m_pipeline_access_type == AccessType.NONSEQUENTIAL) {
+                memory.invalidate_prefetch_buffer();
+                memory.start_new_prefetch((*pc & ~3) >> 1);
+            }
+
             return opcode;
         }
     }
@@ -440,6 +447,7 @@ class ARM7TDMI : IARM7TDMI {
 
     void run_idle_cycle() {
         _g_cpu_cycles_remaining++;
+        memory.run_prefetcher(1);
     }
     
     pragma(inline) uint ASR(uint value, ubyte shift) {

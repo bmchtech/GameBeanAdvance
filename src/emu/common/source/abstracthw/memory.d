@@ -51,6 +51,8 @@ interface IMemory {
             AccessType access_type = AccessType.SEQUENTIAL);
 
     void start_new_prefetch(uint address);
+    void run_prefetcher(int number_of_times);
+    void invalidate_prefetch_buffer();
 
     @property uint cycles();
     @property uint cycles(uint cycles);
