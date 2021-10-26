@@ -6,8 +6,6 @@ import abstracthw.memory;
 
 import std.stdio;
 
-bool _g_print = false;
-
 class PrefetchBuffer {
     private uint   current_buffer_size;
     private Memory memory;
@@ -64,7 +62,6 @@ class PrefetchBuffer {
     pragma(inline, true) ushort request_data_from_rom(uint address, AccessType access_type) {
         if (this.enabled && this.currently_prefetching) {
             uint address_head = this.current_address - this.current_buffer_size;
-            if (_g_print) writefln("%x %x %x %x", this.current_address << 1, this.current_buffer_size, address << 1, cycles_till_access_complete);
 
             // is the requested value currently being prefetched?
             if (address == this.current_address) {
@@ -78,10 +75,9 @@ class PrefetchBuffer {
 
             // is the requested value at the head of the prefetch buffer?
             if (this.current_buffer_size > 0 && address == address_head) {
-                memory.m_cycles++;
+                // memory.m_cycles++;
 
                 this.current_buffer_size--;
-                if (_g_print) writefln("FUCKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
                 return memory.rom.read(address);
             }
 
@@ -99,7 +95,7 @@ class PrefetchBuffer {
     }
 
     void set_enabled(bool enabled) {
-        if(_g_print) writefln("Enabled: %x", enabled);
+        // if(_g_print) writefln("Enabled: %x", enabled);
         if (!this.enabled && enabled) {
             this.invalidate();
         }
