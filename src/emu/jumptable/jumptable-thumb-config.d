@@ -591,6 +591,7 @@ void run_01001REG(ushort opcode) {
 
     cpu.run_idle_cycle();
     cpu.regs[reg] = read_word_and_rotate(cpu.memory, loc, AccessType.NONSEQUENTIAL);
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 }
 
 // load with relative offset
