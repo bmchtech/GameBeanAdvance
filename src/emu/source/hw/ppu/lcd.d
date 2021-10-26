@@ -146,12 +146,8 @@ public:
                 uint bg_scanline = backgrounds[2].is_mosaic ? apparent_bg_scanline : scanline;
 
                 for (uint x = 0; x < 240; x++) {
-                    canvas.pixels_output[x] = get_pixel_from_color(memory.read_halfword(OFFSET_VRAM + (x + bg_scanline * 240) * 2));
+                    canvas.pixels_output[x] = get_pixel_from_color(read_VRAM!ushort(OFFSET_VRAM + (x + bg_scanline * 240) * 2));
                 }
-                    // writefln("%x", memory.read_halfword(OFFSET_VRAM + (0 + 200 * 240) * 2));
-                // writefln("%x %x %x", memory.read_halfword(OFFSET_VRAM + (0 + scanline * 240) * 2), memory.read_halfword(OFFSET_VRAM + (120 * 230 * 2)), memory.vram[120 * 230 * 2]);
-
-                // writefln("c: %x", layer_backgrounds[0][0][0].r);
                 break;
             }
 
@@ -165,7 +161,7 @@ public:
 
                 for (uint x = 0; x < 240; x++) {
                     // the index in palette ram that we need to lookinto  is then found in the base frame.
-                    ubyte index = memory.read_byte(base_frame_address + (x + bg_scanline * 240));
+                    ubyte index = read_VRAM!ubyte(base_frame_address + (x + bg_scanline * 240));
                     canvas.draw_bg_pixel(x, 2, index, 0, false);
                 }
 
@@ -220,20 +216,6 @@ private:
         bool flipped_y;
         bool double_sized;
     }
-
-    // void render_texture_256_1(Layer layer, Texture texture, Point topleft_draw_pos) {
-    //     for (int draw_x_offset = 0; draw_x_offset < texture.width << 3; draw_x_offset++) {
-    //         Point draw_pos = Point(topleft_draw_pos.x + draw_x_offset, topleft_draw_pos.y);
-    //         if (texture.scaled) {
-    //             draw_pos = multiply_P_matrix(texture.reference_point, draw_pos, texture.p_matrix);
-    //         }
-
-    //         int tile_number = ((draw_pos.x - topleft_draw_pos.x) >> 3) + texture.increment_per_row * ((draw_pos.y - topleft_draw_pos.y) >> 3);
-
-    //         ubyte index = memory.read_byte(texture.tile_base_address + ((tile_number & 0x3ff) * 64) + draw_pos.y * 8 + draw_pos.x);
-    //         maybe_draw_pixel_on_layer(layer, texture.palette_base_address, index, 0, draw_pos.x, draw_pos.y, index == 0);
-    //     }
-    // }
 
     ushort apparent_bg_scanline;
     ushort apparent_obj_scanline;
@@ -307,26 +289,7 @@ private:
                         canvas.draw_bg_pixel(left_x + tile_dx * 2 + 1, bg, cast(ubyte) ((index >> 4)  + (palette * 16)), priority, (index >> 4)  == 0);
                     }
                 }
-            }
-
-            // for (int tile_x = 0; tile_x < 8; tile_x++) {
-            //     int x = left_x - tile_x;
-
-            //     int draw_x = flipped_x ? left_x    + (7 - tile_x) : left_x + tile_x;
-            //     int draw_y = flipped_y ? (scanline - y) + (7 - y) : scanline;
-
-            //     static if (bpp8) {
-            //         ubyte index = memory.read_byte(tile_base_address + ((tile & 0x3ff) * 64) + y * 8 + tile_x);
-                
-            //         maybe_draw_pixel_on_layer(layer, palette_base_address, index, 0, draw_x, draw_y, index == 0);
-            //     } else {
-            //         ubyte index = memory.read_byte(tile_base_address + ((tile & 0x3ff) * 32) + y * 4 + (tile_x / 2));
-
-            //         index = (tile_x % 2 == 0) ? index & 0xF : index >> 4;
-            //         index += palette * 16;
-            //         maybe_draw_pixel_on_layer(layer, palette_base_address, index, 0, draw_x, draw_y, (index & 0xF) == 0);
-            //     }
-            // } 
+            } 
         }
 
         void texture(int priority, Texture texture, Point topleft_texture_pos, Point topleft_draw_pos, OBJMode obj_mode) {
@@ -373,7 +336,7 @@ private:
                 static if (bpp8) {
                     // writefln("%x", texture.tile_base_address + ((tile_number & 0x3ff) * 64) );
 
-                    ubyte index = memory.read_byte(texture.tile_base_address + ((tile_number & 0x3ff) * 64) + ofs_y * 8 + ofs_x);
+                    ubyte index = read_VRAM!ubyte(texture.tile_base_address + ((tile_number & 0x3ff) * 64) + ofs_y * 8 + ofs_x);
                     
                     if (obj_mode != OBJMode.OBJ_WINDOW) {
                         canvas.draw_obj_pixel(draw_pos.x, index + 256, priority, index == 0, obj_mode == OBJMode.SEMI_TRANSPARENT);
@@ -382,7 +345,7 @@ private:
                     }
 
                 } else {
-                    ubyte index = memory.read_byte(texture.tile_base_address + ((tile_number & 0x3ff) * 32) + ofs_y * 4 + (ofs_x / 2));
+                    ubyte index = read_VRAM!ubyte(texture.tile_base_address + ((tile_number & 0x3ff) * 32) + ofs_y * 4 + (ofs_x / 2));
 
                     index = !(ofs_x % 2) ? index & 0xF : index >> 4;
                     index += texture.palette * 16;
@@ -443,7 +406,7 @@ private:
             int tile_address = get_tile_address__text(topleft_tile_x + tile_x_offset, topleft_tile_y, 
                                                       BG_TEXT_SCREENS_DIMENSIONS[background.screen_size][0],
                                                       BG_TEXT_SCREENS_DIMENSIONS[background.screen_size][1]);
-            int tile = memory.read_halfword(screen_base_address + tile_address);
+            int tile = read_VRAM!ushort(screen_base_address + tile_address);
 
             int draw_x = tile_x_offset * 8 - tile_dx;
             int draw_y = bg_scanline;
@@ -501,7 +464,7 @@ private:
                 tile_y &= tile_mask;
                 
                 int tile_address = get_tile_address__rotation_scaling(tile_x, tile_y, tiles_per_row);
-                int tile = memory.read_byte(screen_base_address + tile_address);
+                int tile = read_VRAM!ubyte(screen_base_address + tile_address);
 
                 ubyte color_index = memory.vram[tile_base_address + (tile & 0x3FF) * 64 + fine_y * 8 + fine_x];
                 canvas.draw_bg_pixel(x, background_id, color_index, background.priority, color_index == 0);
@@ -549,19 +512,19 @@ private:
         // Very useful guide for attributes! https://problemkaputt.de/gbatek.htm#lcdobjoamattributes
         for (int sprite = 0; sprite < 128; sprite++) {
 
-            if (get_nth_bits(memory.read_halfword(OFFSET_OAM + sprite * 8 + 4), 10, 12) != given_priority) continue;
+            if (get_nth_bits(read_VRAM!ushort(OFFSET_OAM + sprite * 8 + 4), 10, 12) != given_priority) continue;
 
             // first of all, we need to figure out if we render this sprite in the first place.
             // so, we collect a bunch of info that'll help us figure that out.
-            ushort attribute_0 = memory.read_halfword(OFFSET_OAM + sprite * 8 + 0);
+            ushort attribute_0 = read_VRAM!ushort(OFFSET_OAM + sprite * 8 + 0);
 
             // is this sprite even enabled
             if (get_nth_bits(attribute_0, 8, 10) == 0b10) continue;
 
             // it is enabled? great. let's get the other two attributes and collect some
             // relevant information.
-            int attribute_1 = memory.read_halfword(OFFSET_OAM + sprite * 8 + 2);
-            int attribute_2 = memory.read_halfword(OFFSET_OAM + sprite * 8 + 4);
+            int attribute_1 = read_VRAM!ushort(OFFSET_OAM + sprite * 8 + 2);
+            int attribute_2 = read_VRAM!ushort(OFFSET_OAM + sprite * 8 + 4);
 
             int size   = get_nth_bits(attribute_1, 14, 16);
             int shape  = get_nth_bits(attribute_0, 14, 16);
@@ -595,10 +558,10 @@ private:
             // if (!obj_character_vram_mapping && doesnt_use_color_palettes) base_tile_number >>= 1;
 
             PMatrix p_matrix = PMatrix(
-                convert_from_8_8f_to_double(memory.read_halfword(OFFSET_OAM + 0x06 + 0x20 * scaling_number)),
-                convert_from_8_8f_to_double(memory.read_halfword(OFFSET_OAM + 0x0E + 0x20 * scaling_number)),
-                convert_from_8_8f_to_double(memory.read_halfword(OFFSET_OAM + 0x16 + 0x20 * scaling_number)),
-                convert_from_8_8f_to_double(memory.read_halfword(OFFSET_OAM + 0x1E + 0x20 * scaling_number))
+                convert_from_8_8f_to_double(read_VRAM!ushort(OFFSET_OAM + 0x06 + 0x20 * scaling_number)),
+                convert_from_8_8f_to_double(read_VRAM!ushort(OFFSET_OAM + 0x0E + 0x20 * scaling_number)),
+                convert_from_8_8f_to_double(read_VRAM!ushort(OFFSET_OAM + 0x16 + 0x20 * scaling_number)),
+                convert_from_8_8f_to_double(read_VRAM!ushort(OFFSET_OAM + 0x1E + 0x20 * scaling_number))
             );
 
             // for (int tile_x_offset = 0; tile_x_offset < width; tile_x_offset++) {
@@ -674,6 +637,16 @@ private:
     void reload_background_internal_affine_registers(uint bg_id) {
         backgrounds[bg_id].internal_reference_x = backgrounds[bg_id].x_offset_rotation;
         backgrounds[bg_id].internal_reference_y = backgrounds[bg_id].y_offset_rotation;
+    }
+
+    pragma(inline, true) T read_VRAM(T)(uint address) {
+        static if (is(T == ubyte )) uint shift = 0;
+        static if (is(T == ushort)) uint shift = 1;
+        static if (is(T == uint  )) uint shift = 2;
+
+        uint wrapped_address = address & (SIZE_VRAM - 1);
+        if (wrapped_address >= 0x18000) wrapped_address -= 0x8000;
+        return (cast(T*) memory.vram)[wrapped_address >> shift];
     }
 
 // .......................................................................................................................
