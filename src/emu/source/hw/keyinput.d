@@ -5,6 +5,8 @@ import hw.cpu;
 
 import std.stdio;
 
+import util;
+
 class KeyInput {
     Memory memory;
 
