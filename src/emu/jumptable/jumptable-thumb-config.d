@@ -495,6 +495,7 @@ void run_01000011(ushort opcode) {
             for (int i = 0; i < m; i++) cpu.run_idle_cycle();
 
             cpu.regs[rd] *= cpu.regs[rm];
+            cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
             break;
         case 0b10:
             cpu.regs[rd] = cpu.regs[rd] & ~ cpu.regs[rm];
@@ -669,13 +670,13 @@ void run_011BLOFS(ushort opcode) {
     ubyte rn = cast(ubyte) get_nth_bits(opcode, 3, 6);
     ubyte rd = cast(ubyte) get_nth_bits(opcode, 0, 3);
     ubyte immediate_value = cast(ubyte) get_nth_bits(opcode, 6, 11);
+    
+    @IF(L)  cpu.run_idle_cycle();
 
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
     // looking at the table above, the B bit determines the size of the store/load, and the L bit determines whether we store or load.
     @IF(!B !L) cpu.memory.write_word(cpu.regs[rn] + (immediate_value << 2), cpu.regs[rd],                      AccessType.NONSEQUENTIAL);
     @IF( B !L) cpu.memory.write_byte(cpu.regs[rn] + (immediate_value),      cast(ubyte) (cpu.regs[rd] & 0xFF), AccessType.NONSEQUENTIAL);
-    
-    @IF(L)  cpu.run_idle_cycle();
 
     @IF(!B  L) cpu.regs[rd] = read_word_and_rotate(cpu.memory, cpu.regs[rn] + (immediate_value << 2), AccessType.NONSEQUENTIAL);
     @IF( B  L) cpu.regs[rd] = cpu.memory.read_byte(cpu.regs[rn] + immediate_value, AccessType.NONSEQUENTIAL);
@@ -771,6 +772,7 @@ void run_1011010R(ushort opcode) {
         }
     }
 
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
     // _g_cpu_cycles_remaining += num_pushed + 1;
 }
 
@@ -790,7 +792,6 @@ void run_1011110R(ushort opcode) {
         }
     }
 
-    // TODO: review this?
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 
     // now deal with the linkage register (LR) and set it to the PC if it exists.
