@@ -446,6 +446,8 @@ class ARM7TDMI : IARM7TDMI {
     }
 
     void run_idle_cycle() {
+        m_pipeline_access_type = AccessType.NONSEQUENTIAL;
+        
         _g_cpu_cycles_remaining++;
         memory.run_prefetcher(1);
     }
