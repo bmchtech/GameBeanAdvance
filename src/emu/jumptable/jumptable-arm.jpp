@@ -1035,11 +1035,11 @@
 
 
     int m = 4;
-    int operand = cpu.read_reg(get_nth_bits(opcode, 8, 12));
+    uint operand = cpu.read_reg(get_nth_bits(opcode, 8, 12));
     if ((operand & 0xFFFFFF00) == 0x000000000 || (operand | 0x000000FF) == 0xFFFFFFFF) m = 1;
     if ((operand & 0xFFFF0000) == 0x000000000 || (operand | 0x0000FFFF) == 0xFFFFFFFF) m = 2;
     if ((operand & 0xFF000000) == 0x000000000 || (operand | 0x00FFFFFF) == 0xFFFFFFFF) m = 3;
-    for (int i = 0; i < m + 2; i++) cpu.run_idle_cycle();
+    for (int i = 0; i < m; i++) cpu.run_idle_cycle();
 
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
@@ -1071,7 +1071,7 @@
     if ((operand & 0xFFFFFF00) == 0x000000000 || (operand | 0x000000FF) == 0xFFFFFFFF) m = 1;
     if ((operand & 0xFFFF0000) == 0x000000000 || (operand | 0x0000FFFF) == 0xFFFFFFFF) m = 2;
     if ((operand & 0xFF000000) == 0x000000000 || (operand | 0x00FFFFFF) == 0xFFFFFFFF) m = 3;
-    for (int i = 0; i < m + 1; i++) cpu.run_idle_cycle();
+    for (int i = 0; i < m - 1; i++) cpu.run_idle_cycle();
 
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
@@ -1163,7 +1163,7 @@
     if ((operand & 0xFFFFFF00) == 0x000000000 || (operand | 0x000000FF) == 0xFFFFFFFF) m = 1;
     if ((operand & 0xFFFF0000) == 0x000000000 || (operand | 0x0000FFFF) == 0xFFFFFFFF) m = 2;
     if ((operand & 0xFF000000) == 0x000000000 || (operand | 0x00FFFFFF) == 0xFFFFFFFF) m = 3;
-    for (int i = 0; i < m + 2; i++) cpu.run_idle_cycle();
+    for (int i = 0; i < m; i++) cpu.run_idle_cycle();
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
@@ -1191,7 +1191,7 @@
     if ((operand & 0xFFFFFF00) == 0x000000000 || (operand | 0x000000FF) == 0xFFFFFFFF) m = 1;
     if ((operand & 0xFFFF0000) == 0x000000000 || (operand | 0x0000FFFF) == 0xFFFFFFFF) m = 2;
     if ((operand & 0xFF000000) == 0x000000000 || (operand | 0x00FFFFFF) == 0xFFFFFFFF) m = 3;
-    for (int i = 0; i < m + 1; i++) cpu.run_idle_cycle();
+    for (int i = 0; i < m; i++) cpu.run_idle_cycle();
 
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
