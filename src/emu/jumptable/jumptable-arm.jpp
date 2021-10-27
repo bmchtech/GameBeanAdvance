@@ -947,19 +947,23 @@
 [COMPONENT MUL_MLA]
 - FORMAT:  ----000000AS------------1001----
 {
+    uint operand = cpu.read_reg(get_nth_bits(opcode, 8, 12));
+
     @IF( A) cpu.regs[get_nth_bits(opcode, 16, 20)] = cpu.read_reg(get_nth_bits(opcode, 0, 4)) * cpu.read_reg(get_nth_bits(opcode, 8, 12)) + cpu.read_reg(get_nth_bits(opcode, 12, 16));
     @IF(!A) cpu.regs[get_nth_bits(opcode, 16, 20)] = cpu.read_reg(get_nth_bits(opcode, 0, 4)) * cpu.read_reg(get_nth_bits(opcode, 8, 12));
 
     @IF( A) cpu.run_idle_cycle();
 
     int m = 4;
-    if      ((opcode >> 8)  == 0x0 || (opcode >> 8)  == 0xFFFFFF) m = 1;
-    else if ((opcode >> 16) == 0x0 || (opcode >> 16) == 0xFFFF)   m = 2;
-    else if ((opcode >> 24) == 0x0 || (opcode >> 24) == 0xFF)     m = 3;
+    if      ((operand >> 8)  == 0x0 || (operand >> 8)  == 0xFFFFFF) m = 1;
+    else if ((operand >> 16) == 0x0 || (operand >> 16) == 0xFFFF)   m = 2;
+    else if ((operand >> 24) == 0x0 || (operand >> 24) == 0xFF)     m = 3;
     for (int i = 0; i < m; i++) cpu.run_idle_cycle();
 
     @IF( S) cpu.set_flag_Z(cpu.read_reg(get_nth_bits(opcode, 16, 20)) == 0);
     @IF( S) cpu.set_flag_N(cpu.read_reg(get_nth_bits(opcode, 16, 20)) >> 31);
+    
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 }
 [/COMPONENT]
 
@@ -1044,6 +1048,8 @@
     @IF( S)     cpu.set_flag_Z(result == 0);
     @IF( S)     cpu.set_flag_N(result >> 63);
     @IF( S) }
+
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 }
 [/COMPONENT]
 
@@ -1075,6 +1081,8 @@
     @IF( S)     cpu.set_flag_Z(result == 0);
     @IF( S)     cpu.set_flag_N(result >> 63);
     @IF( S) }
+    
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 }
 [/COMPONENT]
 
@@ -1164,6 +1172,8 @@
     @IF( S)     cpu.set_flag_Z(result == 0);
     @IF( S)     cpu.set_flag_N(result >> 63);
     @IF( S) }
+
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 }
 [/COMPONENT]
 
@@ -1191,5 +1201,7 @@
     @IF( S)     cpu.set_flag_Z(result == 0);
     @IF( S)     cpu.set_flag_N(result >> 63);
     @IF( S) }
+    
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 }
 [/COMPONENT]
