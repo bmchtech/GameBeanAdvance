@@ -1,6 +1,7 @@
 module hw.interrupts;
 
 import std.stdio;
+import hw.cpu;
 
 // set up the possible interrupts
 enum Interrupt {

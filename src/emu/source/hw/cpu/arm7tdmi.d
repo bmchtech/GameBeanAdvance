@@ -351,7 +351,7 @@ class ARM7TDMI : IARM7TDMI {
         
         // writefln("1");
 
-        // if (*pc == 0x0801E106) { _g_num_log += 1000; writefln("CPUSET");}
+        // if (*pc == 0x0803_9DD6) { _g_num_log += 100; writefln("CPUSET");}
 
         // Logger.instance.capture_cpu();
         // if ( && !get_nth_bit(*cpsr, 7)) {
@@ -373,21 +373,21 @@ class ARM7TDMI : IARM7TDMI {
         //     error("rebooting");
         // }
 
-        // if (_g_num_log > 0) {
-        //     _g_num_log--;
-        //     // write("%04x", _g_num_log);
-        //     if (get_bit_T()) write("THM ");
-        //     else write("ARM ");
+        if (_g_num_log > 0) {
+            _g_num_log--;
+            writef("[%04x] ", _g_num_log);
+            if (get_bit_T()) write("THM ");
+            else write("ARM ");
 
-        //     write(format("0x%x ", opcode));
+            write(format("0x%x ", opcode));
             
-        //     for (int j = 0; j < 16; j++)
-        //         write(format("%08x ", regs[j]));
+            for (int j = 0; j < 16; j++)
+                write(format("%08x ", regs[j]));
 
-        //     // write(format("%x ", *cpsr));
-        //     write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
-        //     writeln();
-        // }
+            // write(format("%x ", *cpsr));
+            write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
+            writeln();
+        }
 
         m_memory.can_read_from_bios = (*pc >> 24) == 0;
         execute(opcode);

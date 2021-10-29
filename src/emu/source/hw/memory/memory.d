@@ -349,10 +349,6 @@ class Memory : IMemory {
 
     private template write(T) {
         pragma(inline, true) void write(uint address, T value, AccessType access_type = AccessType.SEQUENTIAL) {
-            if ((address & ~3) == 0x03002164) {
-                writefln("%x %x UWUWUUW", address, value);
-                _g_num_log ++;
-            }
             uint region = get_region(address);
 
             uint shift;
