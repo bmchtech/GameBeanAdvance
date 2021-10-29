@@ -1,19 +1,47 @@
 module hw.memory.rom;
 
 import std.stdio;
+import util;
 
 class ROM {
-    const ushort[] data;
-    const uint    rom_mask;
+    ushort[] data;
+    uint     rom_mask;
+    bool     mirrored;
 
-    this(ubyte[] data, uint rom_mask) {
-        this.data     = cast(ushort[]) data;
-        this.rom_mask = rom_mask;
+    this(ubyte[] rom_data) {
+        ulong num_bytes     = rom_data.length;
+        ulong num_halfwords = num_bytes / 2;
+
+        uint rom_mask_size = 0;
+        while (num_halfwords > 1) {
+            num_halfwords >>= 1;
+            rom_mask_size++;
+        }
+
+        uint rom_length = 1 << (rom_mask_size + 1);
+        this.rom_mask = rom_length - 1;
+        data = new ushort[rom_length];
+
+        // this.data = new ushort[this.rom_mask + 1];
+        writeln(format("%x %x %x", this.rom_mask, rom_data.length, data.length));
+        for (int i = 0; i < rom_data.length / 2; i++) {
+            this.data[i] = (cast(ushort[]) rom_data)[i];
+        }
+
+        this.mirrored = false;
+
     }
 
     ushort read(uint address) {
-        if (address & (0xFF_FFFF ^ rom_mask)) return calculate_unmapped_rom_value(address);
-        return data[address & rom_mask];
+        if (mirrored) {
+            return data[address & rom_mask];
+        } else {
+            if (address & ~rom_mask) {
+                return calculate_unmapped_rom_value(address);
+            } else {
+                return data[address];
+            }
+        }
     }
 
     // https://problemkaputt.de/gbatek.htm#gbaunpredictablethings
