@@ -369,9 +369,9 @@ class ARM7TDMI : IARM7TDMI {
             error("PC out of range!");
         }
 
-        if (*pc == 0xC) {
-            error("rebooting");
-        }
+        // if (*pc == 0xC) {
+        //     error("rebooting");
+        // }
 
         if (_g_num_log > 0) {
             _g_num_log--;
