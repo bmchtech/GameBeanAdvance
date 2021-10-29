@@ -512,19 +512,19 @@ private:
         // Very useful guide for attributes! https://problemkaputt.de/gbatek.htm#lcdobjoamattributes
         for (int sprite = 0; sprite < 128; sprite++) {
 
-            if (get_nth_bits(read_VRAM!ushort(OFFSET_OAM + sprite * 8 + 4), 10, 12) != given_priority) continue;
+            if (get_nth_bits(read_OAM!ushort(OFFSET_OAM + sprite * 8 + 4), 10, 12) != given_priority) continue;
 
             // first of all, we need to figure out if we render this sprite in the first place.
             // so, we collect a bunch of info that'll help us figure that out.
-            ushort attribute_0 = read_VRAM!ushort(OFFSET_OAM + sprite * 8 + 0);
+            ushort attribute_0 = read_OAM!ushort(OFFSET_OAM + sprite * 8 + 0);
 
             // is this sprite even enabled
             if (get_nth_bits(attribute_0, 8, 10) == 0b10) continue;
 
             // it is enabled? great. let's get the other two attributes and collect some
             // relevant information.
-            int attribute_1 = read_VRAM!ushort(OFFSET_OAM + sprite * 8 + 2);
-            int attribute_2 = read_VRAM!ushort(OFFSET_OAM + sprite * 8 + 4);
+            int attribute_1 = read_OAM!ushort(OFFSET_OAM + sprite * 8 + 2);
+            int attribute_2 = read_OAM!ushort(OFFSET_OAM + sprite * 8 + 4);
 
             int size   = get_nth_bits(attribute_1, 14, 16);
             int shape  = get_nth_bits(attribute_0, 14, 16);
@@ -558,10 +558,10 @@ private:
             // if (!obj_character_vram_mapping && doesnt_use_color_palettes) base_tile_number >>= 1;
 
             PMatrix p_matrix = PMatrix(
-                convert_from_8_8f_to_double(read_VRAM!ushort(OFFSET_OAM + 0x06 + 0x20 * scaling_number)),
-                convert_from_8_8f_to_double(read_VRAM!ushort(OFFSET_OAM + 0x0E + 0x20 * scaling_number)),
-                convert_from_8_8f_to_double(read_VRAM!ushort(OFFSET_OAM + 0x16 + 0x20 * scaling_number)),
-                convert_from_8_8f_to_double(read_VRAM!ushort(OFFSET_OAM + 0x1E + 0x20 * scaling_number))
+                convert_from_8_8f_to_double(read_OAM!ushort(OFFSET_OAM + 0x06 + 0x20 * scaling_number)),
+                convert_from_8_8f_to_double(read_OAM!ushort(OFFSET_OAM + 0x0E + 0x20 * scaling_number)),
+                convert_from_8_8f_to_double(read_OAM!ushort(OFFSET_OAM + 0x16 + 0x20 * scaling_number)),
+                convert_from_8_8f_to_double(read_OAM!ushort(OFFSET_OAM + 0x1E + 0x20 * scaling_number))
             );
 
             // for (int tile_x_offset = 0; tile_x_offset < width; tile_x_offset++) {
@@ -647,6 +647,13 @@ private:
         uint wrapped_address = address & (SIZE_VRAM - 1);
         if (wrapped_address >= 0x18000) wrapped_address -= 0x8000;
         return (cast(T*) memory.vram)[wrapped_address >> shift];
+    }
+
+    pragma(inline, true) T read_OAM(T)(uint address) {
+        static if (is(T == ubyte )) uint shift = 0;
+        static if (is(T == ushort)) uint shift = 1;
+        static if (is(T == uint  )) uint shift = 2;
+        return (cast(T*) memory.oam)[(address & (SIZE_OAM - 1)) >> shift]; 
     }
 
 // .......................................................................................................................
