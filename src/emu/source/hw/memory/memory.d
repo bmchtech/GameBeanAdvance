@@ -324,16 +324,8 @@ class Memory : IMemory {
     }
 
     T read_open_bus(T)(uint address) {
-        if (address < 0x1000_0000) {
-            switch ((address >> 24) & 0xF) {
-                case Region.BIOS:
-                    if (address >= SIZE_BIOS) break;
-                    static if (is(T == uint  )) return bios_open_bus_latch;
-                    static if (is(T == ushort)) return bios_open_bus_latch & 0xFFFF;
-                    static if (is(T == ubyte )) return bios_open_bus_latch & 0xFF;
-                
-                default: break;
-            }
+        if (address < SIZE_BIOS) {
+            return cast(T) bios_open_bus_latch;
         }
         
         // "regular" open bus
@@ -341,7 +333,38 @@ class Memory : IMemory {
         if (*pipeline_size == 4) {
             open_bus_value = (*cpu_pipeline)[1];
         } else {
-            open_bus_value = ((*cpu_pipeline)[1] & 0xFFFF) | ((*cpu_pipeline)[1] << 16);
+            switch ((address >> 24) & 0xF) {
+                case Region.WRAM_BOARD:
+                case Region.PALETTE_RAM:
+                case Region.VRAM:
+                case Region.ROM_WAITSTATE_0_L:
+                case Region.ROM_WAITSTATE_0_H:
+                case Region.ROM_WAITSTATE_1_L:
+                case Region.ROM_WAITSTATE_1_H:
+                case Region.ROM_WAITSTATE_2_L:
+                case Region.ROM_WAITSTATE_2_H:
+                case Region.ROM_SRAM_L:
+                case Region.ROM_SRAM_H:
+                    open_bus_value = (*cpu_pipeline)[1] << 16 | (*cpu_pipeline)[1];
+                    break;
+
+                // TODO: misaligned addresses behave differently, see GBATEK "unpredictable things" section
+                case Region.BIOS:
+                case 0x1: // unmapped
+                case Region.OAM:
+                    open_bus_value = (*cpu_pipeline)[1] << 16 | (*cpu_pipeline)[0];
+                    break;
+
+                // TODO: latch this to emulate properly, see GBATEK "unpredictable things" section
+                case Region.WRAM_CHIP:
+                case Region.IO_REGISTERS:
+                    open_bus_value = (*cpu_pipeline)[1] << 16 | (*cpu_pipeline)[0];
+                    break;
+
+                default:
+                    // this physically can't happen but ok
+                    open_bus_value = 0;
+            }
         }
 
         return cast(T) open_bus_value;

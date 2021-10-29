@@ -14,9 +14,10 @@ class Logger {
     static Logger instance;
 
     static Logger singleton(ICpuTrace cpu_trace) {
-        if (!instance)
+        if (!instance) {
             instance = new Logger(cpu_trace);
-        
+        }
+
         return instance;
     }
 

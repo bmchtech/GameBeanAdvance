@@ -239,6 +239,7 @@ class GameBeanSDLHost {
         cpu_tracing_enabled = true;
         trace = new CpuTrace(_gba.cpu, trace_length);
         Logger.singleton(trace);
+        writefln("Enabled logging");
     }
 
     void print_trace() {
