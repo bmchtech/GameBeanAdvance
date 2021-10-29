@@ -25,6 +25,8 @@ class CpuTrace : ICpuTrace {
     void print_trace() {
         CpuState[] trace = ringbuffer.get();
         for (int i = 0; i < trace.length; i++) {
+            writef("[%04d]", trace.length - i);
+            
             if (trace[i].type == CpuType.THUMB) {
                 write("THUMB     ");
                 write(format("%04x | ", trace[i].opcode));
