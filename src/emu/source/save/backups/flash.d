@@ -60,6 +60,7 @@ class Flash : Backup {
     }
 
     override void write_byte(uint address, ubyte data) {
+        address &= 0xFFFF;
         final switch (state) {
             case State.WAITING_FOR_COMMAND: handle_command_header_0(address, data); break;
             case State.RECEIVING_COMMAND_0: handle_command_header_1(address, data); break;
@@ -71,6 +72,7 @@ class Flash : Backup {
     }
 
     override ubyte read_byte(uint address) {
+        address &= 0xFFFF;
         if (identification) {
             if (address == 0) return this.manufacturer_id;
             if (address == 1) return this.device_id;
