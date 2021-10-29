@@ -152,7 +152,6 @@ public:
     // is this sketchy code? it might be... but its 1 am
     // TODO: fix sketchy code
     void write_HALTCNT(ubyte data) {
-        writefln("uwu");
         if (get_nth_bit(data, 7)) {
             // idk figure out stopping
         } else {
