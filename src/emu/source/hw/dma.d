@@ -297,6 +297,7 @@ private:
 
 public:
     void write_DMAXSAD(int target_byte, ubyte data, int x) {
+        // if (x == 0) error("RAW: %x %x %x");
         final switch (target_byte) {
             case 0b00: dma_channels[x].source = (dma_channels[x].source & 0xFFFFFF00) | (data << 0);  break;
             case 0b01: dma_channels[x].source = (dma_channels[x].source & 0xFFFF00FF) | (data << 8);  break;
@@ -306,6 +307,7 @@ public:
     }
 
     void write_DMAXDAD(int target_byte, ubyte data, int x) {
+        // if (x == 0) error("RAW: %x %x %x");
         final switch (target_byte) {
             case 0b00: dma_channels[x].dest = (dma_channels[x].dest & 0xFFFFFF00) | (data << 0);  break;
             case 0b01: dma_channels[x].dest = (dma_channels[x].dest & 0xFFFF00FF) | (data << 8);  break;
@@ -315,6 +317,7 @@ public:
     }
 
     void write_DMAXCNT_L(int target_byte, ubyte data, int x) {
+        if (x == 0) writefln("RAW: %x %x %x", target_byte, x, data);
         final switch (target_byte) {
             case 0b00: dma_channels[x].num_units = (dma_channels[x].num_units & 0xFF00) | (data << 0); break;
             case 0b01: dma_channels[x].num_units = (dma_channels[x].num_units & 0x00FF) | (data << 8); break;

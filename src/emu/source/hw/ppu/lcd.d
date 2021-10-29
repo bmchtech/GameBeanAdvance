@@ -63,6 +63,10 @@ public:
     }
 
     void on_hblank_start() {
+        if (vcounter_irq_enabled && scanline == vcount_lyc) {
+            interrupt_cpu(Interrupt.LCD_VCOUNTER_MATCH);
+        }
+        
         hblank = true;
         if (hblank_irq_enabled) interrupt_cpu(Interrupt.LCD_HBLANK);
 
@@ -97,10 +101,6 @@ public:
     }
 
     void on_hblank_end() {
-        if (vcounter_irq_enabled && scanline == vcount_lyc) {
-            interrupt_cpu(Interrupt.LCD_VCOUNTER_MATCH);
-        }
-
         hblank = false;
         scanline++;
 
@@ -874,6 +874,9 @@ public:
                 backgrounds[x].p[cast(int) y] |= data << 8;
                 break;
         }
+
+
+        // writefln("[%04x] %x %x %x", scanline, data, target_byte, y);
     }
 
     void write_BLDCNT(int target_byte, ubyte data) {

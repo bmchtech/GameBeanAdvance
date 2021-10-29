@@ -56,7 +56,6 @@ class SRAM : Backup {
     }
 
     private ubyte read(uint address) {
-        writefln("attempted read from %x", address);
         return this.data[address & address_mask];
     }
 
