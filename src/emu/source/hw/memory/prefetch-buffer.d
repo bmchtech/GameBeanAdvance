@@ -60,8 +60,11 @@ class PrefetchBuffer {
     }
 
     pragma(inline, true) ushort request_data_from_rom(uint address, AccessType access_type) {
+        uint masked_address = address & 0xFF_FFFF;
+
         if (this.enabled && this.currently_prefetching) {
             uint address_head = this.current_address - this.current_buffer_size;
+            // writefln("%x %x", shifted_address, this.current_address);
 
             // is the requested value currently being prefetched?
             if (address == this.current_address) {
@@ -70,7 +73,7 @@ class PrefetchBuffer {
                 this.invalidate();
                 this.start_new_prefetch(current_address + 1);
 
-                return memory.rom.read(address);
+                return memory.rom.read(masked_address);
             }
 
             // is the requested value at the head of the prefetch buffer?
@@ -78,7 +81,7 @@ class PrefetchBuffer {
                 // memory.m_cycles++;
 
                 this.current_buffer_size--;
-                return memory.rom.read(address);
+                return memory.rom.read(masked_address);
             }
 
             // oh, ok. it's not in the prefetch buffer
@@ -86,12 +89,12 @@ class PrefetchBuffer {
             this.start_new_prefetch(current_address + 1);
         }
 
-        uint region = memory.get_region(address << 1);
+        uint region = ((address << 1) >> 24) & 0xF;
         memory.m_cycles += memory.waitstates[region][access_type][AccessSize.HALFWORD];
         
         this.currently_prefetching = true;
 
-        return memory.rom.read(address);
+        return memory.rom.read(masked_address);
     }
 
     void set_enabled(bool enabled) {
