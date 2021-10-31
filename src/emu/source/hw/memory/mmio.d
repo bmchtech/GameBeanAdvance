@@ -251,6 +251,7 @@ class MMIO {
     }
 
     void write(uint address, ubyte data) {
+        if (address >= 0x4000060 && address < 0x4000090) writefln("%x to %x", data, address);
         switch (address) {
             case DISPCNT     + 0: ppu.write_DISPCNT    (0, data); break;
             case DISPCNT     + 1: ppu.write_DISPCNT    (1, data); break;

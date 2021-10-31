@@ -305,19 +305,18 @@ class Memory : IMemory {
                     goto default;
 
                 default:
-                    uint masked_address = address & 0xFF_FFFF;
                     static if (is(T == uint  )) {
-                        uint aligned_address = (masked_address & ~3) >> 1;
+                        uint aligned_address = (address & ~3) >> 1;
                         return (prefetch_buffer.request_data_from_rom(aligned_address,     access_type)) | 
                                (prefetch_buffer.request_data_from_rom(aligned_address + 1, AccessType.SEQUENTIAL) << 16);
                     }
 
                     static if (is(T == ushort  )) {
-                        return prefetch_buffer.request_data_from_rom(masked_address >> 1, access_type);
+                        return prefetch_buffer.request_data_from_rom(address >> 1, access_type);
                     }
 
                     static if (is(T == ubyte )) {
-                        return cast(ubyte) (prefetch_buffer.request_data_from_rom(masked_address >> 1, access_type) >> (8 * (masked_address & 1)));
+                        return cast(ubyte) (prefetch_buffer.request_data_from_rom(address >> 1, access_type) >> (8 * (address & 1)));
                     }
             }
         }
