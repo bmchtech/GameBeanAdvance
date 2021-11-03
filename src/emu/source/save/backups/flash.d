@@ -48,6 +48,7 @@ class Flash : Backup {
         this.sector_size     = 4096;
         this.total_size      = total_size;
         this.banked          = banked;
+        this.bank            = 0;
         this.bank_size       = total_size / num_banks;
         this.identification  = false;
 
@@ -92,6 +93,10 @@ class Flash : Backup {
 
     override BackupType get_backup_type() {
         return BackupType.FLASH;
+    }
+
+    override int get_backup_size() {
+        return total_size;
     }
 
     private void handle_command_header_0(uint address, uint data) {
@@ -145,13 +150,16 @@ class Flash : Backup {
     }
 
     private void handle_bank_switching(uint address, uint data) {
-        this.accessible_data = &this.all_data[(data & 1) * bank_size];
+        this.bank = data & 1;
+        this.accessible_data = &this.all_data[bank * bank_size];
         state = State.WAITING_FOR_COMMAND;
     }
 
     private void write_single_byte(uint address, ubyte data) {
         this.accessible_data[address] = data;
         state = State.WAITING_FOR_COMMAND;
+
+        backup_file[address + bank * bank_size] = data;
     }
 
     private void erase_entire_chip() {
@@ -166,6 +174,7 @@ class Flash : Backup {
     private int sector_size;
     private int bank_size;
     private bool banked;
+    private int bank;
 
     private State state;
     private bool preparing_erase;

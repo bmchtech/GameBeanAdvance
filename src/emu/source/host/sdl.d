@@ -16,6 +16,8 @@ import bindbc.sdl.image;
 
 import std.stdio;
 import std.conv;
+import std.mmfile;
+import std.file;
 
 import core.sync.mutex;
 
@@ -121,6 +123,12 @@ class GameBeanSDLHost {
         if (savetype != Savetype.NONE && savetype != Savetype.UNKNOWN) {
             Backup save = create_savetype(savetype);
             _gba.memory.add_backup(save);
+
+            bool file_exists = "test.beansave".exists;
+
+ 	        MmFile mm_file = new MmFile("test.beansave", MmFile.Mode.readWrite, save.get_backup_size(), null, 0);
+            if (file_exists) save.deserialize(cast(ubyte[]) mm_file[]);
+            save.set_backup_file(mm_file);
         }
 
         writeln("Complete.");
