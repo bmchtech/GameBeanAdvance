@@ -802,7 +802,7 @@ void run_1011110R(ushort opcode) {
         cpu.run_idle_cycle();
         cpu.refill_pipeline();
     } else {
-        cpu.run_idle_cycle();
+        // cpu.run_idle_cycle();
     }
 
     // _g_cpu_cycles_remaining += num_pushed + 2;
@@ -818,13 +818,16 @@ void run_11001REG(ushort opcode) {
     // only happens if rn wasn't in register_list.
     bool update_rn         = true;
     int num_pushed         = 0;
+    AccessType access_type = AccessType.NONSEQUENTIAL;
+
     for (int i = 0; i < 8; i++) {
         if (get_nth_bit(register_list, i)) {
             if (rn == i) {
                 update_rn = false;
             }
 
-            cpu.regs[i] = cpu.memory.read_word(current_address, AccessType.NONSEQUENTIAL);
+            cpu.regs[i] = cpu.memory.read_word(current_address, access_type);
+            access_type = AccessType.SEQUENTIAL;
             current_address += 4;
             num_pushed++;
         }
@@ -833,6 +836,8 @@ void run_11001REG(ushort opcode) {
     if (update_rn) {
         cpu.regs[rn] = current_address;
     }
+    
+    cpu.run_idle_cycle();
 
     // _g_cpu_cycles_remaining += num_pushed + 2;
 }

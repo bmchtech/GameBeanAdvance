@@ -102,7 +102,7 @@ class Scheduler {
     }
 
     pragma(inline, true) ulong get_current_time_relative_to_cpu() {
-        return current_timestamp + memory.cycles;
+        return current_timestamp + memory.cycles + _g_cpu_cycles_remaining;
     }
 
     pragma(inline, true) void process_event() {
