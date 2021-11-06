@@ -1131,10 +1131,12 @@
     if ((address & 0b11) == 0b10) value = ((value & 0xFFFF)   << 16) | (value >> 16);
     if ((address & 0b11) == 0b11) value = ((value & 0xFFFFFF) << 8)  | (value >> 24);
     
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
     cpu.memory.write_word(address, cpu.read_reg(get_nth_bits(opcode, 0, 4)));
     cpu.regs[get_nth_bits(opcode, 12, 16)] = value;
+    if (get_nth_bits(opcode, 12, 16) == 15) cpu.refill_pipeline();
 
-    // _g_cpu_cycles_remaining += 4;
+    cpu.run_idle_cycle();
 }
 [/COMPONENT]
 
@@ -1145,7 +1147,10 @@
     cpu.memory.write_byte(cpu.read_reg(get_nth_bits(opcode, 16, 20)), cpu.read_reg(get_nth_bits(opcode, 0, 4)) & 0xFF);
     cpu.regs[get_nth_bits(opcode, 12, 16)] = temp;
 
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
     if (get_nth_bits(opcode, 12, 16) == 15) cpu.refill_pipeline();
+
+    cpu.run_idle_cycle();
 }
 [/COMPONENT]
 
