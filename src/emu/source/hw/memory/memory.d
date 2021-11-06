@@ -367,7 +367,9 @@ class Memory : IMemory {
             }
         }
 
-        return (cast(T) open_bus_value >> (8 * (address & 3)));
+        static if (is(T == uint  )) return (open_bus_value);
+        static if (is(T == ushort)) return (open_bus_value >> (16 * (address & 1))) & 0xFFFF;
+        static if (is(T == ubyte )) return (open_bus_value >> (8 *  (address & 3))) & 0xFF;
     }
 
     private template write(T) {
