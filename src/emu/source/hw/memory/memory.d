@@ -357,7 +357,8 @@ class Memory : IMemory {
                 // TODO: latch this to emulate properly, see GBATEK "unpredictable things" section
                 case Region.WRAM_CHIP:
                 case Region.IO_REGISTERS:
-                    open_bus_value = (*cpu_pipeline)[1] << 16 | (*cpu_pipeline)[0];
+                    open_bus_value = ((*cpu_pipeline)[1] << 16) | 
+                                     ((*cpu_pipeline)[1] & 0xFFFF);
                     break;
 
                 default:
@@ -366,7 +367,7 @@ class Memory : IMemory {
             }
         }
 
-        return cast(T) open_bus_value;
+        return (cast(T) open_bus_value >> (8 * (address & 3)));
     }
 
     private template write(T) {
