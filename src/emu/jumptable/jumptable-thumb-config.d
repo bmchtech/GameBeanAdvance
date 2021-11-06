@@ -802,7 +802,7 @@ void run_1011110R(ushort opcode) {
         cpu.run_idle_cycle();
         cpu.refill_pipeline();
     } else {
-        // cpu.run_idle_cycle();
+        cpu.run_idle_cycle();
     }
 
     // _g_cpu_cycles_remaining += num_pushed + 2;
