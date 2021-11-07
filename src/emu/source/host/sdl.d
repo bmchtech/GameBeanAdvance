@@ -80,10 +80,10 @@ class GameBeanSDLHost {
 
 
         SDL_GL_SetSwapInterval(0);
-        // SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");
+        SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");
         renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
         SDL_GL_SetSwapInterval(1);
-        // SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");
+        SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");
 
         screen_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                 SDL_TextureAccess.SDL_TEXTUREACCESS_STREAMING,
@@ -188,7 +188,9 @@ class GameBeanSDLHost {
             clockfor_log   += elapsed;
             clockfor_frame += elapsed;
 
-            _gba.cycle_at_least_n_times(_cycles_per_batch);
+            while (_samples_per_callback * 3 > _audio_data.buffer[Channel.L].offset) {
+                _gba.cycle_at_least_n_times(_cycles_per_batch);
+            }
 
             SDL_Event event;
             while (SDL_PollEvent(&event)) {
