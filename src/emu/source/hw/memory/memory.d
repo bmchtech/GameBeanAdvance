@@ -307,16 +307,15 @@ class Memory : IMemory {
                 default:
                     static if (is(T == uint  )) {
                         uint aligned_address = (address & ~3) >> 1;
-                        return (prefetch_buffer.request_data_from_rom(aligned_address,     access_type)) | 
-                               (prefetch_buffer.request_data_from_rom(aligned_address + 1, AccessType.SEQUENTIAL) << 16);
+                        return prefetch_buffer.request_data_from_rom!T(aligned_address, access_type);
                     }
 
                     static if (is(T == ushort  )) {
-                        return prefetch_buffer.request_data_from_rom(address >> 1, access_type);
+                        return prefetch_buffer.request_data_from_rom!T(address >> 1, access_type);
                     }
 
                     static if (is(T == ubyte )) {
-                        return cast(ubyte) (prefetch_buffer.request_data_from_rom(address >> 1, access_type) >> (8 * (address & 1)));
+                        return cast(ubyte) (prefetch_buffer.request_data_from_rom!ushort(address >> 1, access_type) >> (8 * (address & 1)));
                     }
             }
         }
@@ -381,7 +380,12 @@ class Memory : IMemory {
             static if (is(T == ushort)) shift = 1;
             static if (is(T == ubyte )) shift = 0;
 
-            this.m_cycles += calculate_stalls_for_access!T(region, access_type);
+            // handle waitstates
+            if (region < 0x8) {
+                uint stalls = calculate_stalls_for_access!T(region, access_type);
+                prefetch_buffer.run(stalls);
+                this.m_cycles += stalls;
+            }
 
             switch ((address >> 24) & 0xF) {
                 case Region.BIOS:         break; // incorrect - implement properly later
@@ -482,8 +486,8 @@ class Memory : IMemory {
         static if (is(T == ubyte )) return waitstates[region][access_type][AccessSize.BYTE];
     }
 
-    pragma(inline, true) void start_new_prefetch(uint address) {
-        prefetch_buffer.start_new_prefetch(address);
+    pragma(inline, true) void start_new_prefetch(uint address, AccessSize access_size) {
+        prefetch_buffer.start_new_prefetch(address, access_size);
     }
 
     pragma(inline, true) void run_prefetcher(int number_of_times) {
