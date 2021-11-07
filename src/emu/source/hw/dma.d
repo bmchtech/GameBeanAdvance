@@ -1,6 +1,7 @@
 module hw.dma;
 
 import hw.memory;
+import abstracthw.memory;
 import hw.gba;
 import hw.apu;
 import hw.interrupts;
@@ -96,18 +97,22 @@ public:
         int source_offset = 0;
         int dest_offset   = 0;
 
+        AccessType access_type = AccessType.NONSEQUENTIAL;
+
         if (dma_channels[current_channel].transferring_words || is_dma_channel_fifo(current_channel)) {
             bytes_to_transfer *= 4;
             for (int i = 0; i < bytes_to_transfer; i += 4) {
                 uint read_address = dma_channels[current_channel].source_buf + source_offset;
 
                 if (read_address >= 0x0200_0000) { // make sure we are not accessing DMA open bus
-                    dma_channels[current_channel].open_bus_latch = memory.read_word(dma_channels[current_channel].source_buf + source_offset);
+                    dma_channels[current_channel].open_bus_latch = memory.read_word(dma_channels[current_channel].source_buf + source_offset, access_type);
                 }
                 
-                memory.write_word(dma_channels[current_channel].dest_buf + dest_offset, dma_channels[current_channel].open_bus_latch);
+                memory.write_word(dma_channels[current_channel].dest_buf + dest_offset, dma_channels[current_channel].open_bus_latch, access_type);
                 source_offset += source_increment;
                 dest_offset   += dest_increment;
+
+                access_type = AccessType.SEQUENTIAL;
             }
         } else {
             bytes_to_transfer *= 2;
@@ -118,20 +123,22 @@ public:
 
                 if (read_address >= 0x0200_0000) { // make sure we are not accessing DMA open bus
                     auto shift      = is_aligned * 16;
-                    auto read_value = memory.read_halfword(dma_channels[current_channel].source_buf + source_offset);
+                    auto read_value = memory.read_halfword(dma_channels[current_channel].source_buf + source_offset, access_type);
 
                     dma_channels[current_channel].open_bus_latch &= 0xFFFF << shift;
                     dma_channels[current_channel].open_bus_latch |= read_value << shift;
-                    memory.write_halfword(dma_channels[current_channel].dest_buf + dest_offset, read_value);
+                    memory.write_halfword(dma_channels[current_channel].dest_buf + dest_offset, read_value, access_type);
                 } else {
                     auto shift = is_aligned * 16;
                     ushort open_bus_value = (dma_channels[current_channel].open_bus_latch >> shift) & 0xFFFF;
 
-                    memory.write_halfword(dma_channels[current_channel].dest_buf + dest_offset, open_bus_value);
+                    memory.write_halfword(dma_channels[current_channel].dest_buf + dest_offset, open_bus_value, access_type);
                 }
 
                 source_offset += source_increment;
                 dest_offset   += dest_increment;
+
+                access_type = AccessType.SEQUENTIAL;
 
                 is_aligned ^= 1;
             }
