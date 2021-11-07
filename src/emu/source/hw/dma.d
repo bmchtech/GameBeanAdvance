@@ -61,6 +61,8 @@ public:
         memory.cycles = 0;
         if (current_channel == -1) return 0; //error("DMA requested but no active channels found");
 
+        memory.prefetch_buffer.stop();
+
         uint bytes_to_transfer  = dma_channels[current_channel].size_buf;
         int  source_increment   = 0;
         int  dest_increment     = 0;
@@ -160,42 +162,12 @@ public:
             }
 
             enable_dma(current_channel);
-            // if (get_nth_bits(*dma_channels[current_channel].cnt_h, 12, 14) == 3 && (current_channel == 1 || current_channel == 2)) {
-            //     dma_channels[current_channel].enabled = false;
-            //     *dma_channels[current_channel].cnt_h &= ~(1UL << 15);
-            //     *dma_channels[current_channel].source = dma_channels[current_channel].source_buf;
-            //     return true;
-            // }
         } else {
             // writefln("DMA Channel %x Finished", current_channel);
             dma_channels[current_channel].enabled = false;
         }
 
-        // if (current_channel == 1) writefln("DMA Channel %x successfully transfered %x from %x to %x. %x units left.", current_channel, memory.read_word(dma_channels[current_channel].source_buf), dma_channels[current_channel].source_buf, dma_channels[current_channel].dest_buf, dma_channels[current_channel].size_buf);
-
-        // are we writing to direct sound fifos?
-        // if (!(get_nth_bits(*dma_channels[current_channel].cnt_h, 12, 14) == 3 && (current_channel == 1 || current_channel == 2))) {
-        //     // edit dest_buf and source_buf as needed to set up for the next dma
-        //     switch (get_nth_bits(*dma_channels[current_channel].cnt_h, 5, 7)) {
-        //         case 0b00:
-        //         case 0b11:
-        //             dma_channels[current_channel].dest_buf   += increment; break;
-        //         case 0b01:
-        //             dma_channels[current_channel].dest_buf   -= increment; break;
-                
-        //         default: {}
-        //     }
-        // }
-
-        // switch (get_nth_bits(*dma_channels[current_channel].cnt_h, 7, 9)) {
-        //     case 0b00:
-        //         dma_channels[current_channel].source_buf += increment; break;
-        //     case 0b01:
-        //         dma_channels[current_channel].source_buf -= increment; break;
-            
-        //     default: {}
-        // }
-
+        memory.prefetch_buffer.start();
         return 2 + memory.cycles;
     }
 

@@ -121,4 +121,12 @@ class PrefetchBuffer {
 
         this.enabled = enabled;
     }
+
+    void start() {
+        this.currently_prefetching = true;
+    }
+
+    void stop() {
+        this.currently_prefetching = false;
+    }
 }
