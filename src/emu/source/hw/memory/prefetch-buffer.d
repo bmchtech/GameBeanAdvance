@@ -26,7 +26,7 @@ class PrefetchBuffer {
 
     pragma(inline, true) void run(uint num_cycles) {
         if (!this.enabled || !this.currently_prefetching) return;
-        writefln("Running for %x. %x remaining.", num_cycles, this.cycles_till_access_complete);
+        // writefln("Running for %x. %x remaining.", num_cycles, this.cycles_till_access_complete);
 
         while (this.current_buffer_size < 8 && num_cycles >= cycles_till_access_complete) {
             num_cycles -= cycles_till_access_complete;
@@ -34,7 +34,7 @@ class PrefetchBuffer {
             uint increment = this.prefetch_access_size == AccessSize.HALFWORD ? 1 : 2;
             this.current_buffer_size += increment;
             start_new_prefetch(current_address + increment, this.prefetch_access_size);
-            writefln("advancing.");
+            // writefln("advancing.");
         }
 
         if (this.current_buffer_size < 8) {
@@ -57,7 +57,7 @@ class PrefetchBuffer {
         this.prefetch_access_size = prefetch_access_size;
 
         this.cycles_till_access_complete = memory.waitstates[current_region][AccessType.SEQUENTIAL][prefetch_access_size];
-        writefln("%x %x", address << 1, this.cycles_till_access_complete);
+        // writefln("%x %x", address << 1, this.cycles_till_access_complete);
     }
 
     pragma(inline, true) T request_data_from_rom(T)(uint address, AccessType access_type) {
