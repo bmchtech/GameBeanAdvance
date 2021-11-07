@@ -50,7 +50,7 @@ interface IMemory {
     pragma(inline, true) void write_word(uint address, uint value,
             AccessType access_type = AccessType.SEQUENTIAL);
 
-    void start_new_prefetch(uint address);
+    void start_new_prefetch(uint address, AccessSize prefetch_access_size);
     void run_prefetcher(int number_of_times);
     void invalidate_prefetch_buffer();
 

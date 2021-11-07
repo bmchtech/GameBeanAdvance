@@ -402,7 +402,7 @@ class ARM7TDMI : IARM7TDMI {
 
             if (m_pipeline_access_type == AccessType.NONSEQUENTIAL) {
                 memory.invalidate_prefetch_buffer();
-                memory.start_new_prefetch((*pc & ~1) >> 1);
+                memory.start_new_prefetch((*pc & ~1) >> 1, AccessSize.HALFWORD);
             }
 
             return opcode;
@@ -412,7 +412,7 @@ class ARM7TDMI : IARM7TDMI {
 
             if (m_pipeline_access_type == AccessType.NONSEQUENTIAL) {
                 memory.invalidate_prefetch_buffer();
-                memory.start_new_prefetch((*pc & ~3) >> 1);
+                memory.start_new_prefetch((*pc & ~3) >> 1, AccessSize.WORD);
             }
 
             return opcode;
