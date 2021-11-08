@@ -9,9 +9,10 @@ struct PannedSample {
 
 immutable PannedSample EMPTY_SAMPLE = PannedSample(0, 0);
 
-abstract class Channel {
+abstract class AudioChannel {
     public int volume_L; // max value is 8
     public int volume_R; // max value is 8
+    public bool enabled;
 
     this() {
         
@@ -24,11 +25,11 @@ abstract class Channel {
     
     private PannedSample apply_volume(Sample sample) {
         Sample shifted_sample = (sample >> 3);
-        return Sample(
-            shifted_sample * volume_L,
-            shifted_sample * volume_R
+        return PannedSample(
+            cast(Sample) (shifted_sample * volume_L),
+            cast(Sample) (shifted_sample * volume_R)
         );
     }
 
-    abstract private Sample calculate_sample();
+    abstract protected Sample calculate_sample();
 }
