@@ -321,6 +321,7 @@ class Memory : IMemory {
         }
     }
 
+
     T read_open_bus(T)(uint address) {
         if (address < SIZE_BIOS) {
             return cast(T) bios_open_bus_latch;
@@ -366,11 +367,8 @@ class Memory : IMemory {
             }
         }
 
-        static if (is(T == uint  )) return (open_bus_value >> (8 *  (address & 3)));
-        static if (is(T == ushort)) return (open_bus_value >> (16 * (address & 1))) & 0xFFFF;
-        static if (is(T == ubyte )) return (open_bus_value) & 0xFF;
+        return (cast(T) open_bus_value >> (8 * (address & 3)));
     }
-
     private template write(T) {
         pragma(inline, true) void write(uint address, T value, AccessType access_type = AccessType.SEQUENTIAL) {
             uint region = get_region(address);
