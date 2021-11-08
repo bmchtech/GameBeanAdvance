@@ -135,6 +135,8 @@ class GameBeanSDLHost {
     }
 
     int fps = 0;
+    bool fast_forward = false;
+
     void run() {
         running = true;
 
@@ -188,7 +190,11 @@ class GameBeanSDLHost {
             clockfor_log   += elapsed;
             clockfor_frame += elapsed;
 
-            while (_samples_per_callback * 3 > _audio_data.buffer[Channel.L].offset) {
+            if (!fast_forward) {
+                while (_samples_per_callback * 3 > _audio_data.buffer[Channel.L].offset) {
+                    _gba.cycle_at_least_n_times(_cycles_per_batch);
+                }
+            } else {
                 _gba.cycle_at_least_n_times(_cycles_per_batch);
             }
 
@@ -334,6 +340,10 @@ private:
         ];
 
     void on_input(SDL_Keycode key, bool pressed) {
+        if (key == SDL_Keycode.SDLK_TAB) {
+            fast_forward = pressed;
+        }
+
         if (key !in KEYMAP)
             return;
         auto gba_key = to!int(KEYMAP[key]);
