@@ -192,8 +192,8 @@ class MMIO {
             case SOUNDCNT_L  + 1: return apu.read_SOUNDCNT_L(1); 
             case SOUNDCNT_H  + 0: return apu.read_SOUNDCNT_H(0); 
             case SOUNDCNT_H  + 1: return apu.read_SOUNDCNT_H(1); 
-            case SOUNDCNT_X  + 0: //error(format("read from %x", address)); // return apu.read_SOUNDCNT_X(0); 
-            case SOUNDCNT_X  + 1: //error(format("read from %x", address)); // return apu.read_SOUNDCNT_X(1);
+            case SOUNDCNT_X  + 0: return apu.read_SOUNDCNT_X(0); 
+            case SOUNDCNT_X  + 1: return apu.read_SOUNDCNT_X(1);
             case SOUNDBIAS   + 0: return apu.read_SOUNDBIAS (0); 
             case SOUNDBIAS   + 1: return apu.read_SOUNDBIAS (1); 
 
@@ -357,8 +357,8 @@ class MMIO {
             case SOUNDCNT_L  + 1: apu.write_SOUNDCNT_L (1, data); break; 
             case SOUNDCNT_H  + 0: apu.write_SOUNDCNT_H (0, data); break; 
             case SOUNDCNT_H  + 1: apu.write_SOUNDCNT_H (1, data); break; 
-            // case SOUNDCNT_X  + 0: apu.write_SOUNDCNT_X (0, data); break; 
-            // case SOUNDCNT_X  + 1: apu.write_SOUNDCNT_X (1, data); break;
+            case SOUNDCNT_X  + 0: apu.write_SOUNDCNT_X (0, data); break; 
+            case SOUNDCNT_X  + 1: apu.write_SOUNDCNT_X (1, data); break;
             case SOUNDBIAS   + 0: apu.write_SOUNDBIAS  (0, data); break; 
             case SOUNDBIAS   + 1: apu.write_SOUNDBIAS  (1, data); break; 
             case FIFO_A      + 0: apu.write_FIFO       (data, DirectSound.A); break;
