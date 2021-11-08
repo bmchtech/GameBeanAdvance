@@ -113,6 +113,8 @@ private:
         if (get_nth_bit(analog_channels_enable_L, 3)) mixed_sample_L += noise_channel.sample(sample_rate);
         if (get_nth_bit(analog_channels_enable_R, 3)) mixed_sample_R += noise_channel.sample(sample_rate);
 
+        mixed_sample_L = cast(short) ((mixed_sample_L >> 1) * sound_1_4_volume);
+        mixed_sample_R = cast(short) ((mixed_sample_R >> 1) * sound_1_4_volume);
         mixed_sample_L = cast(short) ((mixed_sample_L >> 3) * analog_channels_volume_L);
         mixed_sample_R = cast(short) ((mixed_sample_R >> 3) * analog_channels_volume_R);
 
