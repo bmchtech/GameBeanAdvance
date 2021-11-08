@@ -16,7 +16,7 @@ class NoiseChannel {
 
     private int  cycles_elapsed         = 0;
     private long length;
-    private bool enabled = false;
+    public  bool enabled = false;
     // private int  sound_length;
     // private bool stop_on_expire;
 
