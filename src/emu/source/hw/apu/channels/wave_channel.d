@@ -48,7 +48,7 @@ class WaveChannel {
         }
 
         wave_ram_index &= 31;
-        return cast(short) (wave_ram[playback_bank][wave_ram_index] * 2 * volume);
+        return cast(short) (wave_ram[playback_bank][wave_ram_index] * 4 * volume - 0x80);
     }
 
     void set_double_banked(bool is_double_banked) {
