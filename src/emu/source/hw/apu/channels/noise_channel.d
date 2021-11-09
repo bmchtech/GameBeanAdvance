@@ -4,6 +4,7 @@ module hw.apu.channels.noise_channel;
 import scheduler;
 
 import std.stdio;
+import std.algorithm.comparison;
 
 class NoiseChannel {
     private int shift_register         = 0;
@@ -26,6 +27,10 @@ class NoiseChannel {
 
     private Scheduler scheduler;
     private ulong     shifter_event;
+    private ulong     envelope_event;
+
+    private int envelope_length;
+    private int envelope_multiplier;
 
     this(Scheduler scheduler) {
         this.scheduler = scheduler;
@@ -38,6 +43,9 @@ class NoiseChannel {
 
         if (shifter_event) scheduler.remove_event(shifter_event);
         if (enabled)       shifter_event = scheduler.add_event_relative_to_self(&shift, interval);
+
+        if (envelope_event) scheduler.remove_event(envelope_event);
+        if (enabled)        envelope_event = scheduler.add_event_relative_to_self(&tick_envelope, envelope_length); 
     }
 
     short sample(int delta_cycles) {
@@ -60,6 +68,10 @@ class NoiseChannel {
         }
 
         shifter_event = scheduler.add_event_relative_to_self(&shift, interval);
+    }
+
+    void tick_envelope() {
+        this.volume = clamp(this.volume + this.envelope_multiplier, 0, 15);
     }
 
     void set_counter_width(int counter_width) {
@@ -86,6 +98,14 @@ class NoiseChannel {
     // where n is bits 0-5 of SOUND4CNT_L
     void set_length(int n) {
         length = 65546 * (64 - n);
+    }
+
+    void set_envelope_length(int n) {
+        this.envelope_length = 262144 * n;
+    }
+
+    void set_envelope_direction(bool direction) {
+        this.envelope_multiplier = direction ? 1 : -1;
     }
 
     void set_volume(int volume) {
