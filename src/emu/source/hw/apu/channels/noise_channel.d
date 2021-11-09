@@ -12,9 +12,9 @@ class NoiseChannel {
 
     public  int dividing_ratio         = 0;
     public  int shift_clock_frequency  = 0;
-    private int volume               = 0;
+    private int volume                 = 0;
 
-    private int  cycles_elapsed         = 0;
+    private int  cycles_elapsed        = 0;
     private long length;
     public  bool enabled = false;
     // private int  sound_length;
@@ -45,7 +45,7 @@ class NoiseChannel {
 
         cycles_elapsed += delta_cycles;
         // if (cycles_elapsed > length) enabled = false;
-        return cast(short) (current_shifter_out * 8);
+        return cast(short) (current_shifter_out * 8 * volume);
     }
 
     void shift() {
