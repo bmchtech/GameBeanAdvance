@@ -202,7 +202,6 @@ public:
     }
 
     void write_SOUND3CNT_L(ubyte data) {
-        // writefln("L %x", data);
         wave_channel.set_double_banked(get_nth_bit(data, 5));
         wave_channel.set_playback_bank(get_nth_bit(data, 6));
         wave_channel.set_enabled      (get_nth_bit(data, 7));
@@ -266,7 +265,9 @@ public:
                 break;
 
             case 0b1:
-                // TODO
+                noise_channel.set_envelope_length   (get_nth_bits(data, 0, 3));
+                noise_channel.set_envelope_direction(get_nth_bit (data, 3));
+                noise_channel.set_volume            (get_nth_bits(data, 4, 8));
                 break;
         }
     }
