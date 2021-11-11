@@ -272,12 +272,15 @@ public:
         }
     }
     
+    uint psg_volume_index;
     void write_SOUNDCNT_H(int target_byte, ubyte data) {
         final switch (target_byte) {
             case 0b0:
-                psg_volume.volume                = (cast(uint[])[1, 2, 4, 0])[get_nth_bits(data, 0, 2)];
+                psg_volume_index                 = get_nth_bits(data, 0, 2);
                 dma_sounds[DirectSound.A].volume = get_nth_bit (data, 2);
                 dma_sounds[DirectSound.B].volume = get_nth_bit (data, 3);
+
+                psg_volume.volume                = (cast(uint[])[1, 2, 4, 0])[psg_volume_index];
                 break;
                 
             case 0b1:
@@ -353,7 +356,7 @@ public:
     ubyte read_SOUNDCNT_H(int target_byte) {
         final switch (target_byte) {
             case 0b0:
-                return cast(ubyte) ((psg_volume.volume                << 0) |
+                return cast(ubyte) ((psg_volume_index                 << 0) |
                                     (dma_sounds[DirectSound.A].volume << 2) |
                                     (dma_sounds[DirectSound.B].volume << 3));
                 
