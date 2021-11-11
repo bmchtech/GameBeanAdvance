@@ -27,8 +27,6 @@ class VolumeEffect(uint max) : Effect {
     }
 
     override pragma(inline, true) void apply(Sample* s) {
-
-        writefln("%x", shift);
-        *s = *s >> shift * volume;
+        *s = cast(Sample) ((*s >> shift) * volume);
     }
 }
