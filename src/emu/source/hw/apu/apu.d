@@ -114,8 +114,8 @@ private:
             if (get_nth_bit(analog_channels_enable_L, 3)) mixed_sample_L += noise_channel.sample(sample_rate);
             if (get_nth_bit(analog_channels_enable_R, 3)) mixed_sample_R += noise_channel.sample(sample_rate);
 
-            mixed_sample_L = cast(short) ((mixed_sample_L >> 1) * sound_1_4_volume);
-            mixed_sample_R = cast(short) ((mixed_sample_R >> 1) * sound_1_4_volume);
+            psg_volume.apply(&mixed_sample_L);
+            psg_volume.apply(&mixed_sample_R);
             mixed_sample_L = cast(short) ((mixed_sample_L >> 3) * analog_channels_volume_L);
             mixed_sample_R = cast(short) ((mixed_sample_R >> 3) * analog_channels_volume_R);
 
@@ -163,7 +163,7 @@ private:
 
 private:
     // SOUNDCNT_H
-    int sound_1_4_volume;   // (0=25%, 1=50%, 2=100%, 3=Prohibited)
+    VolumeEffect!4 psg_volume = new VolumeEffect!4();
 
     // SOUNDBIAS
     short bias;
@@ -275,7 +275,7 @@ public:
     void write_SOUNDCNT_H(int target_byte, ubyte data) {
         final switch (target_byte) {
             case 0b0:
-                sound_1_4_volume                 = get_nth_bits(data, 0, 2);
+                psg_volume.volume                = (cast(uint[])[1, 2, 4, 0])[get_nth_bits(data, 0, 2)];
                 dma_sounds[DirectSound.A].volume = get_nth_bit (data, 2);
                 dma_sounds[DirectSound.B].volume = get_nth_bit (data, 3);
                 break;
@@ -353,7 +353,7 @@ public:
     ubyte read_SOUNDCNT_H(int target_byte) {
         final switch (target_byte) {
             case 0b0:
-                return cast(ubyte) ((sound_1_4_volume                 << 0) |
+                return cast(ubyte) ((psg_volume.volume                << 0) |
                                     (dma_sounds[DirectSound.A].volume << 2) |
                                     (dma_sounds[DirectSound.B].volume << 3));
                 
