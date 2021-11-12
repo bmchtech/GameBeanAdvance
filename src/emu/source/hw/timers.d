@@ -3,6 +3,7 @@ module hw.timers;
 import hw.memory;
 import hw.apu;
 import hw.gba;
+import hw.cpu;
 import hw.interrupts;
 
 import util;
@@ -161,8 +162,8 @@ public:
         timers[x].value = calculate_timer_value(x);
         
         final switch (target_byte) {
-            case 0b0: return             (timers[x].value & 0x00FF) >> 0;
-            case 0b1: return cast(ubyte) (timers[x].value & 0xFF00) >> 4;
+            case 0b0: return (timers[x].value >> 0) & 0xFF;
+            case 0b1: return (timers[x].value >> 8) & 0xFF;
         }
     }
 

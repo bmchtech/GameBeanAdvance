@@ -276,9 +276,12 @@ class Memory : IMemory {
                         (cast(uint) mmio.read(address + 1) << 8)  |
                         (cast(uint) mmio.read(address + 2) << 16) | 
                         (cast(uint) mmio.read(address + 3) << 24);
-                    static if (is(T == ushort)) return 
+                    static if (is(T == ushort)) {
+                        ushort x =
                         (cast(ushort) mmio.read(address + 0) << 0)  |
                         (cast(ushort) mmio.read(address + 1) << 8);
+                        writefln("%x",  address + 1);
+                        return x;}
                     static if (is(T == ubyte))  return mmio.read(address);
 
                 case Region.BIOS: 
@@ -323,6 +326,8 @@ class Memory : IMemory {
 
 
     T read_open_bus(T)(uint address) {
+        if (address == 0) error(format("sussy bus %x", address));
+
         if (address < SIZE_BIOS) {
             return cast(T) bios_open_bus_latch;
         }
