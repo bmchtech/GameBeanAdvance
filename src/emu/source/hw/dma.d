@@ -20,10 +20,7 @@ public:
         this.memory        = memory;
         this.scheduler     = scheduler;
         this.interrupt_cpu = interrupt_cpu;
-
-        dma_cycle          = false;
-        this.idle_cycles   = 0;
-
+        
         dma_channels = [
             DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, 0, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately),
             DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, 0, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately),
@@ -45,7 +42,6 @@ public:
 
     // returns the amount of cycles to idle
     int handle_dma() {
-        idle_cycles = 0;
         
         // get the channel with highest priority that wants to start dma
         int current_channel = -1;
@@ -68,13 +64,13 @@ public:
         int  source_increment   = 0;
         int  dest_increment     = 0;
 
-        if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
-                 current_channel,
-                 bytes_to_transfer,
-                 dma_channels[current_channel].transferring_words ? "words" : "halfwords",
-                 dma_channels[current_channel].source_buf,
-                 dma_channels[current_channel].dest_buf,
-                 read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
+        // if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
+        //          current_channel,
+        //          bytes_to_transfer,
+        //          dma_channels[current_channel].transferring_words ? "words" : "halfwords",
+        //          dma_channels[current_channel].source_buf,
+        //          dma_channels[current_channel].dest_buf,
+        //          read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
 
         switch (dma_channels[current_channel].source_addr_control) {
             case SourceAddrMode.Increment:  source_increment =  1; break;
@@ -149,11 +145,9 @@ public:
 
         dma_channels[current_channel].source_buf += source_offset;
         dma_channels[current_channel].dest_buf   += dest_offset;
-        
-        idle_cycles += bytes_to_transfer * 2;
 
         if (dma_channels[current_channel].irq_on_end) {
-            scheduler.add_event_relative_to_self(() => interrupt_cpu(Interrupt.DMA_0 + current_channel), idle_cycles);
+            scheduler.add_event_relative_to_self(() => interrupt_cpu(Interrupt.DMA_0 + current_channel), 2 + memory.cycles - excess_cycles);
         }
 
 
@@ -231,11 +225,8 @@ public:
 
 private:
     Memory memory;
-    bool   dma_cycle;
 
     DMAChannel[4] dma_channels;
-
-    uint    idle_cycles;
 
     enum SourceAddrMode {
         Increment       = 0b00,
