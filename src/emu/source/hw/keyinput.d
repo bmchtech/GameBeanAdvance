@@ -19,7 +19,6 @@ class KeyInput {
     private ushort keyinput;
 
     void write_KEYCNT(int target_byte, ubyte data) {
-        error(format("bonk %d", data));
         
         if (target_byte == 0) {
             keycnt = (keycnt & 0xFF00) | data;
