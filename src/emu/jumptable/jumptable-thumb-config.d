@@ -590,8 +590,8 @@ void run_01001REG(ushort opcode) {
     ubyte reg = cast(ubyte) (get_nth_bits(opcode, 8,  11));
     uint loc = (get_nth_bits(opcode, 0,  8) << 2) + ((*cpu.pc - 2) & 0xFFFFFFFC);
 
-    cpu.run_idle_cycle();
     cpu.regs[reg] = read_word_and_rotate(cpu.memory, loc, AccessType.NONSEQUENTIAL);
+    cpu.run_idle_cycle();
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 }
 
@@ -612,7 +612,6 @@ void run_0101LSBR(ushort opcode) {
     ubyte rn = cast(ubyte) get_nth_bits(opcode, 3, 6);
     ubyte rd = cast(ubyte) get_nth_bits(opcode, 0, 3);
     uint address = cpu.regs[rm] + cpu.regs[rn];
-    cpu.run_idle_cycle();
 
     @IF( L  S  B) int  value = cast(uint)            (cpu.memory.read_halfword(address, AccessType.NONSEQUENTIAL));
     @IF( L  S !B) uint value = cast(uint)            (cpu.memory.read_byte    (address,              AccessType.NONSEQUENTIAL));
@@ -633,6 +632,7 @@ void run_0101LSBR(ushort opcode) {
 
     cpu.regs[rd] = value;
 
+    cpu.run_idle_cycle();
     // _g_cpu_cycles_remaining += 3;
 }
 
@@ -670,8 +670,6 @@ void run_011BLOFS(ushort opcode) {
     ubyte rn = cast(ubyte) get_nth_bits(opcode, 3, 6);
     ubyte rd = cast(ubyte) get_nth_bits(opcode, 0, 3);
     ubyte immediate_value = cast(ubyte) get_nth_bits(opcode, 6, 11);
-    
-    @IF(L)  cpu.run_idle_cycle();
 
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
     // looking at the table above, the B bit determines the size of the store/load, and the L bit determines whether we store or load.
@@ -680,6 +678,8 @@ void run_011BLOFS(ushort opcode) {
 
     @IF(!B  L) cpu.regs[rd] = read_word_and_rotate(cpu.memory, cpu.regs[rn] + (immediate_value << 2), AccessType.NONSEQUENTIAL);
     @IF( B  L) cpu.regs[rd] = cpu.memory.read_byte(cpu.regs[rn] + immediate_value, AccessType.NONSEQUENTIAL);
+    
+    @IF(L)  cpu.run_idle_cycle();
 }
 
 // store halfword
@@ -698,10 +698,10 @@ void run_10000OFS(ushort opcode) {
 void run_10001OFS(ushort opcode) {
     ubyte rn     = cast(ubyte) get_nth_bits(opcode, 3, 6);
     ubyte rd     = cast(ubyte) get_nth_bits(opcode, 0, 3);
-    ubyte offset = cast(ubyte) get_nth_bits(opcode, 6, 11);    
-    cpu.run_idle_cycle();
+    ubyte offset = cast(ubyte) get_nth_bits(opcode, 6, 11);
 
     cpu.regs[rd] = cpu.memory.read_halfword(cpu.regs[rn] + offset * 2, AccessType.NONSEQUENTIAL);
+    cpu.run_idle_cycle();
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 
     // _g_cpu_cycles_remaining += 3;
@@ -711,12 +711,12 @@ void run_10001OFS(ushort opcode) {
 void run_1001LREG(ushort opcode) {
     ubyte rd = cast(ubyte) (get_nth_bits(opcode, 8, 11));
     ubyte immediate_value = cast(ubyte) (opcode & 0xFF);
-    @IF(L) cpu.run_idle_cycle();
 
     // if L is set, we load. if L is not set, we store.
     @IF(L)  cpu.regs[rd] = read_word_and_rotate(cpu.memory, *cpu.sp + (immediate_value << 2), AccessType.NONSEQUENTIAL);
     @IF(!L) cpu.memory.write_word(*cpu.sp + (immediate_value << 2), cpu.regs[rd], AccessType.NONSEQUENTIAL);
 
+    @IF(L) cpu.run_idle_cycle();
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 
     // _g_cpu_cycles_remaining += 2;
