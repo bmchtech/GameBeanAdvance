@@ -46,8 +46,8 @@ class NoiseChannel {
         if (shifter_event) scheduler.remove_event(shifter_event);
         if (enabled)       shifter_event = scheduler.add_event_relative_to_self(&shift, interval);
 
-        if (envelope_event)   scheduler.remove_event(envelope_event);
-        if (envelope_enabled) envelope_event = scheduler.add_event_relative_to_self(&tick_envelope, envelope_length); 
+        //if (envelope_event)   scheduler.remove_event(envelope_event);
+        //if (envelope_enabled) envelope_event = scheduler.add_event_relative_to_self(&tick_envelope, envelope_length); 
     }
 
     short sample(int delta_cycles) {
