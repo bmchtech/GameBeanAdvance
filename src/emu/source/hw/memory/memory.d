@@ -212,32 +212,32 @@ class Memory : IMemory {
         return (address >> 24) & 0xF;
     }
 
-    pragma(inline, true) ubyte read_byte(uint address, AccessType access_type = AccessType.SEQUENTIAL) {
-        return read!ubyte(address, access_type);
+    pragma(inline, true) ubyte read_byte(uint address, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
+        return read!ubyte(address, access_type, instruction_access);
     }
 
-    pragma(inline, true) ushort read_halfword(uint address, AccessType access_type = AccessType.SEQUENTIAL) {    
-        return read!ushort(address, access_type);
+    pragma(inline, true) ushort read_halfword(uint address, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {    
+        return read!ushort(address, access_type, instruction_access);
     }
 
-    pragma(inline, true) uint read_word(uint address, AccessType access_type = AccessType.SEQUENTIAL) {
-        return read!uint(address, access_type);
+    pragma(inline, true) uint read_word(uint address, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
+        return read!uint(address, access_type, instruction_access);
     }
 
-    pragma(inline, true) void write_byte(uint address, ubyte value, AccessType access_type = AccessType.SEQUENTIAL) {
-        write!ubyte(address, value, access_type);
+    pragma(inline, true) void write_byte(uint address, ubyte value, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
+        write!ubyte(address, value, access_type, instruction_access);
     }
 
-    pragma(inline, true) void write_halfword(uint address, ushort value, AccessType access_type = AccessType.SEQUENTIAL) {
-        write!ushort(address, value, access_type);
+    pragma(inline, true) void write_halfword(uint address, ushort value, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
+        write!ushort(address, value, access_type, instruction_access);
     }
 
-    pragma(inline, true) void write_word(uint address, uint value, AccessType access_type = AccessType.SEQUENTIAL) {
-        write!uint(address, value, access_type);
+    pragma(inline, true) void write_word(uint address, uint value, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
+        write!uint(address, value, access_type, instruction_access);
     }
 
     private template read(T) {
-        pragma(inline, true) T read(uint address, AccessType access_type = AccessType.SEQUENTIAL) {
+        pragma(inline, true) T read(uint address, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
             uint region = get_region(address);
 
             if (address >> 28) {
@@ -309,15 +309,15 @@ class Memory : IMemory {
                 default:
                     static if (is(T == uint  )) {
                         uint aligned_address = (address & ~3) >> 1;
-                        return prefetch_buffer.request_data_from_rom!T(aligned_address, access_type);
+                        return prefetch_buffer.request_data_from_rom!T(aligned_address, access_type, instruction_access);
                     }
 
                     static if (is(T == ushort  )) {
-                        return prefetch_buffer.request_data_from_rom!T(address >> 1, access_type);
+                        return prefetch_buffer.request_data_from_rom!T(address >> 1, access_type, instruction_access);
                     }
 
                     static if (is(T == ubyte )) {
-                        return cast(ubyte) (prefetch_buffer.request_data_from_rom!ushort(address >> 1, access_type) >> (8 * (address & 1)));
+                        return cast(ubyte) (prefetch_buffer.request_data_from_rom!ushort(address >> 1, access_type, instruction_access) >> (8 * (address & 1)));
                     }
             }
         }
@@ -372,7 +372,7 @@ class Memory : IMemory {
         return (cast(T) open_bus_value >> (8 * (address & 3)));
     }
     private template write(T) {
-        pragma(inline, true) void write(uint address, T value, AccessType access_type = AccessType.SEQUENTIAL) {
+        pragma(inline, true) void write(uint address, T value, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
             uint region = get_region(address);
 
             uint shift;

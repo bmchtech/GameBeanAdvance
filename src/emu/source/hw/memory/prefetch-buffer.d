@@ -60,7 +60,7 @@ class PrefetchBuffer {
         // writefln("%x %x", address << 1, this.cycles_till_access_complete);
     }
 
-    pragma(inline, true) T request_data_from_rom(T)(uint address, AccessType access_type) {
+    pragma(inline, true) T request_data_from_rom(T)(uint address, AccessType access_type, bool instruction_access) {
         uint masked_address = address & 0xFF_FFFF;
 
         if (this.enabled && this.currently_prefetching) {
@@ -123,10 +123,10 @@ class PrefetchBuffer {
     }
 
     void start() {
-        this.currently_prefetching = true;
+        this.enabled = true;
     }
 
     void stop() {
-        this.currently_prefetching = false;
+        this.enabled = false;
     }
 }

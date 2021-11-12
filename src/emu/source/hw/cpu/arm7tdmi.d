@@ -98,7 +98,7 @@ class ARM7TDMI : IARM7TDMI {
         if (exception == CpuException.Reset || exception == CpuException.FIQ) {
             *cpsr |= (1 << 6); // disable fast interrupts
         }
-        
+
         *pc = get_address_from_exception(exception);
         set_bit_T(false);
         m_memory.can_read_from_bios = true;
@@ -397,7 +397,7 @@ class ARM7TDMI : IARM7TDMI {
 
     uint fetch() {
         if (get_bit_T()) { // thumb mode: grab a halfword and return it
-            uint opcode = cast(uint) m_memory.read_halfword(*pc & 0xFFFFFFFE, m_pipeline_access_type);
+            uint opcode = cast(uint) m_memory.read_halfword(*pc & 0xFFFFFFFE, m_pipeline_access_type, true);
             *pc += 2;
 
             if (m_pipeline_access_type == AccessType.NONSEQUENTIAL) {
@@ -407,7 +407,7 @@ class ARM7TDMI : IARM7TDMI {
 
             return opcode;
         } else {           // arm mode: grab a word and return it
-            uint opcode = m_memory.read_word(*pc & 0xFFFFFFFC, m_pipeline_access_type);
+            uint opcode = m_memory.read_word(*pc & 0xFFFFFFFC, m_pipeline_access_type, true);
             *pc += 4;
 
             if (m_pipeline_access_type == AccessType.NONSEQUENTIAL) {
