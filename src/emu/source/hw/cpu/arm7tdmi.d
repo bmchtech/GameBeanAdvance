@@ -98,7 +98,7 @@ class ARM7TDMI : IARM7TDMI {
         if (exception == CpuException.Reset || exception == CpuException.FIQ) {
             *cpsr |= (1 << 6); // disable fast interrupts
         }
-
+        
         *pc = get_address_from_exception(exception);
         set_bit_T(false);
         m_memory.can_read_from_bios = true;
@@ -226,7 +226,7 @@ class ARM7TDMI : IARM7TDMI {
         *cpsr = (*cpsr & 0xFFFFFFE0) | new_mode.CPSR_ENCODING;
         current_mode = new_mode;
 
-        if (had_interrupts_disabled && (*cpsr >> 7) && m_memory.read_halfword(0x4000202)) {
+        if (had_interrupts_disabled && (*cpsr >> 7) && m_memory.mmio.read(0x4000202)) {
             exception(CpuException.IRQ);
         }
     }
