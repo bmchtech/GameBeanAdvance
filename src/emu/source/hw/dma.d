@@ -58,7 +58,6 @@ public:
 
         memory.prefetch_buffer.stop();
         uint excess_cycles = memory.cycles;
-        writefln("%x", excess_cycles);
 
         uint bytes_to_transfer  = dma_channels[current_channel].size_buf;
         int  source_increment   = 0;
@@ -177,6 +176,7 @@ public:
                            (dest_beginning_in_rom   || dest_ending_in_rom) ?
                            4 : 2;
 
+        writefln("Taken %x", idle_cycles + memory.cycles - excess_cycles);
         return idle_cycles + memory.cycles - excess_cycles;
     }
 

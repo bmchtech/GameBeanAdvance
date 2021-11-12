@@ -720,8 +720,6 @@
 [COMPONENT LDR]
 - FORMAT:  ----01---0-1--------------------
 {
-    cpu.run_idle_cycle();
-
     uint value = cpu.memory.read_word(address, AccessType.NONSEQUENTIAL);
     if ((address & 0b11) == 0b01) value = ((value & 0xFF)     << 24) | (value >> 8);
     if ((address & 0b11) == 0b10) value = ((value & 0xFFFF)   << 16) | (value >> 16);
@@ -736,6 +734,7 @@
         cpu.regs[rd] = value;
     }
 
+    cpu.run_idle_cycle();
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 }
 [/COMPONENT]
@@ -743,13 +742,12 @@
 [COMPONENT LDRB]
 - FORMAT:  ----01---1-1--------------------
 {
-    cpu.run_idle_cycle();
-
     cpu.regs[get_nth_bits(opcode, 12, 16)] = cpu.memory.read_byte(address, AccessType.NONSEQUENTIAL);
     if (get_nth_bits(opcode, 12, 16) == 15) {
         cpu.refill_pipeline();
     }
     
+    cpu.run_idle_cycle();
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 }
 [/COMPONENT]
@@ -757,8 +755,6 @@
 [COMPONENT LDRH]
 - FORMAT:  ----000----1--------------------
 {
-    cpu.run_idle_cycle();
-
     uint value = cpu.memory.read_halfword(address, AccessType.NONSEQUENTIAL);
     if ((address & 0b1) == 0b1) value = ((value & 0xFF) << 24) | (value >> 8);
 
@@ -767,6 +763,7 @@
         cpu.refill_pipeline();
     }
 
+    cpu.run_idle_cycle();
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 }
 [/COMPONENT]
@@ -774,13 +771,12 @@
 [COMPONENT LDRSB]
 - FORMAT:  ----000----1------------1101----
 {
-    cpu.run_idle_cycle();
-
     cpu.regs[get_nth_bits(opcode, 12, 16)] = sign_extend(cpu.memory.read_byte(address, AccessType.NONSEQUENTIAL), 8);
     if (get_nth_bits(opcode, 12, 16) == 15) {
         cpu.refill_pipeline();
     }
 
+    cpu.run_idle_cycle();
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 }
 [/COMPONENT]
@@ -788,8 +784,6 @@
 [COMPONENT LDRSH]
 - FORMAT:  ----000----1------------1111----
 {
-    cpu.run_idle_cycle();
-
     uint value = cpu.memory.read_halfword(address, AccessType.NONSEQUENTIAL);
     if (address & 1) { 
         value = sign_extend(value >> 8, 8);
@@ -802,6 +796,7 @@
         cpu.refill_pipeline();
     }
 
+    cpu.run_idle_cycle();
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 }
 [/COMPONENT]
