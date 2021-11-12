@@ -240,16 +240,16 @@ class Memory : IMemory {
         pragma(inline, true) T read(uint address, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
             uint region = get_region(address);
 
-            if (address >> 28) {
-                // writeln(format("OPEN BUS. %x %x", cast(T) (*cpu_pipeline)[1], read_word(0x0300686c)));
-                return read_open_bus!T(address);
-            }
-
             // handle waitstates
             if (region < 0x8) {
                 uint stalls = calculate_stalls_for_access!T(region, access_type);
                 prefetch_buffer.run(stalls);
                 this.m_cycles += stalls;
+            }
+
+            if (address >> 28) {
+                // writeln(format("OPEN BUS. %x %x", cast(T) (*cpu_pipeline)[1], read_word(0x0300686c)));
+                return read_open_bus!T(address);
             }
 
             uint shift;
@@ -381,11 +381,9 @@ class Memory : IMemory {
             static if (is(T == ubyte )) shift = 0;
 
             // handle waitstates
-            if (region < 0x8) {
-                uint stalls = calculate_stalls_for_access!T(region, access_type);
-                prefetch_buffer.run(stalls);
-                this.m_cycles += stalls;
-            }
+            uint stalls = calculate_stalls_for_access!T(region, access_type);
+            prefetch_buffer.run(stalls);
+            this.m_cycles += stalls;
 
             switch ((address >> 24) & 0xF) {
                 case Region.BIOS:         break; // incorrect - implement properly later

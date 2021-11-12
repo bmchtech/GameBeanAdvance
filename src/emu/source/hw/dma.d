@@ -20,7 +20,7 @@ public:
         this.memory        = memory;
         this.scheduler     = scheduler;
         this.interrupt_cpu = interrupt_cpu;
-        
+
         dma_channels = [
             DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, 0, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately),
             DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, 0, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately),
@@ -163,6 +163,7 @@ public:
         }
 
         memory.prefetch_buffer.start();
+        writefln("Spent: %x cycles", 2 + memory.cycles - excess_cycles);
         return 2 + memory.cycles - excess_cycles;
     }
 
