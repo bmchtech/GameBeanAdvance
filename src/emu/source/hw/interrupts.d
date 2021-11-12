@@ -3,6 +3,8 @@ module hw.interrupts;
 import std.stdio;
 import hw.cpu;
 
+import util;
+
 // set up the possible interrupts
 enum Interrupt {
     LCD_VBLANK           = 1,
