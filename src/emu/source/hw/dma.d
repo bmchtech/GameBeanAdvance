@@ -58,22 +58,23 @@ public:
 
         // writefln("[%016x] Running DMA Channel %x", num_cycles, current_channel);
 
-        memory.cycles = 0;
         if (current_channel == -1) return 0; //error("DMA requested but no active channels found");
 
         memory.prefetch_buffer.stop();
+        uint excess_cycles = memory.cycles;
+        writefln("%x", excess_cycles);
 
         uint bytes_to_transfer  = dma_channels[current_channel].size_buf;
         int  source_increment   = 0;
         int  dest_increment     = 0;
 
-        // if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
-        //          current_channel,
-        //          bytes_to_transfer,
-        //          dma_channels[current_channel].transferring_words ? "words" : "halfwords",
-        //          dma_channels[current_channel].source_buf,
-        //          dma_channels[current_channel].dest_buf,
-        //          read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
+        if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
+                 current_channel,
+                 bytes_to_transfer,
+                 dma_channels[current_channel].transferring_words ? "words" : "halfwords",
+                 dma_channels[current_channel].source_buf,
+                 dma_channels[current_channel].dest_buf,
+                 read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
 
         switch (dma_channels[current_channel].source_addr_control) {
             case SourceAddrMode.Increment:  source_increment =  1; break;
@@ -168,7 +169,7 @@ public:
         }
 
         memory.prefetch_buffer.start();
-        return 2 + memory.cycles;
+        return 2 + memory.cycles - excess_cycles;
     }
 
     const uint[4] DMA_SOURCE_BUF_MASK = [0x07FF_FFFF, 0x0FFF_FFFF, 0x0FFF_FFFF, 0x0FFF_FFFF];
@@ -178,7 +179,6 @@ public:
         dma_channels[dma_id].source_buf = dma_channels[dma_id].source & (dma_channels[dma_id].transferring_words ? ~3 : ~1);
         dma_channels[dma_id].dest_buf   = dma_channels[dma_id].dest   & (dma_channels[dma_id].transferring_words ? ~3 : ~1);
     
-        // writefln("masking %x", dma_channels[dma_id].source_buf);
         dma_channels[dma_id].source_buf &= DMA_SOURCE_BUF_MASK[dma_id];
         dma_channels[dma_id].dest_buf   &= DMA_DEST_BUF_MASK[dma_id];
     }
