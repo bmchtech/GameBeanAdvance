@@ -18,6 +18,8 @@ class NoiseChannel {
     private int  cycles_elapsed        = 0;
     private long length;
     public  bool enabled = false;
+    public  bool envelope_enabled = false;
+
     // private int  sound_length;
     // private bool stop_on_expire;
 
@@ -44,8 +46,8 @@ class NoiseChannel {
         if (shifter_event) scheduler.remove_event(shifter_event);
         if (enabled)       shifter_event = scheduler.add_event_relative_to_self(&shift, interval);
 
-        if (envelope_event) scheduler.remove_event(envelope_event);
-        if (enabled)        envelope_event = scheduler.add_event_relative_to_self(&tick_envelope, envelope_length); 
+        if (envelope_event)   scheduler.remove_event(envelope_event);
+        if (envelope_enabled) envelope_event = scheduler.add_event_relative_to_self(&tick_envelope, envelope_length); 
     }
 
     short sample(int delta_cycles) {
@@ -53,7 +55,7 @@ class NoiseChannel {
 
         cycles_elapsed += delta_cycles;
         // if (cycles_elapsed > length) enabled = false;
-        return cast(short) (current_shifter_out * 8 * volume);
+        return cast(short) (current_shifter_out * 8);
     }
 
     void shift() {
@@ -72,6 +74,8 @@ class NoiseChannel {
 
     void tick_envelope() {
         this.volume = clamp(this.volume + this.envelope_multiplier, 0, 15);
+
+        envelope_event = scheduler.add_event_relative_to_self(&tick_envelope, envelope_length); 
     }
 
     void set_counter_width(int counter_width) {
@@ -101,6 +105,7 @@ class NoiseChannel {
     }
 
     void set_envelope_length(int n) {
+        envelope_enabled = n == 0;
         this.envelope_length = 262144 * n;
     }
 
