@@ -55,7 +55,7 @@ class NoiseChannel {
 
         cycles_elapsed += delta_cycles;
         // if (cycles_elapsed > length) enabled = false;
-        return cast(short) (current_shifter_out * 8);
+        return cast(short) (current_shifter_out * 8 * volume);
     }
 
     void shift() {
