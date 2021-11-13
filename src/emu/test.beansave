@@ -1,780 +1,839 @@
 Game Boy Advance Test Suite
 ===
 Timing test: Calibration
-ARM/ROM ...: Got     9 vs     7: FAIL
-ARM/ROM P..: Got     6 vs     4: FAIL
-ARM/ROM .N.: Got     8 vs     6: FAIL
-ARM/ROM PN.: Got     6 vs     4: FAIL
-ARM/ROM ..S: Got     8 vs     6: FAIL
-ARM/ROM P.S: Got     4 vs     2: FAIL
-ARM/ROM .NS: Got     7 vs     5: FAIL
-ARM/ROM PNS: Got     4 vs     2: FAIL
-ARM/WRAM: Got     7 vs     5: FAIL
-ARM/IWRAM: Got     2 vs     0: FAIL
-Thumb/ROM ...: Got     6 vs     4: FAIL
-Thumb/ROM P..: Got     3 vs     1: FAIL
-Thumb/ROM .N.: Got     5 vs     3: FAIL
-Thumb/ROM PN.: Got     3 vs     1: FAIL
-Thumb/ROM ..S: Got     6 vs     4: FAIL
-Thumb/ROM P.S: Got     2 vs     0: FAIL
-Thumb/ROM .NS: Got     5 vs     3: FAIL
-Thumb/ROM PNS: Got     2 vs     0: FAIL
-Thumb/WRAM: Got     4 vs     2: FAIL
-Thumb/IWRAM: Got     2 vs     0: FAIL
+ARM/ROM ...: Got     2 vs     7: FAIL
+ARM/ROM P..: Got 65535 vs     4: FAIL
+ARM/ROM .N.: Got     1 vs     6: FAIL
+ARM/ROM PN.: Got 65535 vs     4: FAIL
+ARM/ROM ..S: Got     3 vs     6: FAIL
+ARM/ROM P.S: Got 65535 vs     2: FAIL
+ARM/ROM .NS: Got     2 vs     5: FAIL
+ARM/ROM PNS: Got 65535 vs     2: FAIL
+ARM/WRAM: Got     0 vs     5: FAIL
+Thumb/ROM ...: Got     0 vs     4: FAIL
+Thumb/ROM P..: Got 65533 vs     1: FAIL
+Thumb/ROM .N.: Got     0 vs     3: FAIL
+Thumb/ROM PN.: Got 65534 vs     1: FAIL
+Thumb/ROM ..S: Got     0 vs     4: FAIL
+Thumb/ROM P.S: Got 65532 vs     0: FAIL
+Thumb/ROM .NS: Got     0 vs     3: FAIL
+Thumb/ROM PNS: Got 65533 vs     0: FAIL
+Thumb/WRAM: Got     0 vs     2: FAIL
 Timing test: nop
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
+Thumb/ROM P..: Got -65533 vs     3: FAIL
+Thumb/ROM PN.: Got -65533 vs     3: FAIL
 Timing test: nop / nop
+ARM/ROM P..: Got -65524 vs    12: FAIL
+ARM/ROM PN.: Got -65524 vs    12: FAIL
+ARM/ROM P.S: Got -65528 vs     8: FAIL
+ARM/ROM PNS: Got -65528 vs     8: FAIL
+Thumb/ROM P..: Got -65530 vs     6: FAIL
+Thumb/ROM PN.: Got -65530 vs     6: FAIL
+Thumb/ROM P.S: Got -65532 vs     4: FAIL
+Thumb/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: ldrh r2, [sp]
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
+Thumb/ROM P..: Got -65533 vs     3: FAIL
+Thumb/ROM PN.: Got -65533 vs     3: FAIL
+Thumb/ROM PNS: Got -65533 vs     3: FAIL
 Timing test: ldrh r2, [sp] / nop
-Thumb/ROM P.S: Got     5 vs     4: FAIL
-Thumb/ROM PNS: Got     5 vs     4: FAIL
+ARM/ROM P..: Got -65524 vs    12: FAIL
+ARM/ROM PN.: Got -65524 vs    12: FAIL
+ARM/ROM P.S: Got -65528 vs     8: FAIL
+ARM/ROM PNS: Got -65528 vs     8: FAIL
+Thumb/ROM P..: Got -65530 vs     6: FAIL
+Thumb/ROM PN.: Got -65530 vs     6: FAIL
+Thumb/ROM P.S: Got -65531 vs     4: FAIL
+Thumb/ROM PNS: Got -65531 vs     4: FAIL
 Timing test: nop / ldrh r2, [sp]
+ARM/ROM P..: Got -65524 vs    12: FAIL
+ARM/ROM PN.: Got -65524 vs    12: FAIL
+ARM/ROM P.S: Got -65528 vs     8: FAIL
+ARM/ROM PNS: Got -65528 vs     8: FAIL
+Thumb/ROM P..: Got -65530 vs     6: FAIL
+Thumb/ROM PN.: Got -65530 vs     6: FAIL
+Thumb/ROM P.S: Got -65531 vs     5: FAIL
+Thumb/ROM PNS: Got -65531 vs     5: FAIL
 Timing test: nop / ldrh r2, [sp] / nop
-Thumb/ROM P.S: Got     7 vs     6: FAIL
-Thumb/ROM PNS: Got     7 vs     6: FAIL
+ARM/ROM P..: Got -65518 vs    18: FAIL
+ARM/ROM PN.: Got -65518 vs    18: FAIL
+ARM/ROM P.S: Got -65524 vs    12: FAIL
+ARM/ROM PNS: Got -65524 vs    12: FAIL
+Thumb/ROM P..: Got -65527 vs     9: FAIL
+Thumb/ROM PN.: Got -65527 vs     9: FAIL
+Thumb/ROM P.S: Got -65529 vs     6: FAIL
+Thumb/ROM PNS: Got -65529 vs     6: FAIL
 Timing test: ldrh r2, [#0x08000000]
+ARM/ROM P..: Got -65522 vs    14: FAIL
+ARM/ROM PN.: Got -65524 vs    12: FAIL
+ARM/ROM P.S: Got -65523 vs    13: FAIL
+ARM/ROM PNS: Got -65525 vs    11: FAIL
+Thumb/ROM P..: Got -65525 vs    11: FAIL
+Thumb/ROM PN.: Got -65527 vs     9: FAIL
+Thumb/ROM P.S: Got -65525 vs    11: FAIL
+Thumb/ROM PNS: Got -65527 vs     9: FAIL
 Timing test: ldrh r2, [#0x08000000] / nop
+ARM/ROM P..: Got -65516 vs    20: FAIL
+ARM/ROM PN.: Got -65518 vs    18: FAIL
+ARM/ROM P.S: Got -65519 vs    17: FAIL
+ARM/ROM PNS: Got -65521 vs    15: FAIL
+Thumb/ROM P..: Got -65522 vs    14: FAIL
+Thumb/ROM PN.: Got -65524 vs    12: FAIL
+Thumb/ROM P.S: Got -65523 vs    13: FAIL
+Thumb/ROM PNS: Got -65525 vs    11: FAIL
 Timing test: nop / ldrh r2, [#0x08000000]
+ARM/ROM P..: Got -65516 vs    20: FAIL
+ARM/ROM PN.: Got -65518 vs    18: FAIL
+ARM/ROM P.S: Got -65519 vs    17: FAIL
+ARM/ROM PNS: Got -65521 vs    15: FAIL
+Thumb/ROM P..: Got -65522 vs    14: FAIL
+Thumb/ROM PN.: Got -65524 vs    12: FAIL
+Thumb/ROM P.S: Got -65523 vs    13: FAIL
+Thumb/ROM PNS: Got -65525 vs    11: FAIL
 Timing test: ldr r2, [#0x08000000]
+ARM/ROM P..: Got -65519 vs    17: FAIL
+ARM/ROM PN.: Got -65521 vs    15: FAIL
+ARM/ROM P.S: Got -65521 vs    15: FAIL
+ARM/ROM PNS: Got -65523 vs    13: FAIL
+Thumb/ROM P..: Got -65522 vs    14: FAIL
+Thumb/ROM PN.: Got -65524 vs    12: FAIL
+Thumb/ROM P.S: Got -65523 vs    13: FAIL
+Thumb/ROM PNS: Got -65525 vs    11: FAIL
 Timing test: ldr r2, [#0x08000000] / nop
+ARM/ROM P..: Got -65513 vs    23: FAIL
+ARM/ROM PN.: Got -65515 vs    21: FAIL
+ARM/ROM P.S: Got -65517 vs    19: FAIL
+ARM/ROM PNS: Got -65519 vs    17: FAIL
+Thumb/ROM P..: Got -65519 vs    17: FAIL
+Thumb/ROM PN.: Got -65521 vs    15: FAIL
+Thumb/ROM P.S: Got -65521 vs    15: FAIL
+Thumb/ROM PNS: Got -65523 vs    13: FAIL
 Timing test: nop / ldr r2, [#0x08000000]
+ARM/ROM P..: Got -65513 vs    23: FAIL
+ARM/ROM PN.: Got -65515 vs    21: FAIL
+ARM/ROM P.S: Got -65517 vs    19: FAIL
+ARM/ROM PNS: Got -65519 vs    17: FAIL
+Thumb/ROM P..: Got -65519 vs    17: FAIL
+Thumb/ROM PN.: Got -65521 vs    15: FAIL
+Thumb/ROM P.S: Got -65521 vs    15: FAIL
+Thumb/ROM PNS: Got -65523 vs    13: FAIL
 Timing test: strh r3, [sp]
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
+Thumb/ROM P..: Got -65533 vs     3: FAIL
+Thumb/ROM PN.: Got -65533 vs     3: FAIL
 Timing test: strh r3, [sp] / nop
+ARM/ROM P..: Got -65524 vs    12: FAIL
+ARM/ROM PN.: Got -65524 vs    12: FAIL
+ARM/ROM P.S: Got -65528 vs     8: FAIL
+ARM/ROM PNS: Got -65528 vs     8: FAIL
+Thumb/ROM P..: Got -65530 vs     6: FAIL
+Thumb/ROM PN.: Got -65530 vs     6: FAIL
+Thumb/ROM P.S: Got -65532 vs     4: FAIL
+Thumb/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: nop / strh r3, [sp]
+ARM/ROM P..: Got -65524 vs    12: FAIL
+ARM/ROM PN.: Got -65524 vs    12: FAIL
+ARM/ROM P.S: Got -65528 vs     8: FAIL
+ARM/ROM PNS: Got -65528 vs     8: FAIL
+Thumb/ROM P..: Got -65530 vs     6: FAIL
+Thumb/ROM PN.: Got -65530 vs     6: FAIL
+Thumb/ROM P.S: Got -65532 vs     4: FAIL
+Thumb/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: nop / strh r3, [sp] / nop
+ARM/ROM P..: Got -65518 vs    18: FAIL
+ARM/ROM PN.: Got -65518 vs    18: FAIL
+ARM/ROM P.S: Got -65524 vs    12: FAIL
+ARM/ROM PNS: Got -65524 vs    12: FAIL
+Thumb/ROM P..: Got -65527 vs     9: FAIL
+Thumb/ROM PN.: Got -65527 vs     9: FAIL
+Thumb/ROM P.S: Got -65530 vs     6: FAIL
+Thumb/ROM PNS: Got -65530 vs     6: FAIL
 Timing test: ldr r2, [sp] x2
+ARM/ROM P..: Got -65524 vs    12: FAIL
+ARM/ROM PN.: Got -65524 vs    12: FAIL
+ARM/ROM P.S: Got -65528 vs     8: FAIL
+ARM/ROM PNS: Got -65528 vs     8: FAIL
+Thumb/ROM P..: Got -65530 vs     6: FAIL
+Thumb/ROM PN.: Got -65530 vs     6: FAIL
+Thumb/ROM P.S: Got -65530 vs     6: FAIL
+Thumb/ROM PNS: Got -65530 vs     6: FAIL
 Timing test: ldr r2, [#0x08000000] / ldr r2, [sp]
+ARM/ROM P..: Got -65513 vs    23: FAIL
+ARM/ROM PN.: Got -65515 vs    21: FAIL
+ARM/ROM P.S: Got -65517 vs    19: FAIL
+ARM/ROM PNS: Got -65519 vs    17: FAIL
+Thumb/ROM P..: Got -65519 vs    17: FAIL
+Thumb/ROM PN.: Got -65521 vs    15: FAIL
+Thumb/ROM P.S: Got -65520 vs    16: FAIL
+Thumb/ROM PNS: Got -65522 vs    14: FAIL
 Timing test: ldr r2, [sp] / ldr r2, [#0x08000000]
-Thumb/ROM P.S: Got    16 vs    17: FAIL
-Thumb/ROM PNS: Got    14 vs    15: FAIL
+ARM/ROM P..: Got -65513 vs    23: FAIL
+ARM/ROM PN.: Got -65515 vs    21: FAIL
+ARM/ROM P.S: Got -65517 vs    19: FAIL
+ARM/ROM PNS: Got -65519 vs    17: FAIL
+Thumb/ROM P..: Got -65519 vs    17: FAIL
+Thumb/ROM PN.: Got -65521 vs    15: FAIL
+Thumb/ROM P.S: Got -65520 vs    17: FAIL
+Thumb/ROM PNS: Got -65522 vs    15: FAIL
 Timing test: ldr r2, [#0x08000000] x2
+ARM/ROM P..: Got -65502 vs    34: FAIL
+ARM/ROM PN.: Got -65506 vs    30: FAIL
+ARM/ROM P.S: Got -65506 vs    30: FAIL
+ARM/ROM PNS: Got -65510 vs    26: FAIL
+Thumb/ROM P..: Got -65508 vs    28: FAIL
+Thumb/ROM PN.: Got -65512 vs    24: FAIL
+Thumb/ROM P.S: Got -65510 vs    26: FAIL
+Thumb/ROM PNS: Got -65514 vs    22: FAIL
 Timing test: str r3, [sp] x2
+ARM/ROM P..: Got -65524 vs    12: FAIL
+ARM/ROM PN.: Got -65524 vs    12: FAIL
+ARM/ROM P.S: Got -65528 vs     8: FAIL
+ARM/ROM PNS: Got -65528 vs     8: FAIL
+Thumb/ROM P..: Got -65530 vs     6: FAIL
+Thumb/ROM PN.: Got -65530 vs     6: FAIL
+Thumb/ROM P.S: Got -65532 vs     4: FAIL
+Thumb/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: ldr r2, [sp] / str r2, [sp]
+ARM/ROM P..: Got -65524 vs    12: FAIL
+ARM/ROM PN.: Got -65524 vs    12: FAIL
+ARM/ROM P.S: Got -65528 vs     8: FAIL
+ARM/ROM PNS: Got -65528 vs     8: FAIL
+Thumb/ROM P..: Got -65530 vs     6: FAIL
+Thumb/ROM PN.: Got -65530 vs     6: FAIL
+Thumb/ROM P.S: Got -65531 vs     5: FAIL
+Thumb/ROM PNS: Got -65531 vs     5: FAIL
 Timing test: str r3, [sp] / ldr r3, [sp]
+ARM/ROM P..: Got -65524 vs    12: FAIL
+ARM/ROM PN.: Got -65524 vs    12: FAIL
+ARM/ROM P.S: Got -65528 vs     8: FAIL
+ARM/ROM PNS: Got -65528 vs     8: FAIL
+Thumb/ROM P..: Got -65530 vs     6: FAIL
+Thumb/ROM PN.: Got -65530 vs     6: FAIL
+Thumb/ROM P.S: Got -65531 vs     5: FAIL
+Thumb/ROM PNS: Got -65531 vs     5: FAIL
 Timing test: ldmia sp, {r2}
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: ldmia sp, {r2, r3}
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: ldmia sp, {r2-r7}
+ARM/ROM P..: Got -65528 vs     8: FAIL
+ARM/ROM PN.: Got -65528 vs     8: FAIL
+ARM/ROM P.S: Got -65528 vs     8: FAIL
+ARM/ROM PNS: Got -65528 vs     8: FAIL
 Timing test: ldmia sp, {r2} x2
+ARM/ROM P..: Got -65524 vs    12: FAIL
+ARM/ROM PN.: Got -65524 vs    12: FAIL
+ARM/ROM P.S: Got -65528 vs     8: FAIL
+ARM/ROM PNS: Got -65528 vs     8: FAIL
 Timing test: ldmia sp, {r2, r3} x2
+ARM/ROM P..: Got -65524 vs    12: FAIL
+ARM/ROM PN.: Got -65524 vs    12: FAIL
+ARM/ROM P.S: Got -65528 vs     8: FAIL
+ARM/ROM PNS: Got -65528 vs     8: FAIL
 Timing test: ldmia sp, {r2-r7} x2
+ARM/ROM P..: Got -65520 vs    16: FAIL
+ARM/ROM PN.: Got -65520 vs    16: FAIL
+ARM/ROM P.S: Got -65520 vs    16: FAIL
+ARM/ROM PNS: Got -65520 vs    16: FAIL
 Timing test: stmia sp, {r2}
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: stmia sp, {r2, r3}
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: stmia sp, {r2-r7}
+ARM/ROM P..: Got -65529 vs     7: FAIL
+ARM/ROM PN.: Got -65529 vs     7: FAIL
+ARM/ROM P.S: Got -65529 vs     7: FAIL
+ARM/ROM PNS: Got -65529 vs     7: FAIL
 Timing test: stmia sp, {r2} x2
+ARM/ROM P..: Got -65524 vs    12: FAIL
+ARM/ROM PN.: Got -65524 vs    12: FAIL
+ARM/ROM P.S: Got -65528 vs     8: FAIL
+ARM/ROM PNS: Got -65528 vs     8: FAIL
 Timing test: stmia sp, {r2, r3} x2
+ARM/ROM P..: Got -65524 vs    12: FAIL
+ARM/ROM PN.: Got -65524 vs    12: FAIL
+ARM/ROM P.S: Got -65528 vs     8: FAIL
+ARM/ROM PNS: Got -65528 vs     8: FAIL
 Timing test: stmia sp, {r2-r7} x2
+ARM/ROM P..: Got -65522 vs    14: FAIL
+ARM/ROM PN.: Got -65522 vs    14: FAIL
+ARM/ROM P.S: Got -65522 vs    14: FAIL
+ARM/ROM PNS: Got -65522 vs    14: FAIL
 Timing test: mul #0x00000000, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
+Thumb/ROM P..: Got -65533 vs     3: FAIL
+Thumb/ROM PN.: Got -65533 vs     3: FAIL
 Timing test: mul #0x00000078, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
+Thumb/ROM P..: Got -65533 vs     3: FAIL
+Thumb/ROM PN.: Got -65533 vs     3: FAIL
 Timing test: mul #0x00005678, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
+Thumb/ROM P..: Got -65533 vs     3: FAIL
+Thumb/ROM PN.: Got -65533 vs     3: FAIL
+Thumb/ROM PNS: Got -65533 vs     3: FAIL
 Timing test: mul #0x00345678, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
+Thumb/ROM P..: Got -65532 vs     4: FAIL
+Thumb/ROM PN.: Got -65532 vs     4: FAIL
+Thumb/ROM P.S: Got -65532 vs     4: FAIL
+Thumb/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: mul #0x12345678, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65531 vs     5: FAIL
+ARM/ROM PNS: Got -65531 vs     5: FAIL
+Thumb/ROM P..: Got -65531 vs     5: FAIL
+Thumb/ROM PN.: Got -65531 vs     5: FAIL
+Thumb/ROM P.S: Got -65531 vs     5: FAIL
+Thumb/ROM PNS: Got -65531 vs     5: FAIL
 Timing test: mul #0xFF000000, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
+Thumb/ROM P..: Got -65532 vs     4: FAIL
+Thumb/ROM PN.: Got -65532 vs     4: FAIL
+Thumb/ROM P.S: Got -65532 vs     4: FAIL
+Thumb/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: mul #0xFFFF0000, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
+Thumb/ROM P..: Got -65533 vs     3: FAIL
+Thumb/ROM PN.: Got -65533 vs     3: FAIL
+Thumb/ROM PNS: Got -65533 vs     3: FAIL
 Timing test: mul #0xFFFFFF00, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
+Thumb/ROM P..: Got -65533 vs     3: FAIL
+Thumb/ROM PN.: Got -65533 vs     3: FAIL
 Timing test: mul #0xFFFFFFFF, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
+Thumb/ROM P..: Got -65533 vs     3: FAIL
+Thumb/ROM PN.: Got -65533 vs     3: FAIL
 Timing test: mul #0xFFFFFFFF, #0x00
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
+Thumb/ROM P..: Got -65533 vs     3: FAIL
+Thumb/ROM PN.: Got -65533 vs     3: FAIL
 Timing test: mla #0x00000000, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: mla #0x00000078, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: mla #0x00005678, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: mla #0x00345678, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: mla #0x12345678, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: mla #0xFF000000, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: mla #0xFFFF0000, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: mla #0xFFFFFF00, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: mla #0xFFFFFFFF, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: mla #0xFFFFFFFF, #0x00
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: smull #0x00000000, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: smull #0x00000078, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: smull #0x00005678, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: smull #0x00345678, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: smull #0x12345678, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: smull #0xFF000000, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: smull #0xFFFF0000, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: smull #0xFFFFFF00, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: smull #0xFFFFFFFF, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: smull #0xFFFFFFFF, #0x00
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: smlal #0x00000000, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: smlal #0x00000078, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: smlal #0x00005678, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: smlal #0x00345678, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: smlal #0x12345678, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: smlal #0xFF000000, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: smlal #0xFFFF0000, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: smlal #0xFFFFFF00, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: smlal #0xFFFFFFFF, #0xFF
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: smlal #0xFFFFFFFF, #0x00
+ARM/ROM P..: Got -65530 vs     6: FAIL
+ARM/ROM PN.: Got -65530 vs     6: FAIL
+ARM/ROM P.S: Got -65532 vs     4: FAIL
+ARM/ROM PNS: Got -65532 vs     4: FAIL
 Timing test: b pc
+ARM/ROM P..: Got -65510 vs    26: FAIL
+ARM/ROM PN.: Got -65511 vs    25: FAIL
+ARM/ROM P.S: Got -65517 vs    19: FAIL
+ARM/ROM PNS: Got -65518 vs    18: FAIL
+Thumb/ROM P..: Got -65522 vs    14: FAIL
+Thumb/ROM PN.: Got -65523 vs    13: FAIL
+Thumb/ROM P.S: Got -65525 vs    11: FAIL
+Thumb/ROM PNS: Got -65526 vs    10: FAIL
 Timing test: nop ; b pc
+ARM/ROM P..: Got -65510 vs    26: FAIL
+ARM/ROM PN.: Got -65511 vs    25: FAIL
+ARM/ROM P.S: Got -65517 vs    19: FAIL
+ARM/ROM PNS: Got -65518 vs    18: FAIL
+Thumb/ROM P..: Got -65522 vs    14: FAIL
+Thumb/ROM PN.: Got -65523 vs    13: FAIL
+Thumb/ROM P.S: Got -65525 vs    11: FAIL
+Thumb/ROM PNS: Got -65526 vs    10: FAIL
 Timing test: bx
+ARM/ROM P..: Got -65458 vs    78: FAIL
+ARM/ROM PN.: Got -65462 vs    74: FAIL
+ARM/ROM P.S: Got -65477 vs    59: FAIL
+ARM/ROM PNS: Got -65481 vs    55: FAIL
+Thumb/ROM P..: Got -65479 vs    57: FAIL
+Thumb/ROM PN.: Got -65483 vs    53: FAIL
+Thumb/ROM P.S: Got -65491 vs    45: FAIL
+Thumb/ROM PNS: Got -65495 vs    41: FAIL
 Timing test: Trivial loop
+ARM/ROM P..: Got -65026 vs   510: FAIL
+ARM/ROM PN.: Got -65041 vs   495: FAIL
+ARM/ROM P.S: Got -65171 vs   365: FAIL
+ARM/ROM PNS: Got -65186 vs   350: FAIL
+Thumb/ROM P..: Got -65266 vs   270: FAIL
+Thumb/ROM PN.: Got -65281 vs   255: FAIL
+Thumb/ROM P.S: Got -65331 vs   205: FAIL
+Thumb/ROM PNS: Got -65346 vs   190: FAIL
 Timing test: C loop
-ARM/ROM P.S: Got   177 vs   161: FAIL
-ARM/ROM PNS: Got   173 vs   157: FAIL
-Thumb/ROM P.S: Got   163 vs   147: FAIL
-Thumb/ROM PNS: Got   159 vs   143: FAIL
+ARM/ROM P..: Got -65305 vs   231: FAIL
+ARM/ROM PN.: Got -65309 vs   227: FAIL
+ARM/ROM P.S: Got -65359 vs   161: FAIL
+ARM/ROM PNS: Got -65363 vs   157: FAIL
+Thumb/ROM P..: Got -65326 vs   210: FAIL
+Thumb/ROM PN.: Got -65330 vs   206: FAIL
+Thumb/ROM P.S: Got -65373 vs   147: FAIL
+Thumb/ROM PNS: Got -65377 vs   143: FAIL
 Timing test: BIOS Division
+ARM/ROM P..: Got -65138 vs   398: FAIL
+ARM/ROM PN.: Got -65142 vs   394: FAIL
+ARM/ROM P.S: Got -65155 vs   381: FAIL
+ARM/ROM PNS: Got -65159 vs   377: FAIL
+Thumb/ROM P..: Got -65165 vs   371: FAIL
+Thumb/ROM PN.: Got -65169 vs   367: FAIL
+Thumb/ROM P.S: Got -65173 vs   363: FAIL
+Thumb/ROM PNS: Got -65177 vs   359: FAIL
 Timing test: BIOS Division 2
+ARM/ROM P..: Got -65398 vs   138: FAIL
+ARM/ROM PN.: Got -65402 vs   134: FAIL
+ARM/ROM P.S: Got -65415 vs   121: FAIL
+ARM/ROM PNS: Got -65419 vs   117: FAIL
+Thumb/ROM P..: Got -65425 vs   111: FAIL
+Thumb/ROM PN.: Got -65429 vs   107: FAIL
+Thumb/ROM P.S: Got -65433 vs   103: FAIL
+Thumb/ROM PNS: Got -65437 vs    99: FAIL
 Timing test: BIOS Sqrt
+ARM/ROM P..: Got -65386 vs   150: FAIL
+ARM/ROM PN.: Got -65388 vs   148: FAIL
+ARM/ROM P.S: Got -65401 vs   135: FAIL
+ARM/ROM PNS: Got -65403 vs   133: FAIL
+Thumb/ROM P..: Got -65410 vs   126: FAIL
+Thumb/ROM PN.: Got -65412 vs   124: FAIL
+Thumb/ROM P.S: Got -65417 vs   119: FAIL
+Thumb/ROM PNS: Got -65419 vs   117: FAIL
 Timing test: BIOS Sqrt 2
+ARM/ROM P..: Got -65271 vs   265: FAIL
+ARM/ROM PN.: Got -65273 vs   263: FAIL
+ARM/ROM P.S: Got -65286 vs   250: FAIL
+ARM/ROM PNS: Got -65288 vs   248: FAIL
+Thumb/ROM P..: Got -65295 vs   241: FAIL
+Thumb/ROM PN.: Got -65297 vs   239: FAIL
+Thumb/ROM P.S: Got -65302 vs   234: FAIL
+Thumb/ROM PNS: Got -65304 vs   232: FAIL
 Timing test: BIOS Sqrt 3
+ARM/ROM P..: Got -64344 vs  1192: FAIL
+ARM/ROM PN.: Got -64348 vs  1188: FAIL
+ARM/ROM P.S: Got -64359 vs  1177: FAIL
+ARM/ROM PNS: Got -64363 vs  1173: FAIL
+Thumb/ROM P..: Got -64368 vs  1168: FAIL
+Thumb/ROM PN.: Got -64372 vs  1164: FAIL
+Thumb/ROM P.S: Got -64375 vs  1161: FAIL
+Thumb/ROM PNS: Got -64379 vs  1157: FAIL
 Timing test: BIOS ArcTan
+ARM/ROM P..: Got -65386 vs   150: FAIL
+ARM/ROM PN.: Got -65388 vs   148: FAIL
+ARM/ROM P.S: Got -65401 vs   135: FAIL
+ARM/ROM PNS: Got -65403 vs   133: FAIL
+Thumb/ROM P..: Got -65410 vs   126: FAIL
+Thumb/ROM PN.: Got -65412 vs   124: FAIL
+Thumb/ROM P.S: Got -65417 vs   119: FAIL
+Thumb/ROM PNS: Got -65419 vs   117: FAIL
 Timing test: CpuSet
+ARM/ROM P..: Got -62083 vs  3453: FAIL
+ARM/ROM PN.: Got -62085 vs  3451: FAIL
+ARM/ROM P.S: Got -62102 vs  3434: FAIL
+ARM/ROM PNS: Got -62104 vs  3432: FAIL
+Thumb/ROM P..: Got -62080 vs  3456: FAIL
+Thumb/ROM PN.: Got -62088 vs  3448: FAIL
+Thumb/ROM P.S: Got -62089 vs  3447: FAIL
+Thumb/ROM PNS: Got -62097 vs  3439: FAIL
 Timing test: Trivial DMA (16)
+ARM/ROM P..: Got -65526 vs    10: FAIL
+ARM/ROM PN.: Got -65526 vs    10: FAIL
+ARM/ROM P.S: Got -65528 vs     8: FAIL
+ARM/ROM PNS: Got -65528 vs     8: FAIL
 ARM/IWRAM: Got     6 vs     2: FAIL
-Thumb/ROM P.S: Got     6 vs     2: FAIL
-Thumb/ROM PNS: Got     6 vs     2: FAIL
+Thumb/ROM P..: Got -65529 vs     7: FAIL
+Thumb/ROM PN.: Got -65529 vs     7: FAIL
+Thumb/ROM P.S: Got -65530 vs     2: FAIL
+Thumb/ROM PNS: Got -65530 vs     2: FAIL
 Thumb/IWRAM: Got     6 vs     2: FAIL
 Timing test: Trivial DMA (16/ROM)
-ARM/ROM P.S: Got    12 vs    13: FAIL
-ARM/ROM PNS: Got    11 vs    12: FAIL
+ARM/ROM P..: Got -65522 vs    14: FAIL
+ARM/ROM PN.: Got -65523 vs    13: FAIL
+ARM/ROM P.S: Got -65524 vs    13: FAIL
+ARM/ROM PNS: Got -65525 vs    12: FAIL
 ARM/IWRAM: Got    10 vs     2: FAIL
-Thumb/ROM P.S: Got    10 vs     2: FAIL
-Thumb/ROM PNS: Got     9 vs     2: FAIL
+Thumb/ROM P..: Got -65525 vs    11: FAIL
+Thumb/ROM PN.: Got -65526 vs    10: FAIL
+Thumb/ROM P.S: Got -65526 vs     2: FAIL
+Thumb/ROM PNS: Got -65527 vs     2: FAIL
 Thumb/IWRAM: Got    10 vs     2: FAIL
 Timing test: Trivial DMA (16/to ROM)
-ARM/ROM P..: Got    14 vs    15: FAIL
-ARM/ROM PN.: Got    13 vs    14: FAIL
+ARM/ROM P..: Got -65522 vs    15: FAIL
+ARM/ROM PN.: Got -65523 vs    14: FAIL
+ARM/ROM P.S: Got -65524 vs    12: FAIL
+ARM/ROM PNS: Got -65525 vs    11: FAIL
 ARM/IWRAM: Got    10 vs     2: FAIL
-Thumb/ROM P..: Got    11 vs    12: FAIL
-Thumb/ROM PN.: Got    10 vs    11: FAIL
-Thumb/ROM P.S: Got    10 vs     2: FAIL
-Thumb/ROM PNS: Got     9 vs     2: FAIL
+Thumb/ROM P..: Got -65525 vs    12: FAIL
+Thumb/ROM PN.: Got -65526 vs    11: FAIL
+Thumb/ROM P.S: Got -65526 vs     2: FAIL
+Thumb/ROM PNS: Got -65527 vs     2: FAIL
 Thumb/IWRAM: Got    10 vs     2: FAIL
 Timing test: Trivial DMA (16/ROM to ROM)
 ARM/ROM ...: Got    23 vs    19: FAIL
-ARM/ROM P..: Got    20 vs    16: FAIL
+ARM/ROM P..: Got -65516 vs    16: FAIL
 ARM/ROM .N.: Got    20 vs    17: FAIL
-ARM/ROM PN.: Got    18 vs    15: FAIL
+ARM/ROM PN.: Got -65518 vs    15: FAIL
 ARM/ROM ..S: Got    22 vs    17: FAIL
-ARM/ROM P.S: Got    18 vs    14: FAIL
+ARM/ROM P.S: Got -65518 vs    14: FAIL
 ARM/ROM .NS: Got    19 vs    15: FAIL
-ARM/ROM PNS: Got    16 vs    13: FAIL
+ARM/ROM PNS: Got -65520 vs    13: FAIL
 ARM/WRAM: Got    21 vs    17: FAIL
 ARM/IWRAM: Got    16 vs     2: FAIL
 Thumb/ROM ...: Got    20 vs    16: FAIL
-Thumb/ROM P..: Got    17 vs    13: FAIL
+Thumb/ROM P..: Got -65519 vs    13: FAIL
 Thumb/ROM .N.: Got    17 vs    14: FAIL
-Thumb/ROM PN.: Got    15 vs    12: FAIL
+Thumb/ROM PN.: Got -65521 vs    12: FAIL
 Thumb/ROM ..S: Got    20 vs    15: FAIL
-Thumb/ROM P.S: Got    16 vs     2: FAIL
+Thumb/ROM P.S: Got -65520 vs     2: FAIL
 Thumb/ROM .NS: Got    17 vs    13: FAIL
-Thumb/ROM PNS: Got    14 vs     2: FAIL
+Thumb/ROM PNS: Got -65522 vs     2: FAIL
 Thumb/WRAM: Got    18 vs    14: FAIL
 Thumb/IWRAM: Got    16 vs     2: FAIL
 Timing test: Trivial DMA (32)
+ARM/ROM P..: Got -65526 vs    10: FAIL
+ARM/ROM PN.: Got -65526 vs    10: FAIL
+ARM/ROM P.S: Got -65528 vs     8: FAIL
+ARM/ROM PNS: Got -65528 vs     8: FAIL
 ARM/IWRAM: Got     6 vs     2: FAIL
-Thumb/ROM P.S: Got     6 vs     2: FAIL
-Thumb/ROM PNS: Got     6 vs     2: FAIL
+Thumb/ROM P..: Got -65529 vs     7: FAIL
+Thumb/ROM PN.: Got -65529 vs     7: FAIL
+Thumb/ROM P.S: Got -65530 vs     2: FAIL
+Thumb/ROM PNS: Got -65530 vs     2: FAIL
 Thumb/IWRAM: Got     6 vs     2: FAIL
 Timing test: Trivial DMA (32/from ROM)
-ARM/ROM P.S: Got    14 vs    15: FAIL
-ARM/ROM PNS: Got    13 vs    14: FAIL
+ARM/ROM P..: Got -65519 vs    17: FAIL
+ARM/ROM PN.: Got -65520 vs    16: FAIL
+ARM/ROM P.S: Got -65522 vs    15: FAIL
+ARM/ROM PNS: Got -65523 vs    14: FAIL
 ARM/IWRAM: Got    13 vs     2: FAIL
-Thumb/ROM P.S: Got    12 vs     2: FAIL
-Thumb/ROM PNS: Got    11 vs     2: FAIL
+Thumb/ROM P..: Got -65522 vs    14: FAIL
+Thumb/ROM PN.: Got -65523 vs    13: FAIL
+Thumb/ROM P.S: Got -65524 vs     2: FAIL
+Thumb/ROM PNS: Got -65525 vs     2: FAIL
 Thumb/IWRAM: Got    13 vs     2: FAIL
 Timing test: Trivial DMA (32/to ROM)
-ARM/ROM P..: Got    17 vs    18: FAIL
-ARM/ROM PN.: Got    16 vs    17: FAIL
+ARM/ROM P..: Got -65519 vs    18: FAIL
+ARM/ROM PN.: Got -65520 vs    17: FAIL
+ARM/ROM P.S: Got -65522 vs    14: FAIL
+ARM/ROM PNS: Got -65523 vs    13: FAIL
 ARM/IWRAM: Got    13 vs     2: FAIL
-Thumb/ROM P..: Got    14 vs    15: FAIL
-Thumb/ROM PN.: Got    13 vs    14: FAIL
-Thumb/ROM P.S: Got    12 vs     2: FAIL
-Thumb/ROM PNS: Got    11 vs     2: FAIL
+Thumb/ROM P..: Got -65522 vs    15: FAIL
+Thumb/ROM PN.: Got -65523 vs    14: FAIL
+Thumb/ROM P.S: Got -65524 vs     2: FAIL
+Thumb/ROM PNS: Got -65525 vs     2: FAIL
 Thumb/IWRAM: Got    13 vs     2: FAIL
 Timing test: Trivial DMA (32/ROM to ROM)
 ARM/ROM ...: Got    29 vs    25: FAIL
-ARM/ROM P..: Got    26 vs    22: FAIL
+ARM/ROM P..: Got -65510 vs    22: FAIL
 ARM/ROM .N.: Got    26 vs    23: FAIL
-ARM/ROM PN.: Got    24 vs    21: FAIL
+ARM/ROM PN.: Got -65512 vs    21: FAIL
 ARM/ROM ..S: Got    26 vs    21: FAIL
-ARM/ROM P.S: Got    22 vs    18: FAIL
+ARM/ROM P.S: Got -65514 vs    18: FAIL
 ARM/ROM .NS: Got    23 vs    19: FAIL
-ARM/ROM PNS: Got    20 vs    17: FAIL
+ARM/ROM PNS: Got -65516 vs    17: FAIL
 ARM/WRAM: Got    27 vs    23: FAIL
 ARM/IWRAM: Got    22 vs     2: FAIL
 Thumb/ROM ...: Got    26 vs    22: FAIL
-Thumb/ROM P..: Got    23 vs    19: FAIL
+Thumb/ROM P..: Got -65513 vs    19: FAIL
 Thumb/ROM .N.: Got    23 vs    20: FAIL
-Thumb/ROM PN.: Got    21 vs    18: FAIL
+Thumb/ROM PN.: Got -65515 vs    18: FAIL
 Thumb/ROM ..S: Got    24 vs    19: FAIL
-Thumb/ROM P.S: Got    20 vs     2: FAIL
+Thumb/ROM P.S: Got -65516 vs     2: FAIL
 Thumb/ROM .NS: Got    21 vs    17: FAIL
-Thumb/ROM PNS: Got    18 vs     2: FAIL
+Thumb/ROM PNS: Got -65518 vs     2: FAIL
 Thumb/WRAM: Got    24 vs    20: FAIL
 Thumb/IWRAM: Got    22 vs     2: FAIL
 Timing test: Short DMA (16)
+ARM/ROM P..: Got -65496 vs    40: FAIL
+ARM/ROM PN.: Got -65496 vs    40: FAIL
+ARM/ROM P.S: Got -65498 vs    38: FAIL
+ARM/ROM PNS: Got -65498 vs    38: FAIL
 ARM/IWRAM: Got    36 vs     2: FAIL
-Thumb/ROM P.S: Got    36 vs     2: FAIL
-Thumb/ROM PNS: Got    36 vs     2: FAIL
+Thumb/ROM P..: Got -65499 vs    37: FAIL
+Thumb/ROM PN.: Got -65499 vs    37: FAIL
+Thumb/ROM P.S: Got -65500 vs     2: FAIL
+Thumb/ROM PNS: Got -65500 vs     2: FAIL
 Thumb/IWRAM: Got    36 vs     2: FAIL
 Timing test: Short DMA (16/from ROM)
-ARM/ROM P.S: Got    57 vs    58: FAIL
-ARM/ROM PNS: Got    56 vs    57: FAIL
+ARM/ROM P..: Got -65462 vs    74: FAIL
+ARM/ROM PN.: Got -65463 vs    73: FAIL
+ARM/ROM P.S: Got -65479 vs    58: FAIL
+ARM/ROM PNS: Got -65480 vs    57: FAIL
 ARM/IWRAM: Got    70 vs     2: FAIL
-Thumb/ROM P.S: Got    55 vs     2: FAIL
-Thumb/ROM PNS: Got    54 vs     2: FAIL
+Thumb/ROM P..: Got -65465 vs    71: FAIL
+Thumb/ROM PN.: Got -65466 vs    70: FAIL
+Thumb/ROM P.S: Got -65481 vs     2: FAIL
+Thumb/ROM PNS: Got -65482 vs     2: FAIL
 Thumb/IWRAM: Got    70 vs     2: FAIL
 Timing test: Short DMA (16/to ROM)
-ARM/ROM P..: Got    74 vs    75: FAIL
-ARM/ROM PN.: Got    73 vs    74: FAIL
+ARM/ROM P..: Got -65462 vs    75: FAIL
+ARM/ROM PN.: Got -65463 vs    74: FAIL
+ARM/ROM P.S: Got -65479 vs    57: FAIL
+ARM/ROM PNS: Got -65480 vs    56: FAIL
 ARM/IWRAM: Got    70 vs     2: FAIL
-Thumb/ROM P..: Got    71 vs    72: FAIL
-Thumb/ROM PN.: Got    70 vs    71: FAIL
-Thumb/ROM P.S: Got    55 vs     2: FAIL
-Thumb/ROM PNS: Got    54 vs     2: FAIL
+Thumb/ROM P..: Got -65465 vs    72: FAIL
+Thumb/ROM PN.: Got -65466 vs    71: FAIL
+Thumb/ROM P.S: Got -65481 vs     2: FAIL
+Thumb/ROM PNS: Got -65482 vs     2: FAIL
 Thumb/IWRAM: Got    70 vs     2: FAIL
 Timing test: Short DMA (16/ROM to ROM)
 ARM/ROM ...: Got   113 vs   109: FAIL
-ARM/ROM P..: Got   110 vs   106: FAIL
+ARM/ROM P..: Got -65426 vs   106: FAIL
 ARM/ROM .N.: Got   110 vs   107: FAIL
-ARM/ROM PN.: Got   108 vs   105: FAIL
+ARM/ROM PN.: Got -65428 vs   105: FAIL
 ARM/ROM ..S: Got    82 vs    77: FAIL
-ARM/ROM P.S: Got    78 vs    74: FAIL
+ARM/ROM P.S: Got -65458 vs    74: FAIL
 ARM/ROM .NS: Got    79 vs    75: FAIL
-ARM/ROM PNS: Got    76 vs    73: FAIL
+ARM/ROM PNS: Got -65460 vs    73: FAIL
 ARM/WRAM: Got   111 vs   107: FAIL
 ARM/IWRAM: Got   106 vs     2: FAIL
 Thumb/ROM ...: Got   110 vs   106: FAIL
-Thumb/ROM P..: Got   107 vs   103: FAIL
+Thumb/ROM P..: Got -65429 vs   103: FAIL
 Thumb/ROM .N.: Got   107 vs   104: FAIL
-Thumb/ROM PN.: Got   105 vs   102: FAIL
+Thumb/ROM PN.: Got -65431 vs   102: FAIL
 Thumb/ROM ..S: Got    80 vs    75: FAIL
-Thumb/ROM P.S: Got    76 vs     2: FAIL
+Thumb/ROM P.S: Got -65460 vs     2: FAIL
 Thumb/ROM .NS: Got    77 vs    73: FAIL
-Thumb/ROM PNS: Got    74 vs     2: FAIL
+Thumb/ROM PNS: Got -65462 vs     2: FAIL
 Thumb/WRAM: Got   108 vs   104: FAIL
 Thumb/IWRAM: Got   106 vs     2: FAIL
 Timing test: Short DMA (32)
+ARM/ROM P..: Got -65496 vs    40: FAIL
+ARM/ROM PN.: Got -65496 vs    40: FAIL
+ARM/ROM P.S: Got -65498 vs    38: FAIL
+ARM/ROM PNS: Got -65498 vs    38: FAIL
 ARM/IWRAM: Got    36 vs     2: FAIL
-Thumb/ROM P.S: Got    36 vs     2: FAIL
-Thumb/ROM PNS: Got    36 vs     2: FAIL
+Thumb/ROM P..: Got -65499 vs    37: FAIL
+Thumb/ROM PN.: Got -65499 vs    37: FAIL
+Thumb/ROM P.S: Got -65500 vs     2: FAIL
+Thumb/ROM PNS: Got -65500 vs     2: FAIL
 Thumb/IWRAM: Got    36 vs     2: FAIL
 Timing test: Short DMA (32/from ROM)
-ARM/ROM P.S: Got    89 vs    90: FAIL
-ARM/ROM PNS: Got    88 vs    89: FAIL
+ARM/ROM P..: Got -65414 vs   122: FAIL
+ARM/ROM PN.: Got -65415 vs   121: FAIL
+ARM/ROM P.S: Got -65447 vs    90: FAIL
+ARM/ROM PNS: Got -65448 vs    89: FAIL
 ARM/IWRAM: Got   118 vs     2: FAIL
-Thumb/ROM P.S: Got    87 vs     2: FAIL
-Thumb/ROM PNS: Got    86 vs     2: FAIL
+Thumb/ROM P..: Got -65417 vs   119: FAIL
+Thumb/ROM PN.: Got -65418 vs   118: FAIL
+Thumb/ROM P.S: Got -65449 vs     2: FAIL
+Thumb/ROM PNS: Got -65450 vs     2: FAIL
 Thumb/IWRAM: Got   118 vs     2: FAIL
 Timing test: Short DMA (32/to ROM)
-ARM/ROM P..: Got   122 vs   123: FAIL
-ARM/ROM PN.: Got   121 vs   122: FAIL
+ARM/ROM P..: Got -65414 vs   123: FAIL
+ARM/ROM PN.: Got -65415 vs   122: FAIL
+ARM/ROM P.S: Got -65447 vs    89: FAIL
+ARM/ROM PNS: Got -65448 vs    88: FAIL
 ARM/IWRAM: Got   118 vs     2: FAIL
-Thumb/ROM P..: Got   119 vs   120: FAIL
-Thumb/ROM PN.: Got   118 vs   119: FAIL
-Thumb/ROM P.S: Got    87 vs     2: FAIL
-Thumb/ROM PNS: Got    86 vs     2: FAIL
+Thumb/ROM P..: Got -65417 vs   120: FAIL
+Thumb/ROM PN.: Got -65418 vs   119: FAIL
+Thumb/ROM P.S: Got -65449 vs     2: FAIL
+Thumb/ROM PNS: Got -65450 vs     2: FAIL
 Thumb/IWRAM: Got   118 vs     2: FAIL
 Timing test: Short DMA (32/ROM to ROM)
 ARM/ROM ...: Got   209 vs   205: FAIL
-ARM/ROM P..: Got   206 vs   202: FAIL
+ARM/ROM P..: Got -65330 vs   202: FAIL
 ARM/ROM .N.: Got   206 vs   203: FAIL
-ARM/ROM PN.: Got   204 vs   201: FAIL
+ARM/ROM PN.: Got -65332 vs   201: FAIL
 ARM/ROM ..S: Got   146 vs   141: FAIL
-ARM/ROM P.S: Got   142 vs   138: FAIL
+ARM/ROM P.S: Got -65394 vs   138: FAIL
 ARM/ROM .NS: Got   143 vs   139: FAIL
-ARM/ROM PNS: Got   140 vs   137: FAIL
+ARM/ROM PNS: Got -65396 vs   137: FAIL
 ARM/WRAM: Got   207 vs   203: FAIL
 ARM/IWRAM: Got   202 vs     2: FAIL
 Thumb/ROM ...: Got   206 vs   202: FAIL
-Thumb/ROM P..: Got   203 vs   199: FAIL
+Thumb/ROM P..: Got -65333 vs   199: FAIL
 Thumb/ROM .N.: Got   203 vs   200: FAIL
-Thumb/ROM PN.: Got   201 vs   198: FAIL
+Thumb/ROM PN.: Got -65335 vs   198: FAIL
 Thumb/ROM ..S: Got   144 vs   139: FAIL
-Thumb/ROM P.S: Got   140 vs     2: FAIL
+Thumb/ROM P.S: Got -65396 vs     2: FAIL
 Thumb/ROM .NS: Got   141 vs   137: FAIL
-Thumb/ROM PNS: Got   138 vs     2: FAIL
+Thumb/ROM PNS: Got -65398 vs     2: FAIL
 Thumb/WRAM: Got   204 vs   200: FAIL
 Thumb/IWRAM: Got   202 vs     2: FAIL
-    6 v      2: FAI 
-Th mb/ OM  .S: Got     6 v      2: FAI 
-Th mb/ OM  NS: Got     6 v      2: FAI 
-Th mb/ WRA : G t    36 vs      : F IL
- imi g t st: Sho t D A ( 2/f om  OM) ARM ROM P.S  Go     89  s    90  FA L
-A M/R M P S:  ot    8  vs     9:  AIL ARM IWR M:  ot   11  vs     2:  AIL Thu b/R M P S:  ot    8  vs     2:  AIL Thu b/R M P S:  ot    8  vs     2:  AIL Thu b/I RAM  Go     18  s     2  FA L
-T min  te t:  hor  DM  (3 /to ROM 
-AR /RO  P. : G t   122 vs   12 : F IL
- RM/ OM  N.: Got   1 1 v     22: FAI 
-AR /IW AM: Got   1 8 v      2: FAI 
-Th mb/ OM  ..: Got   1 9 v     20: FAI 
-Th mb/ OM  N.: Got   1 8 v     19: FAI 
-Th mb/ OM  .S: Got     7 v      2: FAI 
-Th mb/ OM  NS: Got     6 v      2: FAI 
-Th mb/ WRA : G t   118 vs      : F IL
- imi g t st: Sho t D A ( 2/R M t  RO )
-A M/R M . .:  ot   20  vs   2 5:  AIL ARM ROM P..  Go     06  s   202  FA L
-A M/R M . .:  ot   20  vs   2 3:  AIL ARM ROM PN.  Go     04  s   201  FA L
-A M/R M . S:  ot   14  vs   1 1:  AIL ARM ROM P.S  Go     42  s   138  FA L
-A M/R M . S:  ot   14  vs   1 9:  AIL ARM ROM PNS  Go     40  s   137  FA L
-A M/W AM: Got   2 7 v     03: FAI 
-AR /IW AM: Got   2 2 v      2: FAI 
-Th mb/ OM  ..: Got   2 6 v     02: FAI 
-Th mb/ OM  ..: Got   2 3 v     99: FAI 
-Th mb/ OM  N.: Got   2 3 v     00: FAI 
-Th mb/ OM  N.: Got   2 1 v     98: FAI 
-Th mb/ OM  .S: Got   1 4 v     39: FAI 
-Th mb/ OM  .S: Got   1 0 v      2: FAI 
-Th mb/ OM  NS: Got   1 1 v     37: FAI 
-Th mb/ OM  NS: Got   1 8 v      2: FAI 
-Th mb/ RAM  Go     04  s   200  FA L
-T umb IWR M:  ot   20  vs     2:  AIL   l r r , [ p]
- imi g t st: ldr r2, [sp  /  dr  2,  #0x 800 000 
-Th mb/ OM  .S: Got     6 v     17: FAI 
-Th mb/ OM  NS: Got     4 v     15: FAI 
-Ti ing tes : l r r , [ 0x0 000 00] x2
- imi g t st: str r3, [sp  x2 Tim ng  est  ld  r2  [s ] / str r2, [sp 
-Ti ing tes : s r r , [ p]   ld  r3  [s ]
-T min  te t:  dmi  sp  {r }
-T min  te t:  dmi  sp  {r , r }
-T min  te t:  dmi  sp  {r -r7 
-Ti ing tes : l mia sp, {r2  x2 Tim ng  est  ld ia  p,  r2, r3} x2
- imi g t st: ldm a s , { 2-r } x 
-Ti ing tes : s mia sp, {r2 
-Ti ing tes : s mia sp, {r2  r3 
-Ti ing tes : s mia sp, {r2 r7} Tim ng  est  st ia  p,  r2} x2
- imi g t st: stm a s , { 2,  3}  2
-T min  te t:  tmi  sp  {r -r7  x2 Tim ng  est  mu  #0 000 000 , # xFF Tim ng  est  mu  #0 000 007 , # xFF Tim ng  est  mu  #0 000 567 , # xFF Tim ng  est  mu  #0 003 567 , # xFF Tim ng  est  mu  #0 123 567 , # xFF Tim ng  est  mu  #0 FF0 000 , # xFF Tim ng  est  mu  #0 FFF 000 , # xFF Tim ng  est  mu  #0 FFF FF0 , # xFF Tim ng  est  mu  #0 FFF FFF , # xFF Tim ng  est  mu  #0 FFF FFF , # x00 Tim ng  est  ml  #0 000 000 , # xFF Tim ng  est  ml  #0 000 007 , # xFF Tim ng  est  ml  #0 000 567 , # xFF Tim ng  est  ml  #0 003 567 , # xFF Tim ng  est  ml  #0 123 567 , # xFF Tim ng  est  ml  #0 FF0 000 , # xFF Tim ng  est  ml  #0 FFF 000 , # xFF Tim ng  est  ml  #0 FFF FF0 , # xFF Tim ng  est  ml  #0 FFF FFF , # xFF Tim ng  est  ml  #0 FFF FFF , # x00 Tim ng  est  sm ll  0x0 000 00, #0x F
-T min  te t:  mul  #0 000 007 , # xFF Tim ng  est  sm ll  0x0 005 78, #0x F
-T min  te t:  mul  #0 003 567 , # xFF Tim ng  est  sm ll  0x1 345 78, #0x F
-T min  te t:  mul  #0 FF0 000 , # xFF Tim ng  est  sm ll  0xF FF0 00, #0x F
-T min  te t:  mul  #0 FFF FF0 , # xFF Tim ng  est  sm ll  0xF FFF FF, #0x F
-T min  te t:  mul  #0 FFF FFF , # x00 Tim ng  est  sm al  0x0 000 00, #0x F
-T min  te t:  mla  #0 000 007 , # xFF Tim ng  est  sm al  0x0 005 78, #0x F
-T min  te t:  mla  #0 003 567 , # xFF Tim ng  est  sm al  0x1 345 78, #0x F
-T min  te t:  mla  #0 FF0 000 , # xFF Tim ng  est  sm al  0xF FF0 00, #0x F
-T min  te t:  mla  #0 FFF FF0 , # xFF Tim ng  est  sm al  0xF FFF FF, #0x F
-T min  te t:  mla  #0 FFF FFF , # x00 Tim ng  est  b  c
-T min  te t:  op   b  c
-T min  te t:  x
-T min  te t:  riv al  oop Tim ng  est  C  oop ARM ROM P.S  Go     77  s   161  FA L
-A M/R M P S:  ot   17  vs   1 7:  AIL Thu b/R M P S:  ot   16  vs   1 7:  AIL Thu b/R M P S:  ot   15  vs   1 3:  AIL Tim ng  est  BI S D vis on
- imi g t st: BIO  Di isi n 2 Tim ng  est  BI S S rt
- imi g t st: BIO  Sq t 2 Tim ng  est  BI S S rt  
-Ti ing tes : B OS  rcT n
-T min  te t:  puS t
-T min  te t:  riv al  MA  16) ARM IWR M:  ot       vs     2:  AIL Thu b/R M P S:  ot       vs     2:  AIL Thu b/R M P S:  ot       vs     2:  AIL Thu b/I RAM  Go      6  s     2  FA L
-T min  te t:  riv al  MA  16/ OM) ARM ROM P.S  Go     12  s    13  FA L
-A M/R M P S:  ot    1  vs     2:  AIL ARM IWR M:  ot    1  vs     2:  AIL Thu b/R M P S:  ot    1  vs     2:  AIL Thu b/R M P S:  ot       vs     2:  AIL Thu b/I RAM  Go     10  s     2  FA L
-T min  te t:  riv al  MA  16/ o R M)
- RM/ OM  ..: Got     4 v     15: FAI 
-AR /RO  PN : G t    13 vs    1 : F IL
- RM/ WRA : G t    10 vs      : F IL
- hum /RO  P. : G t    11 vs    1 : F IL
- hum /RO  PN : G t    10 vs    1 : F IL
- hum /RO  P. : G t    10 vs      : F IL
- hum /RO  PN : G t     9 vs      : F IL
- hum /IW AM: Got     0 v      2: FAI 
-Ti ing tes : T ivi l D A ( 6/R M t  RO )
-A M/R M . .:  ot    2  vs     9:  AIL ARM ROM P..  Go     20  s    16  FA L
-A M/R M . .:  ot    2  vs     7:  AIL ARM ROM PN.  Go     18  s    15  FA L
-A M/R M . S:  ot    2  vs     7:  AIL ARM ROM P.S  Go     18  s    14  FA L
-A M/R M . S:  ot    1  vs     5:  AIL ARM ROM PNS  Go     16  s    13  FA L
-A M/W AM: Got     1 v     17: FAI 
-AR /IW AM: Got     6 v      2: FAI 
-Th mb/ OM  ..: Got     0 v     16: FAI 
-Th mb/ OM  ..: Got     7 v     13: FAI 
-Th mb/ OM  N.: Got     7 v     14: FAI 
-Th mb/ OM  N.: Got     5 v     12: FAI 
-Th mb/ OM  .S: Got     0 v     15: FAI 
-Th mb/ OM  .S: Got     6 v      2: FAI 
-Th mb/ OM  NS: Got     7 v     13: FAI 
-Th mb/ OM  NS: Got     4 v      2: FAI 
-Th mb/ RAM  Go     18  s    14  FA L
-T umb IWR M:  ot    1  vs     2:  AIL Tim ng  est  Tr via  DM  (3 )
-A M/I RAM  Go      6  s     2  FA L
-T umb ROM P.S  Go      6  s     2  FA L
-T umb ROM PNS  Go      6  s     2  FA L
-T umb IWR M:  ot       vs     2:  AIL Tim ng  est  Tr via  DM  (3 /fr m R M)
- RM/ OM  .S: Got     4 v     15: FAI 
-AR /RO  PN : G t    13 vs    1 : F IL
- RM/ WRA : G t    13 vs      : F IL
- hum /RO  P. : G t    12 vs      : F IL
- hum /RO  PN : G t    11 vs      : F IL
- hum /IW AM: Got     3 v      2: FAI 
-Ti ing tes : T ivi l D A ( 2/t  RO )
-A M/R M P .:  ot    1  vs     8:  AIL ARM ROM PN.  Go     16  s    17  FA L
-A M/I RAM  Go     13  s     2  FA L
-T umb ROM P..  Go     14  s    15  FA L
-T umb ROM PN.  Go     13  s    14  FA L
-T umb ROM P.S  Go     12  s     2  FA L
-T umb ROM PNS  Go     11  s     2  FA L
-T umb IWR M:  ot    1  vs     2:  AIL Tim ng  est  Tr via  DM  (3 /RO  to ROM 
-AR /RO  .. : G t    29 vs    2 : F IL
- RM/ OM  ..: Got     6 v     22: FAI 
-AR /RO  .N : G t    26 vs    2 : F IL
- RM/ OM  N.: Got     4 v     21: FAI 
-AR /RO  .. : G t    26 vs    2 : F IL
- RM/ OM  .S: Got     2 v     18: FAI 
-AR /RO  .N : G t    23 vs    1 : F IL
- RM/ OM  NS: Got     0 v     17: FAI 
-AR /WR M:  ot    2  vs     3:  AIL ARM IWR M:  ot    2  vs     2:  AIL Thu b/R M . .:  ot    2  vs     2:  AIL Thu b/R M P .:  ot    2  vs     9:  AIL Thu b/R M . .:  ot    2  vs     0:  AIL Thu b/R M P .:  ot    2  vs     8:  AIL Thu b/R M . S:  ot    2  vs     9:  AIL Thu b/R M P S:  ot    2  vs     2:  AIL Thu b/R M . S:  ot    2  vs     7:  AIL Thu b/R M P S:  ot    1  vs     2:  AIL Thu b/W AM: Got     4 v     20: FAI 
-Th mb/ WRA : G t    22 vs      : F IL
- imi g t st: Sho t D A ( 6)
- RM/ WRA : G t    36 vs      : F IL
- hum /RO  P. : G t    36 vs      : F IL
- hum /RO  PN : G t    36 vs      : F IL
- hum /IW AM: Got     6 v      2: FAI 
-Ti ing tes : S ort DMA (16 fro  RO )
-A M/R M P S:  ot    5  vs     8:  AIL ARM ROM PNS  Go     56  s    57  FA L
-A M/I RAM  Go     70  s     2  FA L
-T umb ROM P.S  Go     55  s     2  FA L
-T umb ROM PNS  Go     54  s     2  FA L
-T umb IWR M:  ot    7  vs     2:  AIL Tim ng  est  Sh rt  MA  16/ o R M)
- RM/ OM  ..: Got     4 v     75: FAI 
-AR /RO  PN : G t    73 vs    7 : F IL
- RM/ WRA : G t    70 vs      : F IL
- hum /RO  P. : G t    71 vs    7 : F IL
- hum /RO  PN : G t    70 vs    7 : F IL
- hum /RO  P. : G t    55 vs      : F IL
- hum /RO  PN : G t    54 vs      : F IL
- hum /IW AM: Got     0 v      2: FAI 
-Ti ing tes : S ort DMA (16 ROM to  OM) ARM ROM ...  Go     13  s   109  FA L
-A M/R M P .:  ot   11  vs   1 6:  AIL ARM ROM .N.  Go     10  s   107  FA L
-A M/R M P .:  ot   10  vs   1 5:  AIL ARM ROM ..S  Go     82  s    77  FA L
-A M/R M P S:  ot    7  vs     4:  AIL ARM ROM .NS  Go     79  s    75  FA L
-A M/R M P S:  ot    7  vs     3:  AIL ARM WRA : G t   111 vs   10 : F IL
- RM/ WRA : G t   106 vs      : F IL
- hum /RO  .. : G t   110 vs   10 : F IL
- hum /RO  P. : G t   107 vs   10 : F IL
- hum /RO  .N : G t   107 vs   10 : F IL
- hum /RO  PN : G t   105 vs   10 : F IL
- hum /RO  .. : G t    80 vs    7 : F IL
- hum /RO  P. : G t    76 vs      : F IL
- hum /RO  .N : G t    77 vs    7 : F IL
- hum /RO  PN : G t    74 vs      : F IL
- hum /WR M:  ot   10  vs   1 4:  AIL Thu b/I RAM  Go     06  s     2  FA L
-T min  te t:  hor  DM  (3 )
-A M/I RAM  Go     36  s     2  FA L
-T umb ROM P.S  Go     36  s     2  FA L
-T umb ROM PNS  Go     36  s     2  FA L
-T umb IWR M:  ot    3  vs     2:  AIL Tim ng  est  Sh rt  MA  32/ rom ROM 
-AR /RO  P. : G t    89 vs    9 : F IL
- RM/ OM  NS: Got     8 v     89: FAI 
-AR /IW AM: Got   1 8 v      2: FAI 
-Th mb/ OM  .S: Got     7 v      2: FAI 
-Th mb/ OM  NS: Got     6 v      2: FAI 
-Th mb/ WRA : G t   118 vs      : F IL
- imi g t st: Sho t D A ( 2/t  RO )
-A M/R M P .:  ot   12  vs   1 3:  AIL ARM ROM PN.  Go     21  s   122  FA L
-A M/I RAM  Go     18  s     2  FA L
-T umb ROM P..  Go     19  s   120  FA L
-T umb ROM PN.  Go     18  s   119  FA L
-T umb ROM P.S  Go     87  s     2  FA L
-T umb ROM PNS  Go     86  s     2  FA L
-T umb IWR M:  ot   11  vs     2:  AIL Tim ng  est  Sh rt  MA  32/ OM  o R M)
- RM/ OM  ..: Got   2 9 v     05: FAI 
-AR /RO  P. : G t   206 vs   20 : F IL
- RM/ OM  N.: Got   2 6 v     03: FAI 
-AR /RO  PN : G t   204 vs   20 : F IL
- RM/ OM  .S: Got   1 6 v     41: FAI 
-AR /RO  P. : G t   142 vs   13 : F IL
- RM/ OM  NS: Got   1 3 v     39: FAI 
-AR /RO  PN : G t   140 vs   13 : F IL
- RM/ RAM  Go     07  s   203  FA L
-A M/I RAM  Go     02  s     2  FA L
-T umb ROM ...  Go     06  s   202  FA L
-T umb ROM P..  Go     03  s   199  FA L
-T umb ROM .N.  Go     03  s   200  FA L
-T umb ROM PN.  Go     01  s   198  FA L
-T umb ROM ..S  Go     44  s   139  FA L
-T umb ROM P.S  Go     40  s     2  FA L
-T umb ROM .NS  Go     41  s   137  FA L
-T umb ROM PNS  Go     38  s     2  FA L
-T umb WRA : G t   204 vs   20 : F IL
- hum /IW AM: Got   2 2 v      2: FAI 
-   14: FAI 
-AR /RO  .. : G t    40 vs    2 : F IL
- RM/ OM  .S: Got     8 v     14: FAI 
-AR /RO  .N : G t    36 vs    2 : F IL
- RM/ OM  NS: Got     6 v     14: FAI 
-Ti ing tes : m l # x00 000 0,  0xF 
-AR /RO  .. : G t    17 vs      : F IL
- RM/ OM  ..: Got     0 v      6: FAI 
-AR /RO  .N : G t    15 vs      : F IL
- RM/ OM  N.: Got     9 v      6: FAI 
-AR /RO  .. : G t    15 vs      : F IL
- RM/ OM  .S: Got     9 v      4: FAI 
-AR /RO  .N : G t    13 vs      : F IL
- RM/ OM  NS: Got     8 v      4: FAI 
-Th mb/ OM  ..: Got     1 v      6: FAI 
-Th mb/ OM  ..: Got     7 v      3: FAI 
-Th mb/ OM  N.: Got     9 v      5: FAI 
-Th mb/ OM  N.: Got     6 v      3: FAI 
-Th mb/ OM  .S: Got     1 v      6: FAI 
-Th mb/ OM  .S: Got     7 v      2: FAI 
-Th mb/ OM  NS: Got     9 v      5: FAI 
-Th mb/ OM  NS: Got     6 v      2: FAI 
-Ti ing tes : m l # x00 000 8,  0xF 
-AR /RO  .. : G t    17 vs      : F IL
- RM/ OM  ..: Got     0 v      6: FAI 
-AR /RO  .N : G t    15 vs      : F IL
- RM/ OM  N.: Got     9 v      6: FAI 
-AR /RO  .. : G t    15 vs      : F IL
- RM/ OM  .S: Got     9 v      4: FAI 
-AR /RO  .N : G t    13 vs      : F IL
- RM/ OM  NS: Got     8 v      4: FAI 
-Th mb/ OM  ..: Got     1 v      6: FAI 
-Th mb/ OM  ..: Got     7 v      3: FAI 
-Th mb/ OM  N.: Got     9 v      5: FAI 
-Th mb/ OM  N.: Got     6 v      3: FAI 
-Th mb/ OM  .S: Got     1 v      6: FAI 
-Th mb/ OM  .S: Got     7 v      2: FAI 
-Th mb/ OM  NS: Got     9 v      5: FAI 
-Th mb/ OM  NS: Got     6 v      2: FAI 
-Ti ing tes : m l # x00 056 8,  0xF 
-AR /RO  .. : G t    18 vs    1 : F IL
- RM/ OM  ..: Got     1 v      6: FAI 
-AR /RO  .N : G t    16 vs      : F IL
- RM/ OM  N.: Got     0 v      6: FAI 
-AR /RO  .. : G t    16 vs      : F IL
- RM/ OM  .S: Got     0 v      4: FAI 
-AR /RO  .N : G t    14 vs      : F IL
- RM/ OM  NS: Got     9 v      4: FAI 
-Th mb/ OM  ..: Got     2 v      7: FAI 
-Th mb/ OM  ..: Got     8 v      3: FAI 
-Th mb/ OM  N.: Got     0 v      6: FAI 
-Th mb/ OM  N.: Got     7 v      3: FAI 
-Th mb/ OM  .S: Got     2 v      7: FAI 
-Th mb/ OM  .S: Got     8 v      3: FAI 
-Th mb/ OM  NS: Got     0 v      6: FAI 
-Th mb/ OM  NS: Got     7 v      3: FAI 
-Ti ing tes : m l # x00 456 8,  0xF 
-AR /RO  .. : G t    19 vs    1 : F IL
- RM/ OM  ..: Got     2 v      6: FAI 
-AR /RO  .N : G t    17 vs    1 : F IL
- RM/ OM  N.: Got     1 v      6: FAI 
-AR /RO  .. : G t    17 vs    1 : F IL
- RM/ OM  .S: Got     1 v      4: FAI 
-AR /RO  .N : G t    15 vs      : F IL
- RM/ OM  NS: Got     0 v      4: FAI 
-Th mb/ OM  ..: Got     3 v      8: FAI 
-Th mb/ OM  ..: Got     9 v      4: FAI 
-Th mb/ OM  N.: Got     1 v      7: FAI 
-Th mb/ OM  N.: Got     8 v      4: FAI 
-Th mb/ OM  .S: Got     3 v      8: FAI 
-Th mb/ OM  .S: Got     9 v      4: FAI 
-Th mb/ OM  NS: Got     1 v      7: FAI 
-Th mb/ OM  NS: Got     8 v      4: FAI 
-Ti ing tes : m l # x12 456 8,  0xF 
-AR /RO  .. : G t    20 vs    1 : F IL
- RM/ OM  ..: Got     3 v      6: FAI 
-AR /RO  .N : G t    18 vs    1 : F IL
- RM/ OM  N.: Got     2 v      6: FAI 
-AR /RO  .. : G t    18 vs    1 : F IL
- RM/ OM  .S: Got     2 v      5: FAI 
-AR /RO  .N : G t    16 vs    1 : F IL
- RM/ OM  NS: Got     1 v      5: FAI 
-Th mb/ OM  ..: Got     4 v      9: FAI 
-Th mb/ OM  ..: Got     0 v      5: FAI 
-Th mb/ OM  N.: Got     2 v      8: FAI 
-Th mb/ OM  N.: Got     9 v      5: FAI 
-Th mb/ OM  .S: Got     4 v      9: FAI 
-Th mb/ OM  .S: Got     0 v      5: FAI 
-Th mb/ OM  NS: Got     2 v      8: FAI 
-Th mb/ OM  NS: Got     9 v      5: FAI 
-Ti ing tes : m l # xFF 000 0,  0xF 
-AR /RO  .. : G t    19 vs    1 : F IL
- RM/ OM  ..: Got     2 v      6: FAI 
-AR /RO  .N : G t    17 vs    1 : F IL
- RM/ OM  N.: Got     1 v      6: FAI 
-AR /RO  .. : G t    17 vs    1 : F IL
- RM/ OM  .S: Got     1 v      4: FAI 
-AR /RO  .N : G t    15 vs      : F IL
- RM/ OM  NS: Got     0 v      4: FAI 
-Th mb/ OM  ..: Got     3 v      8: FAI 
-Th mb/ OM  ..: Got     9 v      4: FAI 
-Th mb/ OM  N.: Got     1 v      7: FAI 
-Th mb/ OM  N.: Got     8 v      4: FAI 
-Th mb/ OM  .S: Got     3 v      8: FAI 
-Th mb/ OM  .S: Got     9 v      4: FAI 
-Th mb/ OM  NS: Got     1 v      7: FAI 
-Th mb/ OM  NS: Got     8 v      4: FAI 
-Ti ing tes : m l # xFF F00 0,  0xF 
-AR /RO  .. : G t    18 vs    1 : F IL
- RM/ OM  ..: Got     1 v      6: FAI 
-AR /RO  .N : G t    16 vs      : F IL
- RM/ OM  N.: Got     0 v      6: FAI 
-AR /RO  .. : G t    16 vs      : F IL
- RM/ OM  .S: Got     0 v      4: FAI 
-AR /RO  .N : G t    14 vs      : F IL
- RM/ OM  NS: Got     9 v      4: FAI 
-Th mb/ OM  ..: Got     2 v      7: FAI 
-Th mb/ OM  ..: Got     8 v      3: FAI 
-Th mb/ OM  N.: Got     0 v      6: FAI 
-Th mb/ OM  N.: Got     7 v      3: FAI 
-Th mb/ OM  .S: Got     2 v      7: FAI 
-Th mb/ OM  .S: Got     8 v      3: FAI 
-Th mb/ OM  NS: Got     0 v      6: FAI 
-Th mb/ OM  NS: Got     7 v      3: FAI 
-Ti ing tes : m l # xFF FFF 0,  0xF 
-AR /RO  .. : G t    17 vs      : F IL
- RM/ OM  ..: Got     0 v      6: FAI 
-AR /RO  .N : G t    15 vs      : F IL
- RM/ OM  N.: Got     9 v      6: FAI 
-AR /RO  .. : G t    15 vs      : F IL
- RM/ OM  .S: Got     9 v      4: FAI 
-AR /RO  .N : G t    13 vs      : F IL
- RM/ OM  NS: Got     8 v      4: FAI 
-Th mb/ OM  ..: Got     1 v      6: FAI 
-Th mb/ OM  ..: Got     7 v      3: FAI 
-Th mb/ OM  N.: Got     9 v      5: FAI 
-Th mb/ OM  N.: Got     6 v      3: FAI 
-Th mb/ OM  .S: Got     1 v      6: FAI 
-Th mb/ OM  .S: Got     7 v      2: FAI 
-Th mb/ OM  NS: Got     9 v      5: FAI 
-Th mb/ OM  NS: Got     6 v      2: FAI 
-Ti ing tes : m l # xFF FFF F,  0xF 
-AR /RO  .. : G t    17 vs      : F IL
- RM/ OM  ..: Got     0 v      6: FAI 
-AR /RO  .N : G t    15 vs      : F IL
- RM/ OM  N.: Got     9 v      6: FAI 
-AR /RO  .. : G t    15 vs      : F IL
- RM/ OM  .S: Got     9 v      4: FAI 
-AR /RO  .N : G t    13 vs      : F IL
- RM/ OM  NS: Got     8 v      4: FAI 
-Th mb/ OM  ..: Got     1 v      6: FAI 
-Th mb/ OM  ..: Got     7 v      3: FAI 
-Th mb/ OM  N.: Got     9 v      5: FAI 
-Th mb/ OM  N.: Got     6 v      3: FAI 
-Th mb/ OM  .S: Got     1 v      6: FAI 
-Th mb/ OM  .S: Got     7 v      2: FAI 
-Th mb/ OM  NS: Got     9 v      5: FAI 
-Th mb/ OM  NS: Got     6 v      2: FAI 
-Ti ing tes : m l # xFF FFF F,  0x0 
-AR /RO  .. : G t    17 vs      : F IL
- RM/ OM  ..: Got     0 v      6: FAI 
-AR /RO  .N : G t    15 vs      : F IL
- RM/ OM  N.: Got     9 v      6: FAI 
-AR /RO  .. : G t    15 vs      : F IL
- RM/ OM  .S: Got     9 v      4: FAI 
-AR /RO  .N : G t    13 vs      : F IL
- RM/ OM  NS: Got     8 v      4: FAI 
-Th mb/ OM  ..: Got     1 v      6: FAI 
-Th mb/ OM  ..: Got     7 v      3: FAI 
-Th mb/ OM  N.: Got     9 v      5: FAI 
-Th mb/ OM  N.: Got     6 v      3: FAI 
-Th mb/ OM  .S: Got     1 v      6: FAI 
-Th mb/ OM  .S: Got     7 v      2: FAI 
-Th mb/ OM  NS: Got     9 v      5: FAI 
-Th mb/ OM  NS: Got     6 v      2: FAI 
-Ti ing tes : m a # x00 000 0,  0xF 
-AR /RO  .. : G t    18 vs    1 : F IL
- RM/ OM  ..: Got     1 v      6: FAI 
-AR /RO  .N : G t    16 vs      : F IL
- RM/ OM  N.: Got     0 v      6: FAI 
-AR /RO  .. : G t    16 vs      : F IL
- RM/ OM  .S: Got     0 v      4: FAI 
-AR /RO  .N : G t    14 vs      : F IL
- RM/ OM  NS: Got     9 v      4: FAI 
-Ti ing tes : m a # x00 000 8,  0xF 
-AR /RO  .. : G t    18 vs    1 : F IL
- RM/ OM  ..: Got     1 v      6: FAI 
-AR /RO  .N : G t    16 vs      : F IL
- RM/ OM  N.: Got     0 v      6: FAI 
-AR /RO  .. : G t    16 vs      : F IL
- RM/ OM  .S: Got     0 v      4: FAI 
-AR /RO  .N : G t    14 vs      : F IL
- RM/ OM  NS: Got     9 v      4: FAI 
-Ti ing tes : m a # x00 056 8,  0xF 
-AR /RO  .. : G t    18 vs    1 : F IL
- RM/ OM  ..: Got     1 v      6: FAI 
-AR /RO  .N : G t    16 vs      : F IL
- RM/ OM  N.: Got     0 v      6: FAI 
-AR /RO  .. : G t    16 vs      : F IL
- RM/ OM  .S: Got     0 v      4: FAI 
-AR /RO  .N : G t    14 vs      : F IL
- RM/ OM  NS: Got     9 v      4: FAI 
-Ti ing tes : m a # x00 456 8,  0xF 
-AR /RO  .. : G t    18 vs    1 : F IL
- RM/ OM  ..: Got     1 v      6: FAI 
-AR /RO  .N : G t    16 vs      : F IL
- RM/ OM  N.: Got     0 v      6: FAI 
-AR /RO  .. : G t    16 vs      : F IL
- RM/ OM  .S: Got     0 v      4: FAI 
-AR /RO  .N : G t    14 vs      : F IL
- RM/ OM  NS: Got     9 v      4: FAI 
-Ti ing tes : m a # x12 456 8,  0xF 
-AR /RO  .. : G t    18 vs    1 : F IL
- RM/ OM  ..: Got     1 v      6: FAI 
-AR /RO  .N : G t    16 vs      : F IL
- RM/ OM  N.: Got     0 v      6: FAI 
-AR /RO  .. : G t    16 vs      : F IL
- RM/ OM  .S: Got     0 v      4: FAI 
-AR /RO  .N : G t    14 vs      : F IL
- RM/ OM  NS: Got     9 v      4: FAI 
-Ti ing tes : m a # xFF 000 0,  0xF 
-AR /RO  .. : G t    18 vs    1 : F IL
- RM/ OM  ..: Got     1 v      6: FAI 
-AR /RO  .N : G t    16 vs      : F IL
- RM/ OM  N.: Got     0 v      6: FAI 
-AR /RO  .. : G t    16 vs      : F IL
- RM/ OM  .S: Got     0 v      4: FAI 
-AR /RO  .N : G t    14 vs      : F IL
- RM/ OM  NS: Got     9 v      4: FAI 
-Ti ing tes : m a # xFF F00 0,  0xF 
-AR /RO  .. : G t    18 vs    1 : F IL
- RM/ OM  ..: Got     1 v      6: FAI 
-AR /RO  .N : G t    16 vs      : F IL
- RM/ OM  N.: Got     0 v      6: FAI 
-AR /RO  .. : G t    16 vs      : F IL
- RM/ OM  .S: Got     0 v      4: FAI 
-AR /RO  .N : G t    14 vs      : F IL
- RM/ OM  NS: Got     9 v      4: FAI 
-Ti ing tes : m a # xFF FFF 0,  0xF 
-AR /RO  .. : G t    18 vs    1 : F IL
- RM/ OM  ..: Got     1 v      6: FAI 
-AR /RO  .N : G t    16 vs      : F IL
- RM/ OM  N.: Got     0 v      6: FAI 
-AR /RO  .. : G t    16 vs      : F IL
- RM/ OM  .S: Got     0 v      4: FAI 
-AR /RO  .N : G t    14 vs      : F IL
- RM/ OM  NS: Got     9 v      4: FAI 
-Ti ing tes : m a # xFF FFF F,  0xF 
-AR /RO  .. : G t    18 vs    1 : F IL
- RM/ OM  ..: Got     1 v      6: FAI 
-AR /RO  .N : G t    16 vs      : F IL
- RM/ OM  N.: Got     0 v      6: FAI 
-AR /RO  .. : G t    16 vs      : F IL
- RM/ OM  .S: Got     0 v      4: FAI 
-AR /RO  .N : G t    14 vs      : F IL
- RM/ OM  NS: Got     9 v      4: FAI 
-Ti ing tes : m a # xFF FFF F,  0x0 
-AR /RO  .. : G t    18 vs    1 : F IL
- RM/ OM  ..: Got     1 v      6: FAI 
-AR /RO  .N : G t    16 vs      : F IL
- RM/ OM  N.: Got     0 v      6: FAI 
-AR /RO  .. : G t    16 vs      : F IL
- RM/ OM  .S: Got     0 v      4: FAI 
-AR /RO  .N : G t    14 vs      : F IL
- RM/ OM  NS: Got     9 v      4: FAI 
-Ti ing tes : s ull #0x 000 000  #0 FF
- RM/ OM  ..: Got     8 v     10: FAI 
-AR /RO  P. : G t    11 vs      : F IL
- RM/ OM  N.: Got     6 v      9: FAI 
-AR /RO  PN : G t    10 vs      : F IL
- RM/ OM  .S: Got     6 v      9: FAI 
-AR /RO  P. : G t    10 vs      : F IL
- RM/ OM  NS: Got     4 v      8: FAI 
-AR /RO  PN : G t     9 vs      : F IL
- imi g t st: smu l # x00 000 8,  0xF 
-AR /RO  .. : G t    18 vs    1 : F IL
- RM/ OM  ..: Got     1 v      6: FAI 
-AR /RO  .N : G t    16 vs      : F IL
- RM/ OM  N.: Got     0 v      6: FAI 
-AR /RO  .. : G t    16 vs      : F IL
- RM/ OM  .S: Got     0 v      4: FAI 
-AR /RO  .N : G t    14 vs      : F IL
- RM/ OM  NS: Got     9 v      4: FAI 
-Ti ing tes : s ull #0x 000 678  #0 FF
- RM/ OM  ..: Got     8 v     10: FAI 
-AR /RO  P. : G t    11 vs      : F IL
- RM/ OM  N.: Got     6 v      9: FAI 
-AR /RO  PN : G t    10 vs      : F IL
- RM/ OM  .S: Got     6 v      9: FAI 
-AR /RO  P. : G t    10 vs      : F IL
- RM/ OM  NS: Got     4 v      8: FAI 
-AR /RO  PN : G t     9 vs      : F IL
- imi g t st: smu l # x00 456 8,  0xF 
+ t st: smu l # x00 456 8,  0xF 
 AR /RO  .. : G t    18 vs    1 : F IL
  RM/ OM  ..: Got     1 v      6: FAI 
 AR /RO  .N : G t    16 vs      : F IL
