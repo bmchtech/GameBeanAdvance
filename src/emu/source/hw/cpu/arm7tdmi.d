@@ -1,6 +1,7 @@
 module hw.cpu.arm7tdmi;
 
 import hw.memory;
+import hw.interrupts;
 
 import abstracthw.cpu;
 import abstracthw.memory;
@@ -44,6 +45,8 @@ class ARM7TDMI : IARM7TDMI {
 
     uint current_instruction_size;
 
+    InterruptManager interrupt_manager;
+
     this(Memory memory) {
         this.m_memory        = memory;
 
@@ -69,6 +72,10 @@ class ARM7TDMI : IARM7TDMI {
 
         m_pipeline_access_type = AccessType.NONSEQUENTIAL;
         set_bit_T(false);
+    }
+
+    void set_interrupt_manager(InterruptManager interrupt_manager) {
+        this.interrupt_manager = interrupt_manager;
     }
 
     // returns true if the exception is accepted (or, excepted :P)
@@ -346,14 +353,15 @@ class ARM7TDMI : IARM7TDMI {
     }
 
     ulong cycle() {
-        if (halted) return 1;
         memory.cycles = 0;
+
+        if (interrupt_manager.has_irq()) exception(CpuException.IRQ);
         
         // writefln("1");
 
         // if (*pc == 0x0803_9DD6) { _g_num_log += 100; writefln("CPUSET");}
 
-        // Logger.instance.capture_cpu();
+        Logger.instance.capture_cpu();
         // if ( && !get_nth_bit(*cpsr, 7)) {
             // exception(CpuException.IRQ);
         // }
@@ -392,7 +400,7 @@ class ARM7TDMI : IARM7TDMI {
         m_memory.can_read_from_bios = (*pc >> 24) == 0;
         execute(opcode);
 
-        return _g_cpu_cycles_remaining + memory.cycles;
+        return 0;
     }
 
     uint fetch() {
