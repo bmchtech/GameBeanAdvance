@@ -53,6 +53,7 @@ interface IMemory {
     void start_new_prefetch(uint address, AccessSize prefetch_access_size);
     void run_prefetcher(int number_of_times);
     void invalidate_prefetch_buffer();
+    void idle();
 
     @property uint cycles();
     @property uint cycles(uint cycles);
