@@ -127,8 +127,6 @@ public:
         } else {
             scheduler.tick(1);
         }
-
-        dma_manager.check_dma();
     }
 
     void interrupt_cpu() {
