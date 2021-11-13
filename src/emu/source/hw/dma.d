@@ -151,8 +151,15 @@ public:
         bool source_ending_in_rom = (dma_channels[current_channel].source_buf >> 24) >= 8;
         bool dest_ending_in_rom   = (dma_channels[current_channel].dest_buf   >> 24) >= 8;
 
+        // TODO: why do these idle cycles happen? do they happen just if we start out in ROM, or if we touch it at any point?
+        // according to gbatek:
+        // Internal time for DMA processing is 2I (normally), or 4I (if both source and destination are in gamepak memory area).
+        uint idle_cycles = (source_beginning_in_rom || source_ending_in_rom) &&
+                           (dest_beginning_in_rom   || dest_ending_in_rom) ?
+                           4 : 2;
+
         if (dma_channels[current_channel].irq_on_end) {
-            scheduler.add_event_relative_to_self(() => interrupt_cpu(Interrupt.DMA_0 + current_channel), 2 + memory.cycles - excess_cycles);
+            scheduler.add_event_relative_to_self(() => interrupt_cpu(Interrupt.DMA_0 + current_channel), idle_cycles + memory.cycles - excess_cycles);
         }
 
 
@@ -168,13 +175,6 @@ public:
         }
 
         memory.prefetch_buffer.start();
-
-        // TODO: why do these idle cycles happen? do they happen just if we start out in ROM, or if we touch it at any point?
-        // according to gbatek:
-        // Internal time for DMA processing is 2I (normally), or 4I (if both source and destination are in gamepak memory area).
-        uint idle_cycles = (source_beginning_in_rom || source_ending_in_rom) &&
-                           (dest_beginning_in_rom   || dest_ending_in_rom) ?
-                           4 : 2;
 
         writefln("Taken %x", idle_cycles + memory.cycles - excess_cycles);
         return idle_cycles + memory.cycles - excess_cycles;
