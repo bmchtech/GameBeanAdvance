@@ -106,6 +106,10 @@ class Scheduler {
         return current_timestamp;
     }
 
+    pragma(inline, true) ulong get_current_time_relative_to_self() {
+        return events[0].timestamp;
+    }
+
     pragma(inline, true) void process_event() {
         events[0].callback();
 
