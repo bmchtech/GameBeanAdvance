@@ -215,6 +215,11 @@ class Memory : IMemory {
         this.ppu = ppu;
     }
 
+    void idle() {
+        scheduler.tick(1);
+        prefetch_buffer.run(1);
+    }
+
     pragma(inline, true) uint get_region(uint address) {
         return (address >> 24) & 0xF;
     }
