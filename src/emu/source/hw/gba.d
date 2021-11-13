@@ -57,7 +57,7 @@ public:
 
         this.memory            = memory;
         this.cpu               = new ARM7TDMI(memory);
-        this.interrupt_manager = new InterruptManager(&interrupt_cpu, &cpu.enable);
+        this.interrupt_manager = new InterruptManager(&cpu.enable);
         this.ppu               = new PPU(memory, scheduler, &interrupt_manager.interrupt, &on_hblank);
         this.apu               = new APU(memory, scheduler, &on_fifo_empty);
         this.dma_manager       = new DMAManager(memory, scheduler, &interrupt_manager.interrupt);
@@ -70,10 +70,12 @@ public:
         memory.set_mmio(mmio);
         memory.set_cpu_pipeline(&cpu.m_pipeline, &cpu.current_instruction_size);
         memory.set_ppu(this.ppu);
+        memory.set_scheduler(scheduler);
 
         this.enabled = false;
 
         cpu.set_mode(MODE_SYSTEM);
+        cpu.set_interrupt_manager(this.interrupt_manager);
 
         // bios
         cpu.m_memory.bios[0 .. bios.length] = bios[0 .. bios.length];
@@ -109,32 +111,28 @@ public:
 
         n -= extra_cycles;
 
-        while (n > 0) {
-            while (scheduler.should_cycle()) {
-                ulong times_cycled = cycle_components();
-
-                n -= times_cycled;
-                scheduler.tick(times_cycled);
-            }
-
-            scheduler.process_event();
-            
-            if (n <= 0) {
-                break;
-            }
+        ulong target_time = scheduler.get_current_time() + n;
+        while (target_time > scheduler.get_current_time()) {
+            cycle_components();
         }
 
-        // warning(format("Cycled to %d.", n));
+        // warning(format("Cycled to %d.", scheduler.get_current_time()));
 
-        extra_cycles = -n;
+        extra_cycles = scheduler.get_current_time() - target_time;
     }
 
-    pragma(inline, true) ulong cycle_components() {
-        return cpu.cycle() + dma_manager.check_dma();
+    pragma(inline, true) void cycle_components() {
+        if (!cpu.halted) {
+            cpu.cycle();
+        } else {
+            scheduler.tick(1);
+        }
+
+        dma_manager.check_dma();
     }
 
-    bool interrupt_cpu() {
-        return cpu.exception(CpuException.IRQ);
+    void interrupt_cpu() {
+        return;
     }
 
     void on_timer_overflow(int timer_id) {

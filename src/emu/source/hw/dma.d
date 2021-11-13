@@ -176,7 +176,6 @@ public:
 
         memory.prefetch_buffer.start();
 
-        writefln("Taken %x", idle_cycles + memory.cycles - excess_cycles);
         return idle_cycles + memory.cycles - excess_cycles;
     }
 

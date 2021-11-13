@@ -26,8 +26,7 @@ enum Interrupt {
 
 
 class InterruptManager {
-    this(bool delegate() interrupt_cpu, void delegate() unhalt_cpu) {
-        this.interrupt_cpu = interrupt_cpu;
+    this(void delegate() unhalt_cpu) {
         this.unhalt_cpu    = unhalt_cpu;
     }
 
@@ -40,12 +39,14 @@ class InterruptManager {
             interrupt_request |= interrupt_code;
 
             unhalt_cpu();
-            if (interrupt_master_enable) interrupt_cpu();
         }
     }
 
+    pragma(inline, true) bool has_irq() {
+        return (interrupt_enable & interrupt_request) != 0;
+    }
+
 private:
-    bool delegate() interrupt_cpu;
     void delegate() unhalt_cpu;
 // .......................................................................................................................
 // .RRRRRRRRRRR...EEEEEEEEEEEE....GGGGGGGGG....IIII...SSSSSSSSS...TTTTTTTTTTTTT.EEEEEEEEEEEE..RRRRRRRRRRR....SSSSSSSSS....
