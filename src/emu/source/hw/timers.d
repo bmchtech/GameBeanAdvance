@@ -106,6 +106,7 @@ private:
         ulong   timestamp;
 
         ulong   timer_event;
+        ulong   enable_event;
     }
 
     //.......................................................................................................................
@@ -144,11 +145,13 @@ public:
                 if (!timers[x].enabled && get_nth_bit(data, 7)) {
                     timers[x].enabled = true;
 
-                    timers[x].timer_has_two_cycle_delay = true;
+                    if (timers[x].timer_event != 0) scheduler.remove_event(timers[x].timer_event);
+
+                    timers[x].enable_event = scheduler.add_event_relative_to_clock(() => reload_timer_for_the_first_time(x), 2);
                 }
 
                 if (!get_nth_bit(data, 7)) {
-                    timers[x].timer_has_two_cycle_delay = false;
+                    timers[x].enabled = false;
                     scheduler.remove_event(timers[x].enable_event);
                 }
 

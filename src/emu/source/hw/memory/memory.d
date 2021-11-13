@@ -5,6 +5,7 @@ import hw.memory;
 import hw.cpu;
 import hw.ppu;
 import save;
+import scheduler;
 
 import abstracthw.memory;
 
@@ -60,6 +61,7 @@ class Memory : IMemory {
     uint*    pipeline_size;
 
     PrefetchBuffer prefetch_buffer;
+    Scheduler scheduler;
 
     ubyte[] bios;
     ubyte[] wram_board;
@@ -198,6 +200,11 @@ class Memory : IMemory {
         this.pipeline_size = pipeline_size;
     }
 
+    // MUST BE CALLED BEFORE ANY MEMORY ACCESS / IDLE CYCLE WHATSOEVER
+    void set_scheduler(Scheduler scheduler) {
+        this.scheduler = scheduler;
+    }
+
     // MUST BE CALLED BEFORE ROM IS ACCESSED!
     void load_rom(ubyte[] rom_data) {
         rom = new ROM(rom_data);
@@ -244,7 +251,7 @@ class Memory : IMemory {
             if (region < 0x8) {
                 uint stalls = calculate_stalls_for_access!T(region, access_type);
                 prefetch_buffer.run(stalls);
-                this.m_cycles += stalls;
+                scheduler.tick(stalls);
             }
 
             if (address >> 28) {
@@ -298,6 +305,10 @@ class Memory : IMemory {
 
                 case Region.ROM_SRAM_L:
                 case Region.ROM_SRAM_H:
+                    uint stalls = calculate_stalls_for_access!T(region, access_type);
+                    prefetch_buffer.run(stalls);
+                    scheduler.tick(stalls);
+
                     // writefln("attempting backup read at %x", address);
                     if (backup_enabled) {
                         static if (is(T == uint  )) return backup.read_word    (address);
@@ -383,7 +394,7 @@ class Memory : IMemory {
             // handle waitstates
             uint stalls = calculate_stalls_for_access!T(region, access_type);
             prefetch_buffer.run(stalls);
-            this.m_cycles += stalls;
+            scheduler.tick(stalls);
 
             switch ((address >> 24) & 0xF) {
                 case Region.BIOS:         break; // incorrect - implement properly later

@@ -91,6 +91,7 @@ class Scheduler {
 
     pragma(inline, true) void tick(ulong num_cycles) {
         current_timestamp += num_cycles;
+        if (current_timestamp >= events[0].timestamp) process_event();
     }
 
     pragma(inline, true) bool should_cycle() {
@@ -102,7 +103,7 @@ class Scheduler {
     }
 
     pragma(inline, true) ulong get_current_time_relative_to_cpu() {
-        return current_timestamp + memory.cycles + _g_cpu_cycles_remaining;
+        return current_timestamp;
     }
 
     pragma(inline, true) void process_event() {

@@ -69,7 +69,7 @@ class PrefetchBuffer {
 
             // is the requested value currently being prefetched?
             if (address == this.current_address) {
-                memory.m_cycles += this.cycles_till_access_complete;
+                memory.scheduler.tick(this.cycles_till_access_complete);
 
                 this.invalidate();
                 if (this.prefetch_access_size == AccessSize.HALFWORD) {
@@ -83,7 +83,7 @@ class PrefetchBuffer {
 
             // is the requested value at the head of the prefetch buffer?
             if (this.current_buffer_size > 0 && address == address_head) {
-                memory.m_cycles++;
+                memory.scheduler.tick(1);
 
                 this.current_buffer_size--;
                 return read!T(masked_address);
@@ -100,7 +100,7 @@ class PrefetchBuffer {
         static if (is(T == ushort)) access_size = AccessSize.HALFWORD;
         static if (is(T == uint  )) access_size = AccessSize.WORD;
 
-        memory.m_cycles += memory.waitstates[region][access_type][access_size];
+        memory.scheduler.tick(memory.waitstates[region][access_type][access_size]);
         
         this.currently_prefetching = true;
 
