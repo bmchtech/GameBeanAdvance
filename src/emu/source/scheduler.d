@@ -43,7 +43,6 @@ class Scheduler {
     }
 
     private ulong add_event(void delegate() callback, ulong timestamp) {
-        // writefln("Inserting event at %x + %x", events[0].timestamp, current_timestamp);
 
         int insert_at;
         // TODO: use binary search
@@ -110,7 +109,11 @@ class Scheduler {
         return events[0].timestamp;
     }
 
+    bool is_processing_event;
     pragma(inline, true) void process_event() {
+        if(is_processing_event) return;
+        is_processing_event = true;
+
         events[0].callback();
 
         for (int i = 0; i < events_in_queue; i++) {
@@ -118,5 +121,6 @@ class Scheduler {
         }
         
         events_in_queue--;
+        is_processing_event = false;
     }
 }

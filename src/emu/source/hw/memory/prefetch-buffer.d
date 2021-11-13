@@ -13,6 +13,7 @@ class PrefetchBuffer {
     private uint       cycles_till_access_complete;
     private bool       currently_prefetching;
     private bool       enabled;
+    private bool       paused;
     private AccessSize prefetch_access_size;
 
     this(Memory memory) {
@@ -25,7 +26,7 @@ class PrefetchBuffer {
     }
 
     pragma(inline, true) void run(uint num_cycles) {
-        if (!this.enabled || !this.currently_prefetching) return;
+        if (!this.enabled || !this.currently_prefetching || this.paused) return;
         // writefln("Running for %x. %x remaining.", num_cycles, this.cycles_till_access_complete);
 
         while (this.current_buffer_size < 8 && num_cycles >= cycles_till_access_complete) {
@@ -43,12 +44,14 @@ class PrefetchBuffer {
     }
 
     pragma(inline, true) void invalidate() {
+        if (this.paused) return;
+
         this.current_buffer_size   = 0;
         this.currently_prefetching = false;
     }
     
     pragma(inline, true) void start_new_prefetch(uint address, AccessSize prefetch_access_size) {
-        if (!enabled) return;
+        if (!enabled || paused) return;
 
         this.currently_prefetching = true;
 
@@ -63,7 +66,7 @@ class PrefetchBuffer {
     pragma(inline, true) T request_data_from_rom(T)(uint address, AccessType access_type, bool instruction_access) {
         uint masked_address = address & 0xFF_FFFF;
 
-        if (this.enabled && this.currently_prefetching) {
+        if (!paused && this.enabled && this.currently_prefetching) {
             uint address_head = this.current_address - this.current_buffer_size;
             // writefln("%x %x", shifted_address, this.current_address);
 
@@ -122,11 +125,11 @@ class PrefetchBuffer {
         this.enabled = enabled;
     }
 
-    void start() {
-        this.enabled = true;
+    void pause() {
+        this.paused = true;
     }
 
-    void stop() {
-        this.enabled = false;
+    void resume() {
+        this.paused = false;
     }
 }
