@@ -144,12 +144,12 @@ public:
                 if (!timers[x].enabled && get_nth_bit(data, 7)) {
                     timers[x].enabled = true;
 
-                    if (timers[x].timer_event != 0) scheduler.remove_event(timers[x].timer_event);
-                    reload_timer_for_the_first_time(x);
+                    timers[x].timer_has_two_cycle_delay = true;
                 }
 
                 if (!get_nth_bit(data, 7)) {
-                    timers[x].enabled = false;
+                    timers[x].timer_has_two_cycle_delay = false;
+                    scheduler.remove_event(timers[x].enable_event);
                 }
 
                 break;
