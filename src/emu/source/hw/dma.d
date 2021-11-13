@@ -157,6 +157,8 @@ public:
         uint idle_cycles = (source_beginning_in_rom || source_ending_in_rom) &&
                            (dest_beginning_in_rom   || dest_ending_in_rom) ?
                            4 : 2;
+        
+        for (int i = 0; i < idle_cycles; i++) memory.idle();
 
         if (dma_channels[current_channel].irq_on_end) {
             scheduler.add_event_relative_to_self(() => interrupt_cpu(Interrupt.DMA_0 + current_channel), idle_cycles + memory.cycles - excess_cycles);
