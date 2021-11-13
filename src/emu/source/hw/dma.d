@@ -161,7 +161,7 @@ public:
         for (int i = 0; i < idle_cycles; i++) memory.idle();
 
         if (dma_channels[current_channel].irq_on_end) {
-            scheduler.add_event_relative_to_self(() => interrupt_cpu(Interrupt.DMA_0 + current_channel), idle_cycles + memory.cycles - excess_cycles);
+            scheduler.add_event_relative_to_clock(() => interrupt_cpu(Interrupt.DMA_0 + current_channel), idle_cycles + memory.cycles - excess_cycles);
         }
 
 
