@@ -31,18 +31,14 @@ public:
 
     int dmas_available = 0;
 
-    pragma(inline, true) int check_dma() {
+    pragma(inline, true) void check_dma() {
         if (dmas_available > 0) {
             dmas_available--;
-            return handle_dma();
+            handle_dma();
         }
-
-        return 0;
     }
 
-    // returns the amount of cycles to idle
-    int handle_dma() {
-        
+    void handle_dma() {
         // get the channel with highest priority that wants to start dma
         int current_channel = -1;
         for (int i = 0; i < 4; i++) {
@@ -51,19 +47,17 @@ public:
                 break;
             }
         }
+        
+        if (current_channel == -1) return; //error("DMA requested but no active channels found");
 
-        // writefln("[%016x] Running DMA Channel %x", num_cycles, current_channel);
-
-        if (current_channel == -1) return 0; //error("DMA requested but no active channels found");
-
-        memory.prefetch_buffer.stop();
+        memory.prefetch_buffer.pause();
         uint excess_cycles = memory.cycles;
 
         uint bytes_to_transfer  = dma_channels[current_channel].size_buf;
         int  source_increment   = 0;
         int  dest_increment     = 0;
 
-        // if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
+        // writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
         //          current_channel,
         //          bytes_to_transfer,
         //          dma_channels[current_channel].transferring_words ? "words" : "halfwords",
@@ -160,8 +154,10 @@ public:
         
         for (int i = 0; i < idle_cycles; i++) memory.idle();
 
+        memory.prefetch_buffer.resume();
+
         if (dma_channels[current_channel].irq_on_end) {
-            scheduler.add_event_relative_to_clock(() => interrupt_cpu(Interrupt.DMA_0 + current_channel), idle_cycles + memory.cycles - excess_cycles);
+            scheduler.add_event_relative_to_self(() => interrupt_cpu(Interrupt.DMA_0 + current_channel), idle_cycles + memory.cycles - excess_cycles);
         }
 
 
@@ -176,9 +172,7 @@ public:
             dma_channels[current_channel].enabled = false;
         }
 
-        memory.prefetch_buffer.start();
-
-        return idle_cycles + memory.cycles - excess_cycles;
+        return;
     }
 
     const uint[4] DMA_SOURCE_BUF_MASK = [0x07FF_FFFF, 0x0FFF_FFFF, 0x0FFF_FFFF, 0x0FFF_FFFF];
@@ -210,6 +204,7 @@ public:
     pragma(inline, true) void start_dma_channel(int dma_id) {
         dma_channels[dma_id].waiting_to_start = true;
         dmas_available++;
+        scheduler.add_event_relative_to_clock(&check_dma, 2);
     }
 
     pragma(inline, true) bool is_dma_channel_fifo(int i) {
