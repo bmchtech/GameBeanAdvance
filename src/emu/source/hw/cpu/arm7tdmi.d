@@ -395,6 +395,7 @@ class ARM7TDMI : IARM7TDMI {
             // write(format("%x ", *cpsr));
             write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
             writeln();
+            if (_g_num_log == 0) writeln();
         }
 
         m_memory.can_read_from_bios = (*pc >> 24) == 0;
@@ -454,6 +455,7 @@ class ARM7TDMI : IARM7TDMI {
     }
 
     void run_idle_cycle() {
+        if (_g_num_log > 0) writefln("Idling...");
         m_pipeline_access_type = AccessType.NONSEQUENTIAL;
         memory.idle();
     }

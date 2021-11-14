@@ -90,7 +90,10 @@ class Scheduler {
 
     pragma(inline, true) void tick(ulong num_cycles) {
         current_timestamp += num_cycles;
-        if (current_timestamp >= events[0].timestamp) process_event();
+    }
+
+    pragma(inline, true) void process_events() {
+        while (!is_processing_event && current_timestamp >= events[0].timestamp) process_event();
     }
 
     pragma(inline, true) bool should_cycle() {
@@ -111,7 +114,7 @@ class Scheduler {
 
     bool is_processing_event;
     pragma(inline, true) void process_event() {
-        if(is_processing_event) return;
+        if (is_processing_event) return;
         is_processing_event = true;
 
         events[0].callback();

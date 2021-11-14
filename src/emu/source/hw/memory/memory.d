@@ -218,6 +218,7 @@ class Memory : IMemory {
     void idle() {
         scheduler.tick(1);
         prefetch_buffer.run(1);
+        scheduler.process_events();
     }
 
     pragma(inline, true) uint get_region(uint address) {
@@ -251,17 +252,18 @@ class Memory : IMemory {
     private template read(T) {
         pragma(inline, true) T read(uint address, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
             uint region = get_region(address);
+            T read_value;
 
-            // handle waitstates
+            if (_g_num_log) writefln("Read from %x %x", address, scheduler.get_current_time_relative_to_cpu());
+            uint stalls = calculate_stalls_for_access!T(region, access_type);
+            
             if (region < 0x8) {
-                uint stalls = calculate_stalls_for_access!T(region, access_type);
-                prefetch_buffer.run(stalls);
-                scheduler.tick(stalls);
+                clock(stalls);
             }
 
             if (address >> 28) {
                 // writeln(format("OPEN BUS. %x %x", cast(T) (*cpu_pipeline)[1], read_word(0x0300686c)));
-                return read_open_bus!T(address);
+                read_value = read_open_bus!T(address);
             }
 
             uint shift;
@@ -270,20 +272,21 @@ class Memory : IMemory {
             static if (is(T == ubyte )) shift = 0;
 
             switch (region) {
-                case 0x1: return read_open_bus!T(address); // nothing is mapped here
-                case Region.WRAM_BOARD:   return (cast(T*) wram_board) [(address & (SIZE_WRAM_BOARD  - 1)) >> shift]; 
-                case Region.WRAM_CHIP:    return (cast(T*) wram_chip)  [(address & (SIZE_WRAM_CHIP   - 1)) >> shift];
-                case Region.PALETTE_RAM:  return (cast(T*) palette_ram)[(address & (SIZE_PALETTE_RAM - 1)) >> shift];
+                case 0x1: read_value = read_open_bus!T(address); break;// nothing is mapped here
+                case Region.WRAM_BOARD:   read_value = (cast(T*) wram_board) [(address & (SIZE_WRAM_BOARD  - 1)) >> shift]; break;
+                case Region.WRAM_CHIP:    read_value = (cast(T*) wram_chip)  [(address & (SIZE_WRAM_CHIP   - 1)) >> shift]; break;
+                case Region.PALETTE_RAM:  read_value = (cast(T*) palette_ram)[(address & (SIZE_PALETTE_RAM - 1)) >> shift]; break;
                 
                 case Region.VRAM:
                     uint wrapped_address = address & (SIZE_VRAM - 1);
                     if (wrapped_address >= 0x18000) wrapped_address -= 0x8000;
-                    return (cast(T*) vram)[wrapped_address >> shift];
+                    read_value = (cast(T*) vram)[wrapped_address >> shift]; break;
 
-                case Region.OAM:          return (cast(T*) oam)        [(address & (SIZE_OAM         - 1)) >> shift]; 
+                case Region.OAM:          read_value = (cast(T*) oam)        [(address & (SIZE_OAM         - 1)) >> shift];  break;
 
                 case Region.IO_REGISTERS:
-                    static if (is(T == uint)) return 
+
+                    static if (is(T == uint)) read_value = 
                         (cast(uint) mmio.read(address + 0) << 0)  |
                         (cast(uint) mmio.read(address + 1) << 8)  |
                         (cast(uint) mmio.read(address + 2) << 16) | 
@@ -292,8 +295,10 @@ class Memory : IMemory {
                         ushort x =
                         (cast(ushort) mmio.read(address + 0) << 0)  |
                         (cast(ushort) mmio.read(address + 1) << 8);
-                        return x;}
-                    static if (is(T == ubyte))  return mmio.read(address);
+                        read_value = x;}
+                    static if (is(T == ubyte))  read_value = mmio.read(address); 
+                    
+                    return read_value;
 
                 case Region.BIOS: 
                     if (can_read_from_bios) {
@@ -301,41 +306,45 @@ class Memory : IMemory {
 
                         bios_open_bus_latch = *((cast(uint*) (&bios[0] + (word_aligned_address & ~3 & (SIZE_BIOS - 1)))));
 
-                        static if (is(T == uint))   return (bios_open_bus_latch);
-                        static if (is(T == ushort)) return (bios_open_bus_latch >> (16 * ((address >> 1) & 1))) & 0xFFFF;
-                        static if (is(T == ubyte))  return (bios_open_bus_latch >> (8  * ((address >> 0) & 3))) & 0xFF;
+                        static if (is(T == uint))   read_value = (bios_open_bus_latch);
+                        static if (is(T == ushort)) read_value = (bios_open_bus_latch >> (16 * ((address >> 1) & 1))) & 0xFFFF;
+                        static if (is(T == ubyte))  read_value = (bios_open_bus_latch >> (8  * ((address >> 0) & 3))) & 0xFF;
                     } else {
-                        return read_open_bus!T(address);
-                    }
+                        read_value = read_open_bus!T(address);
+                    } 
+                    
+                    break;
 
                 case Region.ROM_SRAM_L:
                 case Region.ROM_SRAM_H:
-                    uint stalls = calculate_stalls_for_access!T(region, access_type);
-                    prefetch_buffer.run(stalls);
-                    scheduler.tick(stalls);
 
                     // writefln("attempting backup read at %x", address);
                     if (backup_enabled) {
-                        static if (is(T == uint  )) return backup.read_word    (address);
-                        static if (is(T == ushort)) return backup.read_halfword(address);
-                        static if (is(T == ubyte )) return backup.read_byte    (address);
+                        clock(stalls);
+                        static if (is(T == uint  )) read_value = backup.read_word    (address);
+                        static if (is(T == ushort)) read_value = backup.read_halfword(address);
+                        static if (is(T == ubyte )) read_value = backup.read_byte    (address); 
+                        break;
                     }
                     goto default;
 
                 default:
                     static if (is(T == uint  )) {
                         uint aligned_address = (address & ~3) >> 1;
-                        return prefetch_buffer.request_data_from_rom!T(aligned_address, access_type, instruction_access);
+                        read_value = prefetch_buffer.request_data_from_rom!T(aligned_address, access_type, instruction_access);
                     }
 
                     static if (is(T == ushort  )) {
-                        return prefetch_buffer.request_data_from_rom!T(address >> 1, access_type, instruction_access);
+                        read_value = prefetch_buffer.request_data_from_rom!T(address >> 1, access_type, instruction_access);
                     }
 
                     static if (is(T == ubyte )) {
-                        return cast(ubyte) (prefetch_buffer.request_data_from_rom!ushort(address >> 1, access_type, instruction_access) >> (8 * (address & 1)));
+                        read_value = cast(ubyte) (prefetch_buffer.request_data_from_rom!ushort(address >> 1, access_type, instruction_access) >> (8 * (address & 1)));
                     }
             }
+            
+            scheduler.process_events();
+            return read_value;
         }
     }
 
@@ -398,8 +407,7 @@ class Memory : IMemory {
 
             // handle waitstates
             uint stalls = calculate_stalls_for_access!T(region, access_type);
-            prefetch_buffer.run(stalls);
-            scheduler.tick(stalls);
+            clock(stalls);
 
             switch ((address >> 24) & 0xF) {
                 case Region.BIOS:         break; // incorrect - implement properly later
@@ -464,7 +472,7 @@ class Memory : IMemory {
                         mmio.write(address, value);
                     }
 
-                    break;
+                    return;
 
                 case Region.ROM_SRAM_L:
                 case Region.ROM_SRAM_H:
@@ -478,7 +486,14 @@ class Memory : IMemory {
                 default:
                     break;
             }
+
+            scheduler.process_events();
         }
+    }
+
+    void clock(uint stalls) {
+        prefetch_buffer.run(stalls);
+        scheduler.tick(stalls);
     }
 
     bool backup_enabled = false;

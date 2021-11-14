@@ -126,6 +126,7 @@ public:
             cpu.cycle();
         } else {
             scheduler.tick(1);
+            scheduler.process_events();
         }
     }
 

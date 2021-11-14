@@ -32,6 +32,7 @@ public:
     int dmas_available = 0;
 
     pragma(inline, true) void check_dma() {
+        writefln("handled DMA at %x, %x", scheduler.get_current_time_relative_to_cpu(), scheduler.get_current_time_relative_to_self());
         if (dmas_available > 0) {
             dmas_available--;
             handle_dma();
@@ -57,13 +58,13 @@ public:
         int  source_increment   = 0;
         int  dest_increment     = 0;
 
-        // writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
-        //          current_channel,
-        //          bytes_to_transfer,
-        //          dma_channels[current_channel].transferring_words ? "words" : "halfwords",
-        //          dma_channels[current_channel].source_buf,
-        //          dma_channels[current_channel].dest_buf,
-        //          read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
+        writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
+                 current_channel,
+                 bytes_to_transfer,
+                 dma_channels[current_channel].transferring_words ? "words" : "halfwords",
+                 dma_channels[current_channel].source_buf,
+                 dma_channels[current_channel].dest_buf,
+                 read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
 
         switch (dma_channels[current_channel].source_addr_control) {
             case SourceAddrMode.Increment:  source_increment =  1; break;
@@ -152,12 +153,12 @@ public:
                            (dest_beginning_in_rom   || dest_ending_in_rom) ?
                            4 : 2;
         
+        memory.prefetch_buffer.resume();
         for (int i = 0; i < idle_cycles; i++) memory.idle();
 
-        memory.prefetch_buffer.resume();
 
         if (dma_channels[current_channel].irq_on_end) {
-            scheduler.add_event_relative_to_self(() => interrupt_cpu(Interrupt.DMA_0 + current_channel), idle_cycles + memory.cycles - excess_cycles);
+            scheduler.add_event_relative_to_clock(() => interrupt_cpu(Interrupt.DMA_0 + current_channel), idle_cycles + memory.cycles - excess_cycles);
         }
 
 
@@ -204,7 +205,10 @@ public:
     pragma(inline, true) void start_dma_channel(int dma_id) {
         dma_channels[dma_id].waiting_to_start = true;
         dmas_available++;
+        writefln("Scheduled DMA for %x", scheduler.get_current_time_relative_to_cpu());
         scheduler.add_event_relative_to_clock(&check_dma, 2);
+        import hw.cpu;
+        _g_num_log += 3;
     }
 
     pragma(inline, true) bool is_dma_channel_fifo(int i) {
