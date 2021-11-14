@@ -38,6 +38,7 @@ public:
         // check for cancellation
         if (!timers[timer_id].enabled || timers[timer_id].countup) return;
 
+        timers[timer_id].enabled_for_first_time = false;
         timers[timer_id].value = timers[timer_id].reload_value;
         ulong timestamp = scheduler.get_current_time_relative_to_self();
         // writeln(format("%x TS: %x. Scheduling another at %x", timer_id, timestamp, timestamp + ((0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment)));
@@ -49,9 +50,12 @@ public:
 
     void reload_timer_for_the_first_time(int timer_id) {
         if (timers[timer_id].countup) return;
+
+        timers[timer_id].enabled_for_first_time = true;
         timers[timer_id].value = timers[timer_id].reload_value;
-        timers[timer_id].timer_event = scheduler.add_event_relative_to_clock(() => timer_overflow(timer_id), (0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment);
-        timers[timer_id].timestamp = scheduler.get_current_time_relative_to_self();
+        writefln("Set timer at %x %x", scheduler.get_current_time_relative_to_cpu(), scheduler.get_current_time_relative_to_cpu());
+        timers[timer_id].timer_event = scheduler.add_event_relative_to_self(() => timer_overflow(timer_id), 2 + ((0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment));
+        timers[timer_id].timestamp = scheduler.get_current_time_relative_to_cpu() + 2;
     }
 
     void timer_overflow(int x) {
@@ -79,10 +83,12 @@ public:
         // am i enabled? if not just return without calculation
         // also, if i'm countup, then im a slave timer. timers[x - 1] will
         // control my value instead
+        
         if (!timers[x].enabled || timers[x].countup) return timers[x].value;
 
         // how many clock cycles has it been since we've been enabled?
         ulong cycles_elapsed = scheduler.get_current_time_relative_to_cpu() - timers[x].timestamp;
+        writefln("Subtracting: %x %x %x", cycles_elapsed, scheduler.get_current_time_relative_to_cpu(), timers[x].timestamp);
 
         // use timer increments to get the relevant bits, and mod by the reload value
         return cast(ushort) (cycles_elapsed >> timers[x].increment);
@@ -102,6 +108,7 @@ private:
         bool    enabled;
         bool    countup;
         bool    irq_enable;
+        bool    enabled_for_first_time;
 
         ulong   timestamp;
 
@@ -147,7 +154,8 @@ public:
 
                     if (timers[x].timer_event != 0) scheduler.remove_event(timers[x].timer_event);
 
-                    timers[x].enable_event = scheduler.add_event_relative_to_clock(() => reload_timer_for_the_first_time(x), 2);
+                    timers[x].value = timers[x].reload_value;
+                    reload_timer_for_the_first_time(x);
                 }
 
                 if (!get_nth_bit(data, 7)) {
