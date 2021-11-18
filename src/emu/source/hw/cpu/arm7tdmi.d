@@ -112,12 +112,14 @@ class ARM7TDMI : IARM7TDMI {
         
         refill_pipeline();
 
+        // writefln("unhalted");
         halted = false;
 
         return true;
     }
 
     void halt() {
+        // writefln("halted");
         halted = true;
     }
 

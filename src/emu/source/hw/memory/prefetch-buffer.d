@@ -66,6 +66,10 @@ class PrefetchBuffer {
     pragma(inline, true) T request_data_from_rom(T)(uint address, AccessType access_type, bool instruction_access) {
         uint masked_address = address & 0xFF_FFFF;
 
+        if ((address & 0xFFFF) == 0) {
+            access_type = AccessType.NONSEQUENTIAL;
+        } 
+
         if (!paused && this.enabled && this.currently_prefetching) {
             uint address_head = this.current_address - this.current_buffer_size;
             // writefln("%x %x", shifted_address, this.current_address);
