@@ -42,7 +42,7 @@ class InterruptManager {
     }
 
     pragma(inline, true) bool has_irq() {
-        return (interrupt_enable & interrupt_request) != 0;
+        return interrupt_master_enable && ((interrupt_enable & interrupt_request) != 0);
     }
 
 private:
