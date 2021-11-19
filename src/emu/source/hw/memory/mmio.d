@@ -8,13 +8,14 @@ import hw.timers;
 import hw.interrupts;
 import hw.keyinput;
 import hw.memory;
+import hw.beancomputer;
 
 import std.stdio;
 
 class MMIO {
 
     // IO Registers
-    //          NAME            ADDRESS       SIZE  R/W   DESCRIPTION
+    //   NAME            ADDRESS       SIZE  R/W   DESCRIPTION
 
     enum DISPCNT       = 0x4000000; //  2    R/W   LCD Control
     enum DISPSTAT      = 0x4000004; //  2    R/W   General LCD Status (STAT,LYC)
@@ -124,6 +125,14 @@ class MMIO {
     enum WAITCNT       = 0x4000204; //  2    R/W   Game Pak Waitstate Control
     enum HALTCNT       = 0x4000301; //  1      W   Undocumented - Power Down Control
 
+    // BEANCOMPUTER I/O REGS
+    //   NAME            ADDRESS       SIZE  R/W   DESCRIPTION
+
+    enum SUPPORT       = 0x4FFF104; //  4    R     Version number of BeanComputer
+    enum KEYBOARD1     = 0x4FFF108; //  4    R     Key Status 1
+    enum KEYBOARD2     = 0x4FFF10C; //  4    R     Key Status 2
+    enum MOUSE         = 0x4FFF110; //  4    R     Mouse Status
+
     template GenerateRegister(string register_name, int size, int addr)
     {
         mixin("void read_" ~ register_name ~ "_");
@@ -132,15 +141,18 @@ class MMIO {
         mixin("void read_" ~ register_name ~ "_");
     }
 
-    this(GBA gba, PPU ppu, APU apu, DMAManager dma, TimerManager timers, InterruptManager interrupt, KeyInput keyinput, Memory memory) {
-        this.gba       = gba;
-        this.ppu       = ppu;
-        this.apu       = apu;
-        this.dma       = dma;
-        this.timers    = timers;
-        this.interrupt = interrupt;
-        this.keyinput  = keyinput;
-        this.memory    = memory;
+    this(GBA gba, PPU ppu, APU apu, DMAManager dma, TimerManager timers, InterruptManager interrupt, KeyInput keyinput, BeanComputer beancomputer, Memory memory, bool is_beancomputer) {
+        this.gba           = gba;
+        this.ppu           = ppu;
+        this.apu           = apu;
+        this.dma           = dma;
+        this.timers        = timers;
+        this.interrupt     = interrupt;
+        this.keyinput      = keyinput;
+        this.beancomputer = beancomputer;
+        this.memory        = memory;
+
+        this.is_beancomputer = is_beancomputer;
     }
 
     ubyte read(uint address) {
@@ -246,8 +258,34 @@ class MMIO {
             case WAITCNT     + 0: return memory.read_WAITCNT (0); // TODO
             case WAITCNT     + 1: return memory.read_WAITCNT (1);
 
-            default: return memory.read_open_bus!ubyte(address);
+            default: break;
         }
+
+        if (is_beancomputer) {
+            switch (address) {
+                // BEANCOMPUTER
+                case SUPPORT     + 0: return beancomputer.read_SUPPORT  (0);
+                case SUPPORT     + 1: return beancomputer.read_SUPPORT  (1);
+                case SUPPORT     + 2: return beancomputer.read_SUPPORT  (2);
+                case SUPPORT     + 3: return beancomputer.read_SUPPORT  (3);
+                case KEYBOARD1   + 0: return beancomputer.read_KEYBOARD1(0);
+                case KEYBOARD1   + 1: return beancomputer.read_KEYBOARD1(1);
+                case KEYBOARD1   + 2: return beancomputer.read_KEYBOARD1(2);
+                case KEYBOARD1   + 3: return beancomputer.read_KEYBOARD1(3);
+                case KEYBOARD2   + 0: return beancomputer.read_KEYBOARD2(0);
+                case KEYBOARD2   + 1: return beancomputer.read_KEYBOARD2(1);
+                case KEYBOARD2   + 2: return beancomputer.read_KEYBOARD2(2);
+                case KEYBOARD2   + 3: return beancomputer.read_KEYBOARD2(3);
+                // case MOUSE       + 0: return beancomputer.read_MOUSE    (0);
+                // case MOUSE       + 1: return beancomputer.read_MOUSE    (1);
+                // case MOUSE       + 2: return beancomputer.read_MOUSE    (2);
+                // case MOUSE       + 3: return beancomputer.read_MOUSE    (3);
+
+                default: break;
+            }
+        }
+
+        return memory.read_open_bus!ubyte(address);
     }
 
     void write(uint address, ubyte data) {
@@ -480,5 +518,8 @@ private:
     TimerManager     timers;
     InterruptManager interrupt;
     KeyInput         keyinput;
+    BeanComputer     beancomputer;
     Memory           memory;
+
+    bool             is_beancomputer;
 }
