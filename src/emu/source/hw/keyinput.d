@@ -19,7 +19,6 @@ class KeyInput {
     private ushort keyinput;
 
     void write_KEYCNT(int target_byte, ubyte data) {
-        
         if (target_byte == 0) {
             keycnt = (keycnt & 0xFF00) | data;
         } else {
@@ -45,11 +44,7 @@ class KeyInput {
     }
 
     void set_key(int code, bool pressed) {
-        // if (code == 3) _g_num_log += 10000000;
-        if (pressed) {
-            keyinput &= ~(0b1 << code);
-        } else {
-            keyinput |=  (0b1 << code);
-        }
+        if (pressed) keyinput &= ~(0b1 << code);
+        else         keyinput |=  (0b1 << code);
     }
 }
