@@ -10,6 +10,7 @@ import std.stdio;
 import std.conv;
 import std.file;
 import std.uri;
+import std.algorithm.searching: canFind;
 
 import bindbc.sdl;
 import bindbc.opengl;
@@ -31,7 +32,7 @@ void main(string[] args) {
 		.add(new Option("b", "bios", "path to bios file").optional.defaultValue("./gba_bios.bin"))
 		.add(new Flag("p", "pause", "pause until enter on stdin"))
 		.add(new Flag("k", "bootscreen", "skips bios bootscreen and starts the rom directly"))
-		.add(new Flag("c", "beancomputer", "enable beancomputer"))
+		.add(new Option("m", "mod", "enable mod/extension"))
 		.add(new Option("t", "cputrace", "display cpu trace on crash").optional.defaultValue("0"))
 		.parse(args);
 	// dfmt on
@@ -51,7 +52,7 @@ void main(string[] args) {
 	auto mem = new Memory();
 	writeln("init mem");
 
-	bool is_beancomputer = a.flag("beancomputer");
+	bool is_beancomputer = a.option("mod").canFind("beancomputer");
 	if (is_beancomputer) writefln("creating beancomputer");
 
 	KeyInput key_input = new KeyInput(mem);
