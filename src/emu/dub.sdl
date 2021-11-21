@@ -11,7 +11,8 @@ dependency "bindbc-opengl" version="~>1.0.0"
 dependency "silly" version="~>1.1.1"
 
 dependency "gamebean-jumptable" path="jumptable"
-dependency "gamebean-common" path="common"
+dependency "gamebean-common"    path="common"
+dependency "gamebean-debugger"  path="debugger"
 
 configuration "default" {
     versions "default"

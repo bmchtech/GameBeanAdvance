@@ -2,6 +2,8 @@ import hw.gba;
 import hw.memory;
 import hw.keyinput;
 
+import debugger;
+
 import util;
 
 // import save_detector;
@@ -34,6 +36,7 @@ void main(string[] args) {
 		.add(new Flag("k", "bootscreen", "skips bios bootscreen and starts the rom directly"))
 		.add(new Option("m", "mod", "enable mod/extension"))
 		.add(new Option("t", "cputrace", "display cpu trace on crash").optional.defaultValue("0"))
+		.add(new Option("e", "elf", "elf file for debugging"))
 		.parse(args);
 	// dfmt on
 
@@ -56,7 +59,7 @@ void main(string[] args) {
 	if (is_beancomputer) writefln("creating beancomputer");
 
 	KeyInput key_input = new KeyInput(mem);
-	auto bios_data = load_rom_as_bytes(a.option("bios"));
+	auto bios_data = load_file_as_bytes(a.option("bios"));
 	GBA gba = new GBA(mem, key_input, bios_data, is_beancomputer);
 	if (a.flag("bootscreen")) gba.skip_bios_bootscreen();
 	
@@ -75,7 +78,7 @@ void main(string[] args) {
 		auto dl_path = buildPath(tempDir(), randomUUID().toString());
 		download(rom_path, dl_path);
 
-		auto rom_data = load_rom_as_bytes(dl_path);
+		auto rom_data = load_file_as_bytes(dl_path);
 
 		writefln("downloaded %s bytes as %s", rom_data.length, dl_path);
 
@@ -85,6 +88,8 @@ void main(string[] args) {
 	} else {
 		assert(0, "rom file does not exist!");
 	}
+
+	load_symbols_from_file(a.option("elf"));
 
 	// writefln("UwU: %s", to!string(detect_savetype(gba.memory.rom)));
 

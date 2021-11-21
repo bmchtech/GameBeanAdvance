@@ -1,0 +1,8 @@
+name "gamebean-debugger"
+description "debugger"
+authors "bean"
+copyright "Copyright © 2021, bean"
+license "proprietary"
+targetType "library"
+
+dependency "gamebean-common" path="../common"
