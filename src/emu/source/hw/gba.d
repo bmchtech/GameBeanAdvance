@@ -84,7 +84,7 @@ public:
     }
 
     void load_rom(string rom_path) {
-        load_rom(load_rom_as_bytes(rom_path));
+        load_rom(load_file_as_bytes(rom_path));
     }
 
     void load_rom(ubyte[] rom) {
