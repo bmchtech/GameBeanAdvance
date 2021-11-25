@@ -89,7 +89,10 @@ void main(string[] args) {
 		assert(0, "rom file does not exist!");
 	}
 
-	load_symbols_from_file(a.option("elf"));
+	string file_name = a.option("elf");
+    if (!file_name.exists) error(format("Symbol file %s does not exist!", file_name));
+    ubyte* file_data = cast(ubyte*) load_file_as_bytes(file_name);
+	new ELFFileParser(file_data).parse();
 
 	// writefln("UwU: %s", to!string(detect_savetype(gba.memory.rom)));
 
