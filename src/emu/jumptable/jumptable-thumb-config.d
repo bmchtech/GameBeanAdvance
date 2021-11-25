@@ -817,7 +817,7 @@ void run_11001REG(ushort opcode) {
 
     // empty rlist edge case
     if ((register_list & 0xFF) == 0) {
-        *cpu.pc = cpu.memory.read_word(current_address);
+        *cpu.pc = cpu.memory.read_word(current_address, AccessType.NONSEQUENTIAL);
         cpu.refill_pipeline();
         current_address += 0x40;
     } else {
@@ -859,17 +859,24 @@ void run_11000REG(ushort opcode) {
     AccessType access_type = AccessType.NONSEQUENTIAL;
 
     int num_pushed          = 0;
-    for (int i = 0; i < 8; i++) {
-        // should we store this register?
-        if (get_nth_bit(register_list, i)) {
-            // don't optimize this by moving the bitwise and over to the initialization of start_address
-            // it has to be this way for when we writeback to cpu.regs after the loop
-            *start_address += 4;
-            cpu.memory.write_word((*start_address - 4),  cpu.regs[i], access_type);
-            num_pushed++;
-            access_type = AccessType.SEQUENTIAL;
+    if ((register_list & 0xFF) == 0) {
+        cpu.memory.write_word(*start_address, *cpu.pc, access_type);
+        *start_address += 0x40;
+    } else {
+        for (int i = 0; i < 8; i++) {
+            // should we store this register?
+            if (get_nth_bit(register_list, i)) {
+                // don't optimize this by moving the bitwise and over to the initialization of start_address
+                // it has to be this way for when we writeback to cpu.regs after the loop
+                *start_address += 4;
+                cpu.memory.write_word((*start_address - 4),  cpu.regs[i], access_type);
+                num_pushed++;
+                access_type = AccessType.SEQUENTIAL;
+            }
         }
     }
+
+    cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 
     // _g_cpu_cycles_remaining += num_pushed + 1;
 }
