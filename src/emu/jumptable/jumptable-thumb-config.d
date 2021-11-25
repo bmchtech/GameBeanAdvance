@@ -813,22 +813,30 @@ void run_11001REG(ushort opcode) {
     ubyte register_list    = cast(ubyte) (opcode & 0xFF);
     uint current_address = cpu.regs[rn];
 
-    // should we update rn after the LDMIA?
-    // only happens if rn wasn't in register_list.
-    bool update_rn         = true;
-    int num_pushed         = 0;
-    AccessType access_type = AccessType.NONSEQUENTIAL;
+    bool update_rn = true;
 
-    for (int i = 0; i < 8; i++) {
-        if (get_nth_bit(register_list, i)) {
-            if (rn == i) {
-                update_rn = false;
+    // empty rlist edge case
+    if ((register_list & 0xFF) == 0) {
+        *cpu.pc = cpu.memory.read_word(current_address);
+        cpu.refill_pipeline();
+        current_address += 0x40;
+    } else {
+        // should we update rn after the LDMIA?
+        // only happens if rn wasn't in register_list.
+        int num_pushed         = 0;
+        AccessType access_type = AccessType.NONSEQUENTIAL;
+
+        for (int i = 0; i < 8; i++) {
+            if (get_nth_bit(register_list, i)) {
+                if (rn == i) {
+                    update_rn = false;
+                }
+
+                cpu.regs[i] = cpu.memory.read_word(current_address, access_type);
+                access_type = AccessType.SEQUENTIAL;
+                current_address += 4;
+                num_pushed++;
             }
-
-            cpu.regs[i] = cpu.memory.read_word(current_address, access_type);
-            access_type = AccessType.SEQUENTIAL;
-            current_address += 4;
-            num_pushed++;
         }
     }
 
