@@ -620,10 +620,6 @@ void run_0101LSBR(ushort opcode) {
 
     @IF( L !S !B) uint value = cast(uint)            (read_word_and_rotate(cpu.memory, address, AccessType.NONSEQUENTIAL));
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
-
-    @IF( L !S !B) if ((address & 0b11) == 0b01) value = ((value & 0xFF)     << 24) | (value >> 8);
-    @IF( L !S !B) if ((address & 0b11) == 0b10) value = ((value & 0xFFFF)   << 16) | (value >> 16);
-    @IF( L !S !B) if ((address & 0b11) == 0b11) value = ((value & 0xFFFFFF) << 8)  | (value >> 24);
     
     @IF( L !S  B) if ((address & 0b1 ) == 0b1 ) value = ((value & 0xFF)     << 24) | (value >> 8);
 
