@@ -29,7 +29,8 @@ LOCAL_INLINE_HEADER     = "@LOCAL_INLINE("
 FILE_HEADER      = '''
 import util;
 import abstracthw.memory;
-import abstracthw.cpu;\n\n'''[1:] # the [1:] is used to remove the beginning \n
+import abstracthw.cpu;
+import core.bitop;\n\n'''[1:] # the [1:] is used to remove the beginning \n
 
 FILE_FOOTER      = '''
 '''[1:]
