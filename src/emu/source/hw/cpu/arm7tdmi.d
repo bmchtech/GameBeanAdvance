@@ -406,6 +406,28 @@ class ARM7TDMI : IARM7TDMI {
         return 0;
     }
 
+    bool check_condition(uint cond) {
+        switch (cond) {
+        case 0x0: return ( get_flag_Z());
+        case 0x1: return (!get_flag_Z());
+        case 0x2: return ( get_flag_C());
+        case 0x3: return (!get_flag_C());
+        case 0x4: return ( get_flag_N());
+        case 0x5: return (!get_flag_N());
+        case 0x6: return ( get_flag_V());
+        case 0x7: return (!get_flag_V());
+        case 0x8: return ( get_flag_C() && !get_flag_Z());
+        case 0x9: return (!get_flag_C() ||  get_flag_Z());
+        case 0xA: return ( get_flag_N() ==  get_flag_V());
+        case 0xB: return ( get_flag_N() !=  get_flag_V());
+        case 0xC: return (!get_flag_Z() && (get_flag_N() == get_flag_V()));
+        case 0xD: return ( get_flag_Z() || (get_flag_N() != get_flag_V()));
+        case 0xE: return true;
+        case 0xF: error("Opcode has COND == 0xF"); return false;
+
+        default: error(format("Illegal cond passed in: %x", cond)); return false;
+        }
+    }
     uint fetch() {
         if (get_bit_T()) { // thumb mode: grab a halfword and return it
             uint opcode = cast(uint) m_memory.read_halfword(*pc & 0xFFFFFFFE, m_pipeline_access_type, true);
@@ -434,7 +456,9 @@ class ARM7TDMI : IARM7TDMI {
         if (get_bit_T()) {
             jumptable_thumb.jumptable[opcode >> 8](this, cast(ushort)opcode);
         } else {
-            jumptable_arm.execute_instruction(opcode, this);
+            if (check_condition(opcode >> 28)) {
+                jumptable_arm.execute_instruction(opcode, this);
+            }
         }
     }
 
