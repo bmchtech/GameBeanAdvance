@@ -614,9 +614,9 @@ void run_0101LSBR(ushort opcode) {
     uint address = cpu.regs[rm] + cpu.regs[rn];
 
     @IF( L  S  B) int  value = cast(uint)            (cpu.memory.read_halfword(address, AccessType.NONSEQUENTIAL));
-    @IF( L  S !B) uint value = cast(uint)            (cpu.memory.read_byte    (address,              AccessType.NONSEQUENTIAL));
+    @IF( L  S !B) uint value = cast(uint)            (cpu.memory.read_byte    (address, AccessType.NONSEQUENTIAL));
     @IF( L !S  B) uint value = cast(uint)            (cpu.memory.read_halfword(address, AccessType.NONSEQUENTIAL));
-    @IF(!L  S  B) int  value = cast(uint) sign_extend(cpu.memory.read_byte    (address,              AccessType.NONSEQUENTIAL), 8);
+    @IF(!L  S  B) int  value = cast(uint) sign_extend(cpu.memory.read_byte    (address, AccessType.NONSEQUENTIAL), 8);
 
     @IF( L !S !B) uint value = cast(uint)            (read_word_and_rotate(cpu.memory, address, AccessType.NONSEQUENTIAL));
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
@@ -696,7 +696,10 @@ void run_10001OFS(ushort opcode) {
     ubyte rd     = cast(ubyte) get_nth_bits(opcode, 0, 3);
     ubyte offset = cast(ubyte) get_nth_bits(opcode, 6, 11);
 
-    cpu.regs[rd] = cpu.memory.read_halfword(cpu.regs[rn] + offset * 2, AccessType.NONSEQUENTIAL);
+    uint address = cpu.regs[rn] + offset * 2;
+    uint value   = cpu.memory.read_halfword(address, AccessType.NONSEQUENTIAL);
+    if (address & 1) cpu.regs[rd] = ((value & 0xFF) << 24) | (value >> 8);
+    
     cpu.run_idle_cycle();
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 
