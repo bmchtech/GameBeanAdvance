@@ -698,7 +698,8 @@ void run_10001OFS(ushort opcode) {
 
     uint address = cpu.regs[rn] + offset * 2;
     uint value   = cpu.memory.read_halfword(address, AccessType.NONSEQUENTIAL);
-    if (address & 1) cpu.regs[rd] = ((value & 0xFF) << 24) | (value >> 8);
+    if (address & 1) value = ((value & 0xFF) << 24) | (value >> 8);
+    cpu.regs[rd] = value;
     
     cpu.run_idle_cycle();
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
