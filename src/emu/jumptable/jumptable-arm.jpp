@@ -1,7 +1,7 @@
 [SETTINGS]
 - NAMESPACE: jumptable_arm
 - OPCODE_FORMAT: ----IIIIIIII------------DDDD----
-- INCLUDES: util abstracthw.cpu abstracthw.memory
+- INCLUDES: util abstracthw.cpu abstracthw.memory core.bitop
 - ARGUMENTS: IARM7TDMI cpu
 [/SETTINGS]
 
@@ -628,6 +628,7 @@
     uint register_operand = cpu.read_reg(get_nth_bits(opcode, 16, 20));
     if (get_nth_bits(opcode, 16, 20) == 15) register_operand += pc_additional_shift_amount;
     uint result           = register_operand + ~cpu.shifter_operand + 1;
+    warning(format("CMP: %x %x %x", opcode, register_operand, cpu.shifter_operand));
     
     @IF( S) if (get_nth_bits(opcode, 12, 16) == 15) { // are we register PC?
     @IF( S)     *cpu.cpsr = *cpu.spsr;
@@ -749,19 +750,41 @@
 [COMPONENT LDM_STM]
 - FORMAT:  ----100PUSWL--------------------
 {
-    // this if statement emulates unpredictable ARM7TDMI behavior
+    uint address = cpu.read_reg(get_nth_bits(opcode, 16, 20));
+    @IF(!P  U) uint start_address     = address;
+    @IF( P  U) uint start_address     = address + 4;
+    @IF(!P !U) uint start_address     = address - popcnt(opcode & 0xFFFF) * 4 + 4;
+    @IF( P !U) uint start_address     = address - popcnt(opcode & 0xFFFF) * 4;
+    @IF(!P  U) uint writeback_address = address + popcnt(opcode & 0xFFFF) * 4;
+    @IF( P  U) uint writeback_address = address + popcnt(opcode & 0xFFFF) * 4;
+    @IF(!P !U) uint writeback_address = address - popcnt(opcode & 0xFFFF) * 4;
+    @IF( P !U) uint writeback_address = address - popcnt(opcode & 0xFFFF) * 4;
+    address = start_address;
+
+    // this if statement emulates unpredictable ARM7TDMI behavior - empty rlist
     if (get_nth_bits(opcode, 0, 16) == 0) {
-        *cpu.pc += 4; // skip the next instruction
-        cpu.refill_pipeline();
-        cpu.regs[get_nth_bits(opcode, 16, 20)] += 4 * 16;
-        if (get_nth_bits(opcode, 16, 20) == 15) *cpu.pc -= 4;
+        @IF(!P  U) start_address = cpu.read_reg(get_nth_bits(opcode, 16, 20));
+        @IF( P  U) start_address = cpu.read_reg(get_nth_bits(opcode, 16, 20)) + 4;
+        @IF(!P !U) start_address = cpu.read_reg(get_nth_bits(opcode, 16, 20)) - 16 * 4 + 4;
+        @IF( P !U) start_address = cpu.read_reg(get_nth_bits(opcode, 16, 20)) - 16 * 4;
+        address = start_address;
+
+        warning(format("%x", opcode));
+
+        @IF( L) *cpu.pc = cpu.memory.read_word(address);
+        @IF( L) cpu.refill_pipeline();
+        @IF( L) cpu.run_idle_cycle();
+
+        @IF(!L) cpu.memory.write_word(address, *cpu.pc);
+
+        @IF( U) cpu.regs[get_nth_bits(opcode, 16, 20)] = cpu.read_reg(get_nth_bits(opcode, 16, 20)) + 4 * 16;
+        @IF(!U) cpu.regs[get_nth_bits(opcode, 16, 20)] = cpu.read_reg(get_nth_bits(opcode, 16, 20)) - 4 * 16;
+
+        cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
         return;
     }
 
-    uint address = cpu.read_reg(get_nth_bits(opcode, 16, 20));
-
-    @IF( U) int mask = 1;
-    @IF(!U) int mask = 0x8000; 
+    int mask = 1;
 
     int num_transactions = 0;
 
@@ -770,15 +793,12 @@
     @IF( S) bool pc_included = get_nth_bit(opcode, 15);
 
     bool register_in_rlist = (opcode >> get_nth_bits(opcode, 16, 20)) & 1;
+    bool is_first_access = true;
 
     AccessType access_type = AccessType.NONSEQUENTIAL;
 
-    @IF( U) for (int i = 0;  i <  16; i++) {
-    @IF(!U) for (int i = 15; i >= 0;  i--) {
-
+    for (int i = 0;  i < 16; i++) {
         if (opcode & mask) {
-            @IF( P  U) address += 4;
-            @IF( P !U) address -= 4;
 
             @IF(!S  L) cpu.regs[i] = cpu.memory.read_word(address, access_type);
 
@@ -797,8 +817,7 @@
             @IF( S !L)     cpu.memory.write_word(address, cpu.register_file[MODE_USER.OFFSET + i], access_type);
             @IF( S !L) }
 
-            @IF(!P  U) address += 4;
-            @IF(!P !U) address -= 4;
+            address += 4;
 
             @IF(L) num_transactions++;
 
@@ -807,11 +826,14 @@
             @IF(L)     cpu.refill_pipeline();
             @IF(L) }
 
+            @IF(!L  W  U) if (is_first_access) cpu.regs[get_nth_bits(opcode, 16, 20)] = writeback_address;
+            @IF(!L  W !U) if (is_first_access) cpu.regs[get_nth_bits(opcode, 16, 20)] = writeback_address;
+            @IF(!L  W   ) is_first_access = false;
+
             access_type = AccessType.SEQUENTIAL;
         }
 
-        @IF(U)  mask <<= 1; 
-        @IF(!U) mask >>= 1;
+        mask <<= 1; 
     }
 
     // TODO: does pipeline reset when empty rlist?
@@ -822,7 +844,7 @@
 
     @IF( L  S) if (pc_loaded) *cpu.cpsr = *cpu.spsr;
     @IF( W  L) if (!register_in_rlist) cpu.regs[get_nth_bits(opcode, 16, 20)] = address;
-    @IF( W !L) cpu.regs[get_nth_bits(opcode, 16, 20)] = address;
+    @IF( W !L) cpu.regs[get_nth_bits(opcode, 16, 20)] = writeback_address;
 }
 [/COMPONENT]
 
