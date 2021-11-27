@@ -57,7 +57,7 @@ public:
 
         MMIO mmio = new MMIO(this, ppu, apu, dma_manager, timers, interrupt_manager, key_input, beancomputer, memory, is_bean_computer);
         memory.set_mmio(mmio);
-        memory.set_cpu_pipeline(&cpu.m_pipeline, &cpu.current_instruction_size);
+        memory.set_cpu(this.cpu);
         memory.set_ppu(this.ppu);
         memory.set_scheduler(scheduler);
 

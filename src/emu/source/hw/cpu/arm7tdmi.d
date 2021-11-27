@@ -373,6 +373,7 @@ class ARM7TDMI : IARM7TDMI {
         uint opcode = m_pipeline[0];
         m_pipeline[0] = m_pipeline[1];
         m_pipeline[1] = fetch();
+
         m_pipeline_access_type = AccessType.SEQUENTIAL;
 
         if (*pc > 0x0FFF_FFFF) {
