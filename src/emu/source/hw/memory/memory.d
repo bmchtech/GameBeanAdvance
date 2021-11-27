@@ -57,9 +57,6 @@ class Memory : IMemory {
 
     MMIO mmio;
 
-    uint[2]* cpu_pipeline;
-    uint*    pipeline_size;
-
     PrefetchBuffer prefetch_buffer;
     Scheduler scheduler;
 
@@ -194,12 +191,6 @@ class Memory : IMemory {
         this.mmio = mmio;
     }
 
-    // MUST BE CALLED BEFORE "REGULAR" OPEN BUS IS ACCESSED!
-    void set_cpu_pipeline(uint[2]* cpu_pipeline, uint* pipeline_size) {
-        this.cpu_pipeline  = cpu_pipeline;
-        this.pipeline_size = pipeline_size;
-    }
-
     // MUST BE CALLED BEFORE ANY MEMORY ACCESS / IDLE CYCLE WHATSOEVER
     void set_scheduler(Scheduler scheduler) {
         this.scheduler = scheduler;
@@ -208,6 +199,11 @@ class Memory : IMemory {
     // MUST BE CALLED BEFORE ROM IS ACCESSED!
     void load_rom(ubyte[] rom_data) {
         rom = new ROM(rom_data);
+    }
+
+    ARM7TDMI cpu;
+    void set_cpu(ARM7TDMI cpu) {
+        this.cpu = cpu;
     }
 
     PPU ppu;
@@ -356,10 +352,8 @@ class Memory : IMemory {
         
         // "regular" open bus
         uint open_bus_value;
-        if (*pipeline_size == 4) {
-            open_bus_value = (*cpu_pipeline)[1];
-        } else {
-            switch ((address >> 24) & 0xF) {
+        if (cpu.get_bit_T()) { // THUMB mode
+            switch ((*cpu.pc >> 24) & 0xF) {
                 case Region.WRAM_BOARD:
                 case Region.PALETTE_RAM:
                 case Region.VRAM:
@@ -371,30 +365,32 @@ class Memory : IMemory {
                 case Region.ROM_WAITSTATE_2_H:
                 case Region.ROM_SRAM_L:
                 case Region.ROM_SRAM_H:
-                    open_bus_value = (*cpu_pipeline)[1] << 16 | (*cpu_pipeline)[1];
+                    open_bus_value = cpu.pipeline[1] << 16 | cpu.pipeline[1];
                     break;
 
                 // TODO: misaligned addresses behave differently, see GBATEK "unpredictable things" section
                 case Region.BIOS:
                 case 0x1: // unmapped
                 case Region.OAM:
-                    open_bus_value = (*cpu_pipeline)[1] << 16 | (*cpu_pipeline)[0];
+                    open_bus_value = cpu.pipeline[1] << 16 | cpu.pipeline[0];
                     break;
 
                 // TODO: latch this to emulate properly, see GBATEK "unpredictable things" section
                 case Region.WRAM_CHIP:
                 case Region.IO_REGISTERS:
-                    open_bus_value = ((*cpu_pipeline)[1] << 16) | 
-                                     ((*cpu_pipeline)[1] & 0xFFFF);
+                    open_bus_value = (cpu.pipeline[1] << 16) | 
+                                     (cpu.pipeline[1] & 0xFFFF);
                     break;
 
                 default:
                     // this physically can't happen but ok
                     open_bus_value = 0;
             }
+        } else { // arm mode
+            open_bus_value = cpu.pipeline[1];
         }
 
-        return (cast(T) open_bus_value >> (8 * (address & 3)));
+        return (cast(T) open_bus_value);
     }
     private template write(T) {
         pragma(inline, true) void write(uint address, T value, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
