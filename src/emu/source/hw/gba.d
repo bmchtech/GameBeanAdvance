@@ -114,11 +114,8 @@ public:
         if (!cpu.halted) {
             cpu.cycle();
         } else {
-            scheduler.tick(1);
-            scheduler.process_events();
-
-            if (interrupt_manager.has_irq()) {
-                cpu.exception(CpuException.IRQ);
+            while (!interrupt_manager.has_irq()) {
+                scheduler.fast_forward();
             }
         }
     }
