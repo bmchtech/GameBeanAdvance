@@ -88,6 +88,13 @@ class Scheduler {
         }
     }
 
+    pragma(inline, true) void fast_forward() {
+        if (!is_processing_event) {
+            current_timestamp = events[0].timestamp;
+            process_event();
+        }
+    }
+
     pragma(inline, true) void tick(ulong num_cycles) {
         current_timestamp += num_cycles;
     }
