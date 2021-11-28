@@ -346,7 +346,13 @@ class Memory : IMemory {
 
 
     T read_open_bus(T)(uint address) {
+
+        static if(is(T == uint  )) writefln("[WORD] OPEN BUS: %08x %08x", address, *cpu.pc);
+        static if(is(T == ushort)) writefln("[HALF] OPEN BUS: %08x %08x", address, *cpu.pc);
+        static if(is(T == ubyte )) writefln("[BYTE] OPEN BUS: %08x %08x", address, *cpu.pc);
+
         if (address < SIZE_BIOS) {
+            writefln("Returning %08x", cast(T) bios_open_bus_latch);
             return cast(T) bios_open_bus_latch;
         }
         
@@ -384,14 +390,16 @@ class Memory : IMemory {
 
                 default:
                     // this physically can't happen but ok
-                    open_bus_value = 0;
+                    error(format("how did this happen: %x", *cpu.pc));
             }
         } else { // arm mode
             open_bus_value = cpu.pipeline[1];
         }
 
-        return (cast(T) open_bus_value);
+            writefln("Returning %08x", cast(T) open_bus_value);
+        return cast(T) open_bus_value;
     }
+
     private template write(T) {
         pragma(inline, true) void write(uint address, T value, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
             uint region = get_region(address);
