@@ -53,14 +53,15 @@ public:
 
         timers[timer_id].enabled_for_first_time = true;
         timers[timer_id].value = timers[timer_id].reload_value;
-        // writefln("Set timer at %x %x", scheduler.get_current_time_relative_to_cpu(), scheduler.get_current_time_relative_to_cpu());
-        timers[timer_id].timer_event = scheduler.add_event_relative_to_self(() => timer_overflow(timer_id), 2 + ((0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment));
+        writefln("Set timer at %x %x", scheduler.get_current_time_relative_to_cpu(), scheduler.get_current_time_relative_to_cpu());
+        timers[timer_id].timer_event = scheduler.add_event_relative_to_clock(() => timer_overflow(timer_id), 2 + ((0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment));
         timers[timer_id].timestamp = scheduler.get_current_time_relative_to_cpu() + 2;
     }
 
     void timer_overflow(int x) {
         reload_timer(x);
         on_timer_overflow(x);
+                    // writefln("[%x] youre interrupted", scheduler.get_current_time_relative_to_cpu());
         if (timers[x].irq_enable) interrupt_cpu(get_interrupt_from_timer_id(x));
 
         // if the next timer is a slave (countup), then increment it
@@ -113,7 +114,6 @@ private:
         ulong   timestamp;
 
         ulong   timer_event;
-        ulong   enable_event;
     }
 
     //.......................................................................................................................
@@ -150,6 +150,7 @@ public:
 
                 // are we enabling the timer?
                 if (!timers[x].enabled && get_nth_bit(data, 7)) {
+                    writefln("[%x] youre disabled %x", scheduler.get_current_time_relative_to_cpu(), timers[x].reload_value);
                     timers[x].enabled = true;
 
                     if (timers[x].timer_event != 0) scheduler.remove_event(timers[x].timer_event);
@@ -160,7 +161,7 @@ public:
 
                 if (!get_nth_bit(data, 7)) {
                     timers[x].enabled = false;
-                    scheduler.remove_event(timers[x].enable_event);
+                    scheduler.remove_event(timers[x].timer_event);
                 }
 
                 break;
