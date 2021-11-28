@@ -259,7 +259,10 @@ class Memory : IMemory {
 
             if (address >> 28) {
                 // writeln(format("OPEN BUS. %x %x", cast(T) (*cpu_pipeline)[1], read_word(0x0300686c)));
+                
                 read_value = read_open_bus!T(address);
+                scheduler.process_events();
+                return read_value;
             }
 
             uint shift;
@@ -347,6 +350,8 @@ class Memory : IMemory {
 
     T read_open_bus(T)(uint address) {
 
+        // _g_num_log += 10;
+
         static if(is(T == uint  )) writefln("[WORD] OPEN BUS: %08x %08x", address, *cpu.pc);
         static if(is(T == ushort)) writefln("[HALF] OPEN BUS: %08x %08x", address, *cpu.pc);
         static if(is(T == ubyte )) writefln("[BYTE] OPEN BUS: %08x %08x", address, *cpu.pc);
@@ -384,8 +389,11 @@ class Memory : IMemory {
                 // TODO: latch this to emulate properly, see GBATEK "unpredictable things" section
                 case Region.WRAM_CHIP:
                 case Region.IO_REGISTERS:
-                    open_bus_value = (cpu.pipeline[1] << 16) | 
-                                     (cpu.pipeline[1] & 0xFFFF);
+                    if ((*cpu.pc & 3) == 0) {
+                        open_bus_value = (cpu.pipeline[1] << 16) | (cpu.pipeline[0] & 0xFFFF);
+                    } else {
+                        open_bus_value = (cpu.pipeline[0] << 16) | (cpu.pipeline[1] & 0xFFFF);
+                    }
                     break;
 
                 default:
