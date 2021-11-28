@@ -86,7 +86,7 @@ extern (C) {
                         sample = audio_data.buffer[channel].last_sample;
                     }
 
-                    out_stream[2 * i + channel] = sample;
+                    out_stream[2 * i + channel] = 0;
                     // try { writefln("%x", 2 * i + channel); } catch (Exception e) {}
                 }
 
