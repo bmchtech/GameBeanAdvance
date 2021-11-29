@@ -3,6 +3,8 @@ module rom_tests;
 import hw.gba;
 import hw.cpu;
 import hw.memory;
+import scheduler;
+import hw.interrupts;
 
 import util;
 
@@ -73,9 +75,19 @@ CpuState produce_expected_cpu_state(char[] input_string) {
     return state;
 }
 
+
 void test_thumb_mode(string gba_file, string log_file, int num_instructions) {
     Memory   memory = new Memory();
     ARM7TDMI cpu    = new ARM7TDMI(memory);
+    Scheduler scheduler = new Scheduler(memory);
+    InterruptManager im = new InterruptManager(null);
+    cpu.set_interrupt_manager(im);
+
+    void nop() {}
+    scheduler.add_event_relative_to_clock(&nop, 0x7FFFFFFF);
+
+    memory.set_scheduler(scheduler);
+    memory.set_cpu(cpu);
 
     CpuState[] expected_output = produce_expected_cpu_states(log_file, num_instructions);
     
@@ -113,6 +125,15 @@ void test_thumb_mode(string gba_file, string log_file, int num_instructions) {
 void test_arm_mode(string gba_file, string log_file, int num_instructions, int start_instruction, bool b_infin_check) {
     Memory   memory = new Memory();
     ARM7TDMI cpu    = new ARM7TDMI(memory);
+    Scheduler scheduler = new Scheduler(memory);
+    InterruptManager im = new InterruptManager(null);
+    cpu.set_interrupt_manager(im);
+
+    void nop() {}
+    scheduler.add_event_relative_to_clock(&nop, 0x7FFFFFFF);
+
+    memory.set_scheduler(scheduler);
+    memory.set_cpu(cpu);
 
     CpuState[] expected_output = produce_expected_cpu_states(log_file, num_instructions);
     
@@ -140,7 +161,7 @@ void test_arm_mode(string gba_file, string log_file, int num_instructions, int s
             cpu.cycle();
             check_cpu_state(expected_output[i + 1], get_cpu_state(cpu), "Failed at instruction #" ~ to!string(i));
         } else {
-            print_cpu_state(get_cpu_state(cpu));
+            // print_cpu_state(get_cpu_state(cpu));
             set_cpu_state(cpu, expected_output[i + 1]);
             cpu.refill_pipeline();
         }
@@ -157,25 +178,25 @@ unittest {
     test_thumb_mode("../../tests/asm/bin/thumb-simple.gba", "../../tests/asm/logs/thumb-simple.log", 3866);
 }
 
-// @("tests-arm-addressing-mode-1") 
-// unittest {
-//     test_arm_mode("../../tests/asm/bin/arm-addressing-mode-1.gba", "../../tests/asm/logs/arm-addressing-mode-1.log", 1290, 216, true);
-// }
+@("tests-arm-addressing-mode-1") 
+unittest {
+    test_arm_mode("../../tests/asm/bin/arm-addressing-mode-1.gba", "../../tests/asm/logs/arm-addressing-mode-1.log", 1290, 216, true);
+}
 
-// @("tests-arm-addressing-mode-2") 
-// unittest {
-//     test_arm_mode("../../tests/asm/bin/arm-addressing-mode-2.gba", "../../tests/asm/logs/arm-addressing-mode-2.log", 1290, 212, true);
-// }
+@("tests-arm-addressing-mode-2") 
+unittest {
+    test_arm_mode("../../tests/asm/bin/arm-addressing-mode-2.gba", "../../tests/asm/logs/arm-addressing-mode-2.log", 1290, 212, true);
+}
 
-// @("tests-arm-addressing-mode-3") 
-// unittest {
-//     test_arm_mode("../../tests/asm/bin/arm-addressing-mode-3.gba", "../../tests/asm/logs/arm-addressing-mode-3.log", 1290, 212, true);
-// }
+@("tests-arm-addressing-mode-3") 
+unittest {
+    test_arm_mode("../../tests/asm/bin/arm-addressing-mode-3.gba", "../../tests/asm/logs/arm-addressing-mode-3.log", 1290, 212, true);
+}
 
-// @("tests-arm-opcodes") 
-// unittest {
-//     test_arm_mode("../../tests/asm/bin/arm-opcodes.gba", "../../tests/asm/logs/arm-opcodes.log", 2000, 276, true);
-// }
+@("tests-arm-opcodes") 
+unittest {
+    test_arm_mode("../../tests/asm/bin/arm-opcodes.gba", "../../tests/asm/logs/arm-opcodes.log", 2100, 276, true);
+}
 
 // @("tests-roms-fountain") 
 // unittest {
