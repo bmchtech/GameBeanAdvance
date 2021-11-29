@@ -285,7 +285,7 @@ class MMIO {
             }
         }
 
-        return (memory.read_open_bus!uint(address) >> ((address & 3) * 8)) & 0xFF;
+        return memory.read_open_bus!ubyte(address);
     }
 
     void write(uint address, ubyte data) {

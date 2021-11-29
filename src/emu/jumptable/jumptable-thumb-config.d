@@ -21,7 +21,7 @@ void nop(ushort opcode) {
     // yes. making this a warning instead of an error looks stupid
     // but some games literally try to run undefined instructions
     // so what can i do.
-    error(format("[THUMB] No implementation for opcode %x", opcode));
+    // error(format("[THUMB] No implementation for opcode %x", opcode));
 }
 
 @LOCAL()

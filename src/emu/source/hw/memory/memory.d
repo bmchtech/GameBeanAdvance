@@ -247,6 +247,7 @@ class Memory : IMemory {
 
     private template read(T) {
         pragma(inline, true) T read(uint address, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
+            if (*(cast(uint*) (&wram_chip[0] + 0x2040)) == 0xe92dcff0) error("FUCK: %x");
             uint region = get_region(address);
             T read_value;
 
@@ -350,66 +351,78 @@ class Memory : IMemory {
 
     T read_open_bus(T)(uint address) {
 
-        // _g_num_log += 10;
+        // _g_num_log += 100;
 
-        static if(is(T == uint  )) writefln("[WORD] OPEN BUS: %08x %08x", address, *cpu.pc);
-        static if(is(T == ushort)) writefln("[HALF] OPEN BUS: %08x %08x", address, *cpu.pc);
-        static if(is(T == ubyte )) writefln("[BYTE] OPEN BUS: %08x %08x", address, *cpu.pc);
+        bool worthy = address == 0x000000ec && *cpu.pc == 0x080fc788;
 
-        if (address < SIZE_BIOS) {
-            writefln("Returning %08x", cast(T) bios_open_bus_latch);
-            return cast(T) bios_open_bus_latch;
+        if (worthy) {
+            // writefln("OVERRULED");
+            // return cast(T) 0xFFFFFFFF;
         }
+        // static if(is(T == uint  )) writefln("[%x] [WORD] OPEN BUS: %08x %08x", scheduler.get_current_time_relative_to_cpu(), address, *cpu.pc);
+        // static if(is(T == ushort)) writefln("[%x] [HALF] OPEN BUS: %08x %08x", scheduler.get_current_time_relative_to_cpu(), address, *cpu.pc);
+        // static if(is(T == ubyte )) writefln("[%x] [BYTE] OPEN BUS: %08x %08x", scheduler.get_current_time_relative_to_cpu(), address, *cpu.pc);
         
-        // "regular" open bus
+
         uint open_bus_value;
-        if (cpu.get_bit_T()) { // THUMB mode
-            switch ((*cpu.pc >> 24) & 0xF) {
-                case Region.WRAM_BOARD:
-                case Region.PALETTE_RAM:
-                case Region.VRAM:
-                case Region.ROM_WAITSTATE_0_L:
-                case Region.ROM_WAITSTATE_0_H:
-                case Region.ROM_WAITSTATE_1_L:
-                case Region.ROM_WAITSTATE_1_H:
-                case Region.ROM_WAITSTATE_2_L:
-                case Region.ROM_WAITSTATE_2_H:
-                case Region.ROM_SRAM_L:
-                case Region.ROM_SRAM_H:
-                    open_bus_value = cpu.pipeline[1] << 16 | cpu.pipeline[1];
-                    break;
+        if (address < SIZE_BIOS) {
+            // writefln("Returning %08x", cast(T) bios_open_bus_latch);
+            open_bus_value = bios_open_bus_latch;
+        } else {
+        
+            // "regular" open bus
+            if (cpu.get_bit_T()) { // THUMB mode
+                switch ((*cpu.pc >> 24) & 0xF) {
+                    case Region.WRAM_BOARD:
+                    case Region.PALETTE_RAM:
+                    case Region.VRAM:
+                    case Region.ROM_WAITSTATE_0_L:
+                    case Region.ROM_WAITSTATE_0_H:
+                    case Region.ROM_WAITSTATE_1_L:
+                    case Region.ROM_WAITSTATE_1_H:
+                    case Region.ROM_WAITSTATE_2_L:
+                    case Region.ROM_WAITSTATE_2_H:
+                    case Region.ROM_SRAM_L:
+                    case Region.ROM_SRAM_H:
+                        open_bus_value = cpu.pipeline[1] << 16 | cpu.pipeline[1];
+                        break;
 
-                // TODO: misaligned addresses behave differently, see GBATEK "unpredictable things" section
-                case Region.BIOS:
-                case 0x1: // unmapped
-                case Region.OAM:
-                    open_bus_value = cpu.pipeline[1] << 16 | cpu.pipeline[0];
-                    break;
+                    // TODO: misaligned addresses behave differently, see GBATEK "unpredictable things" section
+                    case Region.BIOS:
+                    case 0x1: // unmapped
+                    case Region.OAM:
+                        open_bus_value = cpu.pipeline[1] << 16 | cpu.pipeline[0];
+                        break;
 
-                // TODO: latch this to emulate properly, see GBATEK "unpredictable things" section
-                case Region.WRAM_CHIP:
-                case Region.IO_REGISTERS:
-                    if ((*cpu.pc & 3) == 0) {
-                        open_bus_value = (cpu.pipeline[1] << 16) | (cpu.pipeline[0] & 0xFFFF);
-                    } else {
-                        open_bus_value = (cpu.pipeline[0] << 16) | (cpu.pipeline[1] & 0xFFFF);
-                    }
-                    break;
+                    // TODO: latch this to emulate properly, see GBATEK "unpredictable things" section
+                    case Region.WRAM_CHIP:
+                    case Region.IO_REGISTERS:
+                        if ((*cpu.pc & 3) == 0) {
+                            open_bus_value = (cpu.pipeline[1] << 16) | (cpu.pipeline[0] & 0xFFFF);
+                        } else {
+                            open_bus_value = (cpu.pipeline[0] << 16) | (cpu.pipeline[1] & 0xFFFF);
+                        }
+                        break;
 
-                default:
-                    // this physically can't happen but ok
-                    error(format("how did this happen: %x", *cpu.pc));
+                    default:
+                        // this physically can't happen but ok
+                        error(format("how did this happen: %x", *cpu.pc));
+                }
+            } else { // arm mode
+                open_bus_value = cpu.pipeline[1];
             }
-        } else { // arm mode
-            open_bus_value = cpu.pipeline[1];
         }
 
-            writefln("Returning %08x", cast(T) open_bus_value);
-        return cast(T) open_bus_value;
+        // writefln("Returning %08x", open_bus_value);
+        
+        static if (is(T == uint  )) return open_bus_value;
+        static if (is(T == ushort)) return (open_bus_value >> (((address >> 1) & 1) * 16)) & 0xFFFF;
+        static if (is(T == ubyte )) return (open_bus_value >> (((address >> 0) & 3) * 8))  & 0xFF;
     }
 
     private template write(T) {
         pragma(inline, true) void write(uint address, T value, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
+
             uint region = get_region(address);
 
             uint shift;

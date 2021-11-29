@@ -150,7 +150,6 @@ public:
 
                 // are we enabling the timer?
                 if (!timers[x].enabled && get_nth_bit(data, 7)) {
-                    writefln("[%x] youre disabled %x", scheduler.get_current_time_relative_to_cpu(), timers[x].reload_value);
                     timers[x].enabled = true;
 
                     if (timers[x].timer_event != 0) scheduler.remove_event(timers[x].timer_event);
