@@ -430,6 +430,11 @@ class Memory : IMemory {
             static if (is(T == ushort)) shift = 1;
             static if (is(T == ubyte )) shift = 0;
 
+            if (address >> 28) {
+                clock(1);
+                return; // illegal write - out of bounds
+            }
+
             // handle waitstates
             uint stalls = calculate_stalls_for_access!T(region, access_type);
             clock(stalls);
