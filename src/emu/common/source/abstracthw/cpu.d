@@ -107,7 +107,7 @@ CpuState get_cpu_state(IARM7TDMI cpu) {
     cpu_state.type = cpu.get_bit_T() ? CpuType.THUMB : CpuType.ARM;
     cpu_state.opcode = cpu.pipeline[0];
     cpu_state.mode = *cpu.cpsr;
-    cpu_state.mem_0x03000003 = 0; //cpu.memory.read_byte(0x03000003);
+    cpu_state.mem_0x03000003 = 0; // cpu.memory.read_byte(0x03000003);
 
     for (int i = 0; i < 16; i++) {
         cpu_state.regs[i] = cpu.regs[i];
