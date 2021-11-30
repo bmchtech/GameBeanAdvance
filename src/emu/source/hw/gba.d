@@ -46,7 +46,7 @@ public:
         this.memory            = memory;
         this.cpu               = new ARM7TDMI(memory);
         this.interrupt_manager = new InterruptManager(&cpu.enable);
-        this.ppu               = new PPU(memory, scheduler, &interrupt_manager.interrupt, &on_hblank);
+        this.ppu               = new PPU(memory, scheduler, &interrupt_manager.interrupt, &on_hblank, &on_vblank);
         this.apu               = new APU(memory, scheduler, &on_fifo_empty);
         this.dma_manager       = new DMAManager(memory, scheduler, &interrupt_manager.interrupt);
         this.timers            = new TimerManager(memory, scheduler, this, &interrupt_manager.interrupt, &on_timer_overflow);
@@ -139,6 +139,10 @@ public:
 
     void on_hblank(uint scanline) {
         dma_manager.on_hblank(scanline);
+    }
+
+    void on_vblank() {
+        dma_manager.on_vblank();
     }
 
     // is this sketchy code? it might be... but its 1 am
