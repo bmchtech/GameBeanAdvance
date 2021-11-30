@@ -29,7 +29,7 @@ class PPU {
 
 public:
     void delegate(uint) interrupt_cpu;
-    void delegate()     on_hblank_callback;
+    void delegate(uint) on_hblank_callback;
     void delegate()     frontend_vblank_callback;
     
     enum Pixel RESET_PIXEL = Pixel(0, 0, 0);
@@ -42,7 +42,7 @@ public:
 
     Scheduler scheduler;
 
-    this(Memory memory, Scheduler scheduler, void delegate(uint) interrupt_cpu, void delegate() on_hblank_callback) {
+    this(Memory memory, Scheduler scheduler, void delegate(uint) interrupt_cpu, void delegate(uint) on_hblank_callback) {
         this.memory             = memory;
         this.interrupt_cpu      = interrupt_cpu;
         this.on_hblank_callback = on_hblank_callback;
@@ -89,7 +89,7 @@ public:
             backgrounds[3].internal_reference_y += backgrounds[3].p[AffineParameter.D];
         }
 
-        if (!vblank) on_hblank_callback();
+        on_hblank_callback(scanline);
 
         scheduler.add_event_relative_to_self(&on_hblank_end, 68 * 4);
 
@@ -99,7 +99,7 @@ public:
     void on_hblank_end() {
         hblank = false;
         scanline++;
-        
+
         if (vcounter_irq_enabled && scanline == vcount_lyc) {
             interrupt_cpu(Interrupt.LCD_VCOUNTER_MATCH);
         }

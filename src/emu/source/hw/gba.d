@@ -52,7 +52,7 @@ public:
         this.timers            = new TimerManager(memory, scheduler, this, &interrupt_manager.interrupt, &on_timer_overflow);
         this.beancomputer      = new BeanComputer();
         this.key_input         = key_input;
-        
+
         key_input.set_interrupt_cpu = &interrupt_manager.interrupt;
 
         // this.direct_sound = new DirectSound(memory);
@@ -137,8 +137,8 @@ public:
         dma_manager.maybe_refill_fifo(fifo_type);
     }
 
-    void on_hblank() {
-        dma_manager.on_hblank();
+    void on_hblank(uint scanline) {
+        dma_manager.on_hblank(scanline);
     }
 
     // is this sketchy code? it might be... but its 1 am
