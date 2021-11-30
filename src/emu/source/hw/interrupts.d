@@ -32,7 +32,7 @@ class InterruptManager {
 
     // interrupt_code must be one-hot
     void interrupt(uint interrupt_code) {
-        // writefln("Received interrupt %x %x %x", interrupt_code, interrupt_enable, interrupt_request);
+        writefln("Received interrupt %x %x %x", interrupt_code, interrupt_enable, interrupt_request);
         // is this specific interrupt enabled
         if (interrupt_enable & interrupt_code) {
             interrupt_request |= interrupt_code;

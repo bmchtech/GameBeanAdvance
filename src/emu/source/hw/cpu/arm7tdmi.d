@@ -385,7 +385,8 @@ class ARM7TDMI : IARM7TDMI {
         }
 
         if (*pc == 0x0800cb4c) {
-            writefln("[AGS] breakpoint");
+            import host.sdl;
+            writefln("[%016x] [AGS] Breakpoint", _gba.scheduler.get_current_time_relative_to_cpu());
             readln();
             _g_num_log += 10;
         }
