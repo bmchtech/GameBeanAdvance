@@ -52,6 +52,8 @@ public:
         this.timers            = new TimerManager(memory, scheduler, this, &interrupt_manager.interrupt, &on_timer_overflow);
         this.beancomputer      = new BeanComputer();
         this.key_input         = key_input;
+        
+        key_input.set_interrupt_cpu = &interrupt_manager.interrupt;
 
         // this.direct_sound = new DirectSound(memory);
 
