@@ -18,7 +18,7 @@ class ROM {
             rom_mask_size++;
         }
 
-        uint rom_length = 1 << (rom_mask_size);
+        uint rom_length = 1 << (rom_mask_size + 1);
         this.rom_mask = rom_length - 1;
         data = new ushort[rom_length];
 
