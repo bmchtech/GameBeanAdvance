@@ -423,6 +423,8 @@ class Memory : IMemory {
     private template write(T) {
         pragma(inline, true) void write(uint address, T value, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
 
+            if (address == 4) writefln("[AGS] Flags: %x", value);
+
             uint region = get_region(address);
 
             uint shift;

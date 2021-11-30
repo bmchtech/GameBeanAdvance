@@ -384,6 +384,12 @@ class ARM7TDMI : IARM7TDMI {
             error("rebooting");
         }
 
+        if (*pc == 0x0800cb4c) {
+            writefln("[AGS] breakpoint");
+            readln();
+            _g_num_log += 10;
+        }
+
         if (_g_num_log > 0) {
             _g_num_log--;
             writef("[%04x] ", _g_num_log);
