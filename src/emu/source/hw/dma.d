@@ -249,6 +249,14 @@ public:
         }
     }
 
+    void on_vblank() {
+        for (int i = 0; i < 4; i++) {
+            if (dma_channels[i].dma_start_timing == DMAStartTiming.VBlank) {
+                start_dma_channel(i, false);
+            }
+        }
+    }
+
 private:
     Memory memory;
 
