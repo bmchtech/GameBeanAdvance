@@ -58,7 +58,7 @@ public:
         int  source_increment   = 0;
         int  dest_increment     = 0;
 
-        writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
+        if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
                  current_channel,
                  bytes_to_transfer,
                  dma_channels[current_channel].transferring_words ? "words" : "halfwords",
@@ -157,7 +157,8 @@ public:
         for (int i = 0; i < idle_cycles; i++) memory.idle();
 
         if (dma_channels[current_channel].irq_on_end) {
-            scheduler.add_event_relative_to_clock(() => interrupt_cpu(Interrupt.DMA_0 + current_channel), idle_cycles + memory.cycles - excess_cycles);
+            writefln("INTERRUPT: %x", current_channel);
+            scheduler.add_event_relative_to_clock(() => interrupt_cpu(Interrupt.DMA_0 << current_channel), 2);
         }
 
 
