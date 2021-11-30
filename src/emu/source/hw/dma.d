@@ -22,10 +22,10 @@ public:
         this.interrupt_cpu = interrupt_cpu;
 
         dma_channels = [
-            DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, 0, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately),
-            DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, 0, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately),
-            DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, 0, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately),
-            DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, 0, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately)
+            DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, 0, false, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately,),
+            DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, 0, false, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately),
+            DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, 0, false, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately),
+            DMAChannel(0, 0, 0, 0, 0, 0, false, false, false, false, false, false, 0, false, DestAddrMode.Increment, SourceAddrMode.Increment, DMAStartTiming.Immediately)
         ];
     }
 
@@ -162,6 +162,7 @@ public:
         }
 
 
+
         if (is_dma_channel_fifo(current_channel) || dma_channels[current_channel].repeat) {
             if (interpretted_dest_addr_control == DestAddrMode.IncrementReload) {
                 dma_channels[current_channel].dest_buf = dma_channels[current_channel].dest;
@@ -170,6 +171,10 @@ public:
             enable_dma(current_channel);
         } else {
             // writefln("DMA Channel %x Finished", current_channel);
+            dma_channels[current_channel].enabled = false;
+        }
+
+        if (dma_channels[current_channel].last) {
             dma_channels[current_channel].enabled = false;
         }
 
@@ -198,16 +203,17 @@ public:
         dma_channels[dma_id].enabled  = true;
         dma_channels[dma_id].size_buf = dma_channels[dma_id].num_units;
 
-        if (dma_channels[dma_id].dma_start_timing == DMAStartTiming.Immediately) start_dma_channel(dma_id);
+        if (dma_channels[dma_id].dma_start_timing == DMAStartTiming.Immediately) start_dma_channel(dma_id, false);
         else dma_channels[dma_id].waiting_to_start = false;
     }
 
-    pragma(inline, true) void start_dma_channel(int dma_id) {
+    pragma(inline, true) void start_dma_channel(int dma_id, bool last) {
         dma_channels[dma_id].waiting_to_start = true;
         dmas_available++;
         // writefln("Scheduled DMA for %x", scheduler.get_current_time_relative_to_cpu());
         scheduler.add_event_relative_to_clock(&check_dma, 2);
-        import hw.cpu;
+
+        dma_channels[dma_id].last = last;
     }
 
     pragma(inline, true) bool is_dma_channel_fifo(int i) {
@@ -223,16 +229,23 @@ public:
 
         for (int i = 0; i < 4; i++) {
             if (dma_channels[i].dest == destination_address && is_dma_channel_fifo(i)) {
-                start_dma_channel(i);
+                start_dma_channel(i, false);
             }
         }
     }
 
-    void on_hblank() {
-        for (int i = 0; i < 4; i++) {
-            if (dma_channels[i].dma_start_timing == DMAStartTiming.HBlank) {
-                start_dma_channel(i);
+    void on_hblank(uint scanline) {
+        if (scanline < 160) {
+            for (int i = 0; i < 4; i++) {
+                if (dma_channels[i].dma_start_timing == DMAStartTiming.HBlank) {
+                    start_dma_channel(i, false);
+                }
             }
+        }
+
+        if (dma_channels[3].dma_start_timing == DMAStartTiming.Special && scanline >= 2 && scanline < 162) {
+            writefln("SCANLINE! %x", scanline);
+            start_dma_channel(3, scanline == 161);
         }
     }
 
@@ -366,6 +379,8 @@ struct DMAChannel {
     bool   irq_on_end;
 
     uint   open_bus_latch;
+
+    bool   last;
 
     DMAManager.DestAddrMode   dest_addr_control;
     DMAManager.SourceAddrMode source_addr_control;
