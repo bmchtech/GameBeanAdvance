@@ -63,10 +63,6 @@ public:
     }
 
     void on_hblank_start() {
-        if (vcounter_irq_enabled && scanline == vcount_lyc) {
-            interrupt_cpu(Interrupt.LCD_VCOUNTER_MATCH);
-        }
-        
         hblank = true;
         if (hblank_irq_enabled) interrupt_cpu(Interrupt.LCD_HBLANK);
 
@@ -103,6 +99,10 @@ public:
     void on_hblank_end() {
         hblank = false;
         scanline++;
+        
+        if (vcounter_irq_enabled && scanline == vcount_lyc) {
+            interrupt_cpu(Interrupt.LCD_VCOUNTER_MATCH);
+        }
 
         scheduler.add_event_relative_to_self(&on_hblank_start, 240 * 4);
     }
