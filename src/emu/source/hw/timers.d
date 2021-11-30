@@ -36,7 +36,12 @@ public:
 
     void reload_timer(int timer_id) {
         // check for cancellation
-        if (!timers[timer_id].enabled || timers[timer_id].countup) return;
+        if (timers[timer_id].countup && timer_id != 0) {
+            timers[timer_id].value = timers[timer_id].reload_value;
+            return;
+        }
+
+        if (!timers[timer_id].enabled) return;
 
         timers[timer_id].enabled_for_first_time = false;
         timers[timer_id].value = timers[timer_id].reload_value;
@@ -49,19 +54,20 @@ public:
 
 
     void reload_timer_for_the_first_time(int timer_id) {
-        if (timers[timer_id].countup) return;
+        if (timer_id != 0 && timers[timer_id].countup) return;
 
         timers[timer_id].enabled_for_first_time = true;
         timers[timer_id].value = timers[timer_id].reload_value;
-        writefln("Set timer at %x %x", scheduler.get_current_time_relative_to_cpu(), scheduler.get_current_time_relative_to_cpu());
+        // writefln("Set timer at %x %x", scheduler.get_current_time_relative_to_cpu(), scheduler.get_current_time_relative_to_cpu());
         timers[timer_id].timer_event = scheduler.add_event_relative_to_clock(() => timer_overflow(timer_id), 2 + ((0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment));
         timers[timer_id].timestamp = scheduler.get_current_time_relative_to_cpu() + 2;
     }
 
     void timer_overflow(int x) {
+        writefln("%x overflowed at %x", x, scheduler.get_current_time_relative_to_cpu());
         reload_timer(x);
         on_timer_overflow(x);
-                    // writefln("[%x] youre interrupted", scheduler.get_current_time_relative_to_cpu());
+                    // writefln("[%x] OVERFLOW", scheduler.get_current_time_relative_to_cpu());
         if (timers[x].irq_enable) interrupt_cpu(get_interrupt_from_timer_id(x));
 
         // if the next timer is a slave (countup), then increment it
@@ -69,6 +75,8 @@ public:
             if (timers[x + 1].value == 0xFFFF) timer_overflow(x + 1);
             else timers[x + 1].value++;
         }
+
+        // timers[x].timer_event = scheduler.add_event_relative_to_clock(() => timer_overflow(x), 2 + ((0x10000 - timers[x].reload_value) << timers[x].increment));
     }
 
     Interrupt get_interrupt_from_timer_id(int x) {
@@ -85,7 +93,7 @@ public:
         // also, if i'm countup, then im a slave timer. timers[x - 1] will
         // control my value instead
         
-        if (!timers[x].enabled || timers[x].countup) return timers[x].value;
+        if (!timers[x].enabled || (x != 0 && timers[x].countup)) return timers[x].value;
 
         // how many clock cycles has it been since we've been enabled?
         ulong cycles_elapsed = scheduler.get_current_time_relative_to_cpu() - timers[x].timestamp;
@@ -171,6 +179,7 @@ public:
 
     ubyte read_TMXCNT_L(int target_byte, int x) {
         timers[x].value = calculate_timer_value(x);
+        writefln("Calculated timer %x as %x", x, timers[x].value);
         
         final switch (target_byte) {
             case 0b0: return (timers[x].value >> 0) & 0xFF;
