@@ -34,8 +34,8 @@ class InterruptManager {
     void interrupt(uint interrupt_code) {
         writefln("Received interrupt %x %x %x", interrupt_code, interrupt_enable, interrupt_request);
         // is this specific interrupt enabled
+        interrupt_request |= interrupt_code;
         if (interrupt_enable & interrupt_code) {
-            interrupt_request |= interrupt_code;
 
             unhalt_cpu();
         }
@@ -91,6 +91,7 @@ public:
     }
 
     ubyte read_IF(int target_byte) {
+        writefln("Reading IF Byte %x %x", target_byte, interrupt_request);
         final switch (target_byte) {
             case 0b0: return (interrupt_request & 0x00FF) >> 0;
             case 0b1: return (interrupt_request & 0xFF00) >> 8;
