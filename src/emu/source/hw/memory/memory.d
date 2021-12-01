@@ -328,7 +328,7 @@ class Memory : IMemory {
                     } else {
                         clock(1);
                     }
-                    
+
                     goto default;
 
                 default:
@@ -425,9 +425,6 @@ class Memory : IMemory {
 
     private template write(T) {
         pragma(inline, true) void write(uint address, T value, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
-
-            if (address == 4) writefln("[%016x] [AGS] Flags: %x", scheduler.get_current_time_relative_to_cpu(), value);
-
             uint region = get_region(address);
 
             uint shift;

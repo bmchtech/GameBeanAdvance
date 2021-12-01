@@ -32,7 +32,7 @@ public:
     int dmas_available = 0;
 
     pragma(inline, true) void check_dma() {
-        writefln("handled DMA at %x, %x", scheduler.get_current_time_relative_to_cpu(), scheduler.get_current_time_relative_to_self());
+        // writefln("handled DMA at %x, %x", scheduler.get_current_time_relative_to_cpu(), scheduler.get_current_time_relative_to_self());
         if (dmas_available > 0) {
             dmas_available--;
             handle_dma();
@@ -65,13 +65,13 @@ public:
         int  source_increment   = 0;
         int  dest_increment     = 0;
 
-        if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
-                 current_channel,
-                 bytes_to_transfer,
-                 dma_channels[current_channel].transferring_words ? "words" : "halfwords",
-                 dma_channels[current_channel].source_buf,
-                 dma_channels[current_channel].dest_buf,
-                 read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
+        // if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
+        //          current_channel,
+        //          bytes_to_transfer,
+        //          dma_channels[current_channel].transferring_words ? "words" : "halfwords",
+        //          dma_channels[current_channel].source_buf,
+        //          dma_channels[current_channel].dest_buf,
+        //          read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
 
         switch (dma_channels[current_channel].source_addr_control) {
             case SourceAddrMode.Increment:  source_increment =  1; break;
@@ -105,7 +105,7 @@ public:
         if (dma_channels[current_channel].transferring_words || is_dma_channel_fifo(current_channel)) {
             bytes_to_transfer *= 4;
             for (int i = 0; i < bytes_to_transfer; i += 4) {
-                writefln("%x DMA TRANSFER! h%x", current_channel, scheduler.get_current_time_relative_to_cpu());
+                // writefln("%x DMA TRANSFER! h%x", current_channel, scheduler.get_current_time_relative_to_cpu());
                 uint read_address = dma_channels[current_channel].source_buf + source_offset;
 
                 if (read_address >= 0x0200_0000) { // make sure we are not accessing DMA open bus
@@ -124,7 +124,7 @@ public:
             bool is_aligned = dma_channels[current_channel].source_buf & 1;
 
             for (int i = 0; i < bytes_to_transfer; i += 2) {
-                writefln("%x DMA TRANSFER! %x", current_channel, scheduler.get_current_time_relative_to_cpu());
+                // writefln("%x DMA TRANSFER! %x", current_channel, scheduler.get_current_time_relative_to_cpu());
                 uint read_address = dma_channels[current_channel].source_buf + source_offset;
 
                 if (read_address >= 0x0200_0000) { // make sure we are not accessing DMA open bus
@@ -170,7 +170,7 @@ public:
         }
 
         if (dma_channels[current_channel].irq_on_end) {
-            writefln("INTERRUPT: %x", current_channel);
+            // writefln("INTERRUPT: %x", current_channel);
             scheduler.add_event_relative_to_clock(() => interrupt_cpu(Interrupt.DMA_0 << current_channel), 2);
         }
 
@@ -183,7 +183,7 @@ public:
 
             enable_dma(current_channel);
         } else {
-            writefln("DMA Channel %x Finished", current_channel);
+            // writefln("DMA Channel %x Finished", current_channel);
             dma_channels[current_channel].enabled = false;
         }
 
@@ -224,9 +224,9 @@ public:
     pragma(inline, true) void start_dma_channel(int dma_id, bool last) {
         dma_channels[dma_id].waiting_to_start = true;
         dmas_available++;
-        writefln("Scheduled DMA for %x", scheduler.get_current_time_relative_to_cpu());
+        // writefln("Scheduled DMA for %x", scheduler.get_current_time_relative_to_cpu());
         scheduler.add_event_relative_to_clock(&check_dma, 2, true);
-        writefln("Starting DMA in 2 cycles: %x", dma_id);
+        // writefln("Starting DMA in 2 cycles: %x", dma_id);
 
         dma_channels[dma_id].last = last;
     }
@@ -259,7 +259,7 @@ public:
         }
 
         if (dma_channels[3].dma_start_timing == DMAStartTiming.Special && scanline >= 2 && scanline < 162) {
-            writefln("SCANLINE! %x", scanline);
+            // writefln("SCANLINE! %x", scanline);
             start_dma_channel(3, scanline == 161);
         }
     }
