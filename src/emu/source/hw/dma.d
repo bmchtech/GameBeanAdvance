@@ -213,6 +213,7 @@ public:
         dmas_available++;
         // writefln("Scheduled DMA for %x", scheduler.get_current_time_relative_to_cpu());
         scheduler.add_event_relative_to_clock(&check_dma, 2);
+        writefln("Starting DMA in 2 cycles: %x", dma_id);
 
         dma_channels[dma_id].last = last;
     }

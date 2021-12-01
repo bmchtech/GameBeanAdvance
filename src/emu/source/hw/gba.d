@@ -9,6 +9,7 @@ import hw.timers;
 import hw.interrupts;
 import hw.keyinput;
 import hw.beancomputer;
+import hw.sio.sio;
 
 import scheduler;
 import util;
@@ -36,6 +37,7 @@ public:
     InterruptManager interrupt_manager;
     KeyInput         key_input;
     BeanComputer     beancomputer;
+    SIO              sio;
     // DirectSound  direct_sound;
 
     Scheduler        scheduler;
@@ -50,6 +52,7 @@ public:
         this.apu               = new APU(memory, scheduler, &on_fifo_empty);
         this.dma_manager       = new DMAManager(memory, scheduler, &interrupt_manager.interrupt);
         this.timers            = new TimerManager(memory, scheduler, this, &interrupt_manager.interrupt, &on_timer_overflow);
+        this.sio               = new SIO(&interrupt_manager.interrupt, scheduler);
         this.beancomputer      = new BeanComputer();
         this.key_input         = key_input;
 
@@ -57,7 +60,7 @@ public:
 
         // this.direct_sound = new DirectSound(memory);
 
-        MMIO mmio = new MMIO(this, ppu, apu, dma_manager, timers, interrupt_manager, key_input, beancomputer, memory, is_bean_computer);
+        MMIO mmio = new MMIO(this, ppu, apu, dma_manager, timers, interrupt_manager, key_input, beancomputer, sio, memory, is_bean_computer);
         memory.set_mmio(mmio);
         memory.set_cpu(this.cpu);
         memory.set_ppu(this.ppu);
