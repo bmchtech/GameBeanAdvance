@@ -106,9 +106,13 @@ public:
             on_vblank_start();
         }
 
-        if (scanline == 228) {
+        if (scanline == 227) {
             vblank = false;
             on_vblank_end();
+        }
+
+        if (scanline == 228) {
+            scanline = 0;
         }
 
         if (vcounter_irq_enabled && scanline == vcount_lyc) {
@@ -130,7 +134,6 @@ public:
     }
 
     void on_vblank_end() {
-        scanline = 0;
         vblank = false;
         frontend_vblank_callback();
 
