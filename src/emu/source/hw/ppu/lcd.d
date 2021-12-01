@@ -54,7 +54,7 @@ public:
         canvas = new Canvas(this);
 
         this.scheduler = scheduler;
-        scheduler.add_event_relative_to_self(&on_hblank_start, 240 * 4);
+        scheduler.add_event_relative_to_clock(&on_hblank_start, 240 * 4);
         // scheduler.add_event_relative_to_self(&on_vblank_start, 308 * 160 * 4);
 
         // background_init(memory);

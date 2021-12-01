@@ -57,7 +57,7 @@ public:
 
     void set_internal_sample_rate(uint sample_rate) {
         this.sample_rate = sample_rate;
-        scheduler.add_event_relative_to_self(&sample, sample_rate);
+        scheduler.add_event_relative_to_clock(&sample, sample_rate);
     }
 
 private:
