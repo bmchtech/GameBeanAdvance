@@ -7,6 +7,7 @@ import hw.dma;
 import hw.timers;
 import hw.interrupts;
 import hw.keyinput;
+import hw.sio.sio;
 import hw.memory;
 import hw.beancomputer;
 
@@ -115,6 +116,8 @@ class MMIO {
     enum TM3CNT_L      = 0x400010C; //  2    R/W   Timer 3 Counter/Reload
     enum TM3CNT_H      = 0x400010E; //  2    R/W   Timer 3 Control
 
+    enum SIOCNT        = 0x4000128; //  2    R/W   SIO Control
+
     enum KEYINPUT      = 0x4000130; //  2    R     Key Status
     enum KEYCNT        = 0x4000132; //  2    R/W   Key Interrupt Control
     
@@ -124,6 +127,7 @@ class MMIO {
 
     enum WAITCNT       = 0x4000204; //  2    R/W   Game Pak Waitstate Control
     enum HALTCNT       = 0x4000301; //  1      W   Undocumented - Power Down Control
+
 
     // BEANCOMPUTER I/O REGS
     //   NAME            ADDRESS       SIZE  R/W   DESCRIPTION
@@ -141,7 +145,7 @@ class MMIO {
         mixin("void read_" ~ register_name ~ "_");
     }
 
-    this(GBA gba, PPU ppu, APU apu, DMAManager dma, TimerManager timers, InterruptManager interrupt, KeyInput keyinput, BeanComputer beancomputer, Memory memory, bool is_beancomputer) {
+    this(GBA gba, PPU ppu, APU apu, DMAManager dma, TimerManager timers, InterruptManager interrupt, KeyInput keyinput, BeanComputer beancomputer, SIO sio, Memory memory, bool is_beancomputer) {
         this.gba           = gba;
         this.ppu           = ppu;
         this.apu           = apu;
@@ -149,7 +153,8 @@ class MMIO {
         this.timers        = timers;
         this.interrupt     = interrupt;
         this.keyinput      = keyinput;
-        this.beancomputer = beancomputer;
+        this.sio           = sio;
+        this.beancomputer  = beancomputer;
         this.memory        = memory;
 
         this.is_beancomputer = is_beancomputer;
@@ -242,6 +247,9 @@ class MMIO {
             case TM3CNT_L    + 1: return timers.read_TMXCNT_L(1, 3); 
             case TM3CNT_H    + 0: return timers.read_TMXCNT_H(0, 3); 
             case TM3CNT_H    + 1: return timers.read_TMXCNT_H(1, 3); 
+
+            case SIOCNT      + 0: return sio.read_SIOCNT     (0);
+            case SIOCNT      + 1: return sio.read_SIOCNT     (1);
 
             case KEYINPUT    + 0: return keyinput.read_KEYINPUT(0); 
             case KEYINPUT    + 1: return keyinput.read_KEYINPUT(1); 
@@ -491,6 +499,9 @@ class MMIO {
             case TM3CNT_H    + 0: timers.write_TMXCNT_H(0, data, 3); break;
             case TM3CNT_H    + 1: timers.write_TMXCNT_H(1, data, 3); break;
 
+            case SIOCNT      + 0: sio.write_SIOCNT     (0, data); break;
+            case SIOCNT      + 1: sio.write_SIOCNT     (1, data); break;
+
             case KEYCNT      + 0: keyinput.write_KEYCNT(0, data); break;
             case KEYCNT      + 1: keyinput.write_KEYCNT(1, data); break;
             
@@ -519,6 +530,7 @@ private:
     InterruptManager interrupt;
     KeyInput         keyinput;
     BeanComputer     beancomputer;
+    SIO              sio;
     Memory           memory;
 
     bool             is_beancomputer;
