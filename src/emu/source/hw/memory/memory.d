@@ -247,7 +247,6 @@ class Memory : IMemory {
 
     private template read(T) {
         pragma(inline, true) T read(uint address, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
-            if (*(cast(uint*) (&wram_chip[0] + 0x2040)) == 0xe92dcff0) error("FUCK: %x");
             uint region = get_region(address);
             T read_value;
 

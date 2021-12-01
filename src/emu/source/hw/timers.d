@@ -54,6 +54,7 @@ public:
 
 
     void reload_timer_for_the_first_time(int timer_id) {
+        writefln("[%016x] Timer %x reloaded for first time", scheduler.get_current_time_relative_to_cpu(), timer_id);
         if (timer_id != 0 && timers[timer_id].countup) return;
 
         timers[timer_id].enabled_for_first_time = true;
@@ -93,8 +94,19 @@ public:
         // also, if i'm countup, then im a slave timer. timers[x - 1] will
         // control my value instead
         
-        if (!timers[x].enabled || (x != 0 && timers[x].countup)) return timers[x].value;
+        if (x != 0 && timers[x].countup) {
+            // let's get the id of the master timer
+            int master_timer = x;
+            while (timers[master_timer].countup && master_timer != 0) master_timer--;
 
+            // and now lets see if it has an event it needs to run
+            scheduler.maybe_run_event(timers[master_timer].timer_event);
+            return timers[x].value;
+        }
+
+        if (!timers[x].enabled) return timers[x].value;
+        // if (timers[x].enabled_for_first_time) return timers[x].reload_value;
+        
         // how many clock cycles has it been since we've been enabled?
         ulong cycles_elapsed = scheduler.get_current_time_relative_to_cpu() - timers[x].timestamp;
         // writefln("Subtracting: %x %x %x", cycles_elapsed, scheduler.get_current_time_relative_to_cpu(), timers[x].timestamp);
@@ -179,7 +191,7 @@ public:
 
     ubyte read_TMXCNT_L(int target_byte, int x) {
         timers[x].value = calculate_timer_value(x);
-        writefln("Calculated timer %x as %x", x, timers[x].value);
+        writefln("[%016x] Calculated timer %x as %x", scheduler.get_current_time_relative_to_cpu(), x, timers[x].value);
         
         final switch (target_byte) {
             case 0b0: return (timers[x].value >> 0) & 0xFF;

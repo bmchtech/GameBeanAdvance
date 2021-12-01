@@ -99,6 +99,17 @@ class Scheduler {
         current_timestamp += num_cycles;
     }
 
+    void maybe_run_event(ulong event_id) {
+        for (int i = 0; i < events_in_queue; i++) {
+            if (!events[i].timestamp == current_timestamp) return;
+
+            if (events[i].id == event_id) {
+                events[i].callback();
+                remove_event(event_id);
+            }
+        }
+    }
+
     pragma(inline, true) void process_events() {
         while (!is_processing_event && current_timestamp >= events[0].timestamp) process_event();
     }
