@@ -1,7 +1,7 @@
 ![icon](media/icon.png)
 
 # GameBeanAdvance
-WIP Gameboy Advance Emulator written in D. Currently working on GBA accuracy.
+WIP Gameboy Advance Emulator written in D with a huge focus on accuracy. Passes 1856/1920 mGBA timing tests, and fourth in the world to pass the AGS Aging Cartridge test. Currently working on improving GBA accuracy.
 
 # Demo Videos (Turn audio up)
 
