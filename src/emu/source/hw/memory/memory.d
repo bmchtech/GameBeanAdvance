@@ -318,13 +318,17 @@ class Memory : IMemory {
                 case Region.ROM_SRAM_H:
 
                     // writefln("attempting backup read at %x", address);
+                    // clock(stalls);
                     if (backup_enabled) {
                         clock(stalls);
                         static if (is(T == uint  )) read_value = backup.read_word    (address);
                         static if (is(T == ushort)) read_value = backup.read_halfword(address);
                         static if (is(T == ubyte )) read_value = backup.read_byte    (address); 
                         break;
+                    } else {
+                        clock(1);
                     }
+                    
                     goto default;
 
                 default:
