@@ -17,6 +17,7 @@ class Scheduler {
     enum TOTAL_NUMBER_OF_EVENTS = 0x100;
     Event*[TOTAL_NUMBER_OF_EVENTS] events;
     int events_in_queue = 0;
+    int unprocessed_head = 0;
     ulong id_counter = 0;
 
     ulong current_timestamp;
