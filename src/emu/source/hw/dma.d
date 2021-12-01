@@ -32,13 +32,14 @@ public:
     int dmas_available = 0;
 
     pragma(inline, true) void check_dma() {
-        // writefln("handled DMA at %x, %x", scheduler.get_current_time_relative_to_cpu(), scheduler.get_current_time_relative_to_self());
+        writefln("handled DMA at %x, %x", scheduler.get_current_time_relative_to_cpu(), scheduler.get_current_time_relative_to_self());
         if (dmas_available > 0) {
             dmas_available--;
             handle_dma();
         }
     }
 
+    uint dmas_running = 0;
     void handle_dma() {
         // get the channel with highest priority that wants to start dma
         int current_channel = -1;
@@ -50,8 +51,14 @@ public:
         }
         
         if (current_channel == -1) return; //error("DMA requested but no active channels found");
+        
+        dma_channels[current_channel].waiting_to_start = false;
 
-        memory.prefetch_buffer.pause();
+        if (dmas_running == 0) {
+            memory.prefetch_buffer.pause();
+        }
+        dmas_running++;
+
         uint excess_cycles = memory.cycles;
 
         uint bytes_to_transfer  = dma_channels[current_channel].size_buf;
@@ -98,6 +105,7 @@ public:
         if (dma_channels[current_channel].transferring_words || is_dma_channel_fifo(current_channel)) {
             bytes_to_transfer *= 4;
             for (int i = 0; i < bytes_to_transfer; i += 4) {
+                writefln("%x DMA TRANSFER! h%x", current_channel, scheduler.get_current_time_relative_to_cpu());
                 uint read_address = dma_channels[current_channel].source_buf + source_offset;
 
                 if (read_address >= 0x0200_0000) { // make sure we are not accessing DMA open bus
@@ -116,6 +124,7 @@ public:
             bool is_aligned = dma_channels[current_channel].source_buf & 1;
 
             for (int i = 0; i < bytes_to_transfer; i += 2) {
+                writefln("%x DMA TRANSFER! %x", current_channel, scheduler.get_current_time_relative_to_cpu());
                 uint read_address = dma_channels[current_channel].source_buf + source_offset;
 
                 if (read_address >= 0x0200_0000) { // make sure we are not accessing DMA open bus
@@ -153,9 +162,12 @@ public:
         uint idle_cycles = (source_beginning_in_rom || source_ending_in_rom) &&
                            (dest_beginning_in_rom   || dest_ending_in_rom) ?
                            0 : 2;
-        
-        memory.prefetch_buffer.resume();
-        for (int i = 0; i < idle_cycles; i++) memory.idle();
+
+        dmas_running--;
+        if (dmas_running == 0) {
+            for (int i = 0; i < idle_cycles; i++) memory.idle();
+            memory.prefetch_buffer.resume();
+        }
 
         if (dma_channels[current_channel].irq_on_end) {
             writefln("INTERRUPT: %x", current_channel);
@@ -171,7 +183,7 @@ public:
 
             enable_dma(current_channel);
         } else {
-            // writefln("DMA Channel %x Finished", current_channel);
+            writefln("DMA Channel %x Finished", current_channel);
             dma_channels[current_channel].enabled = false;
         }
 
@@ -202,6 +214,7 @@ public:
             dma_channels[dma_id].num_units = 4;
         }
         dma_channels[dma_id].enabled  = true;
+
         dma_channels[dma_id].size_buf = dma_channels[dma_id].num_units;
 
         if (dma_channels[dma_id].dma_start_timing == DMAStartTiming.Immediately) start_dma_channel(dma_id, false);
@@ -211,8 +224,8 @@ public:
     pragma(inline, true) void start_dma_channel(int dma_id, bool last) {
         dma_channels[dma_id].waiting_to_start = true;
         dmas_available++;
-        // writefln("Scheduled DMA for %x", scheduler.get_current_time_relative_to_cpu());
-        scheduler.add_event_relative_to_clock(&check_dma, 2);
+        writefln("Scheduled DMA for %x", scheduler.get_current_time_relative_to_cpu());
+        scheduler.add_event_relative_to_clock(&check_dma, 2, true);
         writefln("Starting DMA in 2 cycles: %x", dma_id);
 
         dma_channels[dma_id].last = last;

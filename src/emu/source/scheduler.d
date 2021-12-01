@@ -11,6 +11,7 @@ struct Event {
     ulong           timestamp;
 	ulong           id;
     bool            completed;
+    bool            can_be_interleaved;
 }
 
 class Scheduler {
@@ -35,15 +36,16 @@ class Scheduler {
         this.memory = memory;
     }
 
-    ulong add_event_relative_to_clock(void delegate() callback, int delta_cycles) {
-        return add_event(callback, current_timestamp + delta_cycles);
+    ulong add_event_relative_to_clock(void delegate() callback, int delta_cycles, bool can_be_interleaved = false) {
+        return add_event(callback, current_timestamp + delta_cycles, can_be_interleaved);
     }
 
-    ulong add_event_relative_to_self(void delegate() callback, int delta_cycles) {
-        return add_event(callback, events[0].timestamp + delta_cycles);
+    ulong add_event_relative_to_self(void delegate() callback, int delta_cycles, bool can_be_interleaved = false) {
+        // writefln("%d", delta_cycles);
+        return add_event(callback, events[num_events_being_processed - 1].timestamp + delta_cycles, can_be_interleaved);
     }
 
-    private ulong add_event(void delegate() callback, ulong timestamp) {
+    private ulong add_event(void delegate() callback, ulong timestamp, bool can_be_interleaved) {
 
         int insert_at;
         // TODO: use binary search
@@ -59,7 +61,7 @@ class Scheduler {
         
         id_counter++;
         events_in_queue++;
-        *events[insert_at] = Event(callback, timestamp, id_counter, false);
+        *events[insert_at] = Event(callback, timestamp, id_counter, false, can_be_interleaved);
         
         return id_counter;
     }
@@ -85,15 +87,15 @@ class Scheduler {
     void print_schedule() {
         writefln("Schedule:");
         for (int i = 0; i < events_in_queue; i++) {
-            writefln("%d", events[i].timestamp);
+            writefln("%d, %d", events[i].id, events[i].timestamp);
         }
     }
 
     pragma(inline, true) void fast_forward() {
-        if (!is_processing_event) {
-            current_timestamp = events[0].timestamp;
-            process_event();
-        }
+        // if (!is_processing_event) {
+        //     current_timestamp = events[0].timestamp;
+        //     process_event();
+        // }
     }
 
     pragma(inline, true) void tick(ulong num_cycles) {
@@ -101,23 +103,26 @@ class Scheduler {
     }
 
     void maybe_run_event(ulong event_id) {
-        for (int i = 0; i < events_in_queue; i++) {
+        for (int i = num_events_being_processed; i < events_in_queue; i++) {
             if (!events[i].timestamp == current_timestamp) return;
 
             if (events[i].id == event_id) {
+                num_events_being_processed++;
                 events[i].callback();
                 remove_event(event_id);
+                num_events_being_processed--;
             }
         }
     }
 
     pragma(inline, true) void process_events() {
-        while (!is_processing_event && current_timestamp >= events[0].timestamp) process_event();
+        bool can_interleave = (num_events_being_processed > 0) ?  events[num_events_being_processed - 1].can_be_interleaved : false;
+        while ((can_interleave || num_events_being_processed == 0) && current_timestamp >= events[num_events_being_processed].timestamp) process_event();
     }
 
-    pragma(inline, true) bool should_cycle() {
-        return current_timestamp < events[0].timestamp;
-    }
+    // pragma(inline, true) bool should_cycle() {
+    //     return current_timestamp < events[0].timestamp;
+    // }
 
     pragma(inline, true) ulong get_current_time() {
         return current_timestamp;
@@ -128,21 +133,26 @@ class Scheduler {
     }
 
     pragma(inline, true) ulong get_current_time_relative_to_self() {
-        return events[0].timestamp;
+        return events[num_events_being_processed - 1].timestamp;
     }
 
-    bool is_processing_event;
+    uint num_events_being_processed = 0;
     pragma(inline, true) void process_event() {
-        if (is_processing_event) return;
-        is_processing_event = true;
+        bool can_interleave = (num_events_being_processed > 0) ? events[num_events_being_processed - 1].can_be_interleaved : true;
+        if (!can_interleave) return;
+        // if (num_events_being_processed > 0) error("sex");
+        // print_schedule();
 
-        events[0].callback();
+        num_events_being_processed++;
+        events[num_events_being_processed - 1].callback();
 
-        for (int i = 0; i < events_in_queue; i++) {
+        for (int i = num_events_being_processed - 1; i < events_in_queue; i++) {
             *events[i] = *events[i + 1];
         }
         
+        
         events_in_queue--;
-        is_processing_event = false;
+
+        num_events_being_processed--;
     }
 }
