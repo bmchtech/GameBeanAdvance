@@ -54,7 +54,7 @@ public:
 
 
     void reload_timer_for_the_first_time(int timer_id) {
-        writefln("[%016x] Timer %x reloaded for first time", scheduler.get_current_time_relative_to_cpu(), timer_id);
+        // writefln("[%016x] Timer %x reloaded for first time", scheduler.get_current_time_relative_to_cpu(), timer_id);
         if (timer_id != 0 && timers[timer_id].countup) return;
 
         timers[timer_id].enabled_for_first_time = true;
@@ -65,7 +65,7 @@ public:
     }
 
     void timer_overflow(int x) {
-        writefln("%x overflowed at %x", x, scheduler.get_current_time_relative_to_cpu());
+        // writefln("%x overflowed at %x", x, scheduler.get_current_time_relative_to_cpu());
         reload_timer(x);
         on_timer_overflow(x);
                     // writefln("[%x] OVERFLOW", scheduler.get_current_time_relative_to_cpu());
@@ -191,7 +191,7 @@ public:
 
     ubyte read_TMXCNT_L(int target_byte, int x) {
         timers[x].value = calculate_timer_value(x);
-        writefln("[%016x] Calculated timer %x as %x", scheduler.get_current_time_relative_to_cpu(), x, timers[x].value);
+        // writefln("[%016x] Calculated timer %x as %x", scheduler.get_current_time_relative_to_cpu(), x, timers[x].value);
         
         final switch (target_byte) {
             case 0b0: return (timers[x].value >> 0) & 0xFF;
