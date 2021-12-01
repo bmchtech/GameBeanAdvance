@@ -55,7 +55,7 @@ public:
 
         this.scheduler = scheduler;
         scheduler.add_event_relative_to_self(&on_hblank_start, 240 * 4);
-        scheduler.add_event_relative_to_self(&on_vblank_start, 308 * 160 * 4);
+        // scheduler.add_event_relative_to_self(&on_vblank_start, 308 * 160 * 4);
 
         // background_init(memory);
     }
@@ -101,6 +101,15 @@ public:
     void on_hblank_end() {
         hblank = false;
         scanline++;
+        if (scanline == 160) {
+            vblank = true;
+            on_vblank_start();
+        }
+
+        if (scanline == 228) {
+            vblank = false;
+            on_vblank_end();
+        }
 
         if (vcounter_irq_enabled && scanline == vcount_lyc) {
             interrupt_cpu(Interrupt.LCD_VCOUNTER_MATCH);
@@ -110,10 +119,9 @@ public:
     }
 
     void on_vblank_start() {
-        vblank = true;
         if (vblank_irq_enabled) interrupt_cpu(Interrupt.LCD_VBLANK);
 
-        scheduler.add_event_relative_to_self(&on_vblank_end, 308 * 68 * 4);
+        // scheduler.add_event_relative_to_self(&on_vblank_end, 308 * 68 * 4);
 
         reload_background_internal_affine_registers(2);
         reload_background_internal_affine_registers(3);
@@ -126,7 +134,7 @@ public:
         vblank = false;
         frontend_vblank_callback();
 
-        scheduler.add_event_relative_to_self(&on_vblank_start, 308 * 160 * 4);
+        // scheduler.add_event_relative_to_self(&on_vblank_start, 308 * 160 * 4);
     }
 
     void render() {
