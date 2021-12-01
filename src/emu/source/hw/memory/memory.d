@@ -73,6 +73,9 @@ class Memory : IMemory {
     @property uint cycles(uint cycles) { return m_cycles = cycles; };
     uint m_cycles = 0;
 
+    uint dma_open_bus = 0;
+    bool dma_recently = false;
+
     // the number of cycles to idle on a given memory access is given by
     // waitstates[memory region][access type][byte = 0 | halfword = 1 | word = 2]
 
@@ -262,6 +265,7 @@ class Memory : IMemory {
                 
                 read_value = read_open_bus!T(address);
                 scheduler.process_events();
+                dma_recently = false;
                 return read_value;
             }
 
@@ -297,6 +301,7 @@ class Memory : IMemory {
                         read_value = x;}
                     static if (is(T == ubyte))  read_value = mmio.read(address); 
                     
+                    dma_recently = false;
                     return read_value;
 
                 case Region.BIOS: 
@@ -318,17 +323,14 @@ class Memory : IMemory {
                 case Region.ROM_SRAM_H:
 
                     // writefln("attempting backup read at %x", address);
-                    // clock(stalls);
                     if (backup_enabled) {
                         clock(stalls);
                         static if (is(T == uint  )) read_value = backup.read_word    (address);
                         static if (is(T == ushort)) read_value = backup.read_halfword(address);
                         static if (is(T == ubyte )) read_value = backup.read_byte    (address); 
                         break;
-                    } else {
-                        clock(1);
                     }
-
+                    clock(1);
                     goto default;
 
                 default:
@@ -346,6 +348,7 @@ class Memory : IMemory {
                     }
             }
             
+            dma_recently = false;
             scheduler.process_events();
             return read_value;
         }
@@ -354,73 +357,64 @@ class Memory : IMemory {
 
     T read_open_bus(T)(uint address) {
 
-        // _g_num_log += 100;
+        // _g_num_log += 10;
 
-        bool worthy = address == 0x000000ec && *cpu.pc == 0x080fc788;
+        static if(is(T == uint  )) writefln("[WORD] OPEN BUS: %08x %08x", address, *cpu.pc);
+        static if(is(T == ushort)) writefln("[HALF] OPEN BUS: %08x %08x", address, *cpu.pc);
+        static if(is(T == ubyte )) writefln("[BYTE] OPEN BUS: %08x %08x", address, *cpu.pc);
 
-        if (worthy) {
-            // writefln("OVERRULED");
-            // return cast(T) 0xFFFFFFFF;
-        }
-        // static if(is(T == uint  )) writefln("[%x] [WORD] OPEN BUS: %08x %08x", scheduler.get_current_time_relative_to_cpu(), address, *cpu.pc);
-        // static if(is(T == ushort)) writefln("[%x] [HALF] OPEN BUS: %08x %08x", scheduler.get_current_time_relative_to_cpu(), address, *cpu.pc);
-        // static if(is(T == ubyte )) writefln("[%x] [BYTE] OPEN BUS: %08x %08x", scheduler.get_current_time_relative_to_cpu(), address, *cpu.pc);
-        
-
-        uint open_bus_value;
         if (address < SIZE_BIOS) {
-            // writefln("Returning %08x", cast(T) bios_open_bus_latch);
-            open_bus_value = bios_open_bus_latch;
-        } else {
+            writefln("Returning %08x", cast(T) bios_open_bus_latch);
+            return cast(T) bios_open_bus_latch;
+        }
         
-            // "regular" open bus
-            if (cpu.get_bit_T()) { // THUMB mode
-                switch ((*cpu.pc >> 24) & 0xF) {
-                    case Region.WRAM_BOARD:
-                    case Region.PALETTE_RAM:
-                    case Region.VRAM:
-                    case Region.ROM_WAITSTATE_0_L:
-                    case Region.ROM_WAITSTATE_0_H:
-                    case Region.ROM_WAITSTATE_1_L:
-                    case Region.ROM_WAITSTATE_1_H:
-                    case Region.ROM_WAITSTATE_2_L:
-                    case Region.ROM_WAITSTATE_2_H:
-                    case Region.ROM_SRAM_L:
-                    case Region.ROM_SRAM_H:
-                        open_bus_value = cpu.pipeline[1] << 16 | cpu.pipeline[1];
-                        break;
+        // "regular" open bus
+        uint open_bus_value;
+        if (cpu.get_bit_T()) { // THUMB mode
+            uint[2] open_bus_reserve = dma_recently ? [dma_open_bus >> 16, dma_open_bus & 0xFFFF] : cpu.pipeline;
 
-                    // TODO: misaligned addresses behave differently, see GBATEK "unpredictable things" section
-                    case Region.BIOS:
-                    case 0x1: // unmapped
-                    case Region.OAM:
-                        open_bus_value = cpu.pipeline[1] << 16 | cpu.pipeline[0];
-                        break;
+            switch ((*cpu.pc >> 24) & 0xF) {
+                case Region.WRAM_BOARD:
+                case Region.PALETTE_RAM:
+                case Region.VRAM:
+                case Region.ROM_WAITSTATE_0_L:
+                case Region.ROM_WAITSTATE_0_H:
+                case Region.ROM_WAITSTATE_1_L:
+                case Region.ROM_WAITSTATE_1_H:
+                case Region.ROM_WAITSTATE_2_L:
+                case Region.ROM_WAITSTATE_2_H:
+                case Region.ROM_SRAM_L:
+                case Region.ROM_SRAM_H:
+                    open_bus_value = open_bus_reserve[1] << 16 | open_bus_reserve[1];
+                    break;
 
-                    // TODO: latch this to emulate properly, see GBATEK "unpredictable things" section
-                    case Region.WRAM_CHIP:
-                    case Region.IO_REGISTERS:
-                        if ((*cpu.pc & 3) == 0) {
-                            open_bus_value = (cpu.pipeline[1] << 16) | (cpu.pipeline[0] & 0xFFFF);
-                        } else {
-                            open_bus_value = (cpu.pipeline[0] << 16) | (cpu.pipeline[1] & 0xFFFF);
-                        }
-                        break;
+                // TODO: misaligned addresses behave differently, see GBATEK "unpredictable things" section
+                case Region.BIOS:
+                case 0x1: // unmapped
+                case Region.OAM:
+                    open_bus_value = open_bus_reserve[1] << 16 | open_bus_reserve[0];
+                    break;
 
-                    default:
-                        // this physically can't happen but ok
-                        error(format("how did this happen: %x", *cpu.pc));
-                }
-            } else { // arm mode
-                open_bus_value = cpu.pipeline[1];
+                // TODO: latch this to emulate properly, see GBATEK "unpredictable things" section
+                case Region.WRAM_CHIP:
+                case Region.IO_REGISTERS:
+                    if ((*cpu.pc & 3) == 0) {
+                        open_bus_value = (open_bus_reserve[1] << 16) | (open_bus_reserve[0] & 0xFFFF);
+                    } else {
+                        open_bus_value = (open_bus_reserve[0] << 16) | (open_bus_reserve[1] & 0xFFFF);
+                    }
+                    break;
+
+                default:
+                    // this physically can't happen but ok
+                    error(format("how did this happen: %x", *cpu.pc));
             }
+        } else { // arm mode
+            open_bus_value = cpu.pipeline[1];
         }
 
-        // writefln("Returning %08x", open_bus_value);
-        
-        static if (is(T == uint  )) return open_bus_value;
-        static if (is(T == ushort)) return (open_bus_value >> (((address >> 1) & 1) * 16)) & 0xFFFF;
-        static if (is(T == ubyte )) return (open_bus_value >> (((address >> 0) & 3) * 8))  & 0xFF;
+            writefln("Returning %08x", cast(T) open_bus_value);
+        return cast(T) open_bus_value;
     }
 
     private template write(T) {
@@ -431,11 +425,6 @@ class Memory : IMemory {
             static if (is(T == uint  )) shift = 2;
             static if (is(T == ushort)) shift = 1;
             static if (is(T == ubyte )) shift = 0;
-
-            if (address >> 28) {
-                clock(1);
-                return; // illegal write - out of bounds
-            }
 
             // handle waitstates
             uint stalls = calculate_stalls_for_access!T(region, access_type);
