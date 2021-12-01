@@ -384,12 +384,12 @@ class ARM7TDMI : IARM7TDMI {
             error("rebooting");
         }
 
-        if (*pc == 0x08002ff2) {
-            import host.sdl;
-            writefln("[%016x] [AGS] Breakpoint", _gba.scheduler.get_current_time_relative_to_cpu());
-            readln();
-            _g_num_log += 10;
-        }
+        // if (*pc == 0x08002ff2) {
+        //     import host.sdl;
+        //     writefln("[%016x] [AGS] Breakpoint", _gba.scheduler.get_current_time_relative_to_cpu());
+        //     readln();
+        //     _g_num_log += 10;
+        // }
 
         if (_g_num_log > 0) {
             _g_num_log--;
