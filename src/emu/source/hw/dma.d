@@ -105,6 +105,7 @@ public:
                 }
                 
                 memory.write_word(dma_channels[current_channel].dest_buf + dest_offset, dma_channels[current_channel].open_bus_latch, access_type);
+                    // writefln("Writing %x to %x", dma_channels[current_channel].open_bus_latch, dma_channels[current_channel].dest_buf + dest_offset);
                 source_offset += source_increment;
                 dest_offset   += dest_increment;
 
