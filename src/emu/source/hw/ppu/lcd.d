@@ -65,9 +65,7 @@ public:
     }
 
     void on_hblank_start() {
-        hblank = true;
         if (hblank_irq_enabled) interrupt_cpu(Interrupt.LCD_HBLANK);
-
 
         if (!vblank) {
             canvas.reset();
@@ -94,12 +92,14 @@ public:
         on_hblank_callback(scanline);
 
         scheduler.add_event_relative_to_self(&on_hblank_end, 68 * 4);
+        scheduler.add_event_relative_to_self(&set_hblank_flag, 46);
 
         // writefln("%x %x", backgrounds[2].internal_reference_x, backgrounds[2].internal_reference_y);
     }
 
     void on_hblank_end() {
         hblank = false;
+
         scanline++;
         if (scanline == 160) {
             vblank = true;
@@ -120,6 +120,10 @@ public:
         }
 
         scheduler.add_event_relative_to_self(&on_hblank_start, 240 * 4);
+    }
+
+    void set_hblank_flag() {
+        hblank = true;
     }
 
     void on_vblank_start() {
