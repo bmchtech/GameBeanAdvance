@@ -191,6 +191,8 @@ public:
             dma_channels[current_channel].enabled = false;
         }
 
+        memory.dma_open_bus = dma_channels[current_channel].open_bus_latch;
+        memory.dma_recently = true;
         return;
     }
 
