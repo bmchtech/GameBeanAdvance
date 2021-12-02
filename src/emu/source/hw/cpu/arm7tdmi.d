@@ -363,7 +363,7 @@ class ARM7TDMI : IARM7TDMI {
 
         // if (*pc == 0x0803_9DD6) { _g_num_log += 100; writefln("CPUSET");}
 
-        Logger.instance.capture_cpu();
+        // Logger.instance.capture_cpu();
         // if ( && !get_nth_bit(*cpsr, 7)) {
             // exception(CpuException.IRQ);
         // }
@@ -380,9 +380,9 @@ class ARM7TDMI : IARM7TDMI {
             error("PC out of range!");
         }
 
-        if (*pc == 0xC) {
-            error("rebooting");
-        }
+        // if (*pc == 0xC) {
+        //     error("rebooting");
+        // }
 
         // if (*pc == 0x08002ff2) {
         //     import host.sdl;

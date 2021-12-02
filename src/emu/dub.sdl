@@ -29,5 +29,5 @@ configuration "debug" {
 }
 
 configuration "optimize" {
-    dflags "--boundscheck=off" "-O3"
+    dflags "--boundscheck=off" "-O3" "-release" "-inline"
 }

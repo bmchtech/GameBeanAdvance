@@ -46,7 +46,6 @@ private Savetype guess_savetype(ubyte[] rom) {
             if (i * 4 + search_value.length >= rom.length) break;
 
             if (rom[(i * 4) .. (i * 4) + search_value.length] == search_value) {
-                writefln("YAY %s", id);
                 return savetype;
             }
         }
