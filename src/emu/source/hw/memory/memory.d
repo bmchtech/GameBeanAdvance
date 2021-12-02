@@ -359,12 +359,12 @@ class Memory : IMemory {
 
         // _g_num_log += 10;
 
-        static if(is(T == uint  )) writefln("[WORD] OPEN BUS: %08x %08x", address, *cpu.pc);
-        static if(is(T == ushort)) writefln("[HALF] OPEN BUS: %08x %08x", address, *cpu.pc);
-        static if(is(T == ubyte )) writefln("[BYTE] OPEN BUS: %08x %08x", address, *cpu.pc);
+        // static if(is(T == uint  )) writefln("[WORD] OPEN BUS: %08x %08x", address, *cpu.pc);
+        // static if(is(T == ushort)) writefln("[HALF] OPEN BUS: %08x %08x", address, *cpu.pc);
+        // static if(is(T == ubyte )) writefln("[BYTE] OPEN BUS: %08x %08x", address, *cpu.pc);
 
         if (address < SIZE_BIOS) {
-            writefln("Returning %08x", cast(T) bios_open_bus_latch);
+            // writefln("Returning %08x", cast(T) bios_open_bus_latch);
             return cast(T) bios_open_bus_latch;
         }
         
@@ -413,7 +413,7 @@ class Memory : IMemory {
             open_bus_value = cpu.pipeline[1];
         }
 
-            writefln("Returning %08x", cast(T) open_bus_value);
+            // writefln("Returning %08x", cast(T) open_bus_value);
         return cast(T) open_bus_value;
     }
 
