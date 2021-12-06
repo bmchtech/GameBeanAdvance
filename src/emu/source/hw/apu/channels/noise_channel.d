@@ -19,6 +19,7 @@ class NoiseChannel {
     private long length;
     public  bool enabled = false;
     public  bool envelope_enabled = false;
+    private bool should_turn_off_when_length_elapses = false;
 
     // private int  sound_length;
     // private bool stop_on_expire;
@@ -54,8 +55,8 @@ class NoiseChannel {
         if (!enabled) return 0;
 
         cycles_elapsed += delta_cycles;
-        // if (cycles_elapsed > length) enabled = false;
-        // writefln("%d", current_shifter_out * 8 * volume);
+        if (should_turn_off_when_length_elapses && cycles_elapsed > length) enabled = false;
+
         return cast(short) (current_shifter_out * 8 * volume);
     }
 
@@ -106,7 +107,7 @@ class NoiseChannel {
     }
 
     void set_envelope_length(int n) {
-        // if (n != 0) writefln("envelope");
+        if (n != 0) writefln("envelope");
         envelope_enabled = n != 0;
         this.envelope_length = 262144 * n;
     }
@@ -117,7 +118,16 @@ class NoiseChannel {
 
     void set_volume(int volume) {
         this.volume = cast(short) volume;
-        writefln("volume set to %d", volume);
+        // writefln("volume set to %d", volume);
         // enabled = volume != 0;
+    }
+
+    void set_should_turn_off_when_length_elapses(bool should_turn_off_when_length_elapses) { 
+        this.should_turn_off_when_length_elapses = should_turn_off_when_length_elapses;
+    }
+
+    void restart() {
+        enabled = true;
+        cycles_elapsed = 0;
     }
 }
