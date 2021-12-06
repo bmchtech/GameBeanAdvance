@@ -116,18 +116,19 @@ private:
 
             psg_volume.apply(&mixed_sample_L);
             psg_volume.apply(&mixed_sample_R);
+
             mixed_sample_L = cast(short) ((mixed_sample_L >> 3) * analog_channels_volume_L);
             mixed_sample_R = cast(short) ((mixed_sample_R >> 3) * analog_channels_volume_R);
 
-            if (dma_sounds[DirectSound.A].volume != 0) {
+            // if (dma_sounds[DirectSound.A].volume != 0) {
                 if (dma_sounds[DirectSound.A].enabled_left ) mixed_sample_L += (cast(byte) dma_sounds[DirectSound.A].popped_sample);
                 if (dma_sounds[DirectSound.A].enabled_right) mixed_sample_R += (cast(byte) dma_sounds[DirectSound.A].popped_sample);
-            }
+            // }
 
-            if (dma_sounds[DirectSound.B].volume != 0) {
+            // if (dma_sounds[DirectSound.B].volume != 0) {
                 if (dma_sounds[DirectSound.B].enabled_left ) mixed_sample_L += (cast(byte) dma_sounds[DirectSound.B].popped_sample);
                 if (dma_sounds[DirectSound.B].enabled_right) mixed_sample_R += (cast(byte) dma_sounds[DirectSound.B].popped_sample);
-            }
+            // }
 
             // todo: make this code less repetitive
 
@@ -245,6 +246,7 @@ public:
     }
 
     void write_SOUND4CNT_L(int target_byte, ubyte data) {
+        writefln("Written to L %x %x", target_byte, data);
         final switch (target_byte) {
             case 0b0:
                 noise_channel.set_length(get_nth_bits(data, 0, 6));
@@ -256,7 +258,7 @@ public:
     }
     
     void write_SOUND4CNT_H(int target_byte, ubyte data) {
-        // writefln("Written to %x %x", target_byte, data);
+        writefln("Written to H %x %x", target_byte, data);
         final switch (target_byte) {
             case 0b0:
                 noise_channel.set_dividing_ratio       (get_nth_bits(data, 0, 3));
@@ -265,9 +267,9 @@ public:
                 break;
 
             case 0b1:
-                noise_channel.set_envelope_length   (get_nth_bits(data, 0, 3));
-                noise_channel.set_envelope_direction(get_nth_bit (data, 3));
-                noise_channel.set_volume            (get_nth_bits(data, 4, 8));
+                // noise_channel.set_envelope_length   (get_nth_bits(data, 0, 3));
+                // noise_channel.set_envelope_direction(get_nth_bit (data, 3));
+                // noise_channel.set_volume            (get_nth_bits(data, 4, 8));
                 break;
         }
     }

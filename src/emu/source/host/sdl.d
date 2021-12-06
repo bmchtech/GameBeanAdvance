@@ -126,9 +126,9 @@ class GameBeanSDLHost {
 
             bool file_exists = "test.beansave".exists;
 
- 	        // MmFile mm_file = new MmFile("test.beansave", MmFile.Mode.readWrite, save.get_backup_size(), null, 0);
-            // if (file_exists) save.deserialize(cast(ubyte[]) mm_file[]);
-            // save.set_backup_file(mm_file);
+ 	        MmFile mm_file = new MmFile("test.beansave", MmFile.Mode.readWrite, save.get_backup_size(), null, 0);
+            if (file_exists) save.deserialize(cast(ubyte[]) mm_file[]);
+            save.set_backup_file(mm_file);
         }
 
         writeln("Complete.");
@@ -178,54 +178,37 @@ class GameBeanSDLHost {
 
         ulong cycle_timestamp = 0;
 
-        ulong start_timestamp = SDL_GetTicks();
+        // ulong start_timestamp = SDL_GetTicks();
 
         _gba.set_frontend_vblank_callback(&frame);
 
         while (running) {
-            ulong end_timestamp = SDL_GetTicks();
-            ulong elapsed = end_timestamp - start_timestamp;
-            start_timestamp = end_timestamp;
+            // ulong end_timestamp = SDL_GetTicks();
+            // ulong elapsed = end_timestamp - start_timestamp;
+            // start_timestamp = end_timestamp;
 
-            clockfor_log   += elapsed;
-            clockfor_frame += elapsed;
+            // clockfor_log   += elapsed;
+            // clockfor_frame += elapsed;
 
             if (!fast_forward) {
-                while (_samples_per_callback > _audio_data.buffer[Channel.L].offset) {
+                while (_samples_per_callback * 2 > _audio_data.buffer[Channel.L].offset) {
                     _gba.cycle_at_least_n_times(_cycles_per_batch);
                 }
             } else {
                 _gba.cycle_at_least_n_times(_cycles_per_batch);
             }
 
-            SDL_Event event;
-            while (SDL_PollEvent(&event)) {
-                switch (event.type) {
-                case SDL_QUIT:
-                    exit();
-                    break;
-                case SDL_KEYDOWN:
-                    on_input(event.key.keysym.sym, true);
-                    break;
-                case SDL_KEYUP:
-                    on_input(event.key.keysym.sym, false);
-                    break;
-                default:
-                    break;
-                }
-            }
-
-            if (clockfor_log > msec_per_log) {
-                ulong cycles_elapsed = _gba.scheduler.get_current_time() - cycle_timestamp;
-                cycle_timestamp = _gba.scheduler.get_current_time();
-                double speed = ((cast(double) cycles_elapsed) / (cast(double) cycles_per_second));
-                // writefln("fps: %x", cast(char*) format("Speed: %f", speed));
-                SDL_SetWindowTitle(window, cast(char*) ("FPS: " ~ format("%d", fps)));
-                // SDL_SetWindowTitle(window, cast(char*) format("Speed: %f", speed));
-                clockfor_log = 0;
-                cycles_since_last_log = 0;
-                fps = 0;
-            }
+            // if (clockfor_log > msec_per_log) {
+            //     ulong cycles_elapsed = _gba.scheduler.get_current_time() - cycle_timestamp;
+            //     cycle_timestamp = _gba.scheduler.get_current_time();
+            //     double speed = ((cast(double) cycles_elapsed) / (cast(double) cycles_per_second));
+            //     // writefln("fps: %x", cast(char*) format("Speed: %f", speed));
+            //     SDL_SetWindowTitle(window, cast(char*) ("FPS: " ~ format("%d", fps)));
+            //     // SDL_SetWindowTitle(window, cast(char*) format("Speed: %f", speed));
+            //     clockfor_log = 0;
+            //     cycles_since_last_log = 0;
+            //     fps = 0;
+            // }
         }
     }
 
@@ -323,6 +306,23 @@ private:
         // }
 
         // SDL_GL_SwapWindow(window);
+
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
+            case SDL_QUIT:
+                exit();
+                break;
+            case SDL_KEYDOWN:
+                on_input(event.key.keysym.sym, true);
+                break;
+            case SDL_KEYUP:
+                on_input(event.key.keysym.sym, false);
+                break;
+            default:
+                break;
+            }
+        }
     }
 
     enum KEYMAP_VANILLA = [

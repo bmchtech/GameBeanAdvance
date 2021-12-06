@@ -67,7 +67,7 @@ public:
     void on_hblank_start() {
         if (hblank_irq_enabled) interrupt_cpu(Interrupt.LCD_HBLANK);
 
-        if (!vblank) {
+        if (scanline >= 0 && scanline < 160) {
             canvas.reset();
 
             // horizontal mosaic is a post processing effect done on the canvas
