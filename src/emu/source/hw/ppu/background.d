@@ -57,6 +57,9 @@ static Background[] backgrounds = [
 
 // the backgrounds may get sorted by priority at some point
 static this() {
-    for (int i = 0; i < 4; i++) 
+    for (int i = 0; i < 4; i++) {
         backgrounds[i].id = i;
+        backgrounds[i].p[0] = 0x100; 
+        backgrounds[i].p[3] = 0x100; 
+    }
 }
