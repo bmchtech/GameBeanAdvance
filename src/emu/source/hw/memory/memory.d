@@ -253,7 +253,7 @@ class Memory : IMemory {
             uint region = get_region(address);
             T read_value;
 
-            if (_g_num_log) writefln("Read from %x %x", address, scheduler.get_current_time_relative_to_cpu());
+            // if (_g_num_log) writefln("Read from %x %x", address, scheduler.get_current_time_relative_to_cpu());
             uint stalls = calculate_stalls_for_access!T(region, access_type);
             
             if (region < 0x8) {
@@ -425,6 +425,12 @@ class Memory : IMemory {
             static if (is(T == uint  )) shift = 2;
             static if (is(T == ushort)) shift = 1;
             static if (is(T == ubyte )) shift = 0;
+
+            if (address >> 28) { // invalid write
+                clock(1);
+                scheduler.process_events();
+                return;
+            }
 
             // handle waitstates
             uint stalls = calculate_stalls_for_access!T(region, access_type);

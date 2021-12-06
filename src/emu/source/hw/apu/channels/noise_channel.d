@@ -43,8 +43,8 @@ class NoiseChannel {
         shift_register = reload_value;
         cycles_elapsed = 0;
 
-        // if (shifter_event) scheduler.remove_event(shifter_event);
-        // if (enabled)       shifter_event = scheduler.add_event_relative_to_self(&shift, interval);
+        if (shifter_event) scheduler.remove_event(shifter_event);
+        if (enabled)       shifter_event = scheduler.add_event_relative_to_clock(&shift, interval);
 
         // if (envelope_event)   scheduler.remove_event(envelope_event);
         // if (envelope_enabled) envelope_event = scheduler.add_event_relative_to_self(&tick_envelope, envelope_length); 
@@ -55,6 +55,7 @@ class NoiseChannel {
 
         cycles_elapsed += delta_cycles;
         // if (cycles_elapsed > length) enabled = false;
+        // writefln("%d", current_shifter_out * 8 * volume);
         return cast(short) (current_shifter_out * 8 * volume);
     }
 
@@ -105,6 +106,7 @@ class NoiseChannel {
     }
 
     void set_envelope_length(int n) {
+        // if (n != 0) writefln("envelope");
         envelope_enabled = n != 0;
         this.envelope_length = 262144 * n;
     }
@@ -115,6 +117,7 @@ class NoiseChannel {
 
     void set_volume(int volume) {
         this.volume = cast(short) volume;
-        enabled = volume != 0;
+        writefln("volume set to %d", volume);
+        // enabled = volume != 0;
     }
 }

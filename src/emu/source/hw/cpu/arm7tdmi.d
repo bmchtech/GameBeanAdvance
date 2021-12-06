@@ -489,7 +489,7 @@ class ARM7TDMI : IARM7TDMI {
     }
 
     void run_idle_cycle() {
-        if (_g_num_log > 0) writefln("Idling...");
+        // if (_g_num_log > 0) writefln("Idling...");
         m_pipeline_access_type = AccessType.NONSEQUENTIAL;
         memory.idle();
     }

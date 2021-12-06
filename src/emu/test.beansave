@@ -1,0 +1,823 @@
+Game Boy Advance Test Suite
+===
+Timing test: Calibration
+Timing test: nop
+Timing test: nop / nop
+Timing test: ldrh r2, [sp]
+Timing test: ldrh r2, [sp] / nop
+Thumb/ROM P.S: Got     5 vs     4: FAIL
+Thumb/ROM PNS: Got     5 vs     4: FAIL
+Timing test: nop / ldrh r2, [sp]
+Timing test: nop / ldrh r2, [sp] / nop
+Thumb/ROM P.S: Got     7 vs     6: FAIL
+Thumb/ROM PNS: Got     7 vs     6: FAIL
+Timing test: ldrh r2, [#0x08000000]
+Timing test: ldrh r2, [#0x08000000] / nop
+Timing test: nop / ldrh r2, [#0x08000000]
+Timing test: ldr r2, [#0x08000000]
+Timing test: ldr r2, [#0x08000000] / nop
+Timing test: nop / ldr r2, [#0x08000000]
+Timing test: strh r3, [sp]
+Timing test: strh r3, [sp] / nop
+Timing test: nop / strh r3, [sp]
+Timing test: nop / strh r3, [sp] / nop
+Timing test: ldr r2, [sp] x2
+Timing test: ldr r2, [#0x08000000] / ldr r2, [sp]
+Timing test: ldr r2, [sp] / ldr r2, [#0x08000000]
+Thumb/ROM P.S: Got    16 vs    17: FAIL
+Thumb/ROM PNS: Got    14 vs    15: FAIL
+Timing test: ldr r2, [#0x08000000] x2
+Timing test: str r3, [sp] x2
+Timing test: ldr r2, [sp] / str r2, [sp]
+Timing test: str r3, [sp] / ldr r3, [sp]
+Timing test: ldmia sp, {r2}
+Timing test: ldmia sp, {r2, r3}
+Timing test: ldmia sp, {r2-r7}
+Timing test: ldmia sp, {r2} x2
+Timing test: ldmia sp, {r2, r3} x2
+Timing test: ldmia sp, {r2-r7} x2
+Timing test: stmia sp, {r2}
+Timing test: stmia sp, {r2, r3}
+Timing test: stmia sp, {r2-r7}
+Timing test: stmia sp, {r2} x2
+Timing test: stmia sp, {r2, r3} x2
+Timing test: stmia sp, {r2-r7} x2
+Timing test: mul #0x00000000, #0xFF
+Timing test: mul #0x00000078, #0xFF
+Timing test: mul #0x00005678, #0xFF
+Timing test: mul #0x00345678, #0xFF
+Timing test: mul #0x12345678, #0xFF
+Timing test: mul #0xFF000000, #0xFF
+Timing test: mul #0xFFFF0000, #0xFF
+Timing test: mul #0xFFFFFF00, #0xFF
+Timing test: mul #0xFFFFFFFF, #0xFF
+Timing test: mul #0xFFFFFFFF, #0x00
+Timing test: mla #0x00000000, #0xFF
+Timing test: mla #0x00000078, #0xFF
+Timing test: mla #0x00005678, #0xFF
+Timing test: mla #0x00345678, #0xFF
+Timing test: mla #0x12345678, #0xFF
+Timing test: mla #0xFF000000, #0xFF
+Timing test: mla #0xFFFF0000, #0xFF
+Timing test: mla #0xFFFFFF00, #0xFF
+Timing test: mla #0xFFFFFFFF, #0xFF
+Timing test: mla #0xFFFFFFFF, #0x00
+Timing test: smull #0x00000000, #0xFF
+Timing test: smull #0x00000078, #0xFF
+Timing test: smull #0x00005678, #0xFF
+Timing test: smull #0x00345678, #0xFF
+Timing test: smull #0x12345678, #0xFF
+Timing test: smull #0xFF000000, #0xFF
+Timing test: smull #0xFFFF0000, #0xFF
+Timing test: smull #0xFFFFFF00, #0xFF
+Timing test: smull #0xFFFFFFFF, #0xFF
+Timing test: smull #0xFFFFFFFF, #0x00
+Timing test: smlal #0x00000000, #0xFF
+Timing test: smlal #0x00000078, #0xFF
+Timing test: smlal #0x00005678, #0xFF
+Timing test: smlal #0x00345678, #0xFF
+Timing test: smlal #0x12345678, #0xFF
+Timing test: smlal #0xFF000000, #0xFF
+Timing test: smlal #0xFFFF0000, #0xFF
+Timing test: smlal #0xFFFFFF00, #0xFF
+Timing test: smlal #0xFFFFFFFF, #0xFF
+Timing test: smlal #0xFFFFFFFF, #0x00
+Timing test: b pc
+Timing test: nop ; b pc
+Timing test: bx
+Timing test: Trivial loop
+Timing test: C loop
+ARM/ROM P.S: Got   177 vs   161: FAIL
+ARM/ROM PNS: Got   173 vs   157: FAIL
+Thumb/ROM P.S: Got   163 vs   147: FAIL
+Thumb/ROM PNS: Got   159 vs   143: FAIL
+Timing test: BIOS Division
+Timing test: BIOS Division 2
+Timing test: BIOS Sqrt
+Timing test: BIOS Sqrt 2
+Timing test: BIOS Sqrt 3
+Timing test: BIOS ArcTan
+Timing test: CpuSet
+Timing test: Trivial DMA (16)
+Timing test: Trivial DMA (16/ROM)
+ARM/ROM P.S: Got    12 vs    13: FAIL
+ARM/ROM PNS: Got    11 vs    12: FAIL
+Timing test: Trivial DMA (16/to ROM)
+ARM/ROM P..: Got    14 vs    15: FAIL
+ARM/ROM PN.: Got    13 vs    14: FAIL
+Thumb/ROM P..: Got    11 vs    12: FAIL
+Thumb/ROM PN.: Got    10 vs    11: FAIL
+Timing test: Trivial DMA (16/ROM to ROM)
+ARM/ROM .N.: Got    16 vs    17: FAIL
+ARM/ROM PN.: Got    14 vs    15: FAIL
+ARM/ROM ..S: Got    18 vs    17: FAIL
+ARM/ROM PNS: Got    12 vs    13: FAIL
+Thumb/ROM .N.: Got    13 vs    14: FAIL
+Thumb/ROM PN.: Got    11 vs    12: FAIL
+Thumb/ROM ..S: Got    16 vs    15: FAIL
+Timing test: Trivial DMA (32)
+Timing test: Trivial DMA (32/from ROM)
+ARM/ROM P.S: Got    14 vs    15: FAIL
+ARM/ROM PNS: Got    13 vs    14: FAIL
+Timing test: Trivial DMA (32/to ROM)
+ARM/ROM P..: Got    17 vs    18: FAIL
+ARM/ROM PN.: Got    16 vs    17: FAIL
+Thumb/ROM P..: Got    14 vs    15: FAIL
+Thumb/ROM PN.: Got    13 vs    14: FAIL
+Timing test: Trivial DMA (32/ROM to ROM)
+ARM/ROM .N.: Got    22 vs    23: FAIL
+ARM/ROM PN.: Got    20 vs    21: FAIL
+ARM/ROM ..S: Got    22 vs    21: FAIL
+ARM/ROM PNS: Got    16 vs    17: FAIL
+Thumb/ROM .N.: Got    19 vs    20: FAIL
+Thumb/ROM PN.: Got    17 vs    18: FAIL
+Thumb/ROM ..S: Got    20 vs    19: FAIL
+Timing test: Short DMA (16)
+Timing test: Short DMA (16/from ROM)
+ARM/ROM P.S: Got    57 vs    58: FAIL
+ARM/ROM PNS: Got    56 vs    57: FAIL
+Timing test: Short DMA (16/to ROM)
+ARM/ROM P..: Got    74 vs    75: FAIL
+ARM/ROM PN.: Got    73 vs    74: FAIL
+Thumb/ROM P..: Got    71 vs    72: FAIL
+Thumb/ROM PN.: Got    70 vs    71: FAIL
+Timing test: Short DMA (16/ROM to ROM)
+ARM/ROM .N.: Got   106 vs   107: FAIL
+ARM/ROM PN.: Got   104 vs   105: FAIL
+ARM/ROM ..S: Got    78 vs    77: FAIL
+ARM/ROM PNS: Got    72 vs    73: FAIL
+Thumb/ROM .N.: Got   103 vs   104: FAIL
+Thumb/ROM PN.: Got   101 vs   102: FAIL
+Thumb/ROM ..S: Got    76 vs    75: FAIL
+Timing test: Short DMA (32)
+Timing test: Short DMA (32/from ROM)
+ARM/ROM P.S: Got    89 vs    90: FAIL
+ARM/ROM PNS: Got    88 vs    89: FAIL
+Timing test: Short DMA (32/to ROM)
+ARM/ROM P..: Got   122 vs   123: FAIL
+ARM/ROM PN.: Got   121 vs   122: FAIL
+Thumb/ROM P..: Got   119 vs   120: FAIL
+Thumb/ROM PN.: Got   118 vs   119: FAIL
+Timing test: Short DMA (32/ROM to ROM)
+ARM/ROM .N.: Got   202 vs   203: FAIL
+ARM/ROM PN.: Got   200 vs   201: FAIL
+ARM/ROM ..S: Got   142 vs   141: FAIL
+ARM/ROM PNS: Got   136 vs   137: FAIL
+Thumb/ROM .N.: Got   199 vs   200: FAIL
+Thumb/ROM PN.: Got   197 vs   198: FAIL
+Thumb/ROM ..S: Got   140 vs   139: FAIL
+Timer IRQ test: FFFF
+Got 0001 != 0000: FAIL
+Got 0000 != 0001: FAIL
+Got 0000 != 0002: FAIL
+Got 0000 != 0003: FAIL
+Got 0000 != 0051: FAIL
+Got 0000 != 0051: FAIL
+Got 0000 != 0051: FAIL
+Got 0000 != 0051: FAIL
+Got 0000 != 0051: FAIL
+Got 0000 != 0051: FAIL
+Timer IRQ test: FFFE
+Got 0002 != 0000: FAIL
+Got 0000 != 0002: FAIL
+Got 0000 != 0003: FAIL
+Got 0000 != 0004: FAIL
+Got 0000 != 0052: FAIL
+Got 0000 != 0052: FAIL
+Got 0000 != 0052: FAIL
+Got 0000 != 0052: FAIL
+Got 0000 != 0052: FAIL
+Timer IRQ test: FFFD
+Got 0002 != FFFF: FAIL
+Got 0003 != 0000: FAIL
+Got 0000 != 0002: FAIL
+Got 0000 != 0003: FAIL
+Got 0000 != 0004: FAIL
+Got 0000 != 0052: FAIL
+Got 0000 != 0052: FAIL
+Got 0000 != 0052: FAIL
+Got 0000 != 0052: FAIL
+Timer IRQ test: FFFC
+Got 0002 != FFFE: FAIL
+Got 0003 != FFFF: FAIL
+Got 0004 != 0000: FAIL
+Got 0000 != 0002: FAIL
+Got 0000 != 0003: FAIL
+Got 0000 != 0004: FAIL
+Got 0000 != 0052: FAIL
+Got 0000 != 0052: FAIL
+Got 0000 != 0052: FAIL
+Timer IRQ test: FFFB
+Got 0002 != FFFD: FAIL
+Got 0003 != FFFE: FAIL
+Got 0004 != FFFF: FAIL
+Got 0005 != 0000: FAIL
+Got 0000 != 0002: FAIL
+Got 0000 != 0003: FAIL
+Got 0000 != 0004: FAIL
+Got 0000 != 0052: FAIL
+Got 0000 != 0052: FAIL
+Timer IRQ test: FFFA
+Got 0002 != FFFC: FAIL
+Got 0003 != FFFD: FAIL
+Got 0004 != FFFE: FAIL
+Got 0005 != FFFF: FAIL
+Got 0006 != 0000: FAIL
+Got 0000 != 0002: FAIL
+Got 0000 != 0003: FAIL
+Got 0000 != 0004: FAIL
+Got 0000 != 0052: FAIL
+Timer IRQ test: FFF9
+Got 0002 != FFFB: FAIL
+Got 0003 != FFFC: FAIL
+Got 0004 != FFFD: FAIL
+Got 0005 != FFFE: FAIL
+Got 0006 != FFFF: FAIL
+Got 0007 != 0000: FAIL
+Got 0000 != 0002: FAIL
+Got 0000 != 0003: FAIL
+Got 0000 != 0004: FAIL
+Timer IRQ test: FFF8
+Got 0002 != FFFA: FAIL
+Got 0003 != FFFB: FAIL
+Got 0004 != FFFC: FAIL
+Got 0005 != FFFD: FAIL
+Got 0006 != FFFE: FAIL
+Got 0007 != FFFF: FAIL
+Got 0008 != 0000: FAIL
+Got 0000 != 0002: FAIL
+Got 0000 != 0003: FAIL
+Timer IRQ test: FFF7
+Got 0002 != FFF9: FAIL
+Got 0003 != FFFA: FAIL
+Got 0004 != FFFB: FAIL
+Got 0005 != FFFC: FAIL
+Got 0006 != FFFD: FAIL
+Got 0007 != FFFE: FAIL
+Got 0008 != FFFF: FAIL
+Got 0009 != 0000: FAIL
+Got 0000 != 0002: FAIL
+ 2  2i  Go  00 000 0 v  00 000 0:  AIL 1xv 2d  i:  ot  FDB vs  FF9  FA L
+1 xv  d 2 : G t F DB  s F F7: FAI 
+1x  4d 2i: Got 000 000  vs 000 000 : F IL
+ 6xs 4d  i:  ot  000 020 vs  000 030  FA L
+1 v 4  2i  Go  FF B v  FF 9:  AIL 16x  4d 2i: Got FFD  vs FFF : F IL
+ xs  d 4 : G t 0 000 06  s 0 000 07: FAI 
+16 s 1  4i  Go  00 000 0 v  00 000 0:  AIL 1xv 1d  i:  ot  FDB vs  FE8  FA L
+1 xv  d 4 : G t F DB  s F E6: FAI 
+1x  2d 4i: Got 000 000  vs 000 000 : F IL
+ 6xs 2d  i:  ot  000 020 vs  000 030  FA L
+1 v 2  4i  Go  FF B v  FF 8:  AIL 16x  2d 4i: Got FFD  vs FFE : F IL
+ xs  d 4 : G t 0 000 06  s 0 000 07: FAI 
+16 s 4  4i  Go  00 000 0 v  00 000 0:  AIL 1xv 4d  i:  ot  FDB vs  FE8  FA L
+1 xv  d 4 : G t F DB  s F E6: FAI 
+Ti er  oun -up tes : 0 , 0 004 
+1x  1d 1i: Got FFC  vs FFD : F IL
+ 6xv 1d  i:  ot  FC0 vs  FDC  FA L
+1 v 2  1i  Go  FF 0 v  FF C:  AIL 16x  2d 1i: Got FFC  vs FFD : F IL
+ xv  d 1 : G t F C0  s F DC: FAI 
+16 v 4  1i  Go  FF 0 v  FF C:  AIL 1xv 1d  i:  ot  FC0 vs  FDC  FA L
+1 xv  d 2 : G t F C0  s F DC: FAI 
+1x  2d 2i: Got FFC  vs FFD : F IL
+ 6xv 2d  i:  ot  FC0 vs  FDC  FA L
+1 v 4  2i  Go  FF 0 v  FF C:  AIL 16x  4d 2i: Got FFC  vs FFD : F IL
+ xv  d 4 : G t F C0  s F DE: FAI 
+16 v 1  4i  Go  FF 0 v  FF E:  AIL 1xv 2d  i:  ot  FC0 vs  FDE  FA L
+1 xv  d 4 : G t F C0  s F DE: FAI 
+1x  4d 4i: Got FFC  vs FFD : F IL
+ 6xv 4d  i:  ot  FC0 vs  FDE  FA L
+T mer cou t-u  te t:  b,  x00 0
+1 xs  d 1 : G t 0 000 60  s 0 000 70: FAI 
+1x  1d 1i: Got 000  vs FFD : F IL
+ 6xv 1d  i:  ot  F80 vs  FDD  FA L
+1 xs  d 1 : G t 0 000 60  s 0 000 70: FAI 
+1x  2d 1i: Got 000  vs FFD : F IL
+ 6xv 2d  i:  ot  F80 vs  FDD  FA L
+1 xs  d 1 : G t 0 000 60  s 0 000 70: FAI 
+1x  4d 1i: Got 000  vs FFD : F IL
+ 6xv 4d  i:  ot  F80 vs  FDD  FA L
+1 v 1  2i  Go  00 1 v  FF C:  AIL 16x  1d 2i: Got FF8  vs FFD : F IL
+ xv  d 2 : G t 0 01  s F DC: FAI 
+16 v 2  2i  Go  FF 0 v  FF C:  AIL 1xv 4d  i:  ot  001 vs  FDC  FA L
+1 xv  d 2 : G t F 80  s F DC: FAI 
+1x  1d 4i: Got 000  vs FFD : F IL
+ 6xv 1d  i:  ot  F80 vs  FDC  FA L
+1 v 2  4i  Go  00 1 v  FF E:  AIL 16x  2d 4i: Got FF8  vs FFD : F IL
+ xv  d 4 : G t 0 01  s F DE: FAI 
+16 v 4  4i  Go  FF 0 v  FF C:  AIL Tim r c unt up  est  0b  0x 800 1xv 1d  i:  ot  001 vs  85C  FA L
+1 xv  d 1 : G t F 00  s F 5C: FAI 
+1x  2d 1i: Got 000  vs F85 : F IL
+ 6xv 2d  i:  ot  800 vs  85C  FA L
+1 v 4  1i  Go  00 1 v  F8 C:  AIL 16x  4d 1i: Got F80  vs F85 : F IL
+ xv  d 2 : G t 0 01  s F 5C: FAI 
+16 v 1  2i  Go  F8 0 v  F8 C:  AIL 1xv 2d  i:  ot  001 vs  85C  FA L
+1 xv  d 2 : G t F 00  s F 5C: FAI 
+1x  4d 2i: Got 000  vs F85 : F IL
+ 6xv 4d  i:  ot  800 vs  85C  FA L
+1 v 1  4i  Go  00 1 v  F8 E:  AIL 16x  1d 4i: Got F80  vs F85 : F IL
+ xv  d 4 : G t 0 01  s F 5E: FAI 
+16 v 2  4i  Go  F8 0 v  F8 C:  AIL 1xv 4d  i:  ot  001 vs  85E  FA L
+1 xv  d 4 : G t F 00  s F 5C: FAI 
+Ti er  oun -up tes : 0 , 0 800 
+1x  1d 1i: Got 000  vs 805 : F IL
+ 6xv 1d  i:  ot  000 vs  05E  FA L
+1 v 2  1i  Go  00 1 v  80 C:  AIL 16x  2d 1i: Got 800  vs 805 : F IL
+ xv  d 1 : G t 0 01  s 8 5C: FAI 
+16 v 4  1i  Go  80 0 v  80 E:  AIL 1xv 1d  i:  ot  001 vs  05C  FA L
+1 xv  d 2 : G t 8 00  s 8 5C: FAI 
+1x  2d 2i: Got 000  vs 805 : F IL
+ 6xv 2d  i:  ot  000 vs  05C  FA L
+1 v 4  2i  Go  00 1 v  80 C:  AIL 16x  4d 2i: Got 800  vs 805 : F IL
+ xv  d 4 : G t 0 01  s 8 5E: FAI 
+16 v 1  4i  Go  80 0 v  80 C:  AIL 1xv 2d  i:  ot  001 vs  05E  FA L
+1 xv  d 4 : G t 8 00  s 8 5C: FAI 
+1x  4d 4i: Got 000  vs 805 : F IL
+ 6xv 4d  i:  ot  000 vs  05C  FA L
+T mer cou t-u  te t:  b,  x00 0
+1 s 1  1i  Go  00 000 2 v  00 000 B:  AIL 16x  1d 1i: Got 000 02D  vs 000 02B : F IL
+ xv  d 1 : G t 0 00  s F F1: FAI 
+16 v 1  1i  Go  FF 0 v  FF 1:  AIL 1xs 2d  i:  ot  000 082 vs  000 07B  FA L
+1 xs  d 1 : G t 0 000 D0  s 0 000 B0: FAI 
+1x  2d 1i: Got 000  vs FFF : F IL
+ 6xv 2d  i:  ot  FF0 vs  FF1  FA L
+1 s 4  1i  Go  00 000 2 v  00 000 1:  AIL 1xv 4d  i:  ot  000 vs  FF1  FA L
+1 xv  d 1 : G t F F0  s F F1: FAI 
+1x  1d 2i: Got 000 00F  vs 000 00E : F IL
+ 6xs 1d  i:  ot  000 550 vs  000 520  FA L
+1 v 1  2i  Go  00 0 v  FF 1:  AIL 16x  1d 2i: Got FFF  vs FFF : F IL
+ xs  d 2 : G t 0 000 F3  s 0 000 EB: FAI 
+16 s 2  2i  Go  00 005 0 v  00 005 0:  AIL 1xv 2d  i:  ot  000 vs  FF1  FA L
+1 xv  d 2 : G t F F0  s F F1: FAI 
+1x  4d 2i: Got 000 00F  vs 000 00F : F IL
+ xv  d 2 : G t 0 00  s F F1: FAI 
+16 v 4  2i  Go  FF 0 v  FF 1:  AIL 1xs 1d  i:  ot  000 1D5 vs  000 1CE  FA L
+1 xs  d 4 : G t 0 000 30  s 0 000 10: FAI 
+1x  1d 4i: Got 000  vs FFF : F IL
+ 6xv 1d  i:  ot  FF0 vs  FF1  FA L
+1 s 2  4i  Go  00 001 5 v  00 001 D:  AIL 16x  2d 4i: Got 000 0A3  vs 000 0A1 : F IL
+ xv  d 4 : G t 0 00  s F F1: FAI 
+16 v 2  4i  Go  FF 0 v  FF 1:  AIL 1xs 4d  i:  ot  000 1D5 vs  000 1D4  FA L
+1 v 4  4i  Go  00 0 v  FF 1:  AIL 16x  4d 4i: Got FFF  vs FFF : F IL
+ ime  co nt- p t st: 6b, 0x0 11
+ xs  d 1 : G t 0 000 8A  s 0 000 83: FAI 
+16 s 1  1i  Go  00 003 0 v  00 002 0:  AIL 1xv 1d  i:  ot  000 vs  FF0  FA L
+1 xv  d 1 : G t F EF  s F F0: FAI 
+1x  2d 1i: Got 000 008  vs 000 008 : F IL
+ 6xs 2d  i:  ot  000 300 vs  000 2E0  FA L
+1 v 2  1i  Go  00 0 v  FF 0:  AIL 16x  2d 1i: Got FFE  vs FFF : F IL
+ xs  d 1 : G t 0 000 8A  s 0 000 89: FAI 
+1x  4d 1i: Got 000  vs FFF : F IL
+ 6xv 4d  i:  ot  FEF vs  FF0  FA L
+1 s 1  2i  Go  00 001 3 v  00 000 C:  AIL 16x  1d 2i: Got 000 05A  vs 000 058 : F IL
+ xv  d 2 : G t 0 00  s F F0: FAI 
+16 v 1  2i  Go  FF F v  FF 0:  AIL 1xs 2d  i:  ot  000 103 vs  000 0FB  FA L
+1 xs  d 2 : G t 0 000 A0  s 0 000 80: FAI 
+1x  2d 2i: Got 000  vs FFF : F IL
+ 6xv 2d  i:  ot  FEF vs  FF0  FA L
+1 s 4  2i  Go  00 001 3 v  00 001 2:  AIL 1xv 4d  i:  ot  000 vs  FF0  FA L
+1 xv  d 2 : G t F EF  s F F0: FAI 
+1x  1d 4i: Got 000 01F  vs 000 01E : F IL
+ 6xs 1d  i:  ot  000 AE0 vs  000 AC0  FA L
+1 v 1  4i  Go  00 0 v  FF 0:  AIL 16x  1d 4i: Got FFE  vs FFF : F IL
+ xs  d 4 : G t 0 000 F5  s 0 000 ED: FAI 
+16 s 2  4i  Go  00 00A 0 v  00 00A 0:  AIL 1xv 2d  i:  ot  000 vs  FF0  FA L
+1 xv  d 4 : G t F EF  s F F0: FAI 
+1x  4d 4i: Got 000 01F  vs 000 01F : F IL
+ xv  d 4 : G t 0 00  s F F0: FAI 
+16 v 4  4i  Go  FF F v  FF 0:  AIL Tim r c unt up  est  6b  0x 012 1xs 1d  i:  ot  000 092 vs  000 08B  FA L
+1 xs  d 1 : G t 0 000 30  s 0 000 10: FAI 
+1x  1d 1i: Got 000  vs FFE : F IL
+ 6xv 1d  i:  ot  FEE vs  FEF  FA L
+1 s 2  1i  Go  00 000 2 v  00 000 B:  AIL 16x  2d 1i: Got 000 033  vs 000 031 : F IL
+ xv  d 1 : G t 0 00  s F EF: FAI 
+16 v 2  1i  Go  FF E v  FF F:  AIL 1xs 4d  i:  ot  000 092 vs  000 091  FA L
+1 v 4  1i  Go  00 0 v  FF F:  AIL 16x  4d 1i: Got FFE  vs FFE : F IL
+ xs  d 2 : G t 0 000 13  s 0 000 0C: FAI 
+16 s 1  2i  Go  00 006 0 v  00 005 0:  AIL 1xv 1d  i:  ot  000 vs  FEF  FA L
+1 xv  d 2 : G t F EE  s F EF: FAI 
+1x  2d 2i: Got 000 011  vs 000 010 : F IL
+ 6xs 2d  i:  ot  000 600 vs  000 5D0  FA L
+1 v 2  2i  Go  00 0 v  FF F:  AIL 16x  2d 2i: Got FFE  vs FFE : F IL
+ xs  d 2 : G t 0 000 13  s 0 000 12: FAI 
+1x  4d 2i: Got 000  vs FFE : F IL
+ 6xv 4d  i:  ot  FEE vs  FEF  FA L
+1 s 1  4i  Go  00 002 5 v  00 002 E:  AIL 16x  1d 4i: Got 000 0BA  vs 000 0B7 : F IL
+ xv  d 4 : G t 0 00  s F EF: FAI 
+16 v 1  4i  Go  FF E v  FF F:  AIL 1xs 2d  i:  ot  000 215 vs  000 20D  FA L
+1 xs  d 4 : G t 0 000 A0  s 0 000 70: FAI 
+1x  2d 4i: Got 000  vs FFE : F IL
+ 6xv 2d  i:  ot  FEE vs  FEF  FA L
+1 s 4  4i  Go  00 002 5 v  00 002 4:  AIL 16x  4d 4i: Got 000 0BA  vs 000 0B9 : F IL
+ xv  d 4 : G t 0 00  s F EF: FAI 
+16 v 4  4i  Go  FF E v  FF F:  AIL Tim r c unt up  est  6b  0x 013 1xs 1d  i:  ot  000 09A vs  000 093  FA L
+1 xs  d 1 : G t 0 000 60  s 0 000 40: FAI 
+1x  1d 1i: Got 000  vs FFE : F IL
+ 6xv 1d  i:  ot  FED vs  FEE  FA L
+1 s 2  1i  Go  00 000 A v  00 000 3:  AIL 16x  2d 1i: Got 000 036  vs 000 033 : F IL
+ xv  d 1 : G t 0 00  s F EE: FAI 
+16 v 2  1i  Go  FF D v  FF E:  AIL 1xs 4d  i:  ot  000 09A vs  000 099  FA L
+1 v 4  1i  Go  00 0 v  FF E:  AIL 16x  4d 1i: Got FFE  vs FFE : F IL
+ xs  d 2 : G t 0 000 23  s 0 000 1C: FAI 
+16 s 1  2i  Go  00 006 0 v  00 006 0:  AIL 1xv 1d  i:  ot  000 vs  FEE  FA L
+1 xv  d 2 : G t F ED  s F EE: FAI 
+1x  2d 2i: Got 000 012  vs 000 011 : F IL
+ 6xs 2d  i:  ot  000 650 vs  000 630  FA L
+1 v 2  2i  Go  00 0 v  FF E:  AIL 16x  2d 2i: Got FFE  vs FFE : F IL
+ xs  d 2 : G t 0 000 23  s 0 000 22: FAI 
+1x  4d 2i: Got 000  vs FFE : F IL
+ 6xv 4d  i:  ot  FED vs  FEE  FA L
+1 s 1  4i  Go  00 002 5 v  00 002 E:  AIL 16x  1d 4i: Got 000 0C5  vs 000 0C2 : F IL
+ xv  d 4 : G t 0 00  s F EE: FAI 
+16 v 1  4i  Go  FF D v  FF E:  AIL 1xs 2d  i:  ot  000 235 vs  000 22D  FA L
+1 xs  d 4 : G t 0 000 50  s 0 000 20: FAI 
+1x  2d 4i: Got 000  vs FFE : F IL
+ 6xv 2d  i:  ot  FED vs  FEE  FA L
+1 s 4  4i  Go  00 002 5 v  00 002 4:  AIL 16x  4d 4i: Got 000 0C5  vs 000 0C4 : F IL
+ xv  d 4 : G t 0 00  s F EE: FAI 
+16 v 4  4i  Go  FF D v  FF E:  AIL Tim r c unt up  est  8b  0x 010 1xs 1d  i:  ot  000 202 vs  000 1EB  FA L
+1 xs  d 1 : G t 0 000 30  s 0 000 B0: FAI 
+1x  1d 1i: Got 000  vs FFF : F IL
+ xs  d 1 : G t 0 000 02  s 0 000 EB: FAI 
+16 s 2  1i  Go  00 00B 0 v  00 00A 0:  AIL 1xv 2d  i:  ot  000 vs  FF0  FA L
+1 s 4  1i  Go  00 002 2 v  00 001 9:  AIL 16x  4d 1i: Got 000 0B3  vs 000 0AB : F IL
+ xv  d 1 : G t 0 00  s F F0: FAI 
+1x  1d 2i: Got 000 03F  vs 000 03D : F IL
+ 6xs 1d  i:  ot  000 600 vs  000 580  FA L
+1 v 1  2i  Go  00 0 v  FF 0:  AIL 1xs 2d  i:  ot  000 3F3 vs  000 3DB  FA L
+1 xs  d 2 : G t 0 001 00  s 0 001 80: FAI 
+1x  2d 2i: Got 000  vs FFF : F IL
+ xs  d 2 : G t 0 000 F3  s 0 000 DA: FAI 
+16 s 4  2i  Go  00 016 0 v  00 015 0:  AIL 1xv 4d  i:  ot  000 vs  FF0  FA L
+1 s 1  4i  Go  00 007 5 v  00 007 E:  AIL 16x  1d 4i: Got 000 2BA  vs 000 2B2 : F IL
+ xv  d 4 : G t 0 00  s F F0: FAI 
+1x  2d 4i: Got 000 07D  vs 000 07B : F IL
+ 6xs 2d  i:  ot  000 BA0 vs  000 B10  FA L
+1 v 2  4i  Go  00 0 v  FF 0:  AIL 1xs 4d  i:  ot  000 7D5 vs  000 7BC  FA L
+1 xs  d 4 : G t 0 002 A0  s 0 002 10: FAI 
+1x  4d 4i: Got 000  vs FFF : F IL
+ ime  co nt- p t st: 8b, 0x0 11
+ xs  d 1 : G t 0 000 22  s 0 000 0B: FAI 
+16 s 1  1i  Go  00 00B 0 v  00 00B 0:  AIL 1xv 1d  i:  ot  000 vs  FEF  FA L
+1 s 2  1i  Go  00 002 2 v  00 002 B:  AIL 16x  2d 1i: Got 000 0BE  vs 000 0B6 : F IL
+ xv  d 1 : G t 0 00  s F EF: FAI 
+1x  4d 1i: Got 000 022  vs 000 020 : F IL
+ 6xs 4d  i:  ot  000 BE0 vs  000 B60  FA L
+1 v 4  1i  Go  00 0 v  FF F:  AIL 1xs 1d  i:  ot  000 433 vs  000 41C  FA L
+1 xs  d 2 : G t 0 001 60  s 0 001 E0: FAI 
+1x  1d 2i: Got 000  vs FFE : F IL
+ xs  d 2 : G t 0 000 33  s 0 000 1B: FAI 
+16 s 2  2i  Go  00 017 0 v  00 016 0:  AIL 1xv 2d  i:  ot  000 vs  FEF  FA L
+1 s 4  2i  Go  00 004 3 v  00 004 A:  AIL 16x  4d 2i: Got 000 176  vs 000 16E : F IL
+ xv  d 2 : G t 0 00  s F EF: FAI 
+1x  1d 4i: Got 000 085  vs 000 083 : F IL
+ 6xs 1d  i:  ot  000 E60 vs  000 DE0  FA L
+1 v 1  4i  Go  00 0 v  FF F:  AIL 1xs 2d  i:  ot  000 855 vs  000 83D  FA L
+1 xs  d 4 : G t 0 002 60  s 0 002 E0: FAI 
+1x  2d 4i: Got 000  vs FFE : F IL
+ xs  d 4 : G t 0 000 55  s 0 000 3C: FAI 
+16 s 4  4i  Go  00 02E 0 v  00 02D 0:  AIL 1xv 4d  i:  ot  000 vs  FEF  FA L
+T mer cou t-u  te t:  b,  x00 2
+1 s 1  1i  Go  00 002 2 v  00 002 B:  AIL 16x  1d 1i: Got 000 0C9  vs 000 0C1 : F IL
+ xv  d 1 : G t 0 00  s F EE: FAI 
+1x  2d 1i: Got 000 024  vs 000 022 : F IL
+ 6xs 2d  i:  ot  000 C90 vs  000 C10  FA L
+1 v 2  1i  Go  00 0 v  FF E:  AIL 1xs 4d  i:  ot  000 242 vs  000 229  FA L
+1 xs  d 1 : G t 0 000 90  s 0 000 10: FAI 
+1x  4d 1i: Got 000  vs FFE : F IL
+ xs  d 2 : G t 0 000 73  s 0 000 5C: FAI 
+16 s 1  2i  Go  00 018 0 v  00 018 0:  AIL 1xv 1d  i:  ot  000 vs  FEE  FA L
+1 s 2  2i  Go  00 004 3 v  00 004 B:  AIL 16x  2d 2i: Got 000 18C  vs 000 184 : F IL
+ xv  d 2 : G t 0 00  s F EE: FAI 
+1x  4d 2i: Got 000 047  vs 000 045 : F IL
+ 6xs 4d  i:  ot  000 8C0 vs  000 840  FA L
+1 v 4  2i  Go  00 0 v  FF E:  AIL 1xs 1d  i:  ot  000 8D5 vs  000 8BE  FA L
+1 xs  d 4 : G t 0 003 30  s 0 003 B0: FAI 
+1x  1d 4i: Got 000  vs FFE : F IL
+ xs  d 4 : G t 0 000 D5  s 0 000 BD: FAI 
+16 s 2  4i  Go  00 031 0 v  00 030 0:  AIL 1xv 2d  i:  ot  000 vs  FEE  FA L
+1 s 4  4i  Go  00 008 5 v  00 008 C:  AIL 16x  4d 4i: Got 000 313  vs 000 30A : F IL
+ xv  d 4 : G t 0 00  s F EE: FAI 
+Ti er  oun -up tes : 8 , 0 001 
+1x  1d 1i: Got 000 026  vs 000 024 : F IL
+ 6xs 1d  i:  ot  000 D40 vs  000 CD0  FA L
+1 v 1  1i  Go  00 0 v  FF D:  AIL 1xs 2d  i:  ot  000 262 vs  000 24B  FA L
+1 xs  d 1 : G t 0 000 40  s 0 000 C0: FAI 
+1x  2d 1i: Got 000  vs FFE : F IL
+ xs  d 1 : G t 0 000 62  s 0 000 49: FAI 
+16 s 4  1i  Go  00 00D 0 v  00 00C 0:  AIL 1xv 4d  i:  ot  000 vs  FED  FA L
+1 s 1  2i  Go  00 004 3 v  00 004 C:  AIL 16x  1d 2i: Got 000 1A3  vs 000 19B : F IL
+ xv  d 2 : G t 0 00  s F ED: FAI 
+1x  2d 2i: Got 000 04B  vs 000 049 : F IL
+ 6xs 2d  i:  ot  000 A30 vs  000 9B0  FA L
+1 v 2  2i  Go  00 0 v  FF D:  AIL 1xs 4d  i:  ot  000 4B3 vs  000 49A  FA L
+1 xs  d 2 : G t 0 001 30  s 0 001 A0: FAI 
+1x  4d 2i: Got 000  vs FFE : F IL
+ xs  d 4 : G t 0 000 55  s 0 000 3E: FAI 
+16 s 1  4i  Go  00 033 0 v  00 033 0:  AIL 1xv 1d  i:  ot  000 vs  FED  FA L
+1 s 2  4i  Go  00 009 5 v  00 009 D:  AIL 16x  2d 4i: Got 000 33F  vs 000 337 : F IL
+ xv  d 4 : G t 0 00  s F ED: FAI 
+1x  4d 4i: Got 000 095  vs 000 093 : F IL
+ 6xs 4d  i:  ot  000 3F0 vs  000 370  FA L
+1 v 4  4i  Go  00 0 v  FF D:  AIL Tim r c unt up  est  10 , 0 001 
+1x  1d 1i: Got 000 080  vs 000 07E : F IL
+ 6xs 1d  i:  ot  000 C90 vs  000 C10  FA L
+1 v 1  1i  Go  00 0 v  FF 0:  AIL 1xs 2d  i:  ot  000 802 vs  000 7EB  FA L
+1 xs  d 1 : G t 0 002 90  s 0 002 10: FAI 
+1x  2d 1i: Got 000  vs FFF : F IL
+ xs  d 1 : G t 0 000 02  s 0 000 E9: FAI 
+16 s 4  1i  Go  00 02C 0 v  00 02C 0:  AIL 1xv 4d  i:  ot  000 vs  FF0  FA L
+1 s 1  2i  Go  00 00F 3 v  00 00F C:  AIL 16x  1d 2i: Got 000 58C  vs 000 585 : F IL
+ xv  d 2 : G t 0 00  s F F0: FAI 
+1x  2d 2i: Got 000 0FF  vs 000 0FD : F IL
+ 6xs 2d  i:  ot  000 8C0 vs  000 840  FA L
+1 v 2  2i  Go  00 0 v  FF 0:  AIL 1xs 4d  i:  ot  000 FF3 vs  000 FDA  FA L
+1 xs  d 2 : G t 0 005 C0  s 0 005 40: FAI 
+1x  4d 2i: Got 000  vs FFF : F IL
+ xs  d 4 : G t 0 001 D5  s 0 001 BE: FAI 
+16 s 1  4i  Go  00 0B1 0 v  00 0B0 0:  AIL 1xv 1d  i:  ot  000 vs  FF0  FA L
+1 s 2  4i  Go  00 01F 5 v  00 01F D:  AIL 16x  2d 4i: Got 000 B13  vs 000 B0A : F IL
+ xv  d 4 : G t 0 00  s F F0: FAI 
+1x  4d 4i: Got 000 1FD  vs 000 1FB : F IL
+ 6xs 4d  i:  ot  000 130 vs  000 0A0  FA L
+1 v 4  4i  Go  00 0 v  FF 0:  AIL Tim r c unt up  est  10 , 0 001 
+1x  1d 1i: Got 000 088  vs 000 086 : F IL
+ 6xs 1d  i:  ot  000 F60 vs  000 EE0  FA L
+1 v 1  1i  Go  00 0 v  FF F:  AIL 1xs 2d  i:  ot  000 882 vs  000 86B  FA L
+1 xs  d 1 : G t 0 002 60  s 0 002 E0: FAI 
+1x  2d 1i: Got 000  vs FFE : F IL
+ xs  d 1 : G t 0 000 82  s 0 000 69: FAI 
+16 s 4  1i  Go  00 02F 0 v  00 02E 0:  AIL 1xv 4d  i:  ot  000 vs  FEF  FA L
+1 s 1  2i  Go  00 010 3 v  00 010 C:  AIL 16x  1d 2i: Got 000 5E5  vs 000 5DE : F IL
+ xv  d 2 : G t 0 00  s F EF: FAI 
+1x  2d 2i: Got 000 10F  vs 000 10D : F IL
+ 6xs 2d  i:  ot  000 E50 vs  000 DD0  FA L
+1 v 2  2i  Go  00 0 v  FF F:  AIL 1xs 4d  i:  ot  000 0F3 vs  000 0DA  FA L
+1 xs  d 2 : G t 0 005 50  s 0 005 D0: FAI 
+1x  4d 2i: Got 000  vs FFE : F IL
+ xs  d 4 : G t 0 002 D5  s 0 002 BE: FAI 
+16 s 1  4i  Go  00 0BC 0 v  00 0BB 0:  AIL 1xv 1d  i:  ot  000 vs  FEF  FA L
+1 s 2  4i  Go  00 021 5 v  00 021 D:  AIL 16x  2d 4i: Got 000 BC5  vs 000 BBD : F IL
+ xv  d 4 : G t 0 00  s F EF: FAI 
+1x  4d 4i: Got 000 21D  vs 000 21B : F IL
+ 6xs 4d  i:  ot  000 C50 vs  000 BC0  FA L
+1 v 4  4i  Go  00 0 v  FF F:  AIL Tim r c unt up  est  10 , 0 001 
+1x  1d 1i: Got 000 090  vs 000 08E : F IL
+ 6xs 1d  i:  ot  000 220 vs  000 1A0  FA L
+1 v 1  1i  Go  00 0 v  FF E:  AIL 1xs 2d  i:  ot  000 902 vs  000 8EB  FA L
+1 xs  d 1 : G t 0 003 20  s 0 003 A0: FAI 
+1x  2d 1i: Got 000  vs FFE : F IL
+ xs  d 1 : G t 0 000 02  s 0 000 E9: FAI 
+16 s 4  1i  Go  00 032 0 v  00 031 0:  AIL 1xv 4d  i:  ot  000 vs  FEE  FA L
+1 s 1  2i  Go  00 011 3 v  00 011 C:  AIL 16x  1d 2i: Got 000 63E  vs 000 637 : F IL
+ xv  d 2 : G t 0 00  s F EE: FAI 
+1x  2d 2i: Got 000 11F  vs 000 11D : F IL
+ 6xs 2d  i:  ot  000 3E0 vs  000 360  FA L
+1 v 2  2i  Go  00 0 v  FF E:  AIL 1xs 4d  i:  ot  000 1F3 vs  000 1DA  FA L
+1 xs  d 2 : G t 0 006 E0  s 0 006 60: FAI 
+1x  4d 2i: Got 000  vs FFE : F IL
+ xs  d 4 : G t 0 002 D5  s 0 002 BE: FAI 
+16 s 1  4i  Go  00 0C7 0 v  00 0C6 0:  AIL 1xv 1d  i:  ot  000 vs  FEE  FA L
+1 s 2  4i  Go  00 023 5 v  00 023 D:  AIL 16x  2d 4i: Got 000 C77  vs 000 C6F : F IL
+ xv  d 4 : G t 0 00  s F EE: FAI 
+1x  4d 4i: Got 000 23D  vs 000 23B : F IL
+ 6xs 4d  i:  ot  000 770 vs  000 6E0  FA L
+1 v 4  4i  Go  00 0 v  FF E:  AIL Tim r c unt up  est  10 , 0 001 
+1x  1d 1i: Got 000 098  vs 000 096 : F IL
+ 6xs 1d  i:  ot  000 4F0 vs  000 470  FA L
+1 v 1  1i  Go  00 0 v  FF D:  AIL 1xs 2d  i:  ot  000 982 vs  000 96B  FA L
+1 xs  d 1 : G t 0 003 F0  s 0 003 70: FAI 
+1x  2d 1i: Got 000  vs FFE : F IL
+ xs  d 1 : G t 0 000 82  s 0 000 69: FAI 
+16 s 4  1i  Go  00 034 0 v  00 034 0:  AIL 1xv 4d  i:  ot  000 vs  FED  FA L
+1 s 1  2i  Go  00 012 3 v  00 012 C:  AIL 16x  1d 2i: Got 000 697  vs 000 690 : F IL
+ xv  d 2 : G t 0 00  s F ED: FAI 
+1x  2d 2i: Got 000 12F  vs 000 12D : F IL
+ 6xs 2d  i:  ot  000 970 vs  000 8F0  FA L
+1 v 2  2i  Go  00 0 v  FF D:  AIL 1xs 4d  i:  ot  000 2F3 vs  000 2DA  FA L
+1 xs  d 2 : G t 0 006 70  s 0 006 F0: FAI 
+1x  4d 2i: Got 000  vs FFE : F IL
+ xs  d 4 : G t 0 002 D5  s 0 002 BE: FAI 
+16 s 1  4i  Go  00 0D2 0 v  00 0D2 0:  AIL 1xv 1d  i:  ot  000 vs  FED  FA L
+1 s 2  4i  Go  00 025 5 v  00 025 D:  AIL 16x  2d 4i: Got 000 D29  vs 000 D21 : F IL
+ xv  d 4 : G t 0 00  s F ED: FAI 
+1x  4d 4i: Got 000 25D  vs 000 25B : F IL
+ 6xs 4d  i:  ot  000 290 vs  000 200  FA L
+1 v 4  4i  Go  00 0 v  FF D:  AIL Tim r I Q t st: FFF 
+Go  00 1 !  00 0:  AIL Got 000  != 000 : F IL
+ ot  000 !=  002  FA L
+G t 0 00  = 0 03: FAI 
+Go  00 0 !  00 1:  AIL Got 000  != 005 : F IL
+ ot  000 !=  051  FA L
+G t 0 00  = 0 51: FAI 
+Go  00 0 !  00 1:  AIL Got 000  != 005 : F IL
+ ime  IR  te t:  FFE Got 000  != 000 : F IL
+ ot  000 !=  002  FA L
+G t 0 00  = 0 03: FAI 
+Go  00 0 !  00 4:  AIL Got 000  != 005 : F IL
+ ot  000 !=  052  FA L
+G t 0 00  = 0 52: FAI 
+Go  00 0 !  00 2:  AIL Got 000  != 005 : F IL
+ ime  IR  te t:  FFD Got 000  != FFF : F IL
+ ot  003 !=  000  FA L
+G t 0 00  = 0 02: FAI 
+Go  00 0 !  00 3:  AIL Got 000  != 000 : F IL
+ ot  000 !=  052  FA L
+G t 0 00  = 0 52: FAI 
+Go  00 0 !  00 2:  AIL Got 000  != 005 : F IL
+ ime  IR  te t:  FFC Got 000  != FFF : F IL
+ ot  003 !=  FFF  FA L
+G t 0 04  = 0 00: FAI 
+Go  00 0 !  00 2:  AIL Got 000  != 000 : F IL
+ ot  000 !=  004  FA L
+G t 0 00  = 0 52: FAI 
+Go  00 0 !  00 2:  AIL Got 000  != 005 : F IL
+ ime  IR  te t:  FFB Got 000  != FFF : F IL
+ ot  003 !=  FFE  FA L
+G t 0 04  = F FF: FAI 
+Go  00 5 !  00 0:  AIL Got 000  != 000 : F IL
+ ot  000 !=  003  FA L
+G t 0 00  = 0 04: FAI 
+Go  00 0 !  00 2:  AIL Got 000  != 005 : F IL
+ ime  IR  te t:  FFA Got 000  != FFF : F IL
+ ot  003 !=  FFD  FA L
+G t 0 04  = F FE: FAI 
+Go  00 5 !  FF F:  AIL Got 000  != 000 : F IL
+ ot  000 !=  002  FA L
+G t 0 00  = 0 03: FAI 
+Go  00 0 !  00 4:  AIL Got 000  != 005 : F IL
+ ime  IR  te t:  FF9 Got 000  != FFF : F IL
+ ot  003 !=  FFC  FA L
+G t 0 04  = F FD: FAI 
+Go  00 5 !  FF E:  AIL Got 000  != FFF : F IL
+ ot  007 !=  000  FA L
+G t 0 00  = 0 02: FAI 
+Go  00 0 !  00 3:  AIL Got 000  != 000 : F IL
+ ime  IR  te t:  FF8 Got 000  != FFF : F IL
+ ot  003 !=  FFB  FA L
+G t 0 04  = F FC: FAI 
+Go  00 5 !  FF D:  AIL Got 000  != FFF : F IL
+ ot  007 !=  FFF  FA L
+G t 0 08  = 0 00: FAI 
+Go  00 0 !  00 2:  AIL Got 000  != 000 : F IL
+ ime  IR  te t:  FF7 Got 000  != FFF : F IL
+ ot  003 !=  FFA  FA L
+G t 0 04  = F FB: FAI 
+Go  00 5 !  FF C:  AIL Got 000  != FFF : F IL
+ ot  007 !=  FFE  FA L
+G t 0 08  = F FF: FAI 
+Go  00 9 !  00 0:  AIL Got 000  != 000 : F IL
+ ime  IR  te t:  FFF Got 000  != 000 : F IL
+ ot  000 !=  001  FA L
+G t 0 00  = 0 02: FAI 
+Go  00 0 !  00 3:  AIL Got 000  != 005 : F IL
+ ot  000 !=  051  FA L
+G t 0 00  = 0 51: FAI 
+Go  00 0 !  00 1:  AIL Got 000  != 005 : F IL
+ ot  000 !=  051  FA L
+T mer IRQ tes : F FE
+ ot  002 !=  000  FA L
+G t 0 00  = 0 02: FAI 
+Go  00 0 !  00 3:  AIL Got 000  != 000 : F IL
+ ot  000 !=  052  FA L
+G t 0 00  = 0 52: FAI 
+Go  00 0 !  00 2:  AIL Got 000  != 005 : F IL
+ ot  000 !=  052  FA L
+T mer IRQ tes : F FD
+ ot  002 !=  FFF  FA L
+G t 0 03  = 0 00: FAI 
+Go  00 0 !  00 2:  AIL Got 000  != 000 : F IL
+ ot  000 !=  004  FA L
+G t 0 00  = 0 52: FAI 
+Go  00 0 !  00 2:  AIL Got 000  != 005 : F IL
+ ot  000 !=  052  FA L
+T mer IRQ tes : F FC
+ ot  002 !=  FFE  FA L
+G t 0 03  = F FF: FAI 
+Go  00 4 !  00 0:  AIL Got 000  != 000 : F IL
+ ot  000 !=  003  FA L
+G t 0 00  = 0 04: FAI 
+Go  00 0 !  00 2:  AIL Got 000  != 005 : F IL
+ ot  000 !=  052  FA L
+T mer IRQ tes : F FB
+ ot  002 !=  FFD  FA L
+G t 0 03  = F FE: FAI 
+Go  00 4 !  FF F:  AIL Got 000  != 000 : F IL
+ ot  000 !=  002  FA L
+G t 0 00  = 0 03: FAI 
+Go  00 0 !  00 4:  AIL Got 000  != 005 : F IL
+ ot  000 !=  052  FA L
+T mer IRQ tes : F FA
+ ot  002 !=  FFC  FA L
+G t 0 03  = F FD: FAI 
+Go  00 4 !  FF E:  AIL Got 000  != FFF : F IL
+ ot  006 !=  000  FA L
+G t 0 00  = 0 02: FAI 
+Go  00 0 !  00 3:  AIL Got 000  != 000 : F IL
+ ot  000 !=  052  FA L
+T mer IRQ tes : F F9
+ ot  002 !=  FFB  FA L
+G t 0 03  = F FC: FAI 
+Go  00 4 !  FF D:  AIL Got 000  != FFF : F IL
+ ot  006 !=  FFF  FA L
+G t 0 07  = 0 00: FAI 
+Go  00 0 !  00 2:  AIL Got 000  != 000 : F IL
+ ot  000 !=  004  FA L
+T mer IRQ tes : F F8
+ ot  002 !=  FFA  FA L
+G t 0 03  = F FB: FAI 
+Go  00 4 !  FF C:  AIL Got 000  != FFF : F IL
+ ot  006 !=  FFE  FA L
+G t 0 07  = F FF: FAI 
+Go  00 8 !  00 0:  AIL Got 000  != 000 : F IL
+ ot  000 !=  003  FA L
+T mer IRQ tes : F F7
+ ot  002 !=  FF9  FA L
+G t 0 03  = F FA: FAI 
+Go  00 4 !  FF B:  AIL Got 000  != FFF : F IL
+ ot  006 !=  FFD  FA L
+G t 0 07  = F FE: FAI 
+Go  00 8 !  FF F:  AIL Got 000  != 000 : F IL
+ ot  000 !=  002  FA L
+  FFF  vs FFF : F IL
+ 6xv 1d  i:  ot  FF4 vs  FFF  FA L
+1 xs  d 2 : G t 0 000 10  s 0 000 20: FAI 
+1x  2d 2i: Got FFF  vs FFF : F IL
+ 6xv 2d  i:  ot  FF4 vs  FFF  FA L
+1 xs  d 2 : G t 0 000 10  s 0 000 20: FAI 
+1x  4d 2i: Got FFF  vs FFF : F IL
+ 6xv 4d  i:  ot  FF4 vs  FFF  FA L
+1 xs  d 4 : G t 0 000 10  s 0 000 20: FAI 
+1x  1d 4i: Got FFF  vs FFF : F IL
+ 6xv 1d  i:  ot  FF4 vs  FF5  FA L
+1 xs  d 4 : G t 0 000 10  s 0 000 20: FAI 
+1x  2d 4i: Got FFF  vs FFF : F IL
+ 6xv 2d  i:  ot  FF4 vs  FF5  FA L
+1 xs  d 4 : G t 0 000 10  s 0 000 20: FAI 
+1x  4d 4i: Got FFF  vs FFF : F IL
+ 6xv 4d  i:  ot  FF4 vs  FF5  FA L
+T mer cou t-u  te t:  b,  x00 D
+1 s 1  1i  Go  00 000 3 v  00 000 4:  AIL 16x  1d 1i: Got 000 001  vs 000 002 : F IL
+ xv  d 1 : G t F F3  s F F6: FAI 
+16 v 1  1i  Go  FF 3 v  FF 5:  AIL 1xs 2d  i:  ot  000 003 vs  000 004  FA L
+1 xs  d 1 : G t 0 000 10  s 0 000 20: FAI 
+1x  2d 1i: Got FFF  vs FFF : F IL
+ 6xv 2d  i:  ot  FF3 vs  FF5  FA L
+1 s 4  1i  Go  00 000 3 v  00 000 4:  AIL 16x  4d 1i: Got 000 001  vs 000 002 : F IL
+ xv  d 1 : G t F F3  s F F6: FAI 
+16 v 4  1i  Go  FF 3 v  FF 5:  AIL 1xs 1d  i:  ot  000 003 vs  000 004  FA L
+1 xs  d 2 : G t 0 000 10  s 0 000 20: FAI 
+1x  1d 2i: Got FFF  vs FFF : F IL
+ 6xv 1d  i:  ot  FF3 vs  FF9  FA L
+1 s 2  2i  Go  00 000 3 v  00 000 4:  AIL 16x  2d 2i: Got 000 001  vs 000 002 : F IL
+ xv  d 2 : G t F F3  s F FA: FAI 
+16 v 2  2i  Go  FF 3 v  FF 9:  AIL 1xs 4d  i:  ot  000 003 vs  000 004  FA L
+1 xs  d 2 : G t 0 000 10  s 0 000 20: FAI 
+1x  4d 2i: Got FFF  vs FFF : F IL
+ 6xv 4d  i:  ot  FF3 vs  FF9  FA L
+1 s 1  4i  Go  00 000 3 v  00 000 4:  AIL 16x  1d 4i: Got 000 001  vs 000 002 : F IL
+ xv  d 4 : G t F F3  s F F5: FAI 
+16 v 1  4i  Go  FF 3 v  FF 4:  AIL 1xs 2d  i:  ot  000 003 vs  000 004  FA L
+1 xs  d 4 : G t 0 000 10  s 0 000 20: FAI 
+1x  2d 4i: Got FFF  vs FFF : F IL
+ 6xv 2d  i:  ot  FF3 vs  FF4  FA L
+1 s 4  4i  Go  00 000 3 v  00 000 4:  AIL 16x  4d 4i: Got 000 001  vs 000 002 : F IL
+ xv  d 4 : G t F F3  s F F5: FAI 
+16 v 4  4i  Go  FF 3 v  FF 4:  AIL Tim r c unt up  est  0b  0x 010 1xv 1d  i:  ot  FF0 vs  FFC  FA L
+1 xv  d 1 : G t F F0  s F FE: FAI 
+1x  2d 1i: Got FFF  vs FFF : F IL
+ 6xv 2d  i:  ot  FF0 vs  FFE  FA L
+1 v 4  1i  Go  FF 0 v  FF C:  AIL 16x  4d 1i: Got FFF  vs FFF : F IL
+ xv  d 2 : G t F F0  s F F5: FAI 
+16 v 1  2i  Go  FF 0 v  FF 7:  AIL 1xv 2d  i:  ot  FF0 vs  FF5  FA L
+1 xv  d 2 : G t F F0  s F F7: FAI 
+1x  4d 2i: Got FFF  vs FFF : F IL
+ 6xv 4d  i:  ot  FF0 vs  FF7  FA L
+1 v 1  4i  Go  FF 0 v  FF 7:  AIL 16x  1d 4i: Got FFF  vs FFF : F IL
+ xv  d 4 : G t F F0  s F F7: FAI 
+16 v 2  4i  Go  FF 0 v  FF 9:  AIL 1xv 4d  i:  ot  FF0 vs  FF7  FA L
+1 xv  d 4 : G t F F0  s F F9: FAI 
+Ti er  oun -up tes : 0 , 0 001 
+1x  1d 1i: Got FFE  vs FFF : F IL
+ 6xv 1d  i:  ot  FEC vs  FF8  FA L
+1 v 2  1i  Go  FF C v  FF 8:  AIL 16x  2d 1i: Got FFE  vs FFF : F IL
+ xv  d 1 : G t F EC  s F F8: FAI 
+16 v 4  1i  Go  FF C v  FF 8:  AIL 1xv 1d  i:  ot  FEC vs  FF9  FA L
+1 xv  d 2 : G t F EC  s F F9: FAI 
+Ti ing tes : n p
+T                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ÕŒª»∆ø”ˇ  (+g   ./                                                                                                                                                        YIÉñ	                                                                                  ˇˇˇˇˇˇˇˇˇˇˇˇ    ˇ                                                 ˇˇˇˇˇˇˇˇˇˇˇˇ    ˇ                                                 ˇˇˇˇˇˇˇˇˇˇˇˇ    ˇ                                                 ˇˇˇˇˇˇˇˇˇˇˇˇ    ˇ                  YIÉñ                                      ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ           ˇ       ˇ           ˇ       ˇ           ˇ       ˇ           ˇ       ˇ           ˇ       ˇ           ˇ       ˇ                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ˇ       ˇ                                                                                                                                                                                                                                                                            F,%       ˇ            	ˇ  
+ ˇ                 6 nnnˇˇˇˇˇ1234&&	Mˇˇˇˇˇ9:;<h>2ˇˇˇˇˇ222B222d2222ˇˇˇˇˇ2@Ap>22222ˇˇˇˇˇ52H2I2J2.2622222ˇˇˇˇˇ2266222222ˇˇˇˇˇ 2!2"#$2%22222ˇˇˇˇˇ(2)2*2+2,2-222ˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇ                                                                                                                                                                                     ˇ                                                                                                   ˇ                                                                                                   ˇ                                                                                                   ˇ                                                                                                   ˇ                                                                                                   ˇ              ·BÉñYI                                                                                                                                                                                                          YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI  YI                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ¡ÄÅ    ˇ 3      "  =     Ä ◊  0      "   ˇ ee     _  3 
+ 
+ 
+ 	 
+ D          `A  3      "                 ˇˇˇ                 ˇ               ˇˇˇ                 ˇ               ˇˇˇ                 ˇ               ˇˇˇ                 ˇ               ˇˇˇ                 ˇ               ˇˇˇ                 ˇ               ˇˇˇ                 ˇ               ˇˇˇ                 ˇ               ˇˇˇ                 ˇ               ˇˇˇ                 ˇ               ˇˇˇ                 ˇ               ˇˇˇ                 ˇ       ◊  	        ≈))ˆ  _         Õ*)Û  `    A      ∫*)Ú      
+      Ûâ  Å    	         ﬁ           =äﬂ  d             È                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               z≠%                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              A                                                                              Ä∆‹ºø±ÔN?ÂÔÃ€É˝msÎ˝l˝sõÁÂ	/G[ Ç!àÅ}                                                                                                                                                Ä                                                             i                                                                                                            Ä      eÇ15     Ä                                                                                                                                                                                                                                                                                                                                                              XIÉñYIÉñYIÉñYIÉñYIÉñ[IÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñYIÉñ        Ö–   Ö–           Ö–   Ö–   Ö¿   Ö–   Ö–           Ö¿   Ö–           Ö–   Ö–   Ö–   Ö    Ö    Ö    Ö    Ö    Ö–   Ö–   Ö–   Ö–   Ö    Ö–   Ö    Ö    Ö    Ö–   
+Ö†           
+Ö†   Ö–   Ö–   Ö–   Ö–   Ö–   Ö–   Ö–   Ö–   Ö–   Ö    Ö    Ö    Ö    Ö–   Ö–   Ö–   Ö–           Ö    Ö            Ö    Ö            Ö–   Ö–   Ö–   Ö–   Ö¿           Ö¿   Ö–   Ö–   Ö    Ö–   Ö–   Ö–   Ö–   Ö–   Ö–   Ö–           Ö–   Ö–   Ö–   Ö–   Ö–   Ö–   $ÖÄ   Ö–   Ö–   
+Ö†   Ö¿   Ö–   
+Ö†   Ö–                                                                                                                                                                                                                                                                                                                     ˇˇˇˇˇˇˇ                                                                                                                                                         ˇˇˇˇˇˇˇ                                                                                                                                                         ˇˇˇˇˇˇˇ                                                                                                                                                         ˇˇˇˇˇˇˇ                                                                                                                                                         ˇˇˇˇˇˇˇ                                                                                                                                                         ˇˇˇˇˇˇˇ                                                                                                                                                         ˇˇˇˇˇˇˇ                                                                                                                                                         ˇˇ                                                                                                                     	ö%    ˇˇˇˇˇ                                                                                                                                                         ˇˇˇˇˇˇˇ                                                                                                                                                         ˇˇˇˇˇˇˇ                                                                                                                                                         ˇˇˇˇˇˇˇ                                                                                                                                                         ˇˇˇˇˇˇˇ                                                                                                                                                         ˇˇˇˇˇˇˇ                                                                                                                                                         ˇˇˇˇˇˇˇ                                                                                                                                                         ˇˇˇˇˇˇˇ                                                                                                                                                         ˇˇˇˇˇˇˇ                                                                                                                                                         ˇˇˇˇˇˇˇ                                                                                                                                                         ˇˇˇˇˇˇˇ                                                                                                                                                         ˇˇˇˇˇˇˇ                                                                                                                                                         ˇˇˇˇˇˇˇ                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     ˇˇ    )
+ 3
+    
+% ::*
+9.=
+0ˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇ         ˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇ         ˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇ         ˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇ         ˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇ         ˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇ         ˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇ         ˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇ         ˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇ         ˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇ         ˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇ         ˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇ         ˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇ         ˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇ         ˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇ         ˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇ                                                                               ∏	; ¶∫B"£è°0                                                                                                                     µ%    ¢Â/8$!Qjº    ˇˇ  Qø∆øΩŒøÃˇ   ø‘Ãªˇ         ˇˇ  q ŒÃ… …ˇ     ª∆∆ª»ˇ       ˇˇ  ≤ Œœ“ªˇ      ƒœ∆√øŒˇ       ˇˇ  a œ∆Õøˇ     ºª√∆”ˇ       ˇˇ  yÕ¬œ œ ˇ    «ø∆ª»”ˇ      ˇˇ  | ¡……‘ª»ˇ    ¬ª»ªˇ        ˇˇ  s∆…œæøæˇ    ºÃ”ª»Œˇ      ˇˇ  <≈√ŒÕ”ˇ     …«ªÃˇ               ˇ          ˇ                    ˇ          ˇ                    ˇ          ˇ                    ˇ          ˇ                    ˇ          ˇ                                                                                                                                                                                                                                                                                                        ˇ               ˇ               ˇ               ˇ               ˇ                                                                                   ó                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              ˇˇˇˇˇˇˇˇ                                                                                                                                                                                                                                                                                                                                                                                                                                            øK øK øK øK                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ˇ          ñ                                                                                                                                                                                                                                                                                              ¬ø∆∆…ˇ                …≈«…»ˇ             ŒÃªæøˇ               ºªŒŒ∆øˇ              ∆øŒ¥Õˇ               …≈´ˇ                 Õ…ÃÃ”ˇ               ”ª”˘˘ˇ               Œ¬ª»≈ ”…œˇ           º”øÆº”ø´ˇ                                  5{Üaˇ                                                                                                                                                                                                                                                                ñW%                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           %                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           %                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           %                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           %                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        	   %                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+   %                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           %                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           %                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        º…“¢ˇ    º…“£ˇ    º…“§ˇ    º…“•ˇ    º…“¶ˇ    º…“ßˇ    º…“®ˇ    º…“©ˇ    º…“™ˇ    º…“¢°ˇ   º…“¢¢ˇ   º…“¢£ˇ   º…“¢§ˇ   º…“¢•ˇ                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            1Ò%    ˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇ
