@@ -65,7 +65,7 @@ public:
         int  source_increment   = 0;
         int  dest_increment     = 0;
 
-        // if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
+        // if (is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
         //          current_channel,
         //          bytes_to_transfer,
         //          dma_channels[current_channel].transferring_words ? "words" : "halfwords",
