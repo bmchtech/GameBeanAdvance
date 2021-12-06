@@ -67,7 +67,7 @@ public:
     void on_hblank_start() {
         if (hblank_irq_enabled) interrupt_cpu(Interrupt.LCD_HBLANK);
 
-        if (scanline >= 0 && scanline < 160) {
+        if (!vblank) {
             canvas.reset();
 
             // horizontal mosaic is a post processing effect done on the canvas
@@ -160,36 +160,68 @@ public:
                 break;
 
             case 3: {
-                // in mode 3, the dot and scanline (x and y) simply tell us where to read from in VRAM. The colors
-                // are stored directly, so we just read from VRAM and interpret as a 15bit highcolor
-                uint bg_scanline = backgrounds[2].is_mosaic ? apparent_bg_scanline : scanline;
-
-                for (uint x = 0; x < 240; x++) {
-                    canvas.pixels_output[x] = get_pixel_from_color(read_VRAM!ushort(OFFSET_VRAM + (x + bg_scanline * 240) * 2));
-                }
+                render_bitmap(&get_pixel_index_from_point__mode_3);
                 break;
             }
 
-            case 4:
+            case 4: {
+                render_bitmap(&get_pixel_index_from_point__mode_4);
+                break;
+            }
+
             case 5: {
-                // modes 4 and 5 are a step up from mode 3. the address of where the colors are stored can
-                // be found using DISPCNT.
-                uint base_frame_address = OFFSET_VRAM + disp_frame_select * 0xA000;
-
-                uint bg_scanline = backgrounds[2].is_mosaic ? apparent_bg_scanline : scanline;
-
-                for (uint x = 0; x < 240; x++) {
-                    // the index in palette ram that we need to lookinto  is then found in the base frame.
-                    ubyte index = read_VRAM!ubyte(base_frame_address + (x + bg_scanline * 240));
-                    canvas.draw_bg_pixel(x, 2, index, 0, false);
-                }
-
+                // sorry mode 5 nobody uses you
                 break;
             }
+            
                 
             default:
                 // warning("Mode " + std::to_string(mode) + " not supported");
                 int x = 2; // stop complaining lol
+        }
+    }
+
+    Pixel get_pixel_index_from_point__mode_3(uint x, uint y) {
+        return get_pixel_from_color(read_VRAM!ushort(OFFSET_VRAM + (x + y * 240) * 2));
+    }
+
+    Pixel get_pixel_index_from_point__mode_4(uint x, uint y) {
+        uint base_frame_address = OFFSET_VRAM + disp_frame_select * 0xA000;
+        int address = base_frame_address + (x + y * 240);
+        ubyte index = read_VRAM!ubyte(address);
+        return get_pixel_from_color(index);
+    }
+
+    void render_bitmap(Pixel delegate(uint, uint) get_pixel_color_from_point) {
+        // do we even render?
+        Background background = backgrounds[2];
+        if (!background.enabled) return;
+
+        uint bg_scanline = background.is_mosaic ? apparent_bg_scanline : scanline;
+
+        // the coordinates at the topleft of the background that we are drawing
+        long texture_point_x = background.internal_reference_x;
+        long texture_point_y = background.internal_reference_y;
+
+        for (int x = 0; x < 240; x++) {
+            // truncate the decimal because texture_point is 8-bit fixed point
+            Point truncated_texture_point = Point(cast(int) texture_point_x >> 8,
+                                                  cast(int) texture_point_y >> 8);
+
+            uint map_x = truncated_texture_point.x;
+            uint map_y = truncated_texture_point.y;
+            if (background.does_display_area_overflow ||
+                ((0 <= map_x && map_x < SCREEN_WIDTH) &&
+                    (0 <= map_y && map_y < SCREEN_HEIGHT))) {
+                map_x &= 240;
+                map_y &= 160;
+                
+                Pixel color = get_pixel_color_from_point(map_x, bg_scanline);
+                canvas.pixels_output[x] = color;
+            }
+
+            texture_point_x += background.p[AffineParameter.A];
+            texture_point_y += background.p[AffineParameter.C];
         }
     }
 
