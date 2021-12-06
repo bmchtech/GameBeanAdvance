@@ -254,7 +254,7 @@ public:
             case 0b1:
                 noise_channel.set_envelope_length   (get_nth_bits(data, 0, 3));
                 noise_channel.set_envelope_direction(get_nth_bit (data, 3));
-                noise_channel.set_volume(get_nth_bits(data, 4, 8));
+                noise_channel.set_volume            (get_nth_bits(data, 4, 8));
                 break;
         }
     }
