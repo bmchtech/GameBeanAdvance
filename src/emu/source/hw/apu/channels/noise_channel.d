@@ -83,12 +83,13 @@ class NoiseChannel {
     void set_counter_width(int counter_width) {
         this.reload_value      = counter_width == 1 ? 0x40 : 0x4000;
         this.shifter_xor_value = counter_width == 1 ? 0x60 : 0x6000;
-        reload();
+        // reload();
+        writefln("width: %d", counter_width);
         enabled = true;
     }
 
     void set_dividing_ratio(int dividing_ratio) {
-        this.dividing_ratio = dividing_ratio == 0 ? 8 : dividing_ratio;
+        this.dividing_ratio = dividing_ratio;
         recalculate_interval();
     }
 
@@ -98,7 +99,13 @@ class NoiseChannel {
     }
 
     void recalculate_interval() {
-        interval = (dividing_ratio * 64) << shift_clock_frequency;
+        if (dividing_ratio == 0) {
+            interval = (8 << shift_clock_frequency) * 4;
+        } else {
+            interval = ((dividing_ratio * 16) << shift_clock_frequency) * 4;
+        }
+
+        writefln("Interval: %d [%d %d %x]", interval, dividing_ratio, shift_clock_frequency, this.reload_value);
     }
 
     // where n is bits 0-5 of SOUND4CNT_L
@@ -129,5 +136,6 @@ class NoiseChannel {
     void restart() {
         enabled = true;
         cycles_elapsed = 0;
+        reload();
     }
 }
