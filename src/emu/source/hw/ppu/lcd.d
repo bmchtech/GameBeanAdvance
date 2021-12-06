@@ -67,7 +67,7 @@ public:
     void on_hblank_start() {
         if (hblank_irq_enabled) interrupt_cpu(Interrupt.LCD_HBLANK);
 
-        if (!vblank) {
+        if (scanline >= 0 && scanline < 160) {
             canvas.reset();
 
             // horizontal mosaic is a post processing effect done on the canvas
@@ -193,31 +193,30 @@ public:
     }
 
     void render_bitmap(Pixel delegate(uint, uint) get_pixel_color_from_point) {
-        // do we even render?
         Background background = backgrounds[2];
         if (!background.enabled) return;
 
-        uint bg_scanline = background.is_mosaic ? apparent_bg_scanline : scanline;
+        int bg_scanline = background.is_mosaic ? apparent_bg_scanline : scanline;
+        // writefln("%x %x %x %x", background.p[AffineParameter.A], background.p[AffineParameter.B], background.p[AffineParameter.C], background.p[AffineParameter.D]);
 
         // the coordinates at the topleft of the background that we are drawing
         long texture_point_x = background.internal_reference_x;
         long texture_point_y = background.internal_reference_y;
+        // writefln("%x %x", texture_point_x, texture_point_y);
 
         for (int x = 0; x < 240; x++) {
             // truncate the decimal because texture_point is 8-bit fixed point
             Point truncated_texture_point = Point(cast(int) texture_point_x >> 8,
                                                   cast(int) texture_point_y >> 8);
 
-            uint map_x = truncated_texture_point.x;
-            uint map_y = truncated_texture_point.y;
-            if (background.does_display_area_overflow ||
-                ((0 <= map_x && map_x < SCREEN_WIDTH) &&
-                    (0 <= map_y && map_y < SCREEN_HEIGHT))) {
-                map_x &= 240;
-                map_y &= 160;
-                
-                Pixel color = get_pixel_color_from_point(map_x, bg_scanline);
+            int map_x = truncated_texture_point.x;
+            int map_y = truncated_texture_point.y;
+            if (((0 <= map_x && map_x < SCREEN_WIDTH) &&
+                 (0 <= map_y && map_y < SCREEN_HEIGHT))) {
+                Pixel color = get_pixel_color_from_point(map_x, map_y);
                 canvas.pixels_output[x] = color;
+            } else {
+                canvas.pixels_output[x] = get_color(0);
             }
 
             texture_point_x += background.p[AffineParameter.A];
@@ -228,7 +227,7 @@ public:
 private:
     Memory memory;
     ushort dot; // the horizontal counterpart to scanlines.
-    // uint[][] pixel_priorities; // the associated priorities with each pixel.
+    // uint[][] pixel_prioritie; // the associated priorities with each pixel.
 
     // some basic ways to access VRAM easier
     
