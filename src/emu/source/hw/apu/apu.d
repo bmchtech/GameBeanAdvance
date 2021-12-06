@@ -246,19 +246,21 @@ public:
     }
 
     void write_SOUND4CNT_L(int target_byte, ubyte data) {
-        writefln("Written to L %x %x", target_byte, data);
+        // writefln("Written to L %x %x", target_byte, data);
         final switch (target_byte) {
             case 0b0:
                 noise_channel.set_length(get_nth_bits(data, 0, 6));
                 break;
             case 0b1:
+                noise_channel.set_envelope_length   (get_nth_bits(data, 0, 3));
+                noise_channel.set_envelope_direction(get_nth_bit (data, 3));
                 noise_channel.set_volume(get_nth_bits(data, 4, 8));
                 break;
         }
     }
     
     void write_SOUND4CNT_H(int target_byte, ubyte data) {
-        writefln("Written to H %x %x", target_byte, data);
+        // writefln("Written to H %x %x", target_byte, data);
         final switch (target_byte) {
             case 0b0:
                 noise_channel.set_dividing_ratio       (get_nth_bits(data, 0, 3));
@@ -267,9 +269,9 @@ public:
                 break;
 
             case 0b1:
-                // noise_channel.set_envelope_length   (get_nth_bits(data, 0, 3));
-                // noise_channel.set_envelope_direction(get_nth_bit (data, 3));
-                // noise_channel.set_volume            (get_nth_bits(data, 4, 8));
+
+                noise_channel.set_should_turn_off_when_length_elapses(get_nth_bit(data, 6));
+                if (get_nth_bit(data, 7)) noise_channel.restart();
                 break;
         }
     }
