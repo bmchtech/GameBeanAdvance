@@ -11,6 +11,8 @@ import scheduler;
 
 import std.stdio;
 
+import core.bitop;
+
 class DMAManager {
 public:
     void delegate(uint) interrupt_cpu;
@@ -39,7 +41,13 @@ public:
         }
     }
 
-    uint dmas_running = 0;
+    uint num_dmas_running      = 0;
+
+    uint dmas_running_bitfield = 0;
+    uint get_highest_priority_dma_running() {
+        return bsf(dmas_running_bitfield);
+    }
+
     void handle_dma() {
         // get the channel with highest priority that wants to start dma
         int current_channel = -1;
@@ -52,12 +60,19 @@ public:
         
         if (current_channel == -1) return; //error("DMA requested but no active channels found");
         
+        if (get_highest_priority_dma_running() < current_channel) {
+            // defer this dma to the end of the current dma
+            // writefln("DEFERRING: %d %d", current_channel, dmas_running_bitfield);
+            return;
+        }
+
         dma_channels[current_channel].waiting_to_start = false;
 
-        if (dmas_running == 0) {
+        if (num_dmas_running == 0) {
             memory.prefetch_buffer.pause();
         }
-        dmas_running++;
+        num_dmas_running++;
+        dmas_running_bitfield |= (1 << current_channel);
 
         uint excess_cycles = memory.cycles;
 
@@ -163,8 +178,9 @@ public:
                            (dest_beginning_in_rom   || dest_ending_in_rom) ?
                            0 : 2;
 
-        dmas_running--;
-        if (dmas_running == 0) {
+        num_dmas_running--;
+        dmas_running_bitfield &= ~(1 << current_channel);
+        if (num_dmas_running == 0) {
             for (int i = 0; i < idle_cycles; i++) memory.idle();
             memory.prefetch_buffer.resume();
         }
@@ -191,6 +207,7 @@ public:
             dma_channels[current_channel].enabled = false;
         }
 
+        handle_dma();
         return;
     }
 
