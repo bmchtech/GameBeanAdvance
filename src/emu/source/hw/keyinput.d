@@ -63,8 +63,11 @@ class KeyInput {
     }
 
     void set_key(int code, bool pressed) {
-        if (pressed) keyinput &= ~(0b1 << code);
-        else         keyinput |=  (0b1 << code);
+        if (pressed) {
+            keyinput &= ~(0b1 << code);
+        } else {
+            keyinput |=  (0b1 << code);
+        }
 
         if (should_interrupt()) interrupt_cpu(Interrupt.KEYPAD);
     }

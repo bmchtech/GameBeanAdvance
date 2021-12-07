@@ -58,6 +58,7 @@ public:
         // scheduler.add_event_relative_to_self(&on_vblank_start, 308 * 160 * 4);
 
         // background_init(memory);
+        enabled = true;
     }
 
     void set_frontend_vblank_callback(void delegate() frontend_vblank_callback) {
@@ -81,7 +82,8 @@ public:
 
             if (bg_mode != 3) canvas.composite();
 
-            display_scanline();
+            if (enabled)
+                display_scanline();
 
             backgrounds[2].internal_reference_x += backgrounds[2].p[AffineParameter.B];
             backgrounds[2].internal_reference_y += backgrounds[2].p[AffineParameter.D];
@@ -142,6 +144,21 @@ public:
         frontend_vblank_callback();
 
         // scheduler.add_event_relative_to_self(&on_vblank_start, 308 * 160 * 4);
+    }
+
+    bool enabled;
+    void enable() {
+        enabled = true;
+    }
+
+    void disable() {
+        enabled = false;
+
+        for (int x = 0; x < SCREEN_WIDTH;  x++) {
+        for (int y = 0; y < SCREEN_HEIGHT; y++) {
+            memory.set_rgb(x, y, 0, 0, 0);
+        }
+        }
     }
 
     void render() {

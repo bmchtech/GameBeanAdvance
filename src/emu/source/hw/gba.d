@@ -47,7 +47,7 @@ public:
 
         this.memory            = memory;
         this.cpu               = new ARM7TDMI(memory);
-        this.interrupt_manager = new InterruptManager(&cpu.enable);
+        this.interrupt_manager = new InterruptManager(&cpu.enable, &enable);
         this.ppu               = new PPU(memory, scheduler, &interrupt_manager.interrupt, &on_hblank, &on_vblank);
         this.apu               = new APU(memory, scheduler, &on_fifo_empty);
         this.dma_manager       = new DMAManager(memory, scheduler, &interrupt_manager.interrupt);
@@ -148,11 +148,23 @@ public:
         dma_manager.on_vblank();
     }
 
+    void disable() {
+        ppu.disable();
+        enabled = false;
+    }
+
+    void enable() {
+        ppu.enable();
+        enabled = true;
+    }
+
     // is this sketchy code? it might be... but its 1 am
     // TODO: fix sketchy code
     void write_HALTCNT(ubyte data) {
         if (get_nth_bit(data, 7)) {
+            writefln("youre disabled");
             // idk figure out stopping
+            disable();
         } else {
             // halt
             cpu.halt();
