@@ -7,7 +7,7 @@
 
 [DEFAULT]
 {
-    // warning(format("No implementation for opcode 0x" ~ to_hex_string(opcode)));
+    warning(format("No implementation for opcode 0x" ~ to_hex_string(opcode)));
 }
 [/DEFAULT]
 

@@ -80,7 +80,7 @@ void test_thumb_mode(string gba_file, string log_file, int num_instructions) {
     Memory   memory = new Memory();
     ARM7TDMI cpu    = new ARM7TDMI(memory);
     Scheduler scheduler = new Scheduler(memory);
-    InterruptManager im = new InterruptManager(null);
+    InterruptManager im = new InterruptManager(null, null);
     cpu.set_interrupt_manager(im);
 
     void nop() {}
@@ -126,7 +126,7 @@ void test_arm_mode(string gba_file, string log_file, int num_instructions, int s
     Memory   memory = new Memory();
     ARM7TDMI cpu    = new ARM7TDMI(memory);
     Scheduler scheduler = new Scheduler(memory);
-    InterruptManager im = new InterruptManager(null);
+    InterruptManager im = new InterruptManager(null, null);
     cpu.set_interrupt_manager(im);
 
     void nop() {}
