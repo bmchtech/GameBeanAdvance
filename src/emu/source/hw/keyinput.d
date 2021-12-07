@@ -50,7 +50,7 @@ class KeyInput {
         if (target_byte == 0) {
             return (keyinput & 0x00FF) >> 0;
         } else {
-            return cast(ubyte) (((keyinput & 0xFF00) >> 8) | (cast(ubyte) irq_condition << 6) | (irq_enabled << 7));
+            return (keyinput & 0xFF00) >> 8;
         }
     }
 
@@ -58,7 +58,7 @@ class KeyInput {
         if (target_byte == 0) {
             return (keycnt & 0x00FF) >> 0;
         } else {
-            return (keycnt & 0xFF00) >> 8;
+            return cast(ubyte) (((keycnt & 0xFF00) >> 8) | (cast(ubyte) irq_condition << 6) | (irq_enabled << 7));
         }
     }
 
@@ -69,12 +69,16 @@ class KeyInput {
         if (should_interrupt()) interrupt_cpu(Interrupt.KEYPAD);
     }
 
+    import std.stdio;
+
     bool should_interrupt() {
+        uint inverted_keyinput = ~keyinput & 0x3FF;
+        writefln("%x %x %x", irq_condition, keycnt, inverted_keyinput);
         final switch (irq_condition) {
             case IRQCondition.OR:
-                return (keycnt & keyinput) != 0;
+                return (keycnt & inverted_keyinput) != 0;
             case IRQCondition.AND:
-                return (keycnt & keyinput) == keycnt;
+                return (keycnt & inverted_keyinput) == keycnt;
         }
     }
 }

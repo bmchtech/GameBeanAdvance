@@ -36,7 +36,6 @@ class InterruptManager {
         // is this specific interrupt enabled
         interrupt_request |= interrupt_code;
         if (interrupt_enable & interrupt_code) {
-
             unhalt_cpu();
         }
     }
