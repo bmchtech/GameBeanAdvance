@@ -26,17 +26,22 @@ enum Interrupt {
 
 
 class InterruptManager {
-    this(void delegate() unhalt_cpu) {
-        this.unhalt_cpu    = unhalt_cpu;
+    this(void delegate() unhalt_cpu, void delegate() unhalt_gba) {
+        this.unhalt_cpu = unhalt_cpu;
+        this.unhalt_gba = unhalt_gba;
     }
 
     // interrupt_code must be one-hot
     void interrupt(uint interrupt_code) {
-        // writefln("Received interrupt %x %x %x", interrupt_code, interrupt_enable, interrupt_request);
+        writefln("Received interrupt %x %x %x", interrupt_code, interrupt_enable, interrupt_request);
         // is this specific interrupt enabled
         interrupt_request |= interrupt_code;
         if (interrupt_enable & interrupt_code) {
             unhalt_cpu();
+        }
+
+        if (interrupt_code & Interrupt.KEYPAD) {
+            unhalt_gba();
         }
     }
 
@@ -46,6 +51,7 @@ class InterruptManager {
 
 private:
     void delegate() unhalt_cpu;
+    void delegate() unhalt_gba;
 // .......................................................................................................................
 // .RRRRRRRRRRR...EEEEEEEEEEEE....GGGGGGGGG....IIII...SSSSSSSSS...TTTTTTTTTTTTT.EEEEEEEEEEEE..RRRRRRRRRRR....SSSSSSSSS....
 // .RRRRRRRRRRRR..EEEEEEEEEEEE...GGGGGGGGGGG...IIII..SSSSSSSSSSS..TTTTTTTTTTTTT.EEEEEEEEEEEE..RRRRRRRRRRRR..SSSSSSSSSSS...

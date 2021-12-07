@@ -190,12 +190,16 @@ class GameBeanSDLHost {
             // clockfor_log   += elapsed;
             // clockfor_frame += elapsed;
 
-            if (!fast_forward) {
-                while (_samples_per_callback * 2 > _audio_data.buffer[Channel.L].offset) {
+            if (_gba.enabled) {
+                if (!fast_forward) {
+                    while (_samples_per_callback * 2 > _audio_data.buffer[Channel.L].offset) {
+                        _gba.cycle_at_least_n_times(_cycles_per_batch);
+                    }
+                } else {
                     _gba.cycle_at_least_n_times(_cycles_per_batch);
                 }
             } else {
-                _gba.cycle_at_least_n_times(_cycles_per_batch);
+                frame();
             }
 
             // if (clockfor_log > msec_per_log) {
@@ -328,7 +332,7 @@ private:
     enum KEYMAP_VANILLA = [
         SDL_Keycode.SDLK_z            : GBAKeyVanilla.A,
         SDL_Keycode.SDLK_x            : GBAKeyVanilla.B,
-        SDL_Keycode.SDLK_TAB          : GBAKeyVanilla.SELECT,
+        SDL_Keycode.SDLK_SPACE        : GBAKeyVanilla.SELECT,
         SDL_Keycode.SDLK_RETURN       : GBAKeyVanilla.START,
         SDL_Keycode.SDLK_RIGHT        : GBAKeyVanilla.RIGHT,
         SDL_Keycode.SDLK_LEFT         : GBAKeyVanilla.LEFT,
