@@ -609,7 +609,7 @@ private:
             int middle_x = topleft_x + width  * 4;
             int middle_y = topleft_y + height * 4;
 
-            bool is_mosaic = get_nth_bit(attribute_0, 7);
+            bool is_mosaic = get_nth_bit(attribute_0, 12);
 
             uint obj_scanline = is_mosaic ? apparent_obj_scanline : scanline;
 
