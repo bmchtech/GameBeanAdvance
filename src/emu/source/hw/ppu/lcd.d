@@ -313,7 +313,7 @@ private:
 
     template Render(bool bpp8, bool flipped_x, bool flipped_y) {
 
-        void tile(int bg, int priority, int tile, int tile_base_address, int palette_base_address, int left_x, int y, int palette) {
+        pragma(inline, true) void tile(int bg, int priority, int tile, int tile_base_address, int palette_base_address, int left_x, int y, int palette) {
             // Point reference_point = Point(ref_x, ref_y);
             static if (bpp8) {
                 static if (flipped_y) uint tile_address = tile_base_address + (tile & 0x3ff) * 64 + (7 - y) * 8;    
@@ -359,7 +359,7 @@ private:
             } 
         }
 
-        void texture(int priority, Texture texture, Point topleft_texture_pos, Point topleft_draw_pos, OBJMode obj_mode) {
+        pragma(inline, true) void texture(int priority, Texture texture, Point topleft_texture_pos, Point topleft_draw_pos, OBJMode obj_mode) {
             int texture_bound_x_upper = texture.double_sized ? texture.width  >> 1 : texture.width;
             int texture_bound_y_upper = texture.double_sized ? texture.height >> 1 : texture.height;
             int texture_bound_x_lower = 0;
@@ -609,7 +609,11 @@ private:
             int middle_x = topleft_x + width  * 4;
             int middle_y = topleft_y + height * 4;
 
-            if (apparent_obj_scanline < topleft_y || apparent_obj_scanline >= topleft_y + (height << 3)) continue;
+            bool is_mosaic = get_nth_bit(attribute_0, 7);
+
+            uint obj_scanline = is_mosaic ? apparent_obj_scanline : scanline;
+
+            if (obj_scanline < topleft_y || obj_scanline >= topleft_y + (height << 3)) continue;
 
             OBJMode obj_mode = cast(OBJMode) get_nth_bits(attribute_0, 10, 12);
 
@@ -646,8 +650,8 @@ private:
                                         get_nth_bits(attribute_2, 12, 16),
                                         flipped_x, flipped_y, get_nth_bit(attribute_0, 9));
 
-            if (doesnt_use_color_palettes) Render!(true,  false, false).texture(given_priority, texture, Point(topleft_x, topleft_y), Point(topleft_x, apparent_obj_scanline), obj_mode);
-            else                           Render!(false, false, false).texture(given_priority, texture, Point(topleft_x, topleft_y), Point(topleft_x, apparent_obj_scanline), obj_mode);
+            if (doesnt_use_color_palettes) Render!(true,  false, false).texture(given_priority, texture, Point(topleft_x, topleft_y), Point(topleft_x, obj_scanline), obj_mode);
+            else                           Render!(false, false, false).texture(given_priority, texture, Point(topleft_x, topleft_y), Point(topleft_x, obj_scanline), obj_mode);
         }
     }
 
