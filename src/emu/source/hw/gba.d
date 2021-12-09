@@ -119,7 +119,7 @@ public:
         if (!cpu.halted) {
             cpu.cycle();
         } else {
-            scheduler.tick(1);
+            scheduler.tick_to_next_event();
             scheduler.process_events();
 
             if (interrupt_manager.has_irq()) {
