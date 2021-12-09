@@ -82,7 +82,7 @@ class GameBeanSDLHost {
         // SDL_GL_SetSwapInterval(0);
         // SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");
         renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-        // SDL_GL_SetSwapInterval(1);
+        // SDL_GL_SetSwapInterval(0);
         // SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");
 
         screen_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
@@ -178,17 +178,17 @@ class GameBeanSDLHost {
 
         ulong cycle_timestamp = 0;
 
-        // ulong start_timestamp = SDL_GetTicks();
+        ulong start_timestamp = SDL_GetTicks();
 
         _gba.set_frontend_vblank_callback(&frame);
 
         while (running) {
-            // ulong end_timestamp = SDL_GetTicks();
-            // ulong elapsed = end_timestamp - start_timestamp;
-            // start_timestamp = end_timestamp;
+            ulong end_timestamp = SDL_GetTicks();
+            ulong elapsed = end_timestamp - start_timestamp;
+            start_timestamp = end_timestamp;
 
-            // clockfor_log   += elapsed;
-            // clockfor_frame += elapsed;
+            clockfor_log   += elapsed;
+            clockfor_frame += elapsed;
 
             if (_gba.enabled) {
                 if (!fast_forward) {
@@ -201,18 +201,19 @@ class GameBeanSDLHost {
             } else {
                 frame();
             }
+            // frame();
 
-            // if (clockfor_log > msec_per_log) {
-            //     ulong cycles_elapsed = _gba.scheduler.get_current_time() - cycle_timestamp;
-            //     cycle_timestamp = _gba.scheduler.get_current_time();
-            //     double speed = ((cast(double) cycles_elapsed) / (cast(double) cycles_per_second));
-            //     // writefln("fps: %x", cast(char*) format("Speed: %f", speed));
-            //     SDL_SetWindowTitle(window, cast(char*) ("FPS: " ~ format("%d", fps)));
-            //     // SDL_SetWindowTitle(window, cast(char*) format("Speed: %f", speed));
-            //     clockfor_log = 0;
-            //     cycles_since_last_log = 0;
-            //     fps = 0;
-            // }
+            if (clockfor_log > msec_per_log) {
+                ulong cycles_elapsed = _gba.scheduler.get_current_time() - cycle_timestamp;
+                cycle_timestamp = _gba.scheduler.get_current_time();
+                double speed = ((cast(double) cycles_elapsed) / (cast(double) cycles_per_second));
+                // writefln("fps: %x", cast(char*) format("Speed: %f", speed));
+                SDL_SetWindowTitle(window, cast(char*) ("FPS: " ~ format("%d", fps)));
+                // SDL_SetWindowTitle(window, cast(char*) format("Speed: %f", speed));
+                clockfor_log = 0;
+                cycles_since_last_log = 0;
+                fps = 0;
+            }
         }
     }
 
