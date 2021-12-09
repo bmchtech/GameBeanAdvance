@@ -278,7 +278,7 @@ private:
         SDL_RenderCopy(renderer, screen_tex, null, &dest);
 
         // render present
-        SDL_RenderPresent(renderer);
+        // SDL_RenderPresent(renderer);
         // glTexImage2D(GL_TEXTURE_2D,0,GL_RGB5_A1,GBA_SCREEN_WIDTH,GBA_SCREEN_HEIGHT,0,GL_BGRA,GL_UNSIGNED_INT_8_8_8_8, cast(void*) pixels);
         // glDrawArrays(GL_TRIANGLE_STRIP,0,4);
         // glClear(GL_COLOR_BUFFER_BIT);

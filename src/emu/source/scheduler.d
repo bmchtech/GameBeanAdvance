@@ -102,6 +102,10 @@ class Scheduler {
         current_timestamp += num_cycles;
     }
 
+    pragma(inline, true) void tick_to_next_event() {
+        current_timestamp = events[0].timestamp;
+    }
+
     void maybe_run_event(ulong event_id) {
         for (int i = num_events_being_processed; i < events_in_queue; i++) {
             if (!events[i].timestamp == current_timestamp) return;
