@@ -119,6 +119,7 @@ public:
         if (!cpu.halted) {
             cpu.cycle();
         } else {
+            // ty organharvester for the halt skipping idea!
             scheduler.tick_to_next_event();
             scheduler.process_events();
 

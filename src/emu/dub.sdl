@@ -5,6 +5,8 @@ copyright "Copyright © 2021, bean"
 license "proprietary"
 targetType "executable"
 
+versions "GL_AllowDeprecated"
+
 dependency "commandr" version="~>0.2.0"
 dependency "bindbc-sdl" version="~>1.0.1"
 dependency "bindbc-opengl" version="~>1.0.0"

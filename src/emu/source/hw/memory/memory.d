@@ -533,7 +533,7 @@ class Memory : IMemory {
     }
     
     pragma(inline, true) void set_rgb(uint x, uint y, ubyte r, ubyte g, ubyte b) {
-        video_buffer[x][y] = (r << 24) | (g << 16) | (b << 8) | (0xff);
+        video_buffer[x][y] = (r << 0) | (g << 8) | (b << 16) | (0xff << 24);
     }
 
     pragma(inline, true) uint calculate_stalls_for_access(T)(uint region, AccessType access_type) {
