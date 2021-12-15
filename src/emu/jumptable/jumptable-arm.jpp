@@ -760,6 +760,10 @@
     @IF( P !U) uint writeback_address = address - popcnt(opcode & 0xFFFF) * 4;
     address = start_address;
 
+    if (start_address == 0x07FF_FFF8) {
+        warning(format("%x", opcode));
+    }
+
     // this if statement emulates unpredictable ARM7TDMI behavior - empty rlist
     if (get_nth_bits(opcode, 0, 16) == 0) {
         @IF(!P  U) start_address = cpu.read_reg(get_nth_bits(opcode, 16, 20));

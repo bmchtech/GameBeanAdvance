@@ -80,7 +80,7 @@ public:
 
             canvas.apply_horizontal_mosaic(bg_mosaic_h, obj_mosaic_h);
 
-            if (bg_mode != 3) canvas.composite();
+            if (bg_mode < 3) canvas.composite();
 
             if (enabled)
                 display_scanline();
@@ -206,7 +206,7 @@ public:
         uint base_frame_address = OFFSET_VRAM + disp_frame_select * 0xA000;
         int address = base_frame_address + (x + y * 240);
         ubyte index = read_VRAM!ubyte(address);
-        return get_pixel_from_color(index);
+        return get_color(index);
     }
 
     void render_bitmap(Pixel delegate(uint, uint) get_pixel_color_from_point) {

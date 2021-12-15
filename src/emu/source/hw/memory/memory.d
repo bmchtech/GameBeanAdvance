@@ -218,6 +218,8 @@ class Memory : IMemory {
         scheduler.tick(1);
         prefetch_buffer.run(1);
         scheduler.process_events();
+        // if (_g_num_log > 0) writefln("idling...");
+        prefetch_buffer.pop_bubble();
     }
 
     pragma(inline, true) uint get_region(uint address) {
@@ -429,12 +431,14 @@ class Memory : IMemory {
             if (address >> 28) { // invalid write
                 clock(1);
                 scheduler.process_events();
+                prefetch_buffer.pop_bubble();
                 return;
             }
 
             // handle waitstates
             uint stalls = calculate_stalls_for_access!T(region, access_type);
             clock(stalls);
+            prefetch_buffer.pop_bubble();
 
             switch ((address >> 24) & 0xF) {
                 case Region.BIOS:         break; // incorrect - implement properly later
@@ -532,6 +536,12 @@ class Memory : IMemory {
         writefln("Savetype found? %x", backup_enabled);
     }
     
+    void finish_current_prefetch() {
+        warning("Finishing prefetch.");
+        scheduler.tick(prefetch_buffer.cycles_till_access_complete);
+        prefetch_buffer.finish_current_prefetch();
+    }
+    
     pragma(inline, true) void set_rgb(uint x, uint y, ubyte r, ubyte g, ubyte b) {
         video_buffer[x][y] = (r << 0) | (g << 8) | (b << 16) | (0xff << 24);
     }
@@ -552,5 +562,9 @@ class Memory : IMemory {
 
     pragma(inline, true) void invalidate_prefetch_buffer() {
         prefetch_buffer.invalidate();
+    }
+
+    pragma(inline, true) bool can_start_new_prefetch() {
+        return prefetch_buffer.can_start_new_prefetch;
     }
 }
