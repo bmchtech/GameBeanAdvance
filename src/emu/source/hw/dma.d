@@ -68,6 +68,10 @@ public:
 
         dma_channels[current_channel].waiting_to_start = false;
 
+        bool source_beginning_in_rom = (dma_channels[current_channel].source_buf >> 24) >= 8;
+        bool dest_beginning_in_rom   = (dma_channels[current_channel].dest_buf   >> 24) >= 8;
+        // if (memory.prefetch_buffer.prefetch_buffer_has_run && (source_beginning_in_rom || dest_beginning_in_rom)) memory.finish_current_prefetch();
+
         if (num_dmas_running == 0) {
             memory.prefetch_buffer.pause();
         }
@@ -80,13 +84,13 @@ public:
         int  source_increment   = 0;
         int  dest_increment     = 0;
 
-        // if (is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
-        //          current_channel,
-        //          bytes_to_transfer,
-        //          dma_channels[current_channel].transferring_words ? "words" : "halfwords",
-        //          dma_channels[current_channel].source_buf,
-        //          dma_channels[current_channel].dest_buf,
-        //          read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
+        if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
+                 current_channel,
+                 bytes_to_transfer,
+                 dma_channels[current_channel].transferring_words ? "words" : "halfwords",
+                 dma_channels[current_channel].source_buf,
+                 dma_channels[current_channel].dest_buf,
+                 read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
 
         switch (dma_channels[current_channel].source_addr_control) {
             case SourceAddrMode.Increment:  source_increment =  1; break;
@@ -113,9 +117,7 @@ public:
         int dest_offset   = 0;
 
         AccessType access_type = AccessType.NONSEQUENTIAL;
-
-        bool source_beginning_in_rom = (dma_channels[current_channel].source_buf >> 24) >= 8;
-        bool dest_beginning_in_rom   = (dma_channels[current_channel].dest_buf   >> 24) >= 8;
+        bool both_in_rom = source_beginning_in_rom && dest_beginning_in_rom;
 
         if (dma_channels[current_channel].transferring_words || is_dma_channel_fifo(current_channel)) {
             bytes_to_transfer *= 4;
@@ -126,6 +128,8 @@ public:
                 if (read_address >= 0x0200_0000) { // make sure we are not accessing DMA open bus
                     dma_channels[current_channel].open_bus_latch = memory.read_word(dma_channels[current_channel].source_buf + source_offset, access_type);
                 }
+
+                // if (both_in_rom) access_type = AccessType.SEQUENTIAL;
                 
                 memory.write_word(dma_channels[current_channel].dest_buf + dest_offset, dma_channels[current_channel].open_bus_latch, access_type);
                     // writefln("Writing %x to %x", dma_channels[current_channel].open_bus_latch, dma_channels[current_channel].dest_buf + dest_offset);
@@ -146,12 +150,16 @@ public:
                     auto shift      = is_aligned * 16;
                     auto read_value = memory.read_halfword(dma_channels[current_channel].source_buf + source_offset, access_type);
 
+                    // if (both_in_rom) access_type = AccessType.SEQUENTIAL;
+
                     dma_channels[current_channel].open_bus_latch &= 0xFFFF << shift;
                     dma_channels[current_channel].open_bus_latch |= read_value << shift;
                     memory.write_halfword(dma_channels[current_channel].dest_buf + dest_offset, read_value, access_type);
                 } else {
                     auto shift = is_aligned * 16;
                     ushort open_bus_value = (dma_channels[current_channel].open_bus_latch >> shift) & 0xFFFF;
+
+                    // if (both_in_rom) access_type = AccessType.SEQUENTIAL;
 
                     memory.write_halfword(dma_channels[current_channel].dest_buf + dest_offset, open_bus_value, access_type);
                 }
@@ -176,7 +184,7 @@ public:
         // Internal time for DMA processing is 2I (normally), or 4I (if both source and destination are in gamepak memory area).
         uint idle_cycles = (source_beginning_in_rom || source_ending_in_rom) &&
                            (dest_beginning_in_rom   || dest_ending_in_rom) ?
-                           0 : 2;
+                           2 : 2;
 
         num_dmas_running--;
         dmas_running_bitfield &= ~(1 << current_channel);

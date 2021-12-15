@@ -55,6 +55,7 @@ public:
 
     void reload_timer_for_the_first_time(int timer_id) {
         // writefln("[%016x] Timer %x reloaded for first time", scheduler.get_current_time_relative_to_cpu(), timer_id);
+        // _g_num_log += 100;
         if (timer_id != 0 && timers[timer_id].countup) return;
 
         timers[timer_id].enabled_for_first_time = true;
@@ -114,10 +115,10 @@ public:
         // use timer increments to get the relevant bits, and mod by the reload value
         return cast(ushort) (cycles_elapsed >> timers[x].increment);
     }
-    
+
+    Timer[4] timers;
 private:
     Memory memory;
-    Timer[4] timers;
 
     uint[4] increment_shifts = [0, 6, 8, 10];
 
@@ -192,7 +193,8 @@ public:
     ubyte read_TMXCNT_L(int target_byte, int x) {
         timers[x].value = calculate_timer_value(x);
         // writefln("[%016x] Calculated timer %x as %x", scheduler.get_current_time_relative_to_cpu(), x, timers[x].value);
-        
+        // _g_num_log = 0;
+
         final switch (target_byte) {
             case 0b0: return (timers[x].value >> 0) & 0xFF;
             case 0b1: return (timers[x].value >> 8) & 0xFF;
