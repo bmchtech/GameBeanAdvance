@@ -80,6 +80,8 @@ class ARM7TDMI : IARM7TDMI {
 
     // returns true if the exception is accepted (or, excepted :P)
     bool exception(const CpuException exception) {
+        // _g_num_log += 10;
+
         // interrupts not allowed if the cpu itself has interrupts disabled.
         if ((exception == CpuException.IRQ && get_nth_bit(*cpsr, 7)) ||
             (exception == CpuException.FIQ && get_nth_bit(*cpsr, 6))) {
@@ -363,7 +365,7 @@ class ARM7TDMI : IARM7TDMI {
 
         // if (*pc == 0x0803_9DD6) { _g_num_log += 100; writefln("CPUSET");}
 
-        // Logger.instance.capture_cpu();
+         Logger.instance.capture_cpu();
         // if ( && !get_nth_bit(*cpsr, 7)) {
             // exception(CpuException.IRQ);
         // }
@@ -380,9 +382,9 @@ class ARM7TDMI : IARM7TDMI {
             error("PC out of range!");
         }
 
-        // if (*pc == 0xC) {
-        //     error("rebooting");
-        // }
+         if (*pc == 0xC) {
+             error("rebooting");
+         }
 
         // if (*pc == 0x08002ff2) {
         //     import host.sdl;
@@ -441,20 +443,21 @@ class ARM7TDMI : IARM7TDMI {
             uint opcode = cast(uint) m_memory.read_halfword(*pc & 0xFFFFFFFE, m_pipeline_access_type, true);
             *pc += 2;
 
-            if (m_pipeline_access_type == AccessType.NONSEQUENTIAL) {
+            if (memory.can_start_new_prefetch() && m_pipeline_access_type == AccessType.NONSEQUENTIAL && *pc >> 24 >= 8) {
                 memory.invalidate_prefetch_buffer();
                 memory.start_new_prefetch((*pc & ~1) >> 1, AccessSize.HALFWORD);
             }
+
 
             return opcode;
         } else {           // arm mode: grab a word and return it
             uint opcode = m_memory.read_word(*pc & 0xFFFFFFFC, m_pipeline_access_type, true);
             *pc += 4;
-
-            if (m_pipeline_access_type == AccessType.NONSEQUENTIAL) {
+            if (memory.can_start_new_prefetch() && m_pipeline_access_type == AccessType.NONSEQUENTIAL && *pc >> 24 >= 8) {
                 memory.invalidate_prefetch_buffer();
                 memory.start_new_prefetch((*pc & ~3) >> 1, AccessSize.WORD);
             }
+
 
             return opcode;
         }
