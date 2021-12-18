@@ -4,6 +4,7 @@ import util;
 import hw.memory;
 import abstracthw.memory;
 
+        import hw.cpu;
 import std.stdio;
 
 class PrefetchBuffer {
@@ -38,6 +39,8 @@ class PrefetchBuffer {
     pragma(inline, true) void run(uint num_cycles) {
         if (!this.enabled || !this.currently_prefetching || this.paused) return;
         prefetch_buffer_has_run = true;
+        if (_g_num_log > 0 ) writefln("has just run");
+        writefln("running for %d, %d remaining", num_cycles, cycles_till_access_complete);
         
         while (this.current_buffer_size < 8 && num_cycles >= cycles_till_access_complete) {
             num_cycles -= cycles_till_access_complete;
@@ -70,6 +73,7 @@ class PrefetchBuffer {
 
     pragma(inline, true) void invalidate() {
         if (this.paused) return;
+            if (_g_num_log > 0 )writefln("INVALID %d", cycles_till_access_complete);
 
         this.current_buffer_size   = 0;
         this.currently_prefetching = false;
@@ -93,6 +97,7 @@ class PrefetchBuffer {
     pragma(inline, true) T request_data_from_rom(T)(uint address, AccessType access_type, bool instruction_access) {
         uint masked_address = address & 0xFF_FFFF;
         prefetch_buffer_has_run = false;
+        if (_g_num_log > 0 ) writefln("has not jsut run :(");
 
         if (!instruction_access && bubble_exists) { 
             bubble_exists = false; 
@@ -124,9 +129,9 @@ class PrefetchBuffer {
 
             // is the requested value at the head of the prefetch buffer?
             if (this.current_buffer_size > 0 && address == address_head) {
-                memory.scheduler.tick(1);
                 this.current_buffer_size -= this.prefetch_access_size == AccessSize.HALFWORD ? 1 : 2;
                 run(1);
+                memory.scheduler.tick(1);
                 this.can_start_new_prefetch = false;
 
                 return read!T(masked_address);
@@ -167,6 +172,9 @@ class PrefetchBuffer {
     }
 
     void pause() {
+        // why???
+        run(2);
+
         this.paused = true;
     }
 

@@ -70,7 +70,7 @@ public:
 
         bool source_beginning_in_rom = (dma_channels[current_channel].source_buf >> 24) >= 8;
         bool dest_beginning_in_rom   = (dma_channels[current_channel].dest_buf   >> 24) >= 8;
-        // if (memory.prefetch_buffer.prefetch_buffer_has_run && (source_beginning_in_rom || dest_beginning_in_rom)) memory.finish_current_prefetch();
+        if (memory.prefetch_buffer.prefetch_buffer_has_run && (source_beginning_in_rom || dest_beginning_in_rom)) memory.finish_current_prefetch();
 
         if (num_dmas_running == 0) {
             memory.prefetch_buffer.pause();
@@ -84,13 +84,13 @@ public:
         int  source_increment   = 0;
         int  dest_increment     = 0;
 
-        if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
-                 current_channel,
-                 bytes_to_transfer,
-                 dma_channels[current_channel].transferring_words ? "words" : "halfwords",
-                 dma_channels[current_channel].source_buf,
-                 dma_channels[current_channel].dest_buf,
-                 read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
+        // if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
+        //          current_channel,
+        //          bytes_to_transfer,
+        //          dma_channels[current_channel].transferring_words ? "words" : "halfwords",
+        //          dma_channels[current_channel].source_buf,
+        //          dma_channels[current_channel].dest_buf,
+        //          read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
 
         switch (dma_channels[current_channel].source_addr_control) {
             case SourceAddrMode.Increment:  source_increment =  1; break;
@@ -129,7 +129,7 @@ public:
                     dma_channels[current_channel].open_bus_latch = memory.read_word(dma_channels[current_channel].source_buf + source_offset, access_type);
                 }
 
-                // if (both_in_rom) access_type = AccessType.SEQUENTIAL;
+                if (both_in_rom) access_type = AccessType.SEQUENTIAL;
                 
                 memory.write_word(dma_channels[current_channel].dest_buf + dest_offset, dma_channels[current_channel].open_bus_latch, access_type);
                     // writefln("Writing %x to %x", dma_channels[current_channel].open_bus_latch, dma_channels[current_channel].dest_buf + dest_offset);
@@ -150,7 +150,7 @@ public:
                     auto shift      = is_aligned * 16;
                     auto read_value = memory.read_halfword(dma_channels[current_channel].source_buf + source_offset, access_type);
 
-                    // if (both_in_rom) access_type = AccessType.SEQUENTIAL;
+                    if (both_in_rom) access_type = AccessType.SEQUENTIAL;
 
                     dma_channels[current_channel].open_bus_latch &= 0xFFFF << shift;
                     dma_channels[current_channel].open_bus_latch |= read_value << shift;
@@ -159,7 +159,7 @@ public:
                     auto shift = is_aligned * 16;
                     ushort open_bus_value = (dma_channels[current_channel].open_bus_latch >> shift) & 0xFFFF;
 
-                    // if (both_in_rom) access_type = AccessType.SEQUENTIAL;
+                    if (both_in_rom) access_type = AccessType.SEQUENTIAL;
 
                     memory.write_halfword(dma_channels[current_channel].dest_buf + dest_offset, open_bus_value, access_type);
                 }
@@ -185,11 +185,12 @@ public:
         uint idle_cycles = (source_beginning_in_rom || source_ending_in_rom) &&
                            (dest_beginning_in_rom   || dest_ending_in_rom) ?
                            2 : 2;
+        // TODO: i have no idea why but idling for 2 cycles in either case makes me pass more dma tests. future me, figure this out.
 
         num_dmas_running--;
         dmas_running_bitfield &= ~(1 << current_channel);
         if (num_dmas_running == 0) {
-            for (int i = 0; i < idle_cycles; i++) memory.idle();
+            memory.clock(idle_cycles);
             memory.prefetch_buffer.resume();
         }
 
