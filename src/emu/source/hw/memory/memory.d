@@ -104,6 +104,7 @@ class Memory : IMemory {
 
     ushort waitcnt;
     void write_WAITCNT(uint target_byte, ubyte data) {
+        writefln("%x %x", target_byte, data);
         
         final switch (target_byte) {
             case 0b0:

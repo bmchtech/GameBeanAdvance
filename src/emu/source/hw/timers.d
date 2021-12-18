@@ -193,7 +193,7 @@ public:
     ubyte read_TMXCNT_L(int target_byte, int x) {
         timers[x].value = calculate_timer_value(x);
         // writefln("[%016x] Calculated timer %x as %x", scheduler.get_current_time_relative_to_cpu(), x, timers[x].value);
-        // _g_num_log = 0;
+        _g_num_log = 0;
 
         final switch (target_byte) {
             case 0b0: return (timers[x].value >> 0) & 0xFF;
