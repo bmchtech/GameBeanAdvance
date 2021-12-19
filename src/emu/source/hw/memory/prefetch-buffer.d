@@ -40,7 +40,7 @@ class PrefetchBuffer {
         if (!this.enabled || !this.currently_prefetching || this.paused) return;
         prefetch_buffer_has_run = true;
         if (_g_num_log > 0 ) writefln("has just run");
-        writefln("running for %d, %d remaining", num_cycles, cycles_till_access_complete);
+        // writefln("running for %d, %d remaining", num_cycles, cycles_till_access_complete);
         
         while (this.current_buffer_size < 8 && num_cycles >= cycles_till_access_complete) {
             num_cycles -= cycles_till_access_complete;
