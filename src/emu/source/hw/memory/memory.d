@@ -368,7 +368,9 @@ class Memory : IMemory {
 
         if (address < SIZE_BIOS) {
             // writefln("Returning %08x", cast(T) bios_open_bus_latch);
-            return cast(T) bios_open_bus_latch;
+            static if (is(T == uint  )) return cast(T) bios_open_bus_latch;
+            static if (is(T == ushort)) return cast(T) (bios_open_bus_latch >> 16 * ((address >> 1) & 1));
+            static if (is(T == ubyte )) return cast(T) (bios_open_bus_latch >> 8  * (address & 3));
         }
         
         // "regular" open bus
