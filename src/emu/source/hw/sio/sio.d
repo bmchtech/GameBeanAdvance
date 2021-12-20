@@ -76,9 +76,9 @@ class SIO {
         this.num_bits_to_transfer--;
 
         if (this.num_bits_to_transfer > 0) {
-            this.start_bit = false;
             schedule_next_value();
         } else {
+            this.start_bit = false;
             if (irq_enable) {
                 interrupt_cpu(Interrupt.SERIAL_COMMUNICATION);
             }
