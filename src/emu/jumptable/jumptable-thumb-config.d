@@ -494,6 +494,28 @@ void run_01000011(ushort opcode) {
 
             for (int i = 0; i < m; i++) cpu.run_idle_cycle();
 
+            if (operand >> 8 == 0xFFFFFF) {
+                auto masked_op = operand & 0xFF;
+                if (masked_op >= 0xC0) cpu.set_flag_C(false);
+                cpu.set_flag_C((masked_op & 0x55) != 0);
+            }
+
+            if (operand >> 16 == 0xFFFF) {
+                auto masked_op = operand & 0xFFFF;
+                if (masked_op >= 0xC000) cpu.set_flag_C(false);
+                cpu.set_flag_C((masked_op & 0x5555) != 0);
+            }
+
+            if (operand >> 24 == 0xFF) {
+                auto masked_op = operand & 0xFFFFFF;
+                if (masked_op >= 0xC00000) cpu.set_flag_C(false);
+                cpu.set_flag_C((masked_op & 0x555555) != 0);
+            }
+
+            else {
+                cpu.set_flag_C((operand >> 30) == 2);
+            }
+
             cpu.regs[rd] *= cpu.regs[rm];
             cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
             break;
