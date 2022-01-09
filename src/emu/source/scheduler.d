@@ -37,12 +37,12 @@ class Scheduler {
     }
 
     ulong add_event_relative_to_clock(void delegate() callback, int delta_cycles, bool can_be_interleaved = false) {
-        return add_event(callback, current_timestamp + delta_cycles, can_be_interleaved);
+        return add_event(callback, current_timestamp + delta_cycles, false);
     }
 
     ulong add_event_relative_to_self(void delegate() callback, int delta_cycles, bool can_be_interleaved = false) {
         // writefln("%d", delta_cycles);
-        return add_event(callback, events[num_events_being_processed - 1].timestamp + delta_cycles, can_be_interleaved);
+        return add_event(callback, events[num_events_being_processed - 1].timestamp + delta_cycles, false);
     }
 
     private ulong add_event(void delegate() callback, ulong timestamp, bool can_be_interleaved) {
@@ -144,7 +144,7 @@ class Scheduler {
 
     uint num_events_being_processed = 0;
     pragma(inline, true) void process_event() {
-        bool can_interleave = (num_events_being_processed > 0) ? events[num_events_being_processed - 1].can_be_interleaved : true;
+        bool can_interleave = num_events_being_processed == 0; // (num_events_being_processed > 0) ? events[num_events_being_processed - 1].can_be_interleaved : true;
         if (!can_interleave) return;
         // if (num_events_being_processed > 0) error("sex");
         // print_schedule();

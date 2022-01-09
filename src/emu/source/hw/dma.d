@@ -84,13 +84,13 @@ public:
         int  source_increment   = 0;
         int  dest_increment     = 0;
 
-        if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
-                 current_channel,
-                 bytes_to_transfer,
-                 dma_channels[current_channel].transferring_words ? "words" : "halfwords",
-                 dma_channels[current_channel].source_buf,
-                 dma_channels[current_channel].dest_buf,
-                 read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
+        // if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
+        //          current_channel,
+        //          bytes_to_transfer,
+        //          dma_channels[current_channel].transferring_words ? "words" : "halfwords",
+        //          dma_channels[current_channel].source_buf,
+        //          dma_channels[current_channel].dest_buf,
+        //          read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
 
         switch (dma_channels[current_channel].source_addr_control) {
             case SourceAddrMode.Increment:  source_increment =  1; break;
@@ -98,6 +98,12 @@ public:
             case SourceAddrMode.Fixed:      source_increment =  0; break;
             case SourceAddrMode.Prohibited: error("Prohibited DMA Source Addr Control Used."); break;
             default: assert(0);
+        }
+
+        if (dma_channels[current_channel].dest_buf == 0x040000A0) {
+            // error("fuck");
+        dmas_running_bitfield &= ~(1 << current_channel);
+            return;
         }
 
         DestAddrMode interpretted_dest_addr_control = is_dma_channel_fifo(current_channel) ? DestAddrMode.Fixed : dma_channels[current_channel].dest_addr_control;
@@ -132,7 +138,7 @@ public:
                 if (both_in_rom) access_type = AccessType.SEQUENTIAL;
                 
                 memory.write_word(dma_channels[current_channel].dest_buf + dest_offset, dma_channels[current_channel].open_bus_latch, access_type);
-                    writefln("Writing %x to %x", dma_channels[current_channel].open_bus_latch, dma_channels[current_channel].dest_buf + dest_offset);
+                    // writefln("Writing %x to %x", dma_channels[current_channel].open_bus_latch, dma_channels[current_channel].dest_buf + dest_offset);
                 source_offset += source_increment;
                 dest_offset   += dest_increment;
 
@@ -161,7 +167,7 @@ public:
                 } else {
                     auto shift = dest_is_aligned * 16;
                     ushort open_bus_value = (dma_channels[current_channel].open_bus_latch >> shift) & 0xFFFF;
-                    writefln("%x", open_bus_value);
+                    // writefln("%x", open_bus_value);
 
                     if (both_in_rom) access_type = AccessType.SEQUENTIAL;
 
