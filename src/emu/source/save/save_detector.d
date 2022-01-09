@@ -2,6 +2,8 @@ module save.save_detector;
 
 import save;
 
+import diag.log;
+
 import std.stdio;
 
 public Savetype detect_savetype(ubyte[] rom) {
@@ -12,13 +14,13 @@ public Savetype detect_savetype(ubyte[] rom) {
 
     if (savetype == Savetype.UNKNOWN) {
         // okay, we're going to have to try to guess the savetype then.
-        writefln("Couldn't find in LUT");
+        log!(LogSource.SAVE)("Couldn't find ROM savetype in the savetype table. Attempting to guess the savetype...");
         savetype = guess_savetype(rom);
     }
 
     if (savetype == Savetype.UNKNOWN) {
         // guess_savetype couldn't find anything? fine, take the default value
-        writefln("Couldn't guess either");
+        log!(LogSource.SAVE)("Couldn't guess the savetype either. Saving will not work for this ROM.");
         savetype = Savetype.NONE;
     }
 

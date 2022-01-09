@@ -17,6 +17,6 @@ public Backup create_savetype(Savetype savetype) {
         case Savetype.Flash_1M_Sanyo:           return new Flash(65536 * 2, true,  2, 0x62, 0x13);
         case Savetype.SRAM_256K:                return new SRAM (32768);
 
-        default: warning("Invalid savetype given"); return new Backup(); // this will never trigger when all saves are finally implemented
+        default:                                return new Backup(); // this will never trigger when all saves are finally implemented
     }
 }

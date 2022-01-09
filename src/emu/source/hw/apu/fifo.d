@@ -19,7 +19,6 @@ class Fifo(T) {
     // pushing to a full fifo does nothing
     void push(T new_data) {
         if (size == fifo_data.length) {
-            // writefln("Too much data :(");
             return;
         }
 

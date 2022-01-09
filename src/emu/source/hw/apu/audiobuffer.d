@@ -66,18 +66,11 @@ extern (C) {
 
         audio_data.mutex.lock_nothrow();
 
-            // try { writefln("Details: %x %x", len, audio_data.buffer[0].offset);} catch (Exception e) {}
-
-            // if (len / 4 > audio_data.buffer[Channel.L].offset) {
-            //     try { writefln("Emulator too slow!"); } catch (Exception e) {}
-            // }
-
             int cut_len = cast(int) (len > (audio_data.buffer[Channel.L].offset * 4) ? (audio_data.buffer[Channel.L].offset * 4) : len);
 
             for (int channel = 0; channel < 2; channel++) {
                 for (int i = 0; i < len / 4; i++) {
                     ushort sample;
-                        // try { writefln("%x %x %x", channel, i, audio_data.buffer[channel].offset); } catch (Exception e) {}
                     if (i < audio_data.buffer[channel].offset) {
                         sample = cast(short) (audio_data.buffer[channel].data[i] * 0x2A);
                         audio_data.buffer[channel].last_sample = sample;
@@ -87,13 +80,8 @@ extern (C) {
                     }
 
                     out_stream[2 * i + channel] = sample;
-                    // try { writefln("%x", 2 * i + channel); } catch (Exception e) {}
                 }
-
-                // try { writefln("%x", out_stream[i]); } catch (Exception e) {}
             }
-
-            // writefln("hi");
 
             for (int channel = 0; channel < 2; channel++) {
                 for (int i = 0; i < audio_data.buffer[channel].offset - (cut_len / 4); i++) {
@@ -102,9 +90,6 @@ extern (C) {
 
                 audio_data.buffer[channel].offset -= cut_len / 4;
             }
-
-        
-        // try { writefln("unlock"); } catch(Exception e) {}
         audio_data.mutex.unlock_nothrow();
     }
 }
@@ -114,6 +99,5 @@ __gshared void push_to_buffer(Channel channel, short[] data) {
     for (int i = 0; i < data.length; i++) {
         _audio_data.buffer[channel].data[_audio_data.buffer[channel].offset + i] = data[i];
     }
-    // writefln("here?");
     _audio_data.buffer[channel].offset += data.length;
 }

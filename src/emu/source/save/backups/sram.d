@@ -60,7 +60,6 @@ class SRAM : Backup {
     }
 
     private void write(uint address, ubyte data) {
-        // writefln("attempted write to %x [%x]", address, data);
         this.data[address & address_mask] = data;
     }
 }
