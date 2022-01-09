@@ -382,9 +382,9 @@ class ARM7TDMI : IARM7TDMI {
             error("PC out of range!");
         }
 
-         if (*pc == 0xC) {
-             error("rebooting");
-         }
+        // if (*pc == 0xC) {
+        //    error("rebooting");
+        // }
 
         // if (*pc == 0x08002ff2) {
         //     import host.sdl;
