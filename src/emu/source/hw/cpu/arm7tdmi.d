@@ -89,9 +89,6 @@ class ARM7TDMI : IARM7TDMI {
         }
 
         CpuMode mode = get_mode_from_exception(exception);
-        // writefln("Interrupt! Setting LR to %x", *pc);
-        // writefln("Interrupt type: %s", get_exception_name(exception));
-        // writefln("IF: %x", m_memory.read_halfword(0x4000202));
 
         register_file[mode.OFFSET + 14] = *pc - 2 * (get_bit_T() ? 2 : 4);
         if (exception == CpuException.IRQ) {
@@ -113,15 +110,12 @@ class ARM7TDMI : IARM7TDMI {
         m_memory.can_read_from_bios = true;
         
         refill_pipeline();
-
-        // writefln("unhalted");
         halted = false;
 
         return true;
     }
 
     void halt() {
-        // writefln("halted");
         halted = true;
     }
 
@@ -227,10 +221,6 @@ class ARM7TDMI : IARM7TDMI {
         } else {
             m_spsr = &regs[17];
         }
-
-        // bool old_bit_T = get_bit_T();
-        // set_bit_T(old_bit_T);
-        // writefln("Linkage: %x", register_file[new_mode.OFFSET + 14]);
 
         bool had_interrupts_disabled = (*cpsr >> 7) & 1;
 
@@ -360,15 +350,8 @@ class ARM7TDMI : IARM7TDMI {
         memory.cycles = 0;
 
         if (interrupt_manager.has_irq()) exception(CpuException.IRQ);
-        
-        // writefln("1");
 
-        // if (*pc == 0x0803_9DD6) { _g_num_log += 100; writefln("CPUSET");}
-
-         Logger.instance.capture_cpu();
-        // if ( && !get_nth_bit(*cpsr, 7)) {
-            // exception(CpuException.IRQ);
-        // }
+        if (Logger.instance) Logger.instance.capture_cpu();
 
         _g_cpu_cycles_remaining = 0;
 
@@ -384,13 +367,6 @@ class ARM7TDMI : IARM7TDMI {
 
         // if (*pc == 0xC) {
         //    error("rebooting");
-        // }
-
-        // if (*pc == 0x08002ff2) {
-        //     import host.sdl;
-        //     writefln("[%016x] [AGS] Breakpoint", _gba.scheduler.get_current_time_relative_to_cpu());
-        //     readln();
-        //     _g_num_log += 10;
         // }
 
         if (_g_num_log > 0) {
@@ -492,7 +468,6 @@ class ARM7TDMI : IARM7TDMI {
     }
 
     void run_idle_cycle() {
-        // if (_g_num_log > 0) writefln("Idling...");
         m_pipeline_access_type = AccessType.NONSEQUENTIAL;
         memory.idle();
     }

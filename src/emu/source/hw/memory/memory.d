@@ -7,6 +7,8 @@ import hw.ppu;
 import save;
 import scheduler;
 
+import diag.log;
+
 import abstracthw.memory;
 
 import util;
@@ -104,8 +106,6 @@ class Memory : IMemory {
 
     ushort waitcnt;
     void write_WAITCNT(uint target_byte, ubyte data) {
-        writefln("%x %x", target_byte, data);
-        
         final switch (target_byte) {
             case 0b0:
                 int ws_sram = (cast(int[]) [4, 3, 2, 8])[get_nth_bits(data, 0, 2)];
@@ -219,7 +219,6 @@ class Memory : IMemory {
         scheduler.tick(1);
         prefetch_buffer.run(1);
         scheduler.process_events();
-        // if (_g_num_log > 0) writefln("idling...");
         prefetch_buffer.pop_bubble();
     }
 
@@ -256,16 +255,13 @@ class Memory : IMemory {
             uint region = get_region(address);
             T read_value;
 
-            // if (_g_num_log) writefln("Read from %x %x", address, scheduler.get_current_time_relative_to_cpu());
             uint stalls = calculate_stalls_for_access!T(region, access_type);
             
             if (region < 0x8) {
                 clock(stalls);
             }
 
-            if (address >> 28) {
-                // writeln(format("OPEN BUS. %x %x", cast(T) (*cpu_pipeline)[1], read_word(0x0300686c)));
-                
+            if (address >> 28) {                
                 read_value = read_open_bus!T(address);
                 scheduler.process_events();
                 dma_recently = false;
@@ -324,8 +320,6 @@ class Memory : IMemory {
 
                 case Region.ROM_SRAM_L:
                 case Region.ROM_SRAM_H:
-
-                    // writefln("attempting backup read at %x", address);
                     if (backup_enabled) {
                         clock(stalls);
                         static if (is(T == uint  )) read_value = backup.read_word    (address);
@@ -360,65 +354,65 @@ class Memory : IMemory {
 
     T read_open_bus(T)(uint address) {
 
-        // _g_num_log += 10;
-
-        // static if(is(T == uint  )) writefln("[WORD] OPEN BUS: %08x %08x", address, *cpu.pc);
-        // static if(is(T == ushort)) writefln("[HALF] OPEN BUS: %08x %08x", address, *cpu.pc);
-        // static if(is(T == ubyte )) writefln("[BYTE] OPEN BUS: %08x %08x", address, *cpu.pc);
-
-        if (address < SIZE_BIOS) {
-            // writefln("Returning %08x", cast(T) bios_open_bus_latch);
-            static if (is(T == uint  )) return cast(T) bios_open_bus_latch;
-            static if (is(T == ushort)) return cast(T) (bios_open_bus_latch >> 16 * ((address >> 1) & 1));
-            static if (is(T == ubyte )) return cast(T) (bios_open_bus_latch >> 8  * (address & 3));
-        }
-        
-        // "regular" open bus
         uint open_bus_value;
-        if (cpu.get_bit_T()) { // THUMB mode
-            uint[2] open_bus_reserve = dma_recently ? [dma_open_bus >> 16, dma_open_bus & 0xFFFF] : cpu.pipeline;
+        if (address < SIZE_BIOS) {
+            static if (is(T == uint  )) open_bus_value = cast(T) bios_open_bus_latch;
+            static if (is(T == ushort)) open_bus_value = cast(T) (bios_open_bus_latch >> 16 * ((address >> 1) & 1));
+            static if (is(T == ubyte )) open_bus_value = cast(T) (bios_open_bus_latch >> 8  * (address & 3));
+        } else {
+            // "regular" open bus
+            if (cpu.get_bit_T()) { // THUMB mode
+                uint[2] open_bus_reserve = dma_recently ? [dma_open_bus >> 16, dma_open_bus & 0xFFFF] : cpu.pipeline;
 
-            switch ((*cpu.pc >> 24) & 0xF) {
-                case Region.WRAM_BOARD:
-                case Region.PALETTE_RAM:
-                case Region.VRAM:
-                case Region.ROM_WAITSTATE_0_L:
-                case Region.ROM_WAITSTATE_0_H:
-                case Region.ROM_WAITSTATE_1_L:
-                case Region.ROM_WAITSTATE_1_H:
-                case Region.ROM_WAITSTATE_2_L:
-                case Region.ROM_WAITSTATE_2_H:
-                case Region.ROM_SRAM_L:
-                case Region.ROM_SRAM_H:
-                    open_bus_value = open_bus_reserve[1] << 16 | open_bus_reserve[1];
-                    break;
+                switch ((*cpu.pc >> 24) & 0xF) {
+                    case Region.WRAM_BOARD:
+                    case Region.PALETTE_RAM:
+                    case Region.VRAM:
+                    case Region.ROM_WAITSTATE_0_L:
+                    case Region.ROM_WAITSTATE_0_H:
+                    case Region.ROM_WAITSTATE_1_L:
+                    case Region.ROM_WAITSTATE_1_H:
+                    case Region.ROM_WAITSTATE_2_L:
+                    case Region.ROM_WAITSTATE_2_H:
+                    case Region.ROM_SRAM_L:
+                    case Region.ROM_SRAM_H:
+                        open_bus_value = open_bus_reserve[1] << 16 | open_bus_reserve[1];
+                        break;
 
-                // TODO: misaligned addresses behave differently, see GBATEK "unpredictable things" section
-                case Region.BIOS:
-                case 0x1: // unmapped
-                case Region.OAM:
-                    open_bus_value = open_bus_reserve[1] << 16 | open_bus_reserve[0];
-                    break;
+                    // TODO: misaligned addresses behave differently, see GBATEK "unpredictable things" section
+                    case Region.BIOS:
+                    case 0x1: // unmapped
+                    case Region.OAM:
+                        open_bus_value = open_bus_reserve[1] << 16 | open_bus_reserve[0];
+                        break;
 
-                // TODO: latch this to emulate properly, see GBATEK "unpredictable things" section
-                case Region.WRAM_CHIP:
-                case Region.IO_REGISTERS:
-                    if ((*cpu.pc & 3) == 0) {
-                        open_bus_value = (open_bus_reserve[1] << 16) | (open_bus_reserve[0] & 0xFFFF);
-                    } else {
-                        open_bus_value = (open_bus_reserve[0] << 16) | (open_bus_reserve[1] & 0xFFFF);
-                    }
-                    break;
+                    // TODO: latch this to emulate properly, see GBATEK "unpredictable things" section
+                    case Region.WRAM_CHIP:
+                    case Region.IO_REGISTERS:
+                        if ((*cpu.pc & 3) == 0) {
+                            open_bus_value = (open_bus_reserve[1] << 16) | (open_bus_reserve[0] & 0xFFFF);
+                        } else {
+                            open_bus_value = (open_bus_reserve[0] << 16) | (open_bus_reserve[1] & 0xFFFF);
+                        }
+                        break;
 
-                default:
-                    // this physically can't happen but ok
-                    error(format("how did this happen: %x", *cpu.pc));
+                    default:
+                        // this physically can't happen but ok
+                        error(format("how did this happen: %x", *cpu.pc));
+                }
+            } else { // arm mode
+                open_bus_value = cpu.pipeline[1];
             }
-        } else { // arm mode
-            open_bus_value = cpu.pipeline[1];
         }
 
-            // writefln("Returning %08x", cast(T) open_bus_value);
+        {
+            import std.conv;
+            static if (is(T == uint))   string size = "word";
+            static if (is(T == ushort)) string size = "half";
+            static if (is(T == ubyte))  string size = "byte";
+            log!(LogSource.MEMORY)("Attempted to read a %s from an invalid region of memory: [0x%08x] = 0x%" ~ to!string(T.sizeof) ~ "x", size, address, cast(T) open_bus_value);
+        }
+
         return cast(T) open_bus_value;
     }
 
@@ -494,7 +488,6 @@ class Memory : IMemory {
 
                 case Region.IO_REGISTERS: 
                     static if (is(T == uint)) {
-                        // writefln("%x", value);
                         mmio.write(address + 0, (value >>  0) & 0xFF);
                         mmio.write(address + 1, (value >>  8) & 0xFF);
                         mmio.write(address + 2, (value >> 16) & 0xFF); 
@@ -536,7 +529,6 @@ class Memory : IMemory {
     void add_backup(Backup backup) {
         this.backup = backup;
         backup_enabled = backup.get_backup_type() != BackupType.NONE;
-        writefln("Savetype found? %x", backup_enabled);
     }
     
     void finish_current_prefetch() {

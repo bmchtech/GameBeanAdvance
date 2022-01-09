@@ -7,6 +7,7 @@ import save;
 
 import diag.cputrace;
 import diag.logger;
+import diag.log;
 
 import util;
 
@@ -114,10 +115,9 @@ class GameBeanSDLHost {
 
         int output = SDL_OpenAudio(&wanted, &received);
         if (output < 0) {
-            writefln("Couldn't open audio: %s\n", SDL_GetError());
+            log!(LogSource.INIT)("Couldn't open audio: %s\n", SDL_GetError());
         } else {
-            writefln("connected. %d %d %d %s", received.freq, received.channels, received.samples, received.format);
-            writefln("[SDL] Audio driver: %s\n", SDL_GetCurrentAudioDriver());
+            log!(LogSource.INIT)("Established SDL audio connection.");
         }
 
         _gba.set_internal_sample_rate(16_780_000 / received.freq);
@@ -138,8 +138,6 @@ class GameBeanSDLHost {
             if (file_exists) save.deserialize(cast(ubyte[]) mm_file[]);
             save.set_backup_file(mm_file);
         }
-
-        writeln("Complete.");
     }
 
     int fps = 0;
@@ -151,8 +149,6 @@ class GameBeanSDLHost {
         int num_batches       = this.sample_rate / _samples_per_callback;
         enum cycles_per_second = 16_780_000;
         _cycles_per_batch  = cycles_per_second / num_batches;
-        writefln("%d batches per second, %d batches per cycle.", num_batches, _cycles_per_batch);
-        writefln("sample rate: %d, samples_per_callback: %d", sample_rate, _samples_per_callback);
 
         // set_audio_buffer_callback(&cycle_gba);
         SDL_PauseAudio(0);
@@ -181,8 +177,6 @@ class GameBeanSDLHost {
         enum cycles_per_log = cycles_per_second * sec_per_log;
         long clockfor_log = 0;
         ulong cycles_since_last_log = 0;
-
-        // writefln("ns for single: %s, ns for batch: %s, ", nsec_per_cycle, nsec_per_gba_cyclebatch);
 
         ulong cycle_timestamp = 0;
 
@@ -215,7 +209,6 @@ class GameBeanSDLHost {
                 ulong cycles_elapsed = _gba.scheduler.get_current_time() - cycle_timestamp;
                 cycle_timestamp = _gba.scheduler.get_current_time();
                 double speed = ((cast(double) cycles_elapsed) / (cast(double) cycles_per_second));
-                // writefln("fps: %x", cast(char*) format("Speed: %f", speed));
                 SDL_SetWindowTitle(window, cast(char*) ("FPS: " ~ format("%d", fps)));
                 // SDL_SetWindowTitle(window, cast(char*) format("Speed: %f", speed));
                 clockfor_log = 0;
@@ -251,7 +244,7 @@ class GameBeanSDLHost {
         cpu_tracing_enabled = true;
         trace = new CpuTrace(_gba.cpu, trace_length);
         Logger.singleton(trace);
-        writefln("Enabled logging");
+        log!(LogSource.INIT)("Enabled CPU trace logging");
     }
 
     void print_trace() {

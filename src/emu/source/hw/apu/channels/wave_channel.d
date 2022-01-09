@@ -37,7 +37,6 @@ class WaveChannel {
 
         cycles_elapsed += delta_cycles;
         while (cycles_elapsed > interval) {
-            // writefln("%x %x", cycles_elapsed, interval);
             wave_ram_index++;
             cycles_elapsed -= interval;
         }
@@ -77,14 +76,10 @@ class WaveChannel {
     }
 
     void set_length(uint n) {
-        import std.stdio;
-        // writefln("set set to %x", n);
         this.cycles_remaining = 65547 * (256 - n);
     }
 
     void set_length_flag(bool length_flag) {
-        import std.stdio;
-        // writefln("set length to %x", length_flag);
         this.length_flag = length_flag;
     }
 
@@ -117,8 +112,6 @@ class WaveChannel {
     }
 
     void write_wave_ram(int index, ubyte value) {
-        import std.stdio;
-        // writefln("%x %x", modify_bank, index);
         wave_ram[modify_bank][2 * index    ] = value >> 4;
         wave_ram[modify_bank][2 * index + 1] = value & 0xF;
     }

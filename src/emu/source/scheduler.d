@@ -41,7 +41,6 @@ class Scheduler {
     }
 
     ulong add_event_relative_to_self(void delegate() callback, int delta_cycles, bool can_be_interleaved = false) {
-        // writefln("%d", delta_cycles);
         return add_event(callback, events[num_events_being_processed - 1].timestamp + delta_cycles, false);
     }
 
@@ -84,13 +83,6 @@ class Scheduler {
         events_in_queue--;
     }
 
-    void print_schedule() {
-        writefln("Schedule:");
-        for (int i = 0; i < events_in_queue; i++) {
-            writefln("%d, %d", events[i].id, events[i].timestamp);
-        }
-    }
-
     pragma(inline, true) void fast_forward() {
         // if (!is_processing_event) {
         //     current_timestamp = events[0].timestamp;
@@ -100,7 +92,6 @@ class Scheduler {
 
     pragma(inline, true) void tick(ulong num_cycles) {
         import host.sdl;
-        if (_g_num_log > 0) writefln("ticked %d times", num_cycles );
         current_timestamp += num_cycles;
     }
 

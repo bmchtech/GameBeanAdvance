@@ -4,7 +4,7 @@ import hw.keyinput;
 
 import util;
 
-// import save_detector;
+import diag.log;
 
 import std.stdio;
 import std.conv;
@@ -47,24 +47,23 @@ void main(string[] args) {
 			error("no sdl library");
 		}
 	}
-	writeln("loaded sdl2");
+	log!(LogSource.INIT)("SDL loaded successfully");
+
 
 	auto mem = new Memory();
-	writeln("init mem");
 
 	bool is_beancomputer = a.option("mod").canFind("beancomputer");
-	if (is_beancomputer) writefln("creating beancomputer");
+	if (is_beancomputer) log!(LogSource.INIT)("BeanComputer enabled");
+
 
 	KeyInput key_input = new KeyInput(mem);
 	auto bios_data = load_rom_as_bytes(a.option("bios"));
 	GBA gba = new GBA(mem, key_input, bios_data, is_beancomputer);
 	if (a.flag("bootscreen")) gba.skip_bios_bootscreen();
-	
-	writeln("init gba");
 
 	// load rom
 	auto rom_path = a.arg("rompath");
-	writefln("loading rom from: %s", rom_path);
+	log!(LogSource.INIT)("Loading rom from: %s.", rom_path);
 
 	// check file
 	if (uriLength(rom_path) > 0) {
@@ -77,18 +76,15 @@ void main(string[] args) {
 
 		auto rom_data = load_rom_as_bytes(dl_path);
 
-		writefln("downloaded %s bytes as %s", rom_data.length, dl_path);
+		log!(LogSource.INIT)("DownloaDed %s bytes as %s", rom_data.length, dl_path);
 
 		gba.load_rom(rom_data);
 	} else if (std.file.exists(rom_path)) {
 		gba.load_rom(rom_path);
 	} else {
-		assert(0, "rom file does not exist!");
+		error("rom file does not exist!");
 	}
 
-	// writefln("UwU: %s", to!string(detect_savetype(gba.memory.rom)));
-
-	writeln("running sdl2 renderer");
 	auto host = new GameBeanSDLHost(gba, to!int(a.option("scale")));
 	host.init();
 
@@ -102,7 +98,7 @@ void main(string[] args) {
 	}
 
 	version (gperf) {
-		writeln("---- STARTED PROFILER ----");
+		log!(LogSource.DEBUG)("Started profiler");
 		ProfilerStart();
 	}
 
@@ -110,7 +106,7 @@ void main(string[] args) {
 
 	version (gperf) {
 		ProfilerStop();
-		writeln("---- ENDED PROFILER ----");
+		log!(LogSource.DEBUG)("Ended profiler");
 	}
 
 	scope (failure)

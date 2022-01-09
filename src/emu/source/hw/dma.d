@@ -34,7 +34,6 @@ public:
     int dmas_available = 0;
 
     pragma(inline, true) void check_dma() {
-        // writefln("handled DMA at %x, %x", scheduler.get_current_time_relative_to_cpu(), scheduler.get_current_time_relative_to_self());
         if (dmas_available > 0) {
             dmas_available--;
             handle_dma();
@@ -62,7 +61,6 @@ public:
         
         if (get_highest_priority_dma_running() < current_channel) {
             // defer this dma to the end of the current dma
-            // writefln("DEFERRING: %d %d", current_channel, dmas_running_bitfield);
             return;
         }
 
@@ -128,7 +126,6 @@ public:
         if (dma_channels[current_channel].transferring_words || is_dma_channel_fifo(current_channel)) {
             bytes_to_transfer *= 4;
             for (int i = 0; i < bytes_to_transfer; i += 4) {
-                // writefln("%x DMA TRANSFER! h%x", current_channel, scheduler.get_current_time_relative_to_cpu());
                 uint read_address = dma_channels[current_channel].source_buf + source_offset;
 
                 if (read_address >= 0x0200_0000) { // make sure we are not accessing DMA open bus
@@ -138,7 +135,6 @@ public:
                 if (both_in_rom) access_type = AccessType.SEQUENTIAL;
                 
                 memory.write_word(dma_channels[current_channel].dest_buf + dest_offset, dma_channels[current_channel].open_bus_latch, access_type);
-                    // writefln("Writing %x to %x", dma_channels[current_channel].open_bus_latch, dma_channels[current_channel].dest_buf + dest_offset);
                 source_offset += source_increment;
                 dest_offset   += dest_increment;
 
@@ -148,7 +144,6 @@ public:
             bytes_to_transfer *= 2;
 
             for (int i = 0; i < bytes_to_transfer; i += 2) {
-                // writefln("%x DMA TRANSFER! %x", current_channel, scheduler.get_current_time_relative_to_cpu());
                 uint read_address  = dma_channels[current_channel].source_buf + source_offset;
                 uint write_address = dma_channels[current_channel].dest_buf   + dest_offset;
                 
@@ -166,7 +161,6 @@ public:
                 } else {
                     auto shift = dest_is_aligned * 16;
                     ushort open_bus_value = (dma_channels[current_channel].open_bus_latch >> shift) & 0xFFFF;
-                    // writefln("%x", open_bus_value);
 
                     if (both_in_rom) access_type = AccessType.SEQUENTIAL;
 
@@ -202,7 +196,6 @@ public:
         }
 
         if (dma_channels[current_channel].irq_on_end) {
-            // writefln("INTERRUPT: %x", current_channel);
             scheduler.add_event_relative_to_clock(() => interrupt_cpu(Interrupt.DMA_0 << current_channel), 2);
         }
 
@@ -215,7 +208,6 @@ public:
 
             enable_dma(current_channel);
         } else {
-            // writefln("DMA Channel %x Finished", current_channel);
             dma_channels[current_channel].enabled = false;
         }
 
@@ -241,7 +233,6 @@ public:
     }
 
     void enable_dma(int dma_id) {
-        // writefln("Enabling DMA %x", dma_id);
         dma_channels[dma_id].num_units = dma_channels[dma_id].num_units & 0x0FFFFFFF;
         if (dma_id == 3) dma_channels[dma_id].num_units &= 0x07FFFFFF;
 
@@ -263,9 +254,7 @@ public:
     pragma(inline, true) void start_dma_channel(int dma_id, bool last) {
         dma_channels[dma_id].waiting_to_start = true;
         dmas_available++;
-        // writefln("Scheduled DMA for %x", scheduler.get_current_time_relative_to_cpu());
         scheduler.add_event_relative_to_clock(&check_dma, 2, true);
-        // writefln("Starting DMA in 2 cycles: %x", dma_id);
 
         dma_channels[dma_id].last = last;
     }
@@ -298,7 +287,6 @@ public:
         }
 
         if (dma_channels[3].dma_start_timing == DMAStartTiming.Special && scanline >= 2 && scanline < 162) {
-            // writefln("SCANLINE! %x", scanline);
             start_dma_channel(3, scanline == 161);
         }
     }
@@ -382,7 +370,6 @@ public:
     }
 
     void write_DMAXCNT_H(int target_byte, ubyte data, int x) {
-        // writefln("RAW: %x %x %x", target_byte, x, data);
         final switch (target_byte) {
             case 0b00:
                 dma_channels[x].dest_addr_control   = cast(DestAddrMode) get_nth_bits(data, 5, 7);
@@ -402,7 +389,6 @@ public:
                     enable_dma(x);
                 }
 
-                // if (x == 1 || x == 2) writefln("Enabled a DMA? %x", dma_channels[x].repeat);
                 break;
         }
     }

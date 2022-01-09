@@ -84,7 +84,6 @@ class NoiseChannel {
         this.reload_value      = counter_width == 1 ? 0x40 : 0x4000;
         this.shifter_xor_value = counter_width == 1 ? 0x60 : 0x6000;
         // reload();
-        writefln("width: %d", counter_width);
         enabled = true;
     }
 
@@ -104,8 +103,6 @@ class NoiseChannel {
         } else {
             interval = ((dividing_ratio * 16) << shift_clock_frequency) * 4;
         }
-
-        writefln("Interval: %d [%d %d %x]", interval, dividing_ratio, shift_clock_frequency, this.reload_value);
     }
 
     // where n is bits 0-5 of SOUND4CNT_L
@@ -114,7 +111,6 @@ class NoiseChannel {
     }
 
     void set_envelope_length(int n) {
-        if (n != 0) writefln("envelope");
         envelope_enabled = n != 0;
         this.envelope_length = 262144 * n;
     }
@@ -125,7 +121,6 @@ class NoiseChannel {
 
     void set_volume(int volume) {
         this.volume = cast(short) volume;
-        // writefln("volume set to %d", volume);
         // enabled = volume != 0;
     }
 

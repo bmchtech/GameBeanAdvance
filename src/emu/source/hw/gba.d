@@ -163,7 +163,6 @@ public:
     // TODO: fix sketchy code
     void write_HALTCNT(ubyte data) {
         if (get_nth_bit(data, 7)) {
-            writefln("youre disabled");
             // idk figure out stopping
             disable();
         } else {
