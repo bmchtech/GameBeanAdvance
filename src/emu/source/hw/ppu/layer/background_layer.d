@@ -74,7 +74,6 @@ module hw.ppu.layer.background_layer;
 
 //         ubyte index = 0;
 //         if (backgrounds[background_id].doesnt_use_color_palettes) {
-//             // writefln("Reading from %x %x", tile_base_address, ((tile & 0x3ff) * 64) + draw_delta.y * 8 + draw_delta.x);
 //             index = memory.read_byte(tile_base_address + ((tile & 0x3ff) * 64) + draw_delta.y * 8 + draw_delta.x);
 //         } else {
 //             index = memory.read_byte(tile_base_address + ((tile & 0x3ff) * 32) + draw_delta.y * 4 + (draw_delta.x / 2));

@@ -23,7 +23,6 @@ class ROM {
         data = new ushort[rom_length];
 
         // this.data = new ushort[this.rom_mask + 1];
-        writeln(format("%x %x %x", this.rom_mask, rom_data.length, data.length));
         for (int i = 0; i < rom_data.length / 2; i++) {
             this.data[i] = (cast(ushort[]) rom_data)[i];
         }

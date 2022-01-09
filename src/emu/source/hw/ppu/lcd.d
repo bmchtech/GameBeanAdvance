@@ -95,8 +95,6 @@ public:
 
         scheduler.add_event_relative_to_self(&on_hblank_end, 68 * 4);
         scheduler.add_event_relative_to_self(&set_hblank_flag, 46);
-
-        // writefln("%x %x", backgrounds[2].internal_reference_x, backgrounds[2].internal_reference_y);
     }
 
     void on_hblank_end() {
@@ -214,12 +212,10 @@ public:
         if (!background.enabled) return;
 
         int bg_scanline = background.is_mosaic ? apparent_bg_scanline : scanline;
-        // writefln("%x %x %x %x", background.p[AffineParameter.A], background.p[AffineParameter.B], background.p[AffineParameter.C], background.p[AffineParameter.D]);
 
         // the coordinates at the topleft of the background that we are drawing
         long texture_point_x = background.internal_reference_x;
         long texture_point_y = background.internal_reference_y;
-        // writefln("%x %x", texture_point_x, texture_point_y);
 
         for (int x = 0; x < 240; x++) {
             // truncate the decimal because texture_point is 8-bit fixed point
@@ -401,8 +397,6 @@ private:
                     
 
                 static if (bpp8) {
-                    // writefln("%x", texture.tile_base_address + ((tile_number & 0x3ff) * 64) );
-
                     ubyte index = read_VRAM!ubyte(texture.tile_base_address + ((tile_number & 0x3ff) * 64) + ofs_y * 8 + ofs_x);
                     
                     if (obj_mode != OBJMode.OBJ_WINDOW) {
@@ -509,8 +503,7 @@ private:
         // the coordinates at the topleft of the background that we are drawing
         long texture_point_x = background.internal_reference_x;
         long texture_point_y = background.internal_reference_y;
-        // writefln("%x, %x", background.internal_reference_x, background.internal_reference_y);
-        // writefln("%x, %x", background.x_offset_rotation, background.y_offset_rotation + (bg_scanline << 8));
+
         // rotation/scaling backgrounds are squares
         int tiles_per_row = BG_ROTATION_SCALING_TILE_DIMENSIONS      [background.screen_size];
         int tile_mask     = BG_ROTATION_SCALING_TILE_DIMENSIONS_MASKS[background.screen_size];
@@ -612,7 +605,6 @@ private:
             bool is_mosaic = get_nth_bit(attribute_0, 12);
 
             ushort obj_scanline = is_mosaic ? apparent_obj_scanline : scanline;
-            // if (topleft_y < 0) writefln("%x %x %x %x", obj_scanline, topleft_y, height, 0);
 
             if (obj_scanline < topleft_y || obj_scanline >= topleft_y + (height << 3)) continue;
 
@@ -824,8 +816,6 @@ public:
     }
 
     void write_WINxH(int target_byte, ubyte data, int x) {
-        // writefln("SCANLINE %x", scanline);
-        // writefln("Window %x [%x : %x] [%x : %x]", x, canvas.windows[x].left, canvas.windows[x].right, canvas.windows[x].top, canvas.windows[x].bottom);
         if (target_byte == 0) {
             canvas.windows[x].right = data;
         } else { // target_byte == 1
@@ -834,7 +824,6 @@ public:
     }
 
     void write_WINxV(int target_byte, ubyte data, int x) {
-        // writefln("Window %x %x %x", target_byte, data, x);
         if (target_byte == 0) {
             canvas.windows[x].bottom = data;
         } else { // target_byte == 1
@@ -946,9 +935,6 @@ public:
                 backgrounds[x].p[cast(int) y] |= data << 8;
                 break;
         }
-
-
-        // writefln("[%04x] %x %x %x", scanline, data, target_byte, y);
     }
 
     void write_BLDCNT(int target_byte, ubyte data) {

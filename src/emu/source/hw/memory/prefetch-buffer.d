@@ -39,8 +39,6 @@ class PrefetchBuffer {
     pragma(inline, true) void run(uint num_cycles) {
         if (!this.enabled || !this.currently_prefetching || this.paused) return;
         prefetch_buffer_has_run = true;
-        if (_g_num_log > 0 ) writefln("has just run");
-        // writefln("running for %d, %d remaining", num_cycles, cycles_till_access_complete);
         
         while (this.current_buffer_size < 8 && num_cycles >= cycles_till_access_complete) {
             num_cycles -= cycles_till_access_complete;
@@ -73,7 +71,6 @@ class PrefetchBuffer {
 
     pragma(inline, true) void invalidate() {
         if (this.paused) return;
-            if (_g_num_log > 0 )writefln("INVALID %d", cycles_till_access_complete);
 
         this.current_buffer_size   = 0;
         this.currently_prefetching = false;
@@ -91,13 +88,11 @@ class PrefetchBuffer {
 
         this.cycles_till_access_complete = memory.waitstates[current_region][AccessType.SEQUENTIAL][prefetch_access_size];
         this.halfway_marker              = this.cycles_till_access_complete >> 1;
-        // writefln("%x %x", address << 1, this.cycles_till_access_complete);
     }
 
     pragma(inline, true) T request_data_from_rom(T)(uint address, AccessType access_type, bool instruction_access) {
         uint masked_address = address & 0xFF_FFFF;
         prefetch_buffer_has_run = false;
-        if (_g_num_log > 0 ) writefln("has not jsut run :(");
 
         if (!instruction_access && bubble_exists) { 
             bubble_exists = false; 
@@ -163,7 +158,6 @@ class PrefetchBuffer {
     }
 
     void set_enabled(bool enabled) {
-        // if(_g_print) writefln("Enabled: %x", enabled);
         if (!this.enabled && enabled) {
             this.invalidate();
         }

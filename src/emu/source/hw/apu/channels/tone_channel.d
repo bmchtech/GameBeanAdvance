@@ -34,7 +34,6 @@ class ToneChannel {
         
         cycles_elapsed += delta_cycles;
         while (cycles_elapsed > interval) {
-            // writefln("%x %x", cycles_elapsed, interval);
             lut_index++;
             cycles_elapsed -= interval;
         }
@@ -61,14 +60,10 @@ class ToneChannel {
     }
 
     void set_length(uint n) {
-        import std.stdio;
-        // writefln("set set to %x", n);
         this.cycles_remaining = 65547 * (64 - n);
     }//
 
     void set_length_flag(bool length_flag) {
-        import std.stdio;
-        // writefln("set length to %x", length_flag);
         this.length_flag = length_flag;
     }//
 

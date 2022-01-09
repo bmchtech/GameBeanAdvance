@@ -46,7 +46,6 @@ class KeyInput {
     }
 
     ubyte read_KEYINPUT(int target_byte) {
-        // writefln("Reading from INP at %x", target_byte);
         if (target_byte == 0) {
             return (keyinput & 0x00FF) >> 0;
         } else {
@@ -76,7 +75,6 @@ class KeyInput {
 
     bool should_interrupt() {
         uint inverted_keyinput = ~keyinput & 0x3FF;
-        writefln("%x %x %x", irq_condition, keycnt, inverted_keyinput);
         final switch (irq_condition) {
             case IRQCondition.OR:
                 return (keycnt & inverted_keyinput) != 0;

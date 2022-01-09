@@ -48,7 +48,6 @@ public:
 
     void on_timer_overflow(int timer_id) {
         for (int i = 0; i < dma_sounds.length; i++) {
-            // writefln("%x %x", i, dma_sounds[i].timer_select);
             if (dma_sounds[i].timer_select == timer_id && (dma_sounds[i].enabled_left || dma_sounds[i].enabled_right)) {
                 pop_one_sample(cast(DirectSound) i);
             }
@@ -91,7 +90,6 @@ private:
     void pop_one_sample(DirectSound fifo_type) {
         if (dma_sounds[fifo_type].fifo.size != 0) {
             dma_sounds[fifo_type].popped_sample = dma_sounds[fifo_type].fifo.pop();
-            // writefln("%x", dma_sounds[fifo_type].popped_sample);
             // push_to_buffer([value]);
         } else {
             dma_sounds[fifo_type].popped_sample = 0;
@@ -137,7 +135,6 @@ private:
         }
         
         // short mixed_sample = cast(short) (dma_sample_A + dma_sample_B + bias * 2);
-        // writefln("Mixing: %x %x", mixed_sample_L, mixed_sample_R);
         _audio_data.mutex.lock_nothrow();
         push_to_buffer(Channel.L, [mixed_sample_L]);
         push_to_buffer(Channel.R, [mixed_sample_R]);
@@ -209,7 +206,6 @@ public:
     }
 
     void write_SOUND3CNT_H(int target_byte, ubyte data) {
-        // writefln("H %x %x", target_byte, data);
         final switch (target_byte) {
             case 0b0:
                 wave_channel.set_length(data);
@@ -226,7 +222,6 @@ public:
     // which will happen in two separate function calls
     uint SOUND3CNT_X_sample_rate;
     void write_SOUND3CNT_X(int target_byte, ubyte data) {
-        // writefln("X %x %x", target_byte, data);
         final switch (target_byte) {
             case 0b0:
                 SOUND3CNT_X_sample_rate = (SOUND3CNT_X_sample_rate & 0x700) | data;
@@ -246,7 +241,6 @@ public:
     }
 
     void write_SOUND4CNT_L(int target_byte, ubyte data) {
-        // writefln("Written to L %x %x", target_byte, data);
         final switch (target_byte) {
             case 0b0:
                 noise_channel.set_length(get_nth_bits(data, 0, 6));
@@ -260,7 +254,6 @@ public:
     }
     
     void write_SOUND4CNT_H(int target_byte, ubyte data) {
-        // writefln("Written to H %x %x", target_byte, data);
         final switch (target_byte) {
             case 0b0:
                 noise_channel.set_dividing_ratio       (get_nth_bits(data, 0, 3));
@@ -308,12 +301,10 @@ public:
     }
 
     void write_FIFO(ubyte data, DirectSound fifo_type) {
-        // writefln("Received FIFO data: %x", data);
         dma_sounds[fifo_type].fifo.push(data);
     }
 
     void write_SOUNDBIAS(int target_byte, ubyte data) {
-        // writefln("BIAS: %x", bias);
         final switch (target_byte) {
             case 0b0:
                 bias = cast(short) ((bias & 0x180) | get_nth_bits(data, 1, 8));
