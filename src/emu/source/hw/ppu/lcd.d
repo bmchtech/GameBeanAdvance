@@ -611,7 +611,7 @@ private:
 
             bool is_mosaic = get_nth_bit(attribute_0, 12);
 
-            uint obj_scanline = is_mosaic ? apparent_obj_scanline : scanline;
+            ushort obj_scanline = is_mosaic ? apparent_obj_scanline : scanline;
             // if (topleft_y < 0) writefln("%x %x %x %x", obj_scanline, topleft_y, height, 0);
 
             if (obj_scanline < topleft_y || obj_scanline >= topleft_y + (height << 3)) continue;
