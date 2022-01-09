@@ -144,7 +144,7 @@ class Scheduler {
 
     uint num_events_being_processed = 0;
     pragma(inline, true) void process_event() {
-        bool can_interleave = num_events_being_processed == 0; // (num_events_being_processed > 0) ? events[num_events_being_processed - 1].can_be_interleaved : true;
+        bool can_interleave = (num_events_being_processed > 0) ? events[num_events_being_processed - 1].can_be_interleaved : true;
         if (!can_interleave) return;
         // if (num_events_being_processed > 0) error("sex");
         // print_schedule();

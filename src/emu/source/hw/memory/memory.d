@@ -540,7 +540,6 @@ class Memory : IMemory {
     }
     
     void finish_current_prefetch() {
-        warning("Finishing prefetch.");
         scheduler.tick(prefetch_buffer.cycles_till_access_complete);
         prefetch_buffer.finish_current_prefetch();
     }

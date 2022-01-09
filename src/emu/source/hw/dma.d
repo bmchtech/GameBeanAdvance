@@ -100,11 +100,11 @@ public:
             default: assert(0);
         }
 
-        if (dma_channels[current_channel].dest_buf == 0x040000A0) {
+        // if (dma_channels[current_channel].dest_buf == 0x040000A0) {
             // error("fuck");
-        dmas_running_bitfield &= ~(1 << current_channel);
-            return;
-        }
+        // dmas_running_bitfield &= ~(1 << current_channel);
+            // return;
+        // }
 
         DestAddrMode interpretted_dest_addr_control = is_dma_channel_fifo(current_channel) ? DestAddrMode.Fixed : dma_channels[current_channel].dest_addr_control;
 
@@ -252,7 +252,11 @@ public:
 
         dma_channels[dma_id].size_buf = dma_channels[dma_id].num_units;
 
-        if (dma_channels[dma_id].dma_start_timing == DMAStartTiming.Immediately) start_dma_channel(dma_id, false);
+        if (dma_channels[dma_id].dma_start_timing == DMAStartTiming.Immediately) {
+            // don't try to start an immediate DMA with repeat mode enabled, looking at you Teen Titans
+            dma_channels[dma_id].repeat = false;
+            start_dma_channel(dma_id, false);
+        }
         else dma_channels[dma_id].waiting_to_start = false;
     }
 
