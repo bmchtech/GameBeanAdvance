@@ -161,8 +161,7 @@ public:
 
                     if (both_in_rom) access_type = AccessType.SEQUENTIAL;
 
-                    dma_channels[current_channel].open_bus_latch &= 0xFFFF << shift;
-                    dma_channels[current_channel].open_bus_latch |= read_value << shift;
+                    dma_channels[current_channel].open_bus_latch = read_value | (read_value << 16);
                     memory.write_halfword(write_address, read_value, access_type);
                 } else {
                     auto shift = dest_is_aligned * 16;
