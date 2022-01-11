@@ -40,6 +40,9 @@ class GameBeanSDLHost {
         gba_batch_enable_mutex = new Mutex();
     }
 
+    uint prog_id;
+    GLint g_AttribLocationVtxColor;
+
     void init() {
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
             assert(0, "sdl init failed");
@@ -97,8 +100,93 @@ class GameBeanSDLHost {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         // SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");
+        
+
+
+
+
+
+        GLuint sv = glCreateShader(GL_VERTEX_SHADER);
+
+        // Get strings for glShaderSource.
+        static import shader.test;
+        const GLchar* codev = shader.test.vertex_shader;
+        glShaderSource(sv, 1, &codev, null);
+        glCompileShader(sv);
+
+        GLint isCompiled = 0;
+        glGetShaderiv(sv, GL_COMPILE_STATUS, &isCompiled);
+        if (isCompiled == GL_FALSE) {
+            GLint maxLength = 300;
+            glGetShaderiv(sv, GL_INFO_LOG_LENGTH, &maxLength);
+            char[300] errorLog;
+
+            // The maxLength includes the NULL character
+            glGetShaderInfoLog(sv, maxLength, &maxLength, &errorLog[0]);
+
+            // Provide the infolog in whatever manor you deem best.
+            // Exit with failure.
+            glDeleteShader(sv); // Don't leak the shader.
+            error(cast(string) errorLog);
+            return;
+        }
+
+        GLuint sf = glCreateShader(GL_FRAGMENT_SHADER);
+
+        // Get strings for glShaderSource.
+        static import shader.test;
+        const GLchar* codef = shader.test.fragment_shader;
+        glShaderSource(sf, 1, &codef, null);
+        glCompileShader(sf);
+
+        isCompiled = 0;
+        glGetShaderiv(sf, GL_COMPILE_STATUS, &isCompiled);
+        if (isCompiled == GL_FALSE) {
+            GLint maxLength = 300;
+            glGetShaderiv(sf, GL_INFO_LOG_LENGTH, &maxLength);
+            char[300] errorLog;
+
+            // The maxLength includes the NULL character
+            glGetShaderInfoLog(sf, maxLength, &maxLength, &errorLog[0]);
+
+            // Provide the infolog in whatever manor you deem best.
+            // Exit with failure.
+            glDeleteShader(sf); // Don't leak the shader.
+            error(cast(string) errorLog);
+            return;
+        }
+
+        prog_id = glCreateProgram();
+        glAttachShader(prog_id, sv);
+        glAttachShader(prog_id, sf);
+
+
+
+        glLinkProgram(prog_id);
+        // GLint x = glGetAttribLocation(prog_id, "vs_color");
 
         pixels = new uint[GBA_SCREEN_WIDTH* GBA_SCREEN_HEIGHT];
+
+        uint y;
+        glGenBuffers(1, &y);
+
+        glBindBuffer(GL_ARRAY_BUFFER, y);
+
+        // glEnableVertexAttribArray(x);
+        // glVertexAttribPointer(x, 4, GL_UNSIGNED_BYTE, GL_FALSE, 4, null);
+
+        glUseProgram(prog_id);
+        
+        glDeleteShader(sv);
+        glDeleteShader(sf);
+
+
+
+
+
+
+
+
 
         SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest"); // scale with pixel-perfect interpolation
         
@@ -244,7 +332,7 @@ class GameBeanSDLHost {
         cpu_tracing_enabled = true;
         trace = new CpuTrace(_gba.cpu, trace_length);
         Logger.singleton(trace);
-        log!(LogSource.INIT)("Enabled CPU trace logging");
+        log!(LogSource.DEBUG)("Enabled CPU trace logging");
     }
 
     void print_trace() {
@@ -282,18 +370,22 @@ private:
         // SDL_RenderPresent(renderer);
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, gl_texture);
         glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,GBA_SCREEN_WIDTH,GBA_SCREEN_HEIGHT,0,GL_RGBA,GL_UNSIGNED_BYTE, cast(void*) pixels);
 
+        // glBufferData(GL_ARRAY_BUFFER, 240*160*4, cast(void*) pixels, GL_STREAM_DRAW);
+        
         glBegin(GL_QUADS);
-        glTexCoord2f(0, 0);
-        glVertex2f(-1.0f, 1.0f);
-        glTexCoord2f(1.0f, 0);
-        glVertex2f(1.0f, 1.0f);
+        glTexCoord2f(0.0f, 1.0f);
+        glVertex2f(-1.0f, -1.0f);
         glTexCoord2f(1.0f, 1.0f);
         glVertex2f(1.0f, -1.0f);
-        glTexCoord2f(0, 1.0f);
-        glVertex2f(-1.0f, -1.0f);
+        glTexCoord2f(1.0f, 0.0f);
+        glVertex2f(1.0f, 1.0f);
+        glTexCoord2f(0.0f, 0.0f);
+        glVertex2f(-1.0f, 1.0f);
         glEnd();
 
         auto glerror = glGetError();
