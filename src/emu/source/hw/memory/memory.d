@@ -414,7 +414,9 @@ class Memory : IMemory {
             log!(LogSource.MEMORY)("Attempted to read a %s from an invalid region of memory: [0x%08x] = 0x%" ~ to!string(T.sizeof) ~ "x", size, address, cast(T) open_bus_value);
         }
 
-        return cast(T) open_bus_value;
+        static if (is(T == uint  )) return cast(T) open_bus_value;
+        static if (is(T == ushort)) return cast(T) (open_bus_value >> 16 * ((address >> 1) & 1));
+        static if (is(T == ubyte )) return cast(T) (open_bus_value >> 8  * (address & 3));
     }
 
     private template write(T) {

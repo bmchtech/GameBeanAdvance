@@ -44,7 +44,10 @@ public:
 
     uint dmas_running_bitfield = 0;
     uint get_highest_priority_dma_running() {
-        return bsf(dmas_running_bitfield);
+        // or with 0x10 because bsf is undefined if the input is 0
+        // which causes issues in some compilations. so i get around
+        // this by orring with 0x10
+        return bsf(dmas_running_bitfield | 0x10);
     }
 
     void handle_dma() {
@@ -82,13 +85,13 @@ public:
         int  source_increment   = 0;
         int  dest_increment     = 0;
 
-        // if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
-        //          current_channel,
-        //          bytes_to_transfer,
-        //          dma_channels[current_channel].transferring_words ? "words" : "halfwords",
-        //          dma_channels[current_channel].source_buf,
-        //          dma_channels[current_channel].dest_buf,
-        //          read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
+        if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
+                 current_channel,
+                 bytes_to_transfer,
+                 dma_channels[current_channel].transferring_words ? "words" : "halfwords",
+                 dma_channels[current_channel].source_buf,
+                 dma_channels[current_channel].dest_buf,
+                 read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
 
         switch (dma_channels[current_channel].source_addr_control) {
             case SourceAddrMode.Increment:  source_increment =  1; break;

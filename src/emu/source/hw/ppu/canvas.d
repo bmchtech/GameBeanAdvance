@@ -256,6 +256,8 @@ class Canvas {
             int total_pixels     = 0;
             bool processed_obj   = false;
 
+            bool force_blend = false;
+
             // i hate it here
             int current_bg_id;
             for (int i = 0; i < 4; i++) {
@@ -269,6 +271,7 @@ class Canvas {
                     if (obj_target_pixel[total_pixels] || obj_semitransparent[x]) {
                         blendable_pixels++;
                         total_pixels++;
+                        force_blend = obj_semitransparent[x];
                         continue;
                     }
                     total_pixels++;
@@ -300,6 +303,7 @@ class Canvas {
 
                 if (obj_target_pixel[total_pixels] || obj_semitransparent[x]) {
                     blendable_pixels++;
+                    force_blend = obj_semitransparent[x];
                 }
                 total_pixels++;
             }
@@ -313,7 +317,7 @@ class Canvas {
             }
             
             Blending effective_blending_type = is_blended(current_window_type) ? blending_type : Blending.NONE;
-
+            if (force_blend) { effective_blending_type = Blending.ALPHA; }
             // now to blend the two values together
             pixels_output[x] = blend(index, blendable_pixels, effective_blending_type);
         }
