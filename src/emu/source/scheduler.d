@@ -37,11 +37,11 @@ class Scheduler {
     }
 
     ulong add_event_relative_to_clock(void delegate() callback, int delta_cycles, bool can_be_interleaved = false) {
-        return add_event(callback, current_timestamp + delta_cycles, false);
+        return add_event(callback, current_timestamp + delta_cycles, can_be_interleaved);
     }
 
     ulong add_event_relative_to_self(void delegate() callback, int delta_cycles, bool can_be_interleaved = false) {
-        return add_event(callback, events[num_events_being_processed - 1].timestamp + delta_cycles, false);
+        return add_event(callback, events[num_events_being_processed - 1].timestamp + delta_cycles, can_be_interleaved);
     }
 
     private ulong add_event(void delegate() callback, ulong timestamp, bool can_be_interleaved) {
