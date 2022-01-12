@@ -134,6 +134,8 @@ class Canvas {
             obj_window         [x]             = false;
             obj_semitransparent[x]             = false;
         }
+
+        writefln("%x %x", blend_a, blend_b);
     }
 
     public pragma(inline, true) void set_obj_window(uint x) {
@@ -216,17 +218,17 @@ class Canvas {
         // in sorted_backgrounds before bg1. insertion sort guarantees this.
 
         // https://www.geeksforgeeks.org/insertion-sort/
-        for (int i = 1; i < 4; i++) {
-            Background temp = sorted_backgrounds[i];
-            int key = temp.priority;
-            int j = i - 1;
+        // for (int i = 1; i < 4; i++) {
+        //     Background temp = sorted_backgrounds[i];
+        //     int key = temp.priority;
+        //     int j = i - 1;
 
-            while (j >= 0 && sorted_backgrounds[j].priority > key) {
-                sorted_backgrounds[j + 1] = sorted_backgrounds[j];
-                j--;
-            }
-            sorted_backgrounds[j + 1] = temp;
-        }
+        //     while (j >= 0 && sorted_backgrounds[j].priority > key) {
+        //         sorted_backgrounds[j + 1] = sorted_backgrounds[j];
+        //         j--;
+        //     }
+        //     sorted_backgrounds[j + 1] = temp;
+        // }
 
 
         // step 2: loop through the backgrounds, and get the first non transparent pixel
@@ -270,9 +272,7 @@ class Canvas {
                     processed_obj = true;
                     if (obj_target_pixel[total_pixels] || obj_semitransparent[x]) {
                         blendable_pixels++;
-                        total_pixels++;
-                        force_blend = obj_semitransparent[x];
-                        continue;
+                        force_blend = obj_semitransparent[x] && total_pixels == 0;
                     }
                     total_pixels++;
                 }
@@ -303,7 +303,7 @@ class Canvas {
 
                 if (obj_target_pixel[total_pixels] || obj_semitransparent[x]) {
                     blendable_pixels++;
-                    force_blend = obj_semitransparent[x];
+                    force_blend = obj_semitransparent[x] && total_pixels == 0;
                 }
                 total_pixels++;
             }
