@@ -134,8 +134,6 @@ class Canvas {
             obj_window         [x]             = false;
             obj_semitransparent[x]             = false;
         }
-
-        writefln("%x %x", blend_a, blend_b);
     }
 
     public pragma(inline, true) void set_obj_window(uint x) {
