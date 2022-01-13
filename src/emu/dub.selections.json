@@ -8,6 +8,8 @@
 		"commandr": "0.2.0",
 		"derelict-imgui": "0.10.0",
 		"derelict-util": "2.0.6",
+		"gamebean-common": {"path":"common"},
+		"gamebean-jumptable": {"path":"jumptable"},
 		"gperftools_d": "0.1.0",
 		"silly": "1.1.1"
 	}

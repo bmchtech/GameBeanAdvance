@@ -106,6 +106,7 @@ class Memory : IMemory {
 
     ushort waitcnt;
     void write_WAITCNT(uint target_byte, ubyte data) {
+        log!(LogSource.DEBUG)("Write to WAITCNT: %x %x", target_byte, data);
         final switch (target_byte) {
             case 0b0:
                 int ws_sram = (cast(int[]) [4, 3, 2, 8])[get_nth_bits(data, 0, 2)];
@@ -411,7 +412,7 @@ class Memory : IMemory {
             static if (is(T == ushort)) string size = "half";
             static if (is(T == ubyte))  string size = "byte";
             import host.sdl;
-            log!(LogSource.MEMORY)("Attempted to read a %s from an invalid region of memory: [0x%08x] = 0x%" ~ to!string(T.sizeof) ~ "x", size, address, cast(T) open_bus_value);
+            // log!(LogSource.MEMORY)("Attempted to read a %s from an invalid region of memory: [0x%08x] = 0x%" ~ to!string(T.sizeof) ~ "x", size, address, cast(T) open_bus_value);
         }
 
         static if (is(T == uint  )) return cast(T) open_bus_value;
