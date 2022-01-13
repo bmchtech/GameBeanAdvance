@@ -24,7 +24,7 @@ class NoiseChannel {
     // private int  sound_length;
     // private bool stop_on_expire;
 
-    private int interval = 1;
+    private int interval = 1000;
 
     private int current_shifter_out = -1;
 
@@ -77,7 +77,7 @@ class NoiseChannel {
     void tick_envelope() {
         this.volume = clamp(this.volume + this.envelope_multiplier, 0, 15);
 
-        envelope_event = scheduler.add_event_relative_to_self(&tick_envelope, envelope_length); 
+        // envelope_event = scheduler.add_event_relative_to_self(&tick_envelope, envelope_length); 
     }
 
     void set_counter_width(int counter_width) {
