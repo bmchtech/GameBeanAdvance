@@ -5,6 +5,9 @@ import abstracthw.memory;
 import hw.gba;
 import hw.apu;
 import hw.interrupts;
+import hw.cpu;
+
+import diag.log;
 
 import util;
 import scheduler;
@@ -71,11 +74,12 @@ public:
 
         bool source_beginning_in_rom = (dma_channels[current_channel].source_buf >> 24) >= 8;
         bool dest_beginning_in_rom   = (dma_channels[current_channel].dest_buf   >> 24) >= 8;
-        if (memory.prefetch_buffer.prefetch_buffer_has_run && (source_beginning_in_rom || dest_beginning_in_rom)) memory.finish_current_prefetch();
+        if (memory.prefetch_buffer.prefetch_buffer_has_run) writefln("E");
 
         if (num_dmas_running == 0) {
             memory.prefetch_buffer.pause();
         }
+        if (memory.prefetch_buffer.prefetch_buffer_has_run && (source_beginning_in_rom || dest_beginning_in_rom)) memory.finish_current_prefetch();
         num_dmas_running++;
         dmas_running_bitfield |= (1 << current_channel);
 
@@ -85,13 +89,13 @@ public:
         int  source_increment   = 0;
         int  dest_increment     = 0;
 
-        // if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
-        //          current_channel,
-        //          bytes_to_transfer,
-        //          dma_channels[current_channel].transferring_words ? "words" : "halfwords",
-        //          dma_channels[current_channel].source_buf,
-        //          dma_channels[current_channel].dest_buf,
-        //          read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
+        if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
+                 current_channel,
+                 bytes_to_transfer,
+                 dma_channels[current_channel].transferring_words ? "words" : "halfwords",
+                 dma_channels[current_channel].source_buf,
+                 dma_channels[current_channel].dest_buf,
+                 read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
 
         switch (dma_channels[current_channel].source_addr_control) {
             case SourceAddrMode.Increment:  source_increment =  1; break;
@@ -100,12 +104,6 @@ public:
             case SourceAddrMode.Prohibited: error("Prohibited DMA Source Addr Control Used."); break;
             default: assert(0);
         }
-
-        // if (dma_channels[current_channel].dest_buf == 0x040000A0) {
-            // error("fuck");
-        // dmas_running_bitfield &= ~(1 << current_channel);
-            // return;
-        // }
 
         DestAddrMode interpretted_dest_addr_control = is_dma_channel_fifo(current_channel) ? DestAddrMode.Fixed : dma_channels[current_channel].dest_addr_control;
 
@@ -258,6 +256,7 @@ public:
         dma_channels[dma_id].waiting_to_start = true;
         dmas_available++;
         scheduler.add_event_relative_to_clock(&check_dma, 2, true);
+        if (_g_num_log > 0) log!(LogSource.DEBUG)("DMA enabled. Scheduled to happen in 2 cycles", num_cycles);
 
         dma_channels[dma_id].last = last;
     }
