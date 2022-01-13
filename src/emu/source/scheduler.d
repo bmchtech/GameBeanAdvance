@@ -6,6 +6,8 @@ import hw.memory;
 
 import std.stdio;
 
+import diag.log;
+
 struct Event {
     void delegate() callback;
     ulong           timestamp;
@@ -92,6 +94,7 @@ class Scheduler {
 
     pragma(inline, true) void tick(ulong num_cycles) {
         import host.sdl;
+        if (_g_num_log > 0) log!(LogSource.DEBUG)("Scheduler ticking for %d cycles", num_cycles);
         current_timestamp += num_cycles;
     }
 

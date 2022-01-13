@@ -4,7 +4,8 @@ import util;
 import hw.memory;
 import abstracthw.memory;
 
-        import hw.cpu;
+import hw.cpu;
+import diag.log;
 import std.stdio;
 
 class PrefetchBuffer {
@@ -38,6 +39,8 @@ class PrefetchBuffer {
 
     pragma(inline, true) void run(uint num_cycles) {
         if (!this.enabled || !this.currently_prefetching || this.paused) return;
+        if (_g_num_log > 0) log!(LogSource.DEBUG)("Prefetch buffer running for %d cycles. %d remaining till access complete", num_cycles, cycles_till_access_complete);
+        
         prefetch_buffer_has_run = true;
         
         while (this.current_buffer_size < 8 && num_cycles >= cycles_till_access_complete) {
@@ -66,7 +69,14 @@ class PrefetchBuffer {
     }
 
     pragma(inline, true) void finish_current_prefetch() {
+        if (_g_num_log > 0) log!(LogSource.DEBUG)("Finishing prefetch.");
+        bool was_paused = this.paused;
+        this.paused = false;
         run(cycles_till_access_complete);
+        import host.sdl;
+        _gba.scheduler.tick(cycles_till_access_complete);
+
+        this.paused = was_paused;
     }
 
     pragma(inline, true) void invalidate() {
@@ -92,6 +102,7 @@ class PrefetchBuffer {
 
     pragma(inline, true) T request_data_from_rom(T)(uint address, AccessType access_type, bool instruction_access) {
         uint masked_address = address & 0xFF_FFFF;
+        if (_g_num_log > 0) log!(LogSource.DEBUG)("Requesting data from ROM at address %x. Instruction access: %s", address, instruction_access ? "yes" : "no");
         prefetch_buffer_has_run = false;
 
         if (!instruction_access && bubble_exists) { 
@@ -167,7 +178,7 @@ class PrefetchBuffer {
 
     void pause() {
         // why???
-        run(2);
+        // run(2);
 
         this.paused = true;
     }
