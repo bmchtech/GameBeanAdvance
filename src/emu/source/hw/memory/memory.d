@@ -167,6 +167,7 @@ class Memory : IMemory {
     }
 
     uint bios_open_bus_latch = 0;
+    uint iwram_latch = 0;
     
     this() {
         video_buffer = new uint[][](240, 160);
@@ -276,7 +277,26 @@ class Memory : IMemory {
             switch (region) {
                 case 0x1: read_value = read_open_bus!T(address); break;// nothing is mapped here
                 case Region.WRAM_BOARD:   read_value = (cast(T*) wram_board) [(address & (SIZE_WRAM_BOARD  - 1)) >> shift]; break;
-                case Region.WRAM_CHIP:    read_value = (cast(T*) wram_chip)  [(address & (SIZE_WRAM_CHIP   - 1)) >> shift]; break;
+
+                case Region.WRAM_CHIP:
+                    read_value = (cast(T*) wram_chip)  [(address & (SIZE_WRAM_CHIP   - 1)) >> shift]; 
+                    
+                    static if (is(T == uint)) { 
+                        iwram_latch = read_value;
+                    }
+
+                    static if (is(T == ushort)) {
+                        iwram_latch &= ~(0xFFFF     << (((address & 2) >> 1) * 16));
+                        iwram_latch |=   read_value << (((address & 2) >> 1) * 16);
+                    }
+
+                    static if (is(T == ubyte))  {
+                        iwram_latch &= ~(0xFF       << ((address & 3) * 8));
+                        iwram_latch |=   read_value << ((address & 3) * 8);
+                    }
+
+                    break;
+
                 case Region.PALETTE_RAM:  read_value = (cast(T*) palette_ram)[(address & (SIZE_PALETTE_RAM - 1)) >> shift]; break;
                 
                 case Region.VRAM:
@@ -379,15 +399,16 @@ class Memory : IMemory {
                         open_bus_value = open_bus_reserve[1] << 16 | open_bus_reserve[1];
                         break;
 
-                    // TODO: misaligned addresses behave differently, see GBATEK "unpredictable things" section
                     case Region.BIOS:
                     case 0x1: // unmapped
                     case Region.OAM:
                         open_bus_value = open_bus_reserve[1] << 16 | open_bus_reserve[0];
                         break;
 
-                    // TODO: latch this to emulate properly, see GBATEK "unpredictable things" section
                     case Region.WRAM_CHIP:
+                        open_bus_value = iwram_latch;
+                        break;
+
                     case Region.IO_REGISTERS:
                         if ((*cpu.pc & 3) == 0) {
                             open_bus_value = (open_bus_reserve[1] << 16) | (open_bus_reserve[0] & 0xFFFF);
@@ -444,7 +465,24 @@ class Memory : IMemory {
                 case Region.BIOS:         break; // incorrect - implement properly later
                 case 0x1:                 break; // nothing is mapped here
                 case Region.WRAM_BOARD:   (cast(T*) wram_board) [(address & (SIZE_WRAM_BOARD  - 1)) >> shift] = value; break;
-                case Region.WRAM_CHIP:    (cast(T*) wram_chip)  [(address & (SIZE_WRAM_CHIP   - 1)) >> shift] = value; break;
+                case Region.WRAM_CHIP:    
+                    (cast(T*) wram_chip)  [(address & (SIZE_WRAM_CHIP   - 1)) >> shift] = value; 
+                    
+                    static if (is(T == uint)) { 
+                        iwram_latch = value;
+                    }
+
+                    static if (is(T == ushort)) {
+                        iwram_latch &= ~(0xFFFF     << (((address & 2) >> 1) * 16));
+                        iwram_latch |=   value << (((address & 2) >> 1) * 16);
+                    }
+
+                    static if (is(T == ubyte))  {
+                        iwram_latch &= ~(0xFF       << ((address & 3) * 8));
+                        iwram_latch |=   value << ((address & 3) * 8);
+                    }
+
+                    break;
                 case Region.PALETTE_RAM:  
                     uint palette_ram_address = (address & (SIZE_PALETTE_RAM - 1)) >> shift;
 
