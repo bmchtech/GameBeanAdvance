@@ -120,6 +120,7 @@ class PrefetchBuffer {
 
             // is the requested value currently being prefetched?
             if (address == this.current_address) {
+                if (_g_num_log > 0) log!(LogSource.DEBUG)("Obtaining data from current prefetch.");
                 memory.scheduler.tick(this.cycles_till_access_complete);
 
                 this.invalidate();
@@ -135,6 +136,7 @@ class PrefetchBuffer {
 
             // is the requested value at the head of the prefetch buffer?
             if (this.current_buffer_size > 0 && address == address_head) {
+                if (_g_num_log > 0) log!(LogSource.DEBUG)("Obtaining data from prefetch head.");
                 this.current_buffer_size -= this.prefetch_access_size == AccessSize.HALFWORD ? 1 : 2;
                 run(1);
                 memory.scheduler.tick(1);
@@ -144,6 +146,7 @@ class PrefetchBuffer {
             }
 
             // oh, ok. it's not in the prefetch buffer
+                if (_g_num_log > 0) log!(LogSource.DEBUG)("Data missing from prefetch buffer.");
             this.invalidate();
             this.start_new_prefetch(current_address + 1, this.prefetch_access_size);
             this.can_start_new_prefetch = true;
@@ -178,7 +181,7 @@ class PrefetchBuffer {
 
     void pause() {
         // why???
-        // run(2);
+        run(1);
 
         this.paused = true;
     }

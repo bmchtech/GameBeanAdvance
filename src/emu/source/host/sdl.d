@@ -222,9 +222,11 @@ class GameBeanSDLHost {
 
             bool file_exists = "test.beansave".exists;
 
- 	        MmFile mm_file = new MmFile("test.beansave", MmFile.Mode.readWrite, save.get_backup_size(), null, 0);
-            if (file_exists) save.deserialize(cast(ubyte[]) mm_file[]);
-            save.set_backup_file(mm_file);
+            if (file_exists) {
+ 	            MmFile mm_file = new MmFile("test.beansave", MmFile.Mode.readWrite, save.get_backup_size(), null, 0);
+                save.deserialize(cast(ubyte[]) mm_file[]);
+                save.set_backup_file(mm_file);
+            }
         }
     }
 
