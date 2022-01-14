@@ -102,7 +102,7 @@ class PrefetchBuffer {
 
     pragma(inline, true) T request_data_from_rom(T)(uint address, AccessType access_type, bool instruction_access) {
         uint masked_address = address & 0xFF_FFFF;
-        if (_g_num_log > 0) log!(LogSource.DEBUG)("Requesting data from ROM at address %x. Instruction access: %s", address, instruction_access ? "yes" : "no");
+        if (_g_num_log > 0) log!(LogSource.DEBUG)("Requesting data from ROM at address %x. [%s, %s]", address, instruction_access ? "Instruction" : "Data", access_type == AccessType.NONSEQUENTIAL ? "Nonsequential" : "Sequential");
         prefetch_buffer_has_run = false;
 
         if (!instruction_access && bubble_exists) { 
