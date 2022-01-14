@@ -180,9 +180,6 @@ class PrefetchBuffer {
     }
 
     void pause() {
-        // why???
-        run(1);
-
         this.paused = true;
     }
 
