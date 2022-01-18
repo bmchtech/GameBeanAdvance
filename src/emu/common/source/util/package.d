@@ -13,6 +13,10 @@ public {
     import std.format;
 }
 
+alias Word = uint;
+alias Half = ushort;
+alias Byte = ubyte;
+
 enum YELLOW = "\033[33m";
 enum RED = "\033[31m";
 enum RESET = "\033[0m";
@@ -105,4 +109,20 @@ class NSStopwatch {
 
     MonoTimeImpl!(ClockType.normal) last_ticks;
     long total_time = 0;
+}
+
+pragma(inline, true) bool likely(bool value) {
+    version (LDC) {
+        llvm_expect!bool(value, true);
+    }
+    
+    return value;
+}
+
+pragma(inline, true) bool unlikely(bool value) {
+    version (LDC) {
+        llvm_expect!bool(value, false);
+    }
+    
+    return value;
 }

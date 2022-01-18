@@ -232,7 +232,7 @@ class Memory : IMemory {
         return read!ubyte(address, access_type, instruction_access);
     }
 
-    pragma(inline, true) ushort read_halfword(uint address, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {    
+    pragma(inline, true) ushort read_half(uint address, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {    
         return read!ushort(address, access_type, instruction_access);
     }
 
@@ -244,7 +244,7 @@ class Memory : IMemory {
         write!ubyte(address, value, access_type, instruction_access);
     }
 
-    pragma(inline, true) void write_halfword(uint address, ushort value, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
+    pragma(inline, true) void write_half(uint address, ushort value, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
         write!ushort(address, value, access_type, instruction_access);
     }
 
@@ -344,7 +344,7 @@ class Memory : IMemory {
                     if (backup_enabled) {
                         clock(stalls);
                         static if (is(T == uint  )) read_value = backup.read_word    (address);
-                        static if (is(T == ushort)) read_value = backup.read_halfword(address);
+                        static if (is(T == ushort)) read_value = backup.read_half(address);
                         static if (is(T == ubyte )) read_value = backup.read_byte    (address); 
                         break;
                     }
@@ -382,10 +382,10 @@ class Memory : IMemory {
             static if (is(T == ubyte )) open_bus_value = cast(T) (bios_open_bus_latch >> 8  * (address & 3));
         } else {
             // "regular" open bus
-            if (cpu.get_bit_T()) { // THUMB mode
-                uint[2] open_bus_reserve = dma_recently ? [dma_open_bus >> 16, dma_open_bus & 0xFFFF] : cpu.pipeline;
+            if (cpu.instruction_set == InstructionSet.THUMB) { // THUMB mode
+                uint[2] open_bus_reserve = dma_recently ? [dma_open_bus >> 16, dma_open_bus & 0xFFFF] : [cpu.get_pipeline_entry(0), cpu.get_pipeline_entry(1)];
 
-                switch ((*cpu.pc >> 24) & 0xF) {
+                switch ((cpu.get_reg(15) >> 24) & 0xF) {
                     case Region.WRAM_BOARD:
                     case Region.PALETTE_RAM:
                     case Region.VRAM:
@@ -411,7 +411,7 @@ class Memory : IMemory {
                         break;
 
                     case Region.IO_REGISTERS:
-                        if ((*cpu.pc & 3) == 0) {
+                        if ((cpu.get_reg(pc) & 3) == 0) {
                             open_bus_value = (open_bus_reserve[1] << 16) | (open_bus_reserve[0] & 0xFFFF);
                         } else {
                             open_bus_value = (open_bus_reserve[0] << 16) | (open_bus_reserve[1] & 0xFFFF);
@@ -420,10 +420,10 @@ class Memory : IMemory {
 
                     default:
                         // this physically can't happen but ok
-                        error(format("how did this happen: %x", *cpu.pc));
+                        error(format("how did this happen"));
                 }
             } else { // arm mode
-                open_bus_value = cpu.pipeline[1];
+                open_bus_value = cpu.get_pipeline_entry(1);
             }
         }
 
@@ -433,7 +433,7 @@ class Memory : IMemory {
             static if (is(T == ushort)) string size = "half";
             static if (is(T == ubyte))  string size = "byte";
             import host.sdl;
-            // log!(LogSource.MEMORY)("Attempted to read a %s from an invalid region of memory: [0x%08x] = 0x%" ~ to!string(T.sizeof) ~ "x", size, address, cast(T) open_bus_value);
+            log!(LogSource.MEMORY)("Attempted to read a %s from an invalid region of memory: [0x%08x] = 0x%" ~ to!string(T.sizeof) ~ "x", size, address, cast(T) open_bus_value);
         }
 
         static if (is(T == uint  )) return cast(T) open_bus_value;
@@ -547,7 +547,7 @@ class Memory : IMemory {
                 case Region.ROM_SRAM_H:
                     if (backup_enabled) {
                         static if (is(T == uint  )) return backup.write_word    (address, value);
-                        static if (is(T == ushort)) return backup.write_halfword(address, value);
+                        static if (is(T == ushort)) return backup.write_half(address, value);
                         static if (is(T == ubyte )) return backup.write_byte    (address, value);
                     }
                     break;

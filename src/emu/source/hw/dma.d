@@ -75,10 +75,11 @@ public:
         bool source_beginning_in_rom = (dma_channels[current_channel].source_buf >> 24) >= 8;
         bool dest_beginning_in_rom   = (dma_channels[current_channel].dest_buf   >> 24) >= 8;
         
+        if (memory.prefetch_buffer.prefetch_buffer_has_run) writefln("E");
         if (memory.prefetch_buffer.prefetch_buffer_has_run && (source_beginning_in_rom || dest_beginning_in_rom)) memory.finish_current_prefetch();
 
         if (num_dmas_running == 0) {
-            memory.prefetch_buffer.pause();
+            // memory.prefetch_buffer.pause();
         }
         num_dmas_running++;
         dmas_running_bitfield |= (1 << current_channel);
@@ -153,19 +154,19 @@ public:
 
                 if (read_address >= 0x0200_0000) { // make sure we are not accessing DMA open bus
                     auto shift      = source_is_aligned * 16;
-                    auto read_value = memory.read_halfword(read_address, access_type);
+                    auto read_value = memory.read_half(read_address, access_type);
 
                     if (both_in_rom) access_type = AccessType.SEQUENTIAL;
 
                     dma_channels[current_channel].open_bus_latch = read_value | (read_value << 16);
-                    memory.write_halfword(write_address, read_value, access_type);
+                    memory.write_half(write_address, read_value, access_type);
                 } else {
                     auto shift = dest_is_aligned * 16;
                     ushort open_bus_value = (dma_channels[current_channel].open_bus_latch >> shift) & 0xFFFF;
 
                     if (both_in_rom) access_type = AccessType.SEQUENTIAL;
 
-                    memory.write_halfword(write_address, open_bus_value, access_type);
+                    memory.write_half(write_address, open_bus_value, access_type);
                 }
 
                 source_offset += source_increment;
@@ -192,8 +193,8 @@ public:
         num_dmas_running--;
         dmas_running_bitfield &= ~(1 << current_channel);
         if (num_dmas_running == 0) {
+            // memory.prefetch_buffer.resume();
             memory.clock(idle_cycles);
-            memory.prefetch_buffer.resume();
         }
 
         if (dma_channels[current_channel].irq_on_end) {

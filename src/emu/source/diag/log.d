@@ -30,9 +30,13 @@ void log(LogSource log_source, Char, A...)(scope const(Char)[] fmt, A args) {
     import std.format.write : formattedWrite;
     import std.conv;
 
-    ulong timestamp = _gba ? _gba.scheduler.get_current_time_relative_to_cpu() : 0;
-    writef("[%016x] %s: ", timestamp, pad_string_right!(to!string(log_source), logsource_padding));
-    writefln(fmt, args);
+
+    static if (log_source == LogSource.DEBUG) return;
+    else {
+        ulong timestamp = _gba ? _gba.scheduler.get_current_time_relative_to_cpu() : 0;
+        writef("[%016x] %s: ", timestamp, pad_string_right!(to!string(log_source), logsource_padding));
+        writefln(fmt, args);
+    }
 }
 
 static string pad_string_right(string s, ulong pad)() {

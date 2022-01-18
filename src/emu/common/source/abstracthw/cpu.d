@@ -3,53 +3,45 @@ module abstracthw.cpu;
 import std.stdio;
 import abstracthw.memory;
 
+import std.meta;
+import util;
+
+alias pc = Alias!15;
+alias lr = Alias!14;
+alias sp = Alias!13;
+
+alias Reg = int;
+
+enum Flag {
+    N = 31,
+    Z = 30,
+    C = 29,
+    V = 28,
+    T = 5
+}
+
 interface IARM7TDMI {
-    uint read_reg(int reg);
-    void write_reg(int reg, uint value);
-    uint read_reg__lower(int reg);
-    void write_reg__lower(int reg, uint value);
-    void set_flag_N(bool condition);
-    void set_flag_Z(bool condition);
-    void set_flag_C(bool condition);
-    void set_flag_V(bool condition);
-    void set_bit_T(bool condition);
-    bool get_flag_N();
-    bool get_flag_Z();
-    bool get_flag_C();
-    bool get_flag_V();
-    bool get_bit_T();
+    Word           get_reg(int i);
+    void           set_reg(int i, Word value);
+    Word           get_cpsr();
+    InstructionSet get_instruction_set();
+    Word           get_pipeline_entry(int i);
+    bool           check_cond(uint cond);
+    void           refill_pipeline();
+    void           set_flag(Flag flag, bool value);
+    bool           get_flag(Flag flag);
 
-    uint LSL(uint value, ubyte shift);
-    uint LSR(uint value, ubyte shift);
-    uint ROR(uint value, ubyte shift);
-    uint ASR(uint value, ubyte shift);
+    Word           read_word(Word address, AccessType access_type);
+    Half           read_half(Word address, AccessType access_type);
+    Byte           read_byte(Word address, AccessType access_type);
 
-    void refill_pipeline();
-    void update_mode();
-    bool in_a_privileged_mode();
-    bool has_spsr();
-    void run_idle_cycle();
+    void           write_word(Word address, Word value, AccessType access_type);
+    void           write_half(Word address, Half value, AccessType access_type);
+    void           write_byte(Word address, Byte value, AccessType access_type);
 
-    bool exception(const CpuException exception);
+    void           run_idle_cycle();
+    void           set_pipeline_access_type(AccessType access_type);
 
-    @property uint[2] pipeline();
-    @property AccessType pipeline_access_type();
-    @property AccessType pipeline_access_type(AccessType access_type);
-
-    @property uint* pc();
-    @property uint* lr();
-    @property uint* sp();
-    @property uint* cpsr();
-    @property uint* spsr();
-
-    @property uint shifter_operand();
-    @property uint shifter_operand(uint value);
-    @property bool shifter_carry_out();
-    @property bool shifter_carry_out(bool value);
-
-    @property uint[] register_file();
-    @property uint[] regs();
-    @property IMemory memory();
 }
 
 // CPU modes will be described as the following:
@@ -66,6 +58,11 @@ enum MODE_IRQ = CpuMode(0b10010, 0b011001111111111111, 18 * 4);
 enum MODE_FIQ = CpuMode(0b10001, 0b011000000011111111, 18 * 5);
 
 enum NUM_CPU_MODES = 7;
+
+enum InstructionSet {
+    ARM,
+    THUMB
+}
 
 struct CpuMode {
     this(const(int) c, const(int) r, const(int) o) {
@@ -89,13 +86,8 @@ enum CpuException {
     FIQ
 }
 
-enum CpuType {
-    ARM,
-    THUMB,
-}
-
 struct CpuState {
-    CpuType type;
+    InstructionSet instruction_set;
     uint opcode;
     uint[16] regs;
     uint mode;
@@ -104,27 +96,27 @@ struct CpuState {
 
 CpuState get_cpu_state(IARM7TDMI cpu) {
     CpuState cpu_state;
-    cpu_state.type = cpu.get_bit_T() ? CpuType.THUMB : CpuType.ARM;
-    cpu_state.opcode = cpu.pipeline[0];
-    cpu_state.mode = *cpu.cpsr;
-    cpu_state.mem_0x03000003 = 0; // cpu.memory.read_byte(0x03000003);
+    cpu_state.instruction_set = cpu.get_instruction_set();
+    cpu_state.opcode = cpu.get_pipeline_entry(0);
+    cpu_state.mode = cpu.get_cpsr();
+    // cpu_state.mem_0x03000003 = memory.read_byte(0x03000003);
 
     for (int i = 0; i < 16; i++) {
-        cpu_state.regs[i] = cpu.regs[i];
+        cpu_state.regs[i] = cpu.get_reg(i);
     }
 
-    cpu_state.regs[15] -= cpu.get_bit_T() ? 4 : 8;
+    cpu_state.regs[15] -= cpu_state.instruction_set == InstructionSet.ARM ? 4 : 2;
 
     return cpu_state;
 }
 
-void set_cpu_state(IARM7TDMI cpu, CpuState cpu_state) {
+void set_cpu_state(IARM7TDMI cpu, IMemory memory, CpuState cpu_state) {
     for (int i = 0; i < 16; i++) {
-        cpu.regs[i] = cpu_state.regs[i];
+        cpu.set_reg(i, cpu_state.regs[i]);
     }
 
     // *cpu.cpsr = (*cpu.cpsr & 0xFFFFFFE0) | (cpu_state.mode & 0x1F);
     // cpu.update_mode();
 
-    cpu.memory.write_byte(cast(uint) 0x03000003, cast(ubyte) cpu_state.mem_0x03000003);
+    memory.write_byte(cast(uint) 0x03000003, cast(ubyte) cpu_state.mem_0x03000003);
 }
