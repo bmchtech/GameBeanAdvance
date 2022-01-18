@@ -6,5 +6,3 @@ license "proprietary"
 targetType "library"
 
 dependency "gamebean-common" path="../common"
-
-preGenerateCommands "bash ./generate_jumptables.sh"

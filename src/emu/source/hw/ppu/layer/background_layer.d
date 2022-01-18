@@ -70,7 +70,7 @@ module hw.ppu.layer.background_layer;
 //                                  texture_point.y >> 3);
 
 //         int tile_address = get_tile_address__text(tile_point.x, tile_point.y, BG_TEXT_SCREENS_DIMENSIONS[backgrounds[background_id].screen_size][0]);
-//         int tile = memory.read_halfword(screen_base_address + tile_address);
+//         int tile = memory.read_half(screen_base_address + tile_address);
 
 //         ubyte index = 0;
 //         if (backgrounds[background_id].doesnt_use_color_palettes) {
@@ -88,13 +88,13 @@ module hw.ppu.layer.background_layer;
 //         draw_pos.full_pos++;
         
 //         if (index == 0) return Pixel(0, 0, 0, true);
-//         return get_pixel_from_color(memory.read_halfword(memory.OFFSET_PALETTE_RAM + index * 2), false);
+//         return get_pixel_from_color(memory.read_half(memory.OFFSET_PALETTE_RAM + index * 2), false);
 
 //         // for (int tile_x_offset = 0; tile_x_offset < 32 + 1; tile_x_offset++) {
 
 //         //     // get the tile address and read it from memory
 //         //     int tile_address = get_tile_address__text(topleft_tile_x + tile_x_offset, topleft_tile_y, BG_TEXT_SCREENS_DIMENSIONS[background.screen_size][0]);
-//         //     int tile = memory.read_halfword(screen_base_address + tile_address);
+//         //     int tile = memory.read_half(screen_base_address + tile_address);
 
 //         //     int draw_x = tile_x_offset * 8 - tile_dx;
 //         //     int draw_y = scanline;
