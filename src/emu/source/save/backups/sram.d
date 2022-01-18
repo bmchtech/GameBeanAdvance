@@ -20,7 +20,7 @@ class SRAM : Backup {
         return (read_data << 24) | (read_data << 16) | (read_data << 8) | read_data;
     }
 
-    override ushort read_halfword(uint address) { 
+    override ushort read_half(uint address) { 
         ubyte read_data = read(address);
         return (read_data << 8) | read_data;
     }
@@ -34,7 +34,7 @@ class SRAM : Backup {
         write(address, written_data); 
     }
 
-    override void write_halfword(uint address, ushort data) { 
+    override void write_half(uint address, ushort data) { 
         ubyte written_data = (data >> ((address & 1) * 8)) & 0xFF;
         write(address, written_data);
     }

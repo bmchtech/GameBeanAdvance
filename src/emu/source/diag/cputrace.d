@@ -27,7 +27,7 @@ class CpuTrace : ICpuTrace {
         for (int i = 0; i < trace.length; i++) {
             writef("[%04d]", trace.length - i);
             
-            if (trace[i].type == CpuType.THUMB) {
+            if (trace[i].instruction_set == InstructionSet.THUMB) {
                 write("THUMB     ");
                 write(format("%04x | ", trace[i].opcode));
             } else {

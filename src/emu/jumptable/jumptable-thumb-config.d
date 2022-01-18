@@ -565,13 +565,13 @@ void run_01000101(ushort opcode) {
     int rm_value     = ~cpu.regs[rm] + 1; // the trick is implemented here
     int old_rd_value = cpu.regs[rd];
 
-    uint result = cpu.read_reg(rd) + rm_value;
+    uint result = cpu.get_reg(rd) + rm_value;
 
     cpu.set_flag_N(get_nth_bit(result, 31));
     cpu.set_flag_Z(result == 0);
 
     // Signed carry formula = (A AND B) OR (~DEST AND (A XOR B)) - works for all add operations once tested
-    cpu.set_flag_C(!(cpu.read_reg(rm) > cpu.read_reg(rd)));
+    cpu.set_flag_C(!(cpu.get_reg(rm) > cpu.get_reg(rd)));
 
     bool matching_signs = get_nth_bit(old_rd_value, 31) == get_nth_bit(rm_value, 31);
     cpu.set_flag_V(matching_signs && (get_nth_bit(old_rd_value, 31) ^ get_nth_bit(result, 31)));
@@ -584,7 +584,7 @@ void run_01000110(ushort opcode) {
 
     ubyte rm = cast(ubyte) get_nth_bits(opcode, 3, 7);
     ubyte rd = cast(ubyte) (get_nth_bits(opcode, 0, 3) | (get_nth_bit(opcode, 7) << 3));
-    cpu.regs[rd] = cpu.read_reg(rm);
+    cpu.regs[rd] = cpu.get_reg(rm);
 
     if (rd == 15) {
         // the least significant bit of pc (cpu.regs[15]) must be clear.
@@ -597,7 +597,7 @@ void run_01000110(ushort opcode) {
 
 // branch exchange
 void run_01000111(ushort opcode) {
-    uint pointer = cpu.read_reg(get_nth_bits(opcode, 3, 7));
+    uint pointer = cpu.get_reg(get_nth_bits(opcode, 3, 7));
 //    warning(format("%x %x", pointer, get_nth_bits(opcode, 3, 7)));
     *cpu.pc = pointer & ((pointer & 1) ? ~1 : ~3); // the PC must be even, so we & with 0xFFFFFFFE.
 
@@ -635,9 +635,9 @@ void run_0101LSBR(ushort opcode) {
     ubyte rd = cast(ubyte) get_nth_bits(opcode, 0, 3);
     uint address = cpu.regs[rm] + cpu.regs[rn];
 
-    @IF( L  S  B) int  value = cast(uint)            (cpu.memory.read_halfword(address, AccessType.NONSEQUENTIAL));
+    @IF( L  S  B) int  value = cast(uint)            (cpu.memory.read_half(address, AccessType.NONSEQUENTIAL));
     @IF( L  S !B) uint value = cast(uint)            (cpu.memory.read_byte    (address, AccessType.NONSEQUENTIAL));
-    @IF( L !S  B) uint value = cast(uint)            (cpu.memory.read_halfword(address, AccessType.NONSEQUENTIAL));
+    @IF( L !S  B) uint value = cast(uint)            (cpu.memory.read_half(address, AccessType.NONSEQUENTIAL));
     @IF(!L  S  B) int  value = cast(uint) sign_extend(cpu.memory.read_byte    (address, AccessType.NONSEQUENTIAL), 8);
 
     @IF( L !S !B) uint value = cast(uint)            (read_word_and_rotate(cpu.memory, address, AccessType.NONSEQUENTIAL));
@@ -672,7 +672,7 @@ void run_01010SBR(ushort opcode) {
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 
     @IF( S !B) cpu.memory.write_byte    (cpu.regs[rm] + cpu.regs[rn], cast(ubyte)  value, AccessType.NONSEQUENTIAL);
-    @IF(!S  B) cpu.memory.write_halfword(cpu.regs[rm] + cpu.regs[rn], cast(ushort) value, AccessType.NONSEQUENTIAL);
+    @IF(!S  B) cpu.memory.write_half(cpu.regs[rm] + cpu.regs[rn], cast(ushort) value, AccessType.NONSEQUENTIAL);
     @IF(!S !B) cpu.memory.write_word    (cpu.regs[rm] + cpu.regs[rn], value,              AccessType.NONSEQUENTIAL);
 
     // _g_cpu_cycles_remaining += 2;
@@ -706,7 +706,7 @@ void run_10000OFS(ushort opcode) {
     ubyte rd     = cast(ubyte) get_nth_bits(opcode, 0, 3);
     ubyte offset = cast(ubyte) get_nth_bits(opcode, 6, 11);
     
-    cpu.memory.write_halfword(cpu.regs[rn] + (offset << 1), cast(ushort) cpu.regs[rd], AccessType.NONSEQUENTIAL);
+    cpu.memory.write_half(cpu.regs[rn] + (offset << 1), cast(ushort) cpu.regs[rd], AccessType.NONSEQUENTIAL);
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 
     // _g_cpu_cycles_remaining += 2;
@@ -719,7 +719,7 @@ void run_10001OFS(ushort opcode) {
     ubyte offset = cast(ubyte) get_nth_bits(opcode, 6, 11);
 
     uint address = cpu.regs[rn] + offset * 2;
-    uint value   = cpu.memory.read_halfword(address, AccessType.NONSEQUENTIAL);
+    uint value   = cpu.memory.read_half(address, AccessType.NONSEQUENTIAL);
     if (address & 1) value = ((value & 0xFF) << 24) | (value >> 8);
     cpu.regs[rd] = value;
     

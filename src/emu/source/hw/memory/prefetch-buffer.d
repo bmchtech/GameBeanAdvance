@@ -107,7 +107,7 @@ class PrefetchBuffer {
 
         if (!instruction_access && bubble_exists) { 
             bubble_exists = false; 
-            memory.scheduler.tick(1);
+            // memory.scheduler.tick(1);
         }
 
 

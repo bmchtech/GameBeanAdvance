@@ -72,8 +72,8 @@ public:
         cpu.set_interrupt_manager(this.interrupt_manager);
 
         // bios
-        cpu.m_memory.bios[0 .. bios.length] = bios[0 .. bios.length];
-        *cpu.pc = 0;
+        memory.bios[0 .. bios.length] = bios[0 .. bios.length];
+        cpu.set_reg(pc, 0);
     }
 
     void set_frontend_vblank_callback(void delegate() frontend_vblank_callback) {
@@ -85,7 +85,7 @@ public:
     }
 
     void skip_bios_bootscreen() {
-        *cpu.pc = 0x0800_0000;
+        cpu.set_reg(pc, 0x0800_0000);
     }
 
     void load_rom(string rom_path) {
@@ -93,7 +93,7 @@ public:
     }
 
     void load_rom(ubyte[] rom) {
-        cpu.m_memory.load_rom(rom);
+        cpu.memory.load_rom(rom);
         cpu.refill_pipeline();
         enabled = true; 
     }
@@ -117,7 +117,7 @@ public:
 
     pragma(inline, true) void cycle_components() {
         if (!cpu.halted) {
-            cpu.cycle();
+            cpu.run_instruction();
         } else {
             // ty organharvester for the halt skipping idea!
             scheduler.tick_to_next_event();

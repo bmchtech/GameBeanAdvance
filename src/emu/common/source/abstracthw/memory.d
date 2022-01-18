@@ -40,13 +40,13 @@ enum AccessSize {
 
 interface IMemory {
     pragma(inline, true) ubyte read_byte(uint address, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false);
-    pragma(inline, true) ushort read_halfword(uint address, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false);
+    pragma(inline, true) ushort read_half(uint address, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false);
     pragma(inline, true) uint read_word(uint address, AccessType access_type = AccessType
             .SEQUENTIAL, bool instruction_access = false);
 
     pragma(inline, true) void write_byte(uint address, ubyte value,
             AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false);
-    pragma(inline, true) void write_halfword(uint address, ushort value, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false);
+    pragma(inline, true) void write_half(uint address, ushort value, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false);
     pragma(inline, true) void write_word(uint address, uint value,
             AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false);
 
