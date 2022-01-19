@@ -672,7 +672,7 @@ void run_01010SBR(ushort opcode) {
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 
     @IF( S !B) cpu.memory.write_byte    (cpu.regs[rm] + cpu.regs[rn], cast(ubyte)  value, AccessType.NONSEQUENTIAL);
-    @IF(!S  B) cpu.memory.write_half(cpu.regs[rm] + cpu.regs[rn], cast(ushort) value, AccessType.NONSEQUENTIAL);
+    @IF(!S  B) cpu.memory.write_halfword(cpu.regs[rm] + cpu.regs[rn], cast(ushort) value, AccessType.NONSEQUENTIAL);
     @IF(!S !B) cpu.memory.write_word    (cpu.regs[rm] + cpu.regs[rn], value,              AccessType.NONSEQUENTIAL);
 
     // _g_cpu_cycles_remaining += 2;
@@ -706,7 +706,7 @@ void run_10000OFS(ushort opcode) {
     ubyte rd     = cast(ubyte) get_nth_bits(opcode, 0, 3);
     ubyte offset = cast(ubyte) get_nth_bits(opcode, 6, 11);
     
-    cpu.memory.write_half(cpu.regs[rn] + (offset << 1), cast(ushort) cpu.regs[rd], AccessType.NONSEQUENTIAL);
+    cpu.memory.write_halfword(cpu.regs[rn] + (offset << 1), cast(ushort) cpu.regs[rd], AccessType.NONSEQUENTIAL);
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 
     // _g_cpu_cycles_remaining += 2;
