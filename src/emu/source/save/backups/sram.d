@@ -34,7 +34,7 @@ class SRAM : Backup {
         write(address, written_data); 
     }
 
-    override void write_half(uint address, ushort data) { 
+    override void write_halfword(uint address, ushort data) { 
         ubyte written_data = (data >> ((address & 1) * 8)) & 0xFF;
         write(address, written_data);
     }

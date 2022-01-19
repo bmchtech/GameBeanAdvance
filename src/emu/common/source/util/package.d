@@ -74,6 +74,10 @@ pragma(inline, true) pure int sign_extend(int val, int num_bits) {
     return (val ^ (1U << (num_bits - 1))) - (1U << (num_bits - 1));
 }
 
+pragma(inline, true) pure uint rotate_right(uint val, int shift) {
+    return (val >> shift) | (val << (32 - shift));
+}
+
 ubyte[] load_rom_as_bytes(string rom_name) {
     File file = File(rom_name, "r");
     auto buffer = new ubyte[file.size()];
