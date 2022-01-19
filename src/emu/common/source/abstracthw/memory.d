@@ -46,7 +46,7 @@ interface IMemory {
 
     pragma(inline, true) void write_byte(uint address, ubyte value,
             AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false);
-    pragma(inline, true) void write_half(uint address, ushort value, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false);
+    pragma(inline, true) void write_halfword(uint address, ushort value, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false);
     pragma(inline, true) void write_word(uint address, uint value,
             AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false);
 

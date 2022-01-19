@@ -84,7 +84,7 @@ class ARM7TDMI : IARM7TDMI {
         }
     }
 
-    Word get_reg(int i) {
+    pragma(inline, true) Word get_reg(int i) {
         if (i == pc) {
             return regs[pc] - (instruction_set == InstructionSet.ARM ? 4 : 2);
         }
@@ -92,9 +92,17 @@ class ARM7TDMI : IARM7TDMI {
         return regs[i];
     }
 
-    void set_reg(int i, Word value) {
-        writefln("Setting reg %d to %x", i, value);
+    pragma(inline, true) void set_reg(int i, Word value) {
         regs[i] = value;
+
+        if (i == pc) {
+            align_pc();
+            refill_pipeline();
+        }
+    }
+
+    pragma(inline, true) void align_pc() {
+        regs[pc] &= instruction_set == InstructionSet.ARM ? ~3 : ~1;
     }
 
     Word get_cpsr() { 
@@ -138,6 +146,7 @@ class ARM7TDMI : IARM7TDMI {
 
     void refill_pipeline() {
         if (instruction_set == InstructionSet.ARM) {
+            writefln("wordddd");
             fetch!Word();
             fetch!Word();
         } else {
@@ -175,6 +184,11 @@ class ARM7TDMI : IARM7TDMI {
         auto modify = (uint offset, bool value) => value ? set(offset) : clear(offset);
 
         modify(flag, value);
+
+        if (flag == Flag.T) {
+            writefln("%x", value);
+            instruction_set = value ? instruction_set.THUMB : instruction_set.ARM;
+        }
     }
 
     bool get_flag(Flag flag) {

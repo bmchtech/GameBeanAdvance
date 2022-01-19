@@ -95,7 +95,6 @@ void test_thumb_mode(string gba_file, string log_file, int num_instructions) {
     cpu.memory.load_rom(rom);
 
     set_cpu_state(cpu, memory, expected_output[0]);
-    cpu.refill_pipeline();
     cpu.set_mode(MODE_SYSTEM);
 
     bool wasPreviousInstructionARM = true; // if so, we reset the CPU's state
@@ -107,7 +106,6 @@ void test_thumb_mode(string gba_file, string log_file, int num_instructions) {
                 cpu.instruction_set = InstructionSet.THUMB;
                 set_cpu_state(cpu, memory, expected_output[i]);
                 // print_cpu_state(get_cpu_state(cpu));
-                cpu.refill_pipeline();
             }
             
             cpu.run_instruction();
@@ -143,7 +141,6 @@ void test_arm_mode(string gba_file, string log_file, int num_instructions, int s
     set_cpu_state(cpu, memory, expected_output[0]);
     cpu.instruction_set = InstructionSet.THUMB;
     cpu.set_mode(MODE_SYSTEM);
-    cpu.refill_pipeline();
 
     for (int i = 0; i < num_instructions - 1; i++) {
         // print_cpu_state(get_cpu_state(cpu));
@@ -163,7 +160,6 @@ void test_arm_mode(string gba_file, string log_file, int num_instructions, int s
         } else {
             // print_cpu_state(get_cpu_state(cpu));
             set_cpu_state(cpu, memory, expected_output[i + 1]);
-            cpu.refill_pipeline();
         }
     }
 
