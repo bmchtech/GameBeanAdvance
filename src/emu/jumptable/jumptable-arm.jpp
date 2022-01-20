@@ -1096,7 +1096,7 @@
 [COMPONENT STRH]
 - FORMAT:  ----000PUIW0------------1011----
 {
-    cpu.memory.write_halfword(address, cpu.get_reg(get_nth_bits(opcode, 12, 16)) & 0xFFFF, AccessType.NONSEQUENTIAL);
+    cpu.memory.write_half(address, cpu.get_reg(get_nth_bits(opcode, 12, 16)) & 0xFFFF, AccessType.NONSEQUENTIAL);
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 }
 [/COMPONENT]
