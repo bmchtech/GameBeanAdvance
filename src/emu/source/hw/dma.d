@@ -162,14 +162,14 @@ public:
                     if (both_in_rom) access_type = AccessType.SEQUENTIAL;
 
                     dma_channels[current_channel].open_bus_latch = read_value | (read_value << 16);
-                    memory.write_halfword(write_address, read_value, access_type);
+                    memory.write_half(write_address, read_value, access_type);
                 } else {
                     auto shift = dest_is_aligned * 16;
                     ushort open_bus_value = (dma_channels[current_channel].open_bus_latch >> shift) & 0xFFFF;
 
                     if (both_in_rom) access_type = AccessType.SEQUENTIAL;
 
-                    memory.write_halfword(write_address, open_bus_value, access_type);
+                    memory.write_half(write_address, open_bus_value, access_type);
                 }
 
                 source_offset += source_increment;
