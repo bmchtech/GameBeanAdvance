@@ -53,7 +53,6 @@ class ARM7TDMI : IARM7TDMI {
             T result          = thumb_pipeline[0];
             thumb_pipeline[0] = thumb_pipeline[1];
             thumb_pipeline[1] = memory.read_half(regs[pc]);
-            writefln("fetching: pc is %x", regs[pc]);
             regs[pc] += 2;
             return result;
         }
@@ -69,7 +68,6 @@ class ARM7TDMI : IARM7TDMI {
         // }
 
         static if (is(T == Half)) {
-            writefln("%x, Running %x", regs[pc], opcode);
             jumptable_thumb.jumptable[opcode >> 8](this, opcode);
         }
     }
@@ -146,7 +144,6 @@ class ARM7TDMI : IARM7TDMI {
 
     void refill_pipeline() {
         if (instruction_set == InstructionSet.ARM) {
-            writefln("wordddd");
             fetch!Word();
             fetch!Word();
         } else {
@@ -186,7 +183,6 @@ class ARM7TDMI : IARM7TDMI {
         modify(flag, value);
 
         if (flag == Flag.T) {
-            writefln("%x", value);
             instruction_set = value ? instruction_set.THUMB : instruction_set.ARM;
         }
     }

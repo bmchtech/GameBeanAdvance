@@ -244,7 +244,7 @@ class Memory : IMemory {
         write!ubyte(address, value, access_type, instruction_access);
     }
 
-    pragma(inline, true) void write_halfword(uint address, ushort value, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
+    pragma(inline, true) void write_half(uint address, ushort value, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
         write!ushort(address, value, access_type, instruction_access);
     }
 
@@ -547,7 +547,7 @@ class Memory : IMemory {
                 case Region.ROM_SRAM_H:
                     if (backup_enabled) {
                         static if (is(T == uint  )) return backup.write_word    (address, value);
-                        static if (is(T == ushort)) return backup.write_halfword(address, value);
+                        static if (is(T == ushort)) return backup.write_half(address, value);
                         static if (is(T == ubyte )) return backup.write_byte    (address, value);
                     }
                     break;
