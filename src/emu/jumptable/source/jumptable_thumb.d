@@ -12,7 +12,7 @@ alias JumptableEntry = void function(IARM7TDMI cpu, Half opcode);
 
 static void create_conditional_branch(uint cond)(IARM7TDMI cpu, Half opcode) {
     if (cpu.check_cond(cond)) {
-        cpu.set_reg(pc, cpu.get_reg(pc) + (cast(byte)(opcode & 0xFF)) * 2);
+        cpu.set_reg(pc, cpu.get_reg(pc) + (cast(s8)(opcode & 0xFF)) * 2);
     }
 }
 
@@ -23,8 +23,8 @@ static void create_add_sub_mov_cmp(Reg rd, ubyte op)(IARM7TDMI cpu, Half opcode)
     final switch (op) {
         case 0b00: cpu.mov(rd, immediate); break;
         case 0b01: cpu.cmp(rd, operand, immediate); break;
-        case 0b10: cpu.add(rd, operand, immediate, true); break;
-        case 0b11: cpu.sub(rd, operand, immediate, true); break;
+        case 0b10: cpu.add(rd, operand, immediate); break;
+        case 0b11: cpu.sub(rd, operand, immediate); break;
     }
 }
 
@@ -48,8 +48,8 @@ static void create_add_sub(ubyte op)(IARM7TDMI cpu, Half opcode) {
     Word operand2 = cpu.get_reg(rm);
 
     final switch (op) {
-        case 0: cpu.add(rd, operand1, operand2, true); break;
-        case 1: cpu.sub(rd, operand1, operand2, true); break;
+        case 0: cpu.add(rd, operand1, operand2); break;
+        case 1: cpu.sub(rd, operand1, operand2); break;
     }
 }
 
@@ -63,12 +63,12 @@ static void create_full_alu(IARM7TDMI cpu, Half opcode) {
     final switch (op) {
         case  0: cpu.and(rd, operand1, operand2); break;
         case  1: cpu.eor(rd, operand1, operand2); break; 
-        case  2: cpu.lsl(rd, operand1, operand2); break;
-        case  3: cpu.lsr(rd, operand1, operand2); break;
-        case  4: cpu.asr(rd, operand1, operand2); break; 
+        case  2: cpu.lsl(rd, operand1, operand2 & 0xFF); break;
+        case  3: cpu.lsr(rd, operand1, operand2 & 0xFF); break;
+        case  4: cpu.asr(rd, operand1, operand2 & 0xFF); break; 
         case  5: cpu.adc(rd, operand1, operand2); break;
         case  6: cpu.sbc(rd, operand1, operand2); break;
-        case  7: cpu.ror(rd, operand1, operand2); break;
+        case  7: cpu.ror(rd, operand1, operand2 & 0xFF); break;
         case  8: cpu.tst(rd, operand1, operand2); break;
         case  9: cpu.neg(rd, operand2); break;
         case 10: cpu.cmp(rd, operand1, operand2); break;
@@ -120,10 +120,12 @@ static void create_stm(Reg base)(IARM7TDMI cpu, Half opcode) {
     auto writeback_value = start_address + popcnt(register_list) * 4;
     bool is_first_access = true;
 
+    Word current_address = start_address;
     for (int i = 0; i < 8; i++) {
         if (get_nth_bit(register_list, i)) {
-            cpu.write_word(start_address + 4 * i, cpu.get_reg(i), access_type);
+            cpu.write_word(current_address, cpu.get_reg(i), access_type);
             access_type = AccessType.SEQUENTIAL;
+            current_address += 4;
 
             if (is_first_access) cpu.set_reg(base, writeback_value);
             is_first_access = false;
@@ -144,28 +146,29 @@ static void create_ldm(Reg base)(IARM7TDMI cpu, Half opcode) {
         return;
     }
     
-    auto writeback_value = start_address + popcnt(register_list) * 4;
+    Word current_address = start_address;
 
     for (int i = 0; i < 8; i++) {
         if (get_nth_bit(register_list, i)) {
-            cpu.set_reg(i, cpu.read_word(start_address + i * 4, access_type));
+            cpu.set_reg(i, cpu.read_word(current_address, access_type));
             access_type = AccessType.SEQUENTIAL;
+            current_address += 4;
         }
     }
 
     bool base_in_register_list = get_nth_bit(register_list, base);
     if (!base_in_register_list) {
-        cpu.set_reg(base, writeback_value);
+        cpu.set_reg(base, current_address);
     }
     
     cpu.run_idle_cycle();
 }
 
 static void create_load_store_immediate_offset(bool is_load, bool is_byte)(IARM7TDMI cpu, Half opcode) {
-    Reg rd     = get_nth_bits(opcode, 0, 3);
-    Reg rn     = get_nth_bits(opcode, 3, 6);
-    Reg offset = get_nth_bits(opcode, 6, 11);
-    Word base  = cpu.get_reg(rn);
+    Reg rd      = get_nth_bits(opcode, 0, 3);
+    Reg rn      = get_nth_bits(opcode, 3, 6);
+    Word offset = get_nth_bits(opcode, 6, 11);
+    Word base   = cpu.get_reg(rn);
 
     static if ( is_load &&  is_byte) cpu.ldrb(rd, base + offset);
     static if ( is_load && !is_byte) cpu.ldr (rd, base + offset * 4);
@@ -173,20 +176,157 @@ static void create_load_store_immediate_offset(bool is_load, bool is_byte)(IARM7
     static if (!is_load && !is_byte) cpu.str (rd, base + offset * 4);
 }
 
+static void create_load_store_register_offset(uint op)(IARM7TDMI cpu, Half opcode) {
+    Reg rd = get_nth_bits(opcode, 0, 3);
+    Reg rn = get_nth_bits(opcode, 3, 6);
+    Reg rm = get_nth_bits(opcode, 6, 9);
+    Word address = cpu.get_reg(rm) + cpu.get_reg(rn);
+
+    enum cpu_func = [
+        &str,
+        &strh,
+        &strb,
+        &ldrsb,
+        &ldr,
+        &ldrh,
+        &ldrb,
+        &ldrsh
+    ][op];
+
+    cpu_func(cpu, rd, address);
+}
+
 static void create_alu_high_registers(ubyte op)(IARM7TDMI cpu, Half opcode) {
     Reg rm = get_nth_bits(opcode, 3, 7);
     Reg rd = get_nth_bits(opcode, 0, 3) | (get_nth_bit(opcode, 7) << 3);
-    Word operand1 = cpu.get_reg(rm);
-    Word operand2 = cpu.get_reg(rd);
+    Word operand1 = cpu.get_reg(rd);
+    Word operand2 = cpu.get_reg(rm);
 
     final switch (op) {
-        case 0b00: cpu.add(rd, operand1, operand2); break;
-        case 0b01: cpu.sub(rd, operand1, operand2); break;
-        case 0b10: cpu.mov(rd, operand1); break;
+        case 0b00: cpu.add(rd, operand1, operand2, true, false); break;
+        case 0b01: cpu.cmp(rd, operand1, operand2); break;
+        case 0b10: cpu.mov(rd, operand2, false); break;
     }
 }
 
+static void create_add_sp_pc_relative(Reg rd, bool is_sp)(IARM7TDMI cpu, Half opcode) {
+    Word immediate = get_nth_bits(opcode, 0, 8) << 2;
+    static if ( is_sp) Word base = cpu.get_reg(sp);
+    static if (!is_sp) Word base = cpu.get_reg(pc) & ~3;
+
+    cpu.set_reg(rd, base + immediate);
+}
+
+static void create_modify_sp(IARM7TDMI cpu, Half opcode) {
+    Word immediate      = get_nth_bits(opcode, 0, 7) << 2;
+    bool is_subtraction = get_nth_bit (opcode, 7);
+    
+    if (is_subtraction) cpu.set_reg(sp, cpu.get_reg(sp) - immediate);
+    else                cpu.set_reg(sp, cpu.get_reg(sp) + immediate);
+}
+
+static void create_logical_shift(bool is_lsr)(IARM7TDMI cpu, Half opcode) {
+    Reg rd     = get_nth_bits(opcode, 0, 3);
+    Reg rm     = get_nth_bits(opcode, 3, 6);
+    auto shift = get_nth_bits(opcode, 6, 11);
+
+    auto operand = cpu.get_reg(rm);
+
+    static if (is_lsr) cpu.lsr(rd, operand, shift);
+    else               cpu.lsl(rd, operand, shift);
+}
+
+static void create_arithmetic_shift(IARM7TDMI cpu, Half opcode) {
+    Reg rd     = get_nth_bits(opcode, 0, 3);
+    Reg rm     = get_nth_bits(opcode, 3, 6);
+    auto shift = get_nth_bits(opcode, 6, 11);
+    if (shift == 0) shift = 32;
+
+    auto operand = cpu.get_reg(rm);
+    cpu.asr(rd, operand, shift);
+}
+
+static void create_unconditional_branch(IARM7TDMI cpu, Half opcode) {
+    auto offset = cpu.sext_32(get_nth_bits(opcode, 0, 11) * 2, 12);
+    cpu.set_reg(pc, cpu.get_reg(pc) + offset);
+}
+
+static void create_sp_relative_load_store(Reg rd, bool is_load)(IARM7TDMI cpu, Half opcode) {
+    Word offset  = get_nth_bits(opcode, 0, 8) * 4;
+    Word address = cpu.get_reg(sp) + offset;
+    static if (is_load) cpu.ldr(rd, address);
+    else                cpu.str(rd, address);
+}
+
+static void create_halfword_access(bool is_load)(IARM7TDMI cpu, Half opcode) {
+    Reg  rd      = get_nth_bits(opcode, 0, 3);
+    Reg  rn      = get_nth_bits(opcode, 3, 6);
+    Word offset  = get_nth_bits(opcode, 6, 11) * 2;
+    Word address = cpu.get_reg(rn) + offset;
+    static if (is_load) cpu.ldrh(rd, address);
+    else                cpu.strh(rd, address);
+}
+
+static void create_pop(bool lr_included)(IARM7TDMI cpu, Half opcode) {
+    auto register_list = get_nth_bits(opcode, 0, 8);
+    AccessType access_type = AccessType.NONSEQUENTIAL;
+
+    Word current_address = cpu.get_reg(sp);
+    for (int i = 0; i < 8; i++) {
+        if (get_nth_bit(register_list, i)) {
+            cpu.set_reg(i, cpu.read_word_and_rotate(current_address, access_type));
+            current_address += 4;
+
+            access_type = AccessType.SEQUENTIAL;
+        }
+    }
+
+    cpu.set_pipeline_access_type(AccessType.NONSEQUENTIAL);
+
+    static if (lr_included) {
+        cpu.set_reg(pc, cpu.read_word_and_rotate(current_address, access_type));
+        current_address += 4;
+    }
+
+    cpu.set_reg(sp, current_address);
+}
+
+static void create_push(bool lr_included)(IARM7TDMI cpu, Half opcode) {
+    auto register_list = get_nth_bits(opcode, 0, 8);
+    AccessType access_type = AccessType.NONSEQUENTIAL;
+
+    Word current_address = cpu.get_reg(sp);
+
+    static if (lr_included) {
+        current_address -= 4;
+        cpu.write_word(current_address, cpu.get_reg(lr), access_type);
+    }
+
+    for (int i = 7; i >= 0; i--) {
+        if (get_nth_bit(register_list, i)) {
+            current_address -= 4;
+            cpu.write_word(current_address, cpu.get_reg(i), access_type);
+
+            access_type = AccessType.SEQUENTIAL;
+        }
+    }
+
+    cpu.set_pipeline_access_type(AccessType.NONSEQUENTIAL);
+
+    cpu.set_reg(sp, current_address);
+}
+
 static void create_nop(IARM7TDMI cpu, Half opcode) {}
+
+// store halfword
+static void create_store_halfword(IARM7TDMI cpu, Half opcode) {
+    Reg rd      = get_nth_bits(opcode, 0, 3);
+    Reg rn      = get_nth_bits(opcode, 3, 6);
+    Word offset = get_nth_bits(opcode, 6, 11) * 2;
+
+    cpu.strh(rd, cpu.get_reg(rn) + offset);
+}
+
 
 static JumptableEntry[256] create_jumptable()() {
     JumptableEntry[256] jumptable;
@@ -252,7 +392,61 @@ static JumptableEntry[256] create_jumptable()() {
             jumptable[entry] = &create_alu_high_registers!op;
         } else
 
-        jumptable[entry] = &create_conditional_branch!0;
+        if ((entry & 0b1111_0000) == 0b1010_0000) {
+            enum rd    = get_nth_bits(entry, 0, 3);
+            enum is_sp = get_nth_bit (entry, 3);
+            jumptable[entry] = &create_add_sp_pc_relative!(rd, is_sp);
+        } else
+
+        if ((entry & 0b1111_0000) == 0b0000_0000) {
+            enum is_lsr = get_nth_bit(entry, 3);
+            jumptable[entry] = &create_logical_shift!is_lsr;
+        } else
+
+        if ((entry & 0b1111_0000) == 0b001_0000) {
+            jumptable[entry] = &create_arithmetic_shift;
+        } else
+
+        if ((entry & 0b1111_1111) == 0b1011_0000) {
+            jumptable[entry] = &create_modify_sp;
+        } else
+
+        if ((entry & 0b1111_1000) == 0b1110_0000) {
+            jumptable[entry] = &create_unconditional_branch;
+        } else
+
+        if ((entry & 0b1111_0000) == 0b0101_0000) {
+            enum op = get_nth_bits(entry, 1, 4);
+            jumptable[entry] = &create_load_store_register_offset!op;
+        } else
+
+        if ((entry & 0b1111_0000) == 0b1001_0000) {
+            enum rd      = get_nth_bits(entry, 0, 3);
+            enum is_load = get_nth_bit (entry, 3);
+            jumptable[entry] = &create_sp_relative_load_store!(rd, is_load);
+        } else
+
+        if ((entry & 0b1111_0000) == 0b1000_0000) {
+            enum is_load = get_nth_bit(entry, 3);
+            jumptable[entry] = &create_halfword_access!is_load;
+        } else
+
+        if ((entry & 0b1111_1110) == 0b1011_1100) {
+            enum lr_included = get_nth_bit(entry, 0);
+            jumptable[entry] = &create_pop!lr_included;
+        } else
+
+        if ((entry & 0b1111_1110) == 0b1011_0100) {
+            enum lr_included = get_nth_bit(entry, 0);
+            jumptable[entry] = &create_push!lr_included;
+        } else
+
+
+        if ((entry & 0b1111_1000) == 0b1000_0000) {
+            jumptable[entry] = &create_store_halfword;
+        } else
+
+        jumptable[entry] = &create_nop;
     }
 
     return jumptable;
