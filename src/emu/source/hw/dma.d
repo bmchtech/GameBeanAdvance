@@ -129,6 +129,7 @@ public:
             bytes_to_transfer *= 4;
             for (int i = 0; i < bytes_to_transfer; i += 4) {
                 uint read_address = dma_channels[current_channel].source_buf + source_offset;
+                if ((read_address >> 24) >= 8 && (read_address >> 24) <= 0xD) source_increment = 4;
 
                 if (read_address >= 0x0200_0000) { // make sure we are not accessing DMA open bus
                     dma_channels[current_channel].open_bus_latch = memory.read_word(dma_channels[current_channel].source_buf + source_offset, access_type);
@@ -141,6 +142,7 @@ public:
                 dest_offset   += dest_increment;
 
                 access_type = AccessType.SEQUENTIAL;
+
             }
         } else {
             bytes_to_transfer *= 2;
@@ -148,6 +150,7 @@ public:
             for (int i = 0; i < bytes_to_transfer; i += 2) {
                 uint read_address  = dma_channels[current_channel].source_buf + source_offset;
                 uint write_address = dma_channels[current_channel].dest_buf   + dest_offset;
+                if ((read_address >> 24) >= 8 && (read_address >> 24) <= 0xD) source_increment = 2;
                 
                 bool source_is_aligned = (read_address  & 2) != 0;
                 bool dest_is_aligned   = (write_address & 2) != 0;
