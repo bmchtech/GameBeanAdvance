@@ -1,6 +1,6 @@
 module hw.apu.channels.wave_channel;
 
-class WaveChannel {
+final class WaveChannel {
     bool is_double_banked;
     int  playback_bank; // theres two banks - 0 and 1
     int  modify_bank;

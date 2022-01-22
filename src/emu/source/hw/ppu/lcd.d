@@ -21,7 +21,7 @@ enum AffineParameter {
     D = 3
 }
 
-class PPU {
+final class PPU {
     // General information:
     // - Contains 227 scanlines, 160+ is VBLANK. VBLANK is not set on scanline 227.
     // - HBLANK is constantly toggled

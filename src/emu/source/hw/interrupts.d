@@ -25,7 +25,7 @@ enum Interrupt {
 }
 
 
-class InterruptManager {
+final class InterruptManager {
     this(void delegate() unhalt_cpu, void delegate() unhalt_gba) {
         this.unhalt_cpu = unhalt_cpu;
         this.unhalt_gba = unhalt_gba;
