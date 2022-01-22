@@ -16,7 +16,7 @@ struct Event {
     bool            can_be_interleaved;
 }
 
-class Scheduler {
+final class Scheduler {
     enum TOTAL_NUMBER_OF_EVENTS = 0x100;
     Event*[TOTAL_NUMBER_OF_EVENTS] events;
     int events_in_queue = 0;

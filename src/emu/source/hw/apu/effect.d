@@ -8,7 +8,7 @@ abstract class Effect {
     void apply(Sample* s);
 }
 
-class VolumeEffect(uint max) : Effect {
+final class VolumeEffect(uint max) : Effect {
     public  uint volume;
     private uint shift;
 

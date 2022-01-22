@@ -18,7 +18,7 @@ enum DirectSound {
     B = 1
 }
 
-class APU {
+final class APU {
 
 public:
 

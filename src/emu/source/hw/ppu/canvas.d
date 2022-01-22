@@ -71,7 +71,7 @@ struct Window {
     bool obj_enable;
 }
 
-class Canvas {
+final class Canvas {
     
     public:
         PixelData[SCREEN_WIDTH][4] bg_scanline;

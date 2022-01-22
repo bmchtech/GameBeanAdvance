@@ -25,7 +25,7 @@ ulong _g_cpu_cycles_remaining = 0;
 
 __gshared bool  _g_log = false;
 
-class ARM7TDMI : IARM7TDMI {
+final class ARM7TDMI : IARM7TDMI {
 
     Memory m_memory;
 

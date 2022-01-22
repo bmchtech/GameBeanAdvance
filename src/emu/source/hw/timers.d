@@ -10,7 +10,7 @@ import util;
 import scheduler;
 
 import std.stdio;
-class TimerManager {
+final class TimerManager {
 public:
     void delegate(int)  on_timer_overflow;
     void delegate(uint) interrupt_cpu;
@@ -53,7 +53,7 @@ public:
 
 
     void reload_timer_for_the_first_time(int timer_id) {
-        _g_num_log += 100;
+        // _g_num_log += 100;
         if (timer_id != 0 && timers[timer_id].countup) return;
 
         timers[timer_id].enabled_for_first_time = true;

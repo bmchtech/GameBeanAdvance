@@ -8,7 +8,7 @@ import hw.cpu;
 import diag.log;
 import std.stdio;
 
-class PrefetchBuffer {
+final class PrefetchBuffer {
     private uint       current_buffer_size;
     private Memory     memory;
     private uint       current_address;
