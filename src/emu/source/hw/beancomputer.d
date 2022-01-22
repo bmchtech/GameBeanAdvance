@@ -2,7 +2,7 @@ module hw.beancomputer;
 
 import std.stdio;
 
-class BeanComputer {
+final class BeanComputer {
     enum SUPPORT_MAGIC   = 0xBEA7;
     enum SUPPORT_VERSION = 1;
 

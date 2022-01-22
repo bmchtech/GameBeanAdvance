@@ -3,7 +3,7 @@ module hw.memory.rom;
 import std.stdio;
 import util;
 
-class ROM {
+final class ROM {
     ushort[] data;
     uint     rom_mask;
     bool     mirrored;

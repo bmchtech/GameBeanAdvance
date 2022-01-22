@@ -4,7 +4,7 @@ import scheduler;
 import util;
 import hw.interrupts;
 
-class SIO {
+final class SIO {
     bool shift_clock;
     bool internal_shift_clock;
     bool si_state;

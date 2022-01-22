@@ -30,7 +30,7 @@ __gshared GBA _gba;
 __gshared int _samples_per_callback;
 __gshared int _cycles_per_batch;
 
-class GameBeanSDLHost {
+final class GameBeanSDLHost {
     Mutex gba_batch_enable_mutex;
     bool gba_batch_enable = false;
 

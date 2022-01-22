@@ -257,7 +257,7 @@ for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):
 
 # we add the jumptable
 function_names = list("run_" + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)))
-output_file.write("immutable jumptable = [")
+output_file.write("__gshared jumptable = [")
 for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):
     if i % JUMPTABLE_FORMAT_WIDTH == 0:
         output_file.write("\n    ")

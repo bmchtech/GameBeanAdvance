@@ -6,7 +6,7 @@ import scheduler;
 import std.stdio;
 import std.algorithm.comparison;
 
-class NoiseChannel {
+final class NoiseChannel {
     private int shift_register         = 0;
     private int reload_value           = 0;
     private int shifter_xor_value      = 0;

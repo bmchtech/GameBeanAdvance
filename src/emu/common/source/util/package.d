@@ -85,7 +85,7 @@ pragma(inline) ushort convert_from_double_to_8_8f(double input) {
     return (cast(ushort) ((cast(ushort) (input / 1)) << 8)) | ((cast(ushort) ((input % 1) * 256)) & 0xFF);
 }
 
-class NSStopwatch {
+final class NSStopwatch {
     import core.time;
 
     this() {
