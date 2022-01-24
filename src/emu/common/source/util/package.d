@@ -13,6 +13,26 @@ public {
     import std.format;
 }
 
+version (LDC) {
+    import ldc.intrinsics;
+}
+
+pragma(inline, true) bool likely(bool value) {
+    version (LDC) {
+        return llvm_expect!bool(value, true);
+    } else {
+        return value;
+    }
+}
+
+pragma(inline, true) bool unlikely(bool value) {
+    version (LDC) {
+        return llvm_expect!bool(value, false);
+    } else {
+        return value;
+    }
+}
+
 enum YELLOW = "\033[33m";
 enum RED = "\033[31m";
 enum RESET = "\033[0m";

@@ -253,7 +253,7 @@ final class Memory : IMemory {
     }
 
     private template read(T) {
-        pragma(inline, true) T read(uint address, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
+        T read(uint address, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
             uint region = get_region(address);
             T read_value;
 
@@ -263,7 +263,7 @@ final class Memory : IMemory {
                 clock(stalls);
             }
 
-            if (address >> 28) {                
+            if (unlikely(address >> 28 > 0)) {                
                 read_value = read_open_bus!T(address);
                 scheduler.process_events();
                 dma_recently = false;
@@ -442,7 +442,7 @@ final class Memory : IMemory {
     }
 
     private template write(T) {
-        pragma(inline, true) void write(uint address, T value, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
+        void write(uint address, T value, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
             uint region = get_region(address);
 
             uint shift;
@@ -450,7 +450,7 @@ final class Memory : IMemory {
             static if (is(T == ushort)) shift = 1;
             static if (is(T == ubyte )) shift = 0;
 
-            if (address >> 28) { // invalid write
+            if (unlikely(address >> 28 > 0)) { // invalid write
                 clock(1);
                 scheduler.process_events();
                 prefetch_buffer.pop_bubble();

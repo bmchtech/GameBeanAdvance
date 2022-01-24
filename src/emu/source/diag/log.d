@@ -10,7 +10,7 @@ enum LogSource {
     SAVE
 }
 
-static const ulong logsource_padding = get_largest_logsource_length!();
+static immutable ulong logsource_padding = get_largest_logsource_length!();
 
 static ulong get_largest_logsource_length()(){
     import std.algorithm;

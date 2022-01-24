@@ -393,6 +393,8 @@ final class ARM7TDMI : IARM7TDMI {
     }
 
     bool check_condition(uint cond) {
+        likely(cond == 0xE);
+        
         switch (cond) {
         case 0x0: return ( get_flag_Z());
         case 0x1: return (!get_flag_Z());
