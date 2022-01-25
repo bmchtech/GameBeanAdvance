@@ -231,7 +231,7 @@ final class GameBeanSDLHost {
     }
 
     int fps = 0;
-    bool fast_forward = false;
+    bool fast_forward = true;
 
     void run() {
         running = true;
@@ -498,7 +498,7 @@ private:
 
     void on_input(SDL_Keycode key, bool pressed) {
         if (key == SDL_Keycode.SDLK_TAB) {
-            fast_forward = pressed;
+            fast_forward = true;
         }
 
         if (key in KEYMAP_VANILLA) {

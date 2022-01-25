@@ -30,10 +30,12 @@ FILE_HEADER      = '''
 import util;
 import abstracthw.memory;
 import abstracthw.cpu;
-import core.bitop;\n\n'''[1:] # the [1:] is used to remove the beginning \n
+import core.bitop;
+
+template exec(T : IARM7TDMI) {\n\n'''[1:] # the [1:] is used to remove the beginning \n
 
 FILE_FOOTER      = '''
-'''[1:]
+} '''[1:]
 
 
 
@@ -243,12 +245,12 @@ for i in range(0, pow(2, JUMPTABLE_BIT_WIDTH)):
     result_function = jumptable[i]
 
     if result_function != None:
-        function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "(IARM7TDMI cpu, " + OPCODE_DATA_TYPE + " opcode)"
+        function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "(T cpu, " + OPCODE_DATA_TYPE + " opcode)"
         output_file.write(function_name + " {\n")
         output_file.write('\n'.join(result_function))
         output_file.write("\n}\n\n")
     else:
-        function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "(IARM7TDMI cpu, " + OPCODE_DATA_TYPE + " opcode)"
+        function_name = FUNCTION_HEADER + format(i, '#0' + str(JUMPTABLE_BIT_WIDTH + 2) + 'b')[2:] + "(T cpu, " + OPCODE_DATA_TYPE + " opcode)"
         output_file.write(function_name + " {\n")
         output_file.write('\n'.join(default_function))
         output_file.write("\n}\n\n")

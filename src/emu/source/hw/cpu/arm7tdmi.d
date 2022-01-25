@@ -10,8 +10,8 @@ import diag.logger;
 
 import util;
 
-import jumptable_arm;
-import jumptable_thumb;
+static import jumptable_arm;
+static import jumptable_thumb;
 
 import std.stdio;
 import std.conv;
@@ -443,10 +443,10 @@ final class ARM7TDMI : IARM7TDMI {
 
     void execute(uint opcode) {
         if (get_bit_T()) {
-            jumptable_thumb.jumptable[opcode >> 8](this, cast(ushort)opcode);
+            jumptable_thumb.exec!ARM7TDMI.jumptable[opcode >> 8](this, cast(ushort)opcode);
         } else {
             if (check_condition(opcode >> 28)) {
-                jumptable_arm.execute_instruction(opcode, this);
+                jumptable_arm.exec!ARM7TDMI.execute_instruction(opcode, this);
             }
         }
     }

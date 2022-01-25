@@ -44,8 +44,8 @@ final class NoiseChannel {
         shift_register = reload_value;
         cycles_elapsed = 0;
 
-        if (shifter_event) scheduler.remove_event(shifter_event);
-        if (enabled)       shifter_event = scheduler.add_event_relative_to_clock(&shift, interval);
+        // if (shifter_event) scheduler.remove_event(shifter_event);
+        // if (enabled)       shifter_event = scheduler.add_event_relative_to_clock(&shift, interval);
 
         // if (envelope_event)   scheduler.remove_event(envelope_event);
         // if (envelope_enabled) envelope_event = scheduler.add_event_relative_to_self(&tick_envelope, envelope_length); 
@@ -71,7 +71,7 @@ final class NoiseChannel {
             current_shifter_out = -1;
         }
 
-        shifter_event = scheduler.add_event_relative_to_self(&shift, interval);
+        // shifter_event = scheduler.add_event_relative_to_self(&shift, interval);
     }
 
     void tick_envelope() {
