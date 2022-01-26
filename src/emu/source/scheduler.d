@@ -108,7 +108,7 @@ final class Scheduler {
 
             if (events[i].id == event_id) {
                 num_events_being_processed++;
-                writefln("%x", events[i].timestamp);
+                // writefln("%x", events[i].timestamp);
                 events[i].callback();
                 remove_event(event_id);
                 num_events_being_processed--;
@@ -145,7 +145,7 @@ final class Scheduler {
         // print_schedule();
 
         num_events_being_processed++;
-                writefln("%x", events[num_events_being_processed - 1].timestamp);
+                // writefln("%x", events[num_events_being_processed - 1].timestamp);
         events[num_events_being_processed - 1].callback();
 
         for (int i = num_events_being_processed - 1; i < events_in_queue; i++) {

@@ -8,6 +8,8 @@ import hw.cpu;
 import diag.log;
 import std.stdio;
 
+import hw.gpio.rtc;
+
 final class PrefetchBuffer {
     private uint       current_buffer_size;
     private Memory     memory;
@@ -22,6 +24,8 @@ final class PrefetchBuffer {
     private bool       bubble_exists;
     public  bool       can_start_new_prefetch;
     public  bool       prefetch_buffer_has_run = false;
+
+    private RTC_S_35180 rtc;
     
 
     this(Memory memory) {
@@ -34,6 +38,8 @@ final class PrefetchBuffer {
         this.new_prefetch                = false;
         this.can_start_new_prefetch      = false;
         this.bubble_exists               = false;
+
+        this.rtc                         = new RTC_S_35180();
     }
 
 
@@ -100,7 +106,21 @@ final class PrefetchBuffer {
         this.halfway_marker              = this.cycles_till_access_complete >> 1;
     }
 
+    enum GPIO_PORT_DATA    = 0x0800_00C4;
+    enum GPIO_PORT_DIR     = 0x0800_00C6;
+    enum GPIO_PORT_CONTROL = 0x0800_00C8;
+
+    pragma(inline, true) void write(uint address, ushort value) {
+        if (unlikely(address == GPIO_PORT_DATA)) {
+            rtc.write(value & 0xF);
+        }
+    }
+
     pragma(inline, true) T request_data_from_rom(T)(uint address, AccessType access_type, bool instruction_access) {
+        if (address << 1 == GPIO_PORT_DATA) {
+            return rtc.read();
+        }
+        
         uint masked_address = address & 0xFF_FFFF;
         if (_g_num_log > 0) log!(LogSource.DEBUG)("Requesting data from ROM at address %x. [%s, %s]", address, instruction_access ? "Instruction" : "Data", access_type == AccessType.NONSEQUENTIAL ? "Nonsequential" : "Sequential");
         prefetch_buffer_has_run = false;
