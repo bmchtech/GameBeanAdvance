@@ -90,7 +90,7 @@ class RTC_S_35180 {
                 case State.READING_PARAMETERS:
                     SIO = get_nth_bit(*this.get_active_register(), this.serial_index); 
                     serial_index++;
-                    
+
                     if (this.serial_index == 8) {
                         this.serial_index = 0; 
                         advance_current_register_value();
@@ -177,12 +177,24 @@ class RTC_S_35180 {
     void handle_command(int command) {
         switch (command) {
             case 0: reset(); break;
-            
+
             default:
+                reset_time();
                 this.current_command_index  = command;
                 this.current_register_index = 0;
                 set_active_register_value(commands[command].registers[0]);
         }
+    }
+
+    void reset_time() {
+        auto st = Clock.currTime();
+        this.date_time_year        = to_bcd(st.year - 2000);
+        this.date_time_month       = to_bcd(st.month);
+        this.date_time_day         = to_bcd(st.day);
+        this.date_time_day_of_week = to_bcd(st.dayOfWeek);
+        this.date_time_hh          = to_bcd(st.hour);
+        this.date_time_mm          = to_bcd(st.minute);
+        this.date_time_ss          = to_bcd(st.second);
     }
 
     void reset() {
@@ -198,14 +210,7 @@ class RTC_S_35180 {
         this.current_command_index  = 0;
         this.current_register_index = 0;
         
-        auto st = Clock.currTime();
-        this.date_time_year        = to_bcd(st.year - 2000);
-        this.date_time_month       = to_bcd(st.month);
-        this.date_time_day         = to_bcd(st.day);
-        this.date_time_day_of_week = to_bcd(st.dayOfWeek);
-        this.date_time_hh          = to_bcd(st.hour);
-        this.date_time_mm          = to_bcd(st.minute);
-        this.date_time_ss          = to_bcd(st.second);
+        reset_time();
 
         set_active_register_value(&status_register_2);
         status_register_2 = 0;
