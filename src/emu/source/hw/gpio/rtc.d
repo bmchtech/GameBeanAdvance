@@ -1,6 +1,7 @@
 module hw.gpio.rtc;
 
 import util;
+import std.datetime;
 
 class RTC_S_35180 {
     bool SCK;
@@ -63,7 +64,7 @@ class RTC_S_35180 {
         ];
     }
 
-                import std.stdio;
+    import std.stdio;
     void write(ubyte value) {
         writefln("write %b", value);
 
@@ -83,42 +84,82 @@ class RTC_S_35180 {
             this.state = State.WAITING_FOR_COMMAND;
         }
 
-        if (rising_edge(old_SCK, SCK) && state == State.RECEIVING_COMMAND) {
-            this.serial_data |= (SIO << this.serial_index);
-            SIO = get_nth_bit(this.active_register_value(), this.serial_index);
+        if (rising_edge(old_SCK, SCK) && state != State.WAITING_FOR_COMMAND) {
+            
+            switch (state) {
+                case State.READING_PARAMETERS:
+                    SIO = get_nth_bit(*this.get_active_register(), this.serial_index); 
+                    serial_index++;
+                    
+                    if (this.serial_index == 8) {
+                        this.serial_index = 0; 
+                        advance_current_register_value();
+                    }
+                    
+                    break;
 
-            serial_index++;
+                case State.WRITING_REGISTER:
+                    auto old_value = *this.get_active_register();
+                    old_value &= ~(1 << this.serial_index);
+                    old_value |= (SIO << this.serial_index);
 
-            // last serial transfer?
-            if (this.serial_index == 8) {
-                this.serial_index = 0;
+                    *this.get_active_register() = old_value; 
+                    serial_index++;
 
-                if (!is_command(this.serial_data)) {
-                    import core.bitop;
-                    this.serial_data = bitswap((cast(uint) this.serial_data) << 24) & 0xFF;
-                }
+                    if (this.serial_index == 8) {
+                        this.serial_index = 0; 
+                        advance_current_register_value();
+                    }
 
-                writefln("Wrote to RTC: %x", this.serial_data);
+                    break;
+                case State.RECEIVING_COMMAND:
+                    this.serial_data |= (SIO << this.serial_index);
 
-                auto command = get_nth_bits(this.serial_data, 1, 4);
-                handle_command(command);
-                this.serial_data = 0;
+                    serial_index++;
 
-                this.state = get_nth_bit(this.serial_data, 7) ?
-                    State.READING_PARAMETERS :
-                    State.WRITING_REGISTER;
+                    // last serial transfer?
+                    if (this.serial_index == 8) {
+                        this.serial_index = 0;
+
+                        if (!is_command(this.serial_data)) {
+                            import core.bitop;
+                            this.serial_data = bitswap((cast(uint) this.serial_data) << 24) & 0xFF;
+                        }
+
+                        this.state = get_nth_bit(this.serial_data, 0) ?
+                            State.READING_PARAMETERS :
+                            State.WRITING_REGISTER;
+
+                        auto command = get_nth_bits(this.serial_data, 1, 4);
+                        handle_command(command);
+                        this.serial_data = 0;
+                    }
+                    break;
+                default: break;
             }
         }
     }
 
+    ubyte to_bcd(int input) {
+        // assumes 2 digits in input
+        auto digit_1 = input / 10;
+        auto digit_2 = input % 10;
+        return cast(ubyte) ((digit_1 << 4) | digit_2);
+    }
+
     bool is_command(ubyte data) {
-        return get_nth_bits(data, 4, 7) == 6;
+        return get_nth_bits(data, 4, 8) == 6;
     }
 
     void advance_current_register_value() {
         auto current_command = commands[current_command_index];
 
-        if (current_register_index + 1 > current_command.registers.length) return;
+        if (current_register_index + 1 >= current_command.registers.length) {
+            current_register_index = 0;
+            state = State.WAITING_FOR_COMMAND;
+            return;
+        }
+
         auto next_register = current_command.registers[current_register_index + 1];
 
         set_active_register_value(next_register);
@@ -129,8 +170,8 @@ class RTC_S_35180 {
         this.active_register = register;
     }
 
-    uint active_register_value() {
-        return *this.active_register;
+    ubyte* get_active_register() {
+        return this.active_register;
     }
 
     void handle_command(int command) {
@@ -140,6 +181,7 @@ class RTC_S_35180 {
             default:
                 this.current_command_index  = command;
                 this.current_register_index = 0;
+                set_active_register_value(commands[command].registers[0]);
         }
     }
 
@@ -155,6 +197,15 @@ class RTC_S_35180 {
 
         this.current_command_index  = 0;
         this.current_register_index = 0;
+        
+        auto st = Clock.currTime();
+        this.date_time_year        = to_bcd(st.year - 2000);
+        this.date_time_month       = to_bcd(st.month);
+        this.date_time_day         = to_bcd(st.day);
+        this.date_time_day_of_week = to_bcd(st.dayOfWeek);
+        this.date_time_hh          = to_bcd(st.hour);
+        this.date_time_mm          = to_bcd(st.minute);
+        this.date_time_ss          = to_bcd(st.second);
 
         set_active_register_value(&status_register_2);
         status_register_2 = 0;
@@ -164,7 +215,6 @@ class RTC_S_35180 {
     bool falling_edge(bool old_value, bool new_value) { return  old_value  && !new_value; }
 
     ubyte read() {
-        writefln("Read from RTC: %d", (SCK << 2) | (SIO << 1) | CS);
         return (SCK << 2) | (SIO << 1) | CS;
     }
 }
