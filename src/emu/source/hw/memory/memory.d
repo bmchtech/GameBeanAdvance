@@ -553,7 +553,9 @@ final class Memory : IMemory {
                     break;
 
                 default:
-                    break;
+                    static if (is(T == uint  )) prefetch_buffer.write(address, value >> 16); prefetch_buffer.write(address + 1, value & 0xFFFF); 
+                    static if (is(T == ushort)) prefetch_buffer.write(address, value);
+                    static if (is(T == ubyte )) break;
             }
 
             scheduler.process_events();
