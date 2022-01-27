@@ -2,7 +2,7 @@ module hw.apu.fifo;
 
 import std.stdio;
 
-class Fifo(T) {
+final class Fifo(T) {
 
     // size must be power of 2
     this(int size, T reset_value) {        

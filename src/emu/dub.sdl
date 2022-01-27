@@ -21,6 +21,7 @@ configuration "default" {
 
 configuration "gperf" {
     dependency "gperftools_d" version="~>0.1.0"
+    dflags "-O1" "--boundscheck=off"
     versions "gperf"
 }
 

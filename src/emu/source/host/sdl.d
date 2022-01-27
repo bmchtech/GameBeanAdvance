@@ -30,7 +30,7 @@ __gshared GBA _gba;
 __gshared int _samples_per_callback;
 __gshared int _cycles_per_batch;
 
-class GameBeanSDLHost {
+final class GameBeanSDLHost {
     Mutex gba_batch_enable_mutex;
     bool gba_batch_enable = false;
 
@@ -231,7 +231,7 @@ class GameBeanSDLHost {
     }
 
     int fps = 0;
-    bool fast_forward = false;
+    bool fast_forward = true;
 
     void run() {
         running = true;
@@ -498,7 +498,7 @@ private:
 
     void on_input(SDL_Keycode key, bool pressed) {
         if (key == SDL_Keycode.SDLK_TAB) {
-            fast_forward = pressed;
+            fast_forward = true;
         }
 
         if (key in KEYMAP_VANILLA) {

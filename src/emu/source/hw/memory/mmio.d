@@ -13,7 +13,7 @@ import hw.beancomputer;
 
 import std.stdio;
 
-class MMIO {
+final class MMIO {
 
     // IO Registers
     //   NAME            ADDRESS       SIZE  R/W   DESCRIPTION

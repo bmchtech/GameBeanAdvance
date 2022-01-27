@@ -16,7 +16,7 @@ struct Event {
     bool            can_be_interleaved;
 }
 
-class Scheduler {
+final class Scheduler {
     enum TOTAL_NUMBER_OF_EVENTS = 0x100;
     Event*[TOTAL_NUMBER_OF_EVENTS] events;
     int events_in_queue = 0;
@@ -108,6 +108,7 @@ class Scheduler {
 
             if (events[i].id == event_id) {
                 num_events_being_processed++;
+                // writefln("%x", events[i].timestamp);
                 events[i].callback();
                 remove_event(event_id);
                 num_events_being_processed--;
@@ -144,6 +145,7 @@ class Scheduler {
         // print_schedule();
 
         num_events_being_processed++;
+                // writefln("%x", events[num_events_being_processed - 1].timestamp);
         events[num_events_being_processed - 1].callback();
 
         for (int i = num_events_being_processed - 1; i < events_in_queue; i++) {
