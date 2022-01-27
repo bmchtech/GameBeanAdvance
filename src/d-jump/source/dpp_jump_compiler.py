@@ -1096,6 +1096,8 @@ def translate_and_write(settings, rules, components, output_file_name, default):
         for imp in settings.includes:
             f.write('import {};\n'.format(imp))
 
+        f.write('template exec(T : IARM7TDMI) {\n')
+
         for index in range(jumptable_size):
             # NOTE: If the program uses the variable "discriminator", then this will break.
             #       one remedy is to generate a unique identifier that doesn't match any
@@ -1146,6 +1148,8 @@ def translate_and_write(settings, rules, components, output_file_name, default):
         for index in range(jumptable_size):
             f.write(('    &entry_{0:0' + str(len(settings.indices_I)) +'b},\n').format(index))
         f.write('];\n')
+
+        f.write('}')
 
 
 
