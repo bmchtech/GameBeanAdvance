@@ -66,7 +66,7 @@ final class PrefetchBuffer {
         //     THUMB: the prefetcher is ticked once, and after the tick, there is one cycle left for
         //            the prefetch to complete.
         //     ARM:   the prefetcher is ticked once, and after the tick, there is one cycle left for
-        //            the prefetch of either halfword of the full word to complete. this is what the
+        //            the prefetch of either half of the full word to complete. this is what the
         //            variable halfway_marker is used for.
         
         bubble_exists = (num_cycles == 1) && 

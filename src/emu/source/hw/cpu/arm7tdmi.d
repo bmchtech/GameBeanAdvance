@@ -11,8 +11,8 @@ import diag.logger;
 
 import util;
 
-static import jumptable_arm;
-static import jumptable_thumb;
+import jumptable_thumb;
+import jumptable_arm;
 
 import std.stdio;
 import std.conv;
@@ -38,10 +38,12 @@ final class ARM7TDMI : IARM7TDMI {
     }
 
     pragma(inline, true) T fetch(T)() {
+
         static if (is(T == Word)) {
             T result        = arm_pipeline[0];
             arm_pipeline[0] = arm_pipeline[1];
             arm_pipeline[1] = memory.read_word(regs[pc]);
+            writefln("fetching %x %x", regs[pc], arm_pipeline[1]);
             regs[pc] += 4;
             return result;
         }
@@ -58,11 +60,13 @@ final class ARM7TDMI : IARM7TDMI {
     }
 
     pragma(inline, true) void execute(T)(T opcode) {
-        // static if (is(T == Word)) {
-        //     if (likely(check_cond(opcode))) {
-        //         arm_jumptable[opcode]();
-        //     }
-        // }
+        static if (is(T == Word)) {
+            auto cond = get_nth_bits(opcode, 28, 32);
+            if (likely(check_cond(cond))) {
+                auto entry = get_nth_bits(opcode, 4, 8) | (get_nth_bits(opcode, 20, 28) << 4);
+                jumptable_arm.jumptable[entry](this, opcode);
+            }
+        }
 
         static if (is(T == Half)) {
             jumptable_thumb.jumptable[opcode >> 8](this, opcode);
@@ -72,6 +76,7 @@ final class ARM7TDMI : IARM7TDMI {
     void run_instruction() {
         if (instruction_set == InstructionSet.ARM) {
             Word opcode = fetch!Word();
+            writefln("ARM: executing %x", opcode);
             execute!Word(opcode);
         } else {
             Half opcode = fetch!Half();
