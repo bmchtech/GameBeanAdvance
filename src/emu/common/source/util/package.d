@@ -13,6 +13,15 @@ public {
     import std.format;
 }
 
+alias u8  = ubyte;
+alias u16 = ushort;
+alias u32 = uint;
+alias u64 = ulong;
+alias s8  = byte;
+alias s16 = short;
+alias s32 = int;
+alias s64 = long;
+
 alias Word = uint;
 alias Half = ushort;
 alias Byte = ubyte;

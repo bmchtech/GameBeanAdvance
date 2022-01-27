@@ -138,8 +138,8 @@ void test_arm_mode(string gba_file, string log_file, int num_instructions, int s
     ubyte[] rom = load_rom_as_bytes(gba_file);
     cpu.memory.load_rom(rom);
 
-    set_cpu_state(cpu, memory, expected_output[0]);
     cpu.instruction_set = InstructionSet.THUMB;
+    set_cpu_state(cpu, memory, expected_output[0]);
     cpu.set_mode(MODE_SYSTEM);
 
     for (int i = 0; i < num_instructions - 1; i++) {
@@ -169,20 +169,20 @@ void test_arm_mode(string gba_file, string log_file, int num_instructions, int s
 
 
 
-@("tests-thumb") 
-unittest {
-    test_thumb_mode("../../tests/asm/bin/thumb-simple.gba", "../../tests/asm/logs/thumb-simple.log", 3866);
-}
+// @("tests-thumb") 
+// unittest {
+//     test_thumb_mode("../../tests/asm/bin/thumb-simple.gba", "../../tests/asm/logs/thumb-simple.log", 3866);
+// }
 
 // @("tests-arm-addressing-mode-1") 
 // unittest {
 //     test_arm_mode("../../tests/asm/bin/arm-addressing-mode-1.gba", "../../tests/asm/logs/arm-addressing-mode-1.log", 1290, 216, true);
 // }
 
-// @("tests-arm-addressing-mode-2") 
-// unittest {
-//     test_arm_mode("../../tests/asm/bin/arm-addressing-mode-2.gba", "../../tests/asm/logs/arm-addressing-mode-2.log", 1290, 212, true);
-// }
+@("tests-arm-addressing-mode-2") 
+unittest {
+    test_arm_mode("../../tests/asm/bin/arm-addressing-mode-2.gba", "../../tests/asm/logs/arm-addressing-mode-2.log", 1290, 212, true);
+}
 
 // @("tests-arm-addressing-mode-3") 
 // unittest {
