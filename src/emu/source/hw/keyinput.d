@@ -8,7 +8,7 @@ import std.stdio;
 
 import util;
 
-class KeyInput {
+final class KeyInput {
     Memory memory;
     void delegate(uint) interrupt_cpu;
 

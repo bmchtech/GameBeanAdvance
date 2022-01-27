@@ -11,18 +11,15 @@ import diag.logger;
 
 import util;
 
-import jumptable_thumb;
+static import jumptable_arm;
+static import jumptable_thumb;
 
 import std.stdio;
 import std.conv;
 
 uint _g_num_log = 0;
 
-class ARM7TDMI : IARM7TDMI {
-    Word[16] regs;
-    
-    Word cpsr;
-    Word spsr;
+final class ARM7TDMI : IARM7TDMI {
 
     Word[2] arm_pipeline;
     Half[2] thumb_pipeline;
@@ -152,7 +149,169 @@ class ARM7TDMI : IARM7TDMI {
         }
     }
 
-    bool check_cond(uint cond) {
+    // reads the CPSR and figures out what the current mode is. then, it updates it using new_mode.
+    void update_mode() {
+        int mode_bits = get_nth_bits(*cpsr, 0, 5);
+        for (int i = 0; i < NUM_CPU_MODES; i++) {
+            if (MODES[i].CPSR_ENCODING == mode_bits) {
+                set_mode(MODES[i]);
+            }
+        }
+    }
+
+    pragma(inline, true) bool has_spsr() {
+        return !(current_mode == MODE_USER || current_mode == MODE_SYSTEM);
+    }
+
+    pragma(inline, true) bool in_a_privileged_mode() {
+        return current_mode != MODE_USER;
+    }
+
+    uint[] m_register_file;
+    uint[] m_regs;
+
+    @property uint[] regs() { return m_regs; }
+    @property uint[] register_file() { return m_register_file; }
+
+    uint* m_pc;
+    uint* m_lr;
+    uint* m_sp;
+    uint* m_cpsr;
+    uint* m_spsr; // not valid in USER or SYSTEM modes
+    
+    uint m_shifter_operand;
+    bool m_shifter_carry_out;
+
+    @property uint* pc() { return m_pc;}
+    @property uint* lr() { return m_lr;}
+    @property uint* sp() { return m_sp;}
+    @property uint* cpsr() { return m_cpsr;}
+    @property uint* spsr() { return m_spsr;}
+
+    @property bool shifter_carry_out() { return m_shifter_carry_out;}
+    @property bool shifter_carry_out(bool value) { return m_shifter_carry_out = value;}
+
+    @property uint shifter_operand() { return m_shifter_operand;}
+    @property uint shifter_operand(uint value) { return m_shifter_operand = value;}
+
+    pragma(inline, true) uint read_reg(int reg) {
+        // when reading register PC (15), the pipeline will cause the read value to be
+        // one instruction_size greater than it should be. therefore if we're trying to
+        // read from pc, we subtract the current instruction_size to accomodate for this.
+        return reg == 15 ? regs[reg] - (get_bit_T() ? 2 : 4) : regs[reg];
+    }
+
+    pragma(inline, true) void write_reg(int reg, uint value) {
+        regs[reg] = value;
+        if (reg == 15) refill_pipeline();
+    }
+
+    // reg is [0, 7] - these are used to access only the lower regs
+    pragma(inline, true) uint read_reg__lower(int reg) {
+        return regs[reg];
+    }
+
+    // reg is [0, 7] - these are used to access only the lower regs
+    pragma(inline, true) void write_reg__lower(int reg, uint value) {
+        regs[reg] = value;
+    }
+
+    pragma(inline, true) void set_flag_N(bool condition) {
+        if (condition) *cpsr |= 0x80000000;
+        else           *cpsr &= 0x7FFFFFFF;
+    }
+
+    pragma(inline, true) void set_flag_Z(bool condition) {
+        if (condition) *cpsr |= 0x40000000;
+        else           *cpsr &= 0xBFFFFFFF;
+    }
+
+    pragma(inline, true) void set_flag_C(bool condition) {
+        if (condition) *cpsr |= 0x20000000;
+        else           *cpsr &= 0xDFFFFFFF;
+    }
+
+    pragma(inline, true) void set_flag_V(bool condition) {
+        if (condition) *cpsr |= 0x10000000;
+        else           *cpsr &= 0xEFFFFFFF;
+    }
+
+    pragma(inline, true) void set_bit_T(bool condition) {
+        if (condition) *cpsr |= 0x00000020;
+        else           *cpsr &= 0xFFFFFFDF;
+
+        current_instruction_size = condition ? 2 : 4;
+    }
+
+    pragma(inline, true) bool get_flag_N() {
+        return (*cpsr >> 31) & 1;
+    }
+
+    pragma(inline, true) bool get_flag_Z() {
+        return (*cpsr >> 30) & 1;
+    }
+
+    pragma(inline, true) bool get_flag_C() {
+        return (*cpsr >> 29) & 1;
+    }
+
+    pragma(inline, true) bool get_flag_V() {
+        return (*cpsr >> 28) & 1;
+    }
+
+    pragma(inline, true) bool get_bit_T() {
+        return (*cpsr >> 5) & 1;
+    }
+
+    ulong cycle() {
+        memory.cycles = 0;
+
+        if (interrupt_manager.has_irq()) exception(CpuException.IRQ);
+
+        if (Logger.instance) Logger.instance.capture_cpu();
+
+        _g_cpu_cycles_remaining = 0;
+
+        uint opcode = m_pipeline[0];
+        m_pipeline[0] = m_pipeline[1];
+        m_pipeline[1] = fetch();
+
+        m_pipeline_access_type = AccessType.SEQUENTIAL;
+
+        if (*pc > 0x0FFF_FFFF) {
+            error("PC out of range!");
+        }
+
+        // if (*pc == 0xC) {
+        //    error("rebooting");
+        // }
+
+        if (_g_num_log > 0) {
+            _g_num_log--;
+            writef("[%04x] ", _g_num_log);
+            if (get_bit_T()) write("THM ");
+            else write("ARM ");
+
+            write(format("0x%x ", opcode));
+            
+            for (int j = 0; j < 16; j++)
+                write(format("%08x ", regs[j]));
+
+            // write(format("%x ", *cpsr));
+            write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
+            writeln();
+            if (_g_num_log == 0) writeln();
+        }
+
+        m_memory.can_read_from_bios = (*pc >> 24) == 0;
+        execute(opcode);
+
+        return 0;
+    }
+
+    bool check_condition(uint cond) {
+        likely(cond == 0xE);
+        
         switch (cond) {
         case 0x0: return ( get_flag(Flag.Z));
         case 0x1: return (!get_flag(Flag.Z));
@@ -187,8 +346,14 @@ class ARM7TDMI : IARM7TDMI {
         }
     }
 
-    bool get_flag(Flag flag) {
-        return get_nth_bit(cpsr, flag);
+    void execute(uint opcode) {
+        if (get_bit_T()) {
+            jumptable_thumb.exec!ARM7TDMI.jumptable[opcode >> 8](this, cast(ushort)opcode);
+        } else {
+            if (check_condition(opcode >> 28)) {
+                jumptable_arm.exec!ARM7TDMI.execute_instruction(opcode, this);
+            }
+        }
     }
 
     void set_pipeline_access_type(AccessType access_type) {

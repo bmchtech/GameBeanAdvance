@@ -17,6 +17,26 @@ alias Word = uint;
 alias Half = ushort;
 alias Byte = ubyte;
 
+version (LDC) {
+    import ldc.intrinsics;
+}
+
+pragma(inline, true) bool likely(bool value) {
+    version (LDC) {
+        return llvm_expect!bool(value, true);
+    } else {
+        return value;
+    }
+}
+
+pragma(inline, true) bool unlikely(bool value) {
+    version (LDC) {
+        return llvm_expect!bool(value, false);
+    } else {
+        return value;
+    }
+}
+
 enum YELLOW = "\033[33m";
 enum RED = "\033[31m";
 enum RESET = "\033[0m";
@@ -93,7 +113,7 @@ pragma(inline) ushort convert_from_double_to_8_8f(double input) {
     return (cast(ushort) ((cast(ushort) (input / 1)) << 8)) | ((cast(ushort) ((input % 1) * 256)) & 0xFF);
 }
 
-class NSStopwatch {
+final class NSStopwatch {
     import core.time;
 
     this() {
