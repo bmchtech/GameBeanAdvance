@@ -47,7 +47,7 @@ enum BackgroundMode {
     NONE
 }
 
-static Background[] backgrounds = [
+static __gshared Background[] backgrounds = [
     Background(),
     Background(),
     Background(),

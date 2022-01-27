@@ -2,7 +2,7 @@
 - NAMESPACE: jumptable_arm
 - OPCODE_FORMAT: ----IIIIIIII------------DDDD----
 - INCLUDES: util abstracthw.cpu abstracthw.memory core.bitop
-- ARGUMENTS: IARM7TDMI cpu
+- ARGUMENTS: T cpu
 [/SETTINGS]
 
 [DEFAULT]

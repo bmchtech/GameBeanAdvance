@@ -1,6 +1,6 @@
 module util.ringbuffer;
 
-class RingBuffer(T) {
+final class RingBuffer(T) {
     T[] buffer;
     int current_index;
 

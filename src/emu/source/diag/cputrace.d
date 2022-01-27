@@ -9,7 +9,7 @@ import util.ringbuffer;
 import std.stdio;
 import std.format;
 
-class CpuTrace : ICpuTrace {
+final class CpuTrace : ICpuTrace {
     ARM7TDMI cpu;
     RingBuffer!CpuState ringbuffer;
 

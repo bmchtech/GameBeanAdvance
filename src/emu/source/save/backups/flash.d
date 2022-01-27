@@ -6,7 +6,7 @@ import util;
 import std.stdio;
 import core.stdc.string;
 
-class Flash : Backup {
+final class Flash : Backup {
     // https://mgba-emu.github.io/gbatek/#gbacartbackupflashrom
     // for more context on what these two constants represent
     // i can't for the life of me come up with a better name so

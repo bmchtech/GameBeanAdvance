@@ -1,6 +1,6 @@
 module hw.apu.channels.tone_channel;
 
-class ToneChannel {
+final class ToneChannel {
     
     bool enabled;
     int  volume;

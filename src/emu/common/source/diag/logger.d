@@ -10,7 +10,7 @@ import util;
 
 import abstracthw.cputrace;
 
-class Logger {
+final class Logger {
     static Logger instance;
 
     static Logger singleton(ICpuTrace cpu_trace) {

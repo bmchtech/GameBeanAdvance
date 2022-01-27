@@ -26,7 +26,7 @@ enum GAME_TITLE_SIZE = 12;
 // 2 ^ 64 can last for up to 3000 years
 ulong num_cycles = 0;
 
-class GBA {
+final class GBA {
 public:
     ARM7TDMI         cpu;
     PPU              ppu;

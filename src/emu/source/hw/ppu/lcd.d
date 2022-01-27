@@ -21,7 +21,7 @@ enum AffineParameter {
     D = 3
 }
 
-class PPU {
+final class PPU {
     // General information:
     // - Contains 227 scanlines, 160+ is VBLANK. VBLANK is not set on scanline 227.
     // - HBLANK is constantly toggled
@@ -245,18 +245,18 @@ private:
     // some basic ways to access VRAM easier
     
 
-    static int[][] BG_TEXT_SCREENS_DIMENSIONS = [
+    static immutable int[][] BG_TEXT_SCREENS_DIMENSIONS = [
         [1, 1],
         [2, 1],
         [1, 2],
         [2, 2]
     ];
 
-    static int[] BG_ROTATION_SCALING_TILE_DIMENSIONS = [
+    static immutable int[] BG_ROTATION_SCALING_TILE_DIMENSIONS = [
         16, 32, 64, 128
     ];
 
-    static int[] BG_ROTATION_SCALING_TILE_DIMENSIONS_MASKS = [
+    static immutable int[] BG_ROTATION_SCALING_TILE_DIMENSIONS_MASKS = [
         0xF, 0x1F, 0x3F, 0x7F      
     ];
 
@@ -536,7 +536,7 @@ private:
     }
 
     // sprite_sizes[size][shape] = (width, height)
-    const static ubyte[2][4][3] sprite_sizes = [
+    static immutable ubyte[2][4][3] sprite_sizes = [
         [
             [8,  8],
             [16, 16],
