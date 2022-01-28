@@ -143,19 +143,3 @@ final class NSStopwatch {
     MonoTimeImpl!(ClockType.normal) last_ticks;
     long total_time = 0;
 }
-
-pragma(inline, true) bool likely(bool value) {
-    version (LDC) {
-        llvm_expect!bool(value, true);
-    }
-    
-    return value;
-}
-
-pragma(inline, true) bool unlikely(bool value) {
-    version (LDC) {
-        llvm_expect!bool(value, false);
-    }
-    
-    return value;
-}
