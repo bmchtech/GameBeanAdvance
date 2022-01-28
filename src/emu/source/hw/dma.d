@@ -93,7 +93,7 @@ public:
         if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
                  current_channel,
                  bytes_to_transfer,
-                 dma_channels[current_channel].transferring_words ? "words" : "halfwords",
+                 dma_channels[current_channel].transferring_words ? "words" : "halfs",
                  dma_channels[current_channel].source_buf,
                  dma_channels[current_channel].dest_buf,
                  read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));

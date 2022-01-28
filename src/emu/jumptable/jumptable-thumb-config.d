@@ -654,7 +654,7 @@ void run_0101LSBR(ushort opcode) {
     // _g_cpu_cycles_remaining += 3;
 }
 
-// store sign-extended byte and halfword
+// store sign-extended byte and half
 @EXCLUDE(01010110)
 @EXCLUDE(01010111)
 void run_01010SBR(ushort opcode) {
@@ -700,7 +700,7 @@ void run_011BLOFS(ushort opcode) {
     @IF(L)  cpu.run_idle_cycle();
 }
 
-// store halfword
+// store half
 void run_10000OFS(ushort opcode) {
     ubyte rn     = cast(ubyte) get_nth_bits(opcode, 3, 6);
     ubyte rd     = cast(ubyte) get_nth_bits(opcode, 0, 3);
@@ -712,7 +712,7 @@ void run_10000OFS(ushort opcode) {
     // _g_cpu_cycles_remaining += 2;
 }
 
-// load halfword
+// load half
 void run_10001OFS(ushort opcode) {
     ubyte rn     = cast(ubyte) get_nth_bits(opcode, 3, 6);
     ubyte rd     = cast(ubyte) get_nth_bits(opcode, 0, 3);
