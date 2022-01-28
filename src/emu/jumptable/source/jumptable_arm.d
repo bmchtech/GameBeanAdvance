@@ -18,13 +18,14 @@ static JumptableEntry[4096] create_jumptable()() {
 
     static foreach (entry; 0 .. 4096) {
         if ((entry & 0b1100_0000_0000) == 0b0100_0000_0000) {
-            enum register    = get_nth_bit(entry, 9);
-            enum pre         = get_nth_bit(entry, 8);
-            enum up          = get_nth_bit(entry, 7);
-            enum byte_access = get_nth_bit(entry, 6);
-            enum writeback   = get_nth_bit(entry, 5) || !pre; // post-indexing implies writeback
-            enum load        = get_nth_bit(entry, 4);
-            jumptable[entry] = &create_addressing_mode_2!(register, pre, up, byte_access, writeback, load);
+            enum is_register_offset = get_nth_bit (entry, 9);
+            enum shift_type         = get_nth_bits(entry, 1, 3);
+            enum pre                = get_nth_bit (entry, 8);
+            enum up                 = get_nth_bit (entry, 7);
+            enum byte_access        = get_nth_bit (entry, 6);
+            enum writeback          = get_nth_bit (entry, 5) || !pre; // post-indexing implies writeback
+            enum load               = get_nth_bit (entry, 4);
+            jumptable[entry]        = &create_addressing_mode_2!(register, is_register_offset, pre, up, byte_access, writeback, load);
         }
     }
 
