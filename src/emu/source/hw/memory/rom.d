@@ -10,11 +10,11 @@ class ROM {
 
     this(ubyte[] rom_data) {
         ulong num_bytes     = rom_data.length;
-        ulong num_halfwords = num_bytes / 2;
+        ulong num_halfs = num_bytes / 2;
 
         uint rom_mask_size = 0;
-        while (num_halfwords > 1) {
-            num_halfwords >>= 1;
+        while (num_halfs > 1) {
+            num_halfs >>= 1;
             rom_mask_size++;
         }
 

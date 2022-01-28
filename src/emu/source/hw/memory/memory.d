@@ -79,7 +79,7 @@ class Memory : IMemory {
     bool dma_recently = false;
 
     // the number of cycles to idle on a given memory access is given by
-    // waitstates[memory region][access type][byte = 0 | halfword = 1 | word = 2]
+    // waitstates[memory region][access type][byte = 0 | half = 1 | word = 2]
 
     int[3][2][16] waitstates = [
         [[1, 1, 1], [1, 1, 1]], // BIOS

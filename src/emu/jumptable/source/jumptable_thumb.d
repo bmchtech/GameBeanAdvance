@@ -258,7 +258,7 @@ static void create_sp_relative_load_store(Reg rd, bool is_load)(IARM7TDMI cpu, H
     else                cpu.str(rd, address);
 }
 
-static void create_halfword_access(bool is_load)(IARM7TDMI cpu, Half opcode) {
+static void create_half_access(bool is_load)(IARM7TDMI cpu, Half opcode) {
     Reg  rd      = get_nth_bits(opcode, 0, 3);
     Reg  rn      = get_nth_bits(opcode, 3, 6);
     Word offset  = get_nth_bits(opcode, 6, 11) * 2;
@@ -318,8 +318,8 @@ static void create_push(bool lr_included)(IARM7TDMI cpu, Half opcode) {
 
 static void create_nop(IARM7TDMI cpu, Half opcode) {}
 
-// store halfword
-static void create_store_halfword(IARM7TDMI cpu, Half opcode) {
+// store half
+static void create_store_half(IARM7TDMI cpu, Half opcode) {
     Reg rd      = get_nth_bits(opcode, 0, 3);
     Reg rn      = get_nth_bits(opcode, 3, 6);
     Word offset = get_nth_bits(opcode, 6, 11) * 2;
@@ -428,7 +428,7 @@ static JumptableEntry[256] create_jumptable()() {
 
         if ((entry & 0b1111_0000) == 0b1000_0000) {
             enum is_load = get_nth_bit(entry, 3);
-            jumptable[entry] = &create_halfword_access!is_load;
+            jumptable[entry] = &create_half_access!is_load;
         } else
 
         if ((entry & 0b1111_1110) == 0b1011_1100) {
@@ -443,7 +443,7 @@ static JumptableEntry[256] create_jumptable()() {
 
 
         if ((entry & 0b1111_1000) == 0b1000_0000) {
-            jumptable[entry] = &create_store_halfword;
+            jumptable[entry] = &create_store_half;
         } else
 
         jumptable[entry] = &create_nop;
