@@ -25,13 +25,13 @@ final class CpuTrace : ICpuTrace {
     void print_trace() {
         CpuState[] trace = ringbuffer.get();
         for (int i = 0; i < trace.length; i++) {
-            writef("[%04d]", trace.length - i);
+            writef("[%04d] ", trace.length - i);
             
             if (trace[i].instruction_set == InstructionSet.THUMB) {
-                write("THUMB     ");
+                write("THUMB    ");
                 write(format("%04x | ", trace[i].opcode));
             } else {
-                write("ARM   ");
+                write("ARM  ");
                 write(format("%08x | ", trace[i].opcode));
             }
 
