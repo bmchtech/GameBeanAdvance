@@ -111,15 +111,15 @@ final class PrefetchBuffer {
     enum GPIO_PORT_CONTROL = 0x0800_00C8;
 
     pragma(inline, true) void write(uint address, ushort value) {
-        if (unlikely(address == GPIO_PORT_DATA)) {
-            rtc.write(value & 0xF);
-        }
+        // if (unlikely(address == GPIO_PORT_DATA)) {
+        //     rtc.write(value & 0xF);
+        // }
     }
 
     pragma(inline, true) T request_data_from_rom(T)(uint address, AccessType access_type, bool instruction_access) {
-        if (address << 1 == GPIO_PORT_DATA) {
-            return rtc.read();
-        }
+        // if (address << 1 == GPIO_PORT_DATA) {
+        //     return rtc.read();
+        // }
         
         uint masked_address = address & 0xFF_FFFF;
         if (_g_num_log > 0) log!(LogSource.DEBUG)("Requesting data from ROM at address %x. [%s, %s]", address, instruction_access ? "Instruction" : "Data", access_type == AccessType.NONSEQUENTIAL ? "Nonsequential" : "Sequential");

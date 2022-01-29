@@ -55,6 +55,8 @@ class ARM7TDMI : IARM7TDMI {
         register_file[MODE_USER.OFFSET       + sp] = 0x03007f00;
         register_file[MODE_IRQ.OFFSET        + sp] = 0x03007fa0;
         register_file[MODE_SUPERVISOR.OFFSET + sp] = 0x03007fe0;
+        set_reg(pc, 0x0800_0000);
+        set_flag(Flag.T, false);
     }
 
     pragma(inline, true) T fetch(T)() {
@@ -63,7 +65,6 @@ class ARM7TDMI : IARM7TDMI {
             T result        = arm_pipeline[0];
             arm_pipeline[0] = arm_pipeline[1];
             arm_pipeline[1] = memory.read_word(regs[pc]);
-            // writefln("fetching %x %x", regs[pc], arm_pipeline[1]);
             regs[pc] += 4;
             return result;
         }
