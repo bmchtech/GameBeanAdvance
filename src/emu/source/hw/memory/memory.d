@@ -385,7 +385,7 @@ final class Memory : IMemory {
             if (cpu.instruction_set == InstructionSet.THUMB) { // THUMB mode
                 uint[2] open_bus_reserve = dma_recently ? [dma_open_bus >> 16, dma_open_bus & 0xFFFF] : [cpu.get_pipeline_entry(0), cpu.get_pipeline_entry(1)];
 
-                switch ((cpu.get_reg(15) >> 24) & 0xF) {
+                switch ((cpu.get_reg(pc) >> 24) & 0xF) {
                     case Region.WRAM_BOARD:
                     case Region.PALETTE_RAM:
                     case Region.VRAM:
