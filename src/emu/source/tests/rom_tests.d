@@ -46,7 +46,7 @@ void check_cpu_state(CpuState expected, CpuState actual, string error_message) {
 
     assert_print_cpu_state( expected.instruction_set ==  actual.instruction_set, expected, actual, error_message);
     assert_print_cpu_state( expected.opcode          ==  actual.opcode,          expected, actual, error_message);
-    assert_print_cpu_state((expected.mode & 0x1F)   == (actual.mode & 0x1F),   expected, actual, error_message);
+    // assert_print_cpu_state((expected.mode & 0x1F)   == (actual.mode & 0x1F),   expected, actual, error_message);
     assert_print_cpu_state( expected.mem_0x03000003 ==  actual.mem_0x03000003, expected, actual, error_message);
 }
 
@@ -95,7 +95,7 @@ void test_thumb_mode(string gba_file, string log_file, int num_instructions) {
     cpu.memory.load_rom(rom);
 
     set_cpu_state(cpu, memory, expected_output[0]);
-    cpu.set_mode(MODE_SYSTEM);
+    cpu.set_mode!MODE_SYSTEM;
 
     bool wasPreviousInstructionARM = true; // if so, we reset the CPU's state
     for (int i = 0; i < num_instructions - 1; i++) {
@@ -140,7 +140,7 @@ void test_arm_mode(string gba_file, string log_file, int num_instructions, int s
 
     cpu.instruction_set = InstructionSet.THUMB;
     set_cpu_state(cpu, memory, expected_output[0]);
-    cpu.set_mode(MODE_SYSTEM);
+    cpu.set_mode!MODE_SYSTEM;
 
     for (int i = 0; i < num_instructions - 1; i++) {
         // print_cpu_state(get_cpu_state(cpu));
@@ -149,7 +149,7 @@ void test_arm_mode(string gba_file, string log_file, int num_instructions, int s
         // busywork as far as these tests are concerned, and make it harder to unit test the emulator).
         if (i == start_instruction) {
             // cpu.set_bit_T(false);
-            cpu.cpsr = (cpu.cpsr & 0x00FFFFFFFF) | 0x60000000; // theres a bit of arm instructions that edit the CPSR that we skip, so let's manually set it.
+            cpu.set_cpsr((cpu.get_cpsr() & 0x00FFFFFFFF) | 0x60000000); // theres a bit of arm instructions that edit the CPSR that we skip, so let's manually set it.
         }
 
         if (i < start_instruction) cpu.instruction_set = InstructionSet.THUMB;
@@ -169,30 +169,30 @@ void test_arm_mode(string gba_file, string log_file, int num_instructions, int s
 
 
 
-// @("tests-thumb") 
-// unittest {
-//     test_thumb_mode("../../tests/asm/bin/thumb-simple.gba", "../../tests/asm/logs/thumb-simple.log", 3866);
-// }
+@("tests-thumb") 
+unittest {
+    test_thumb_mode("../../tests/asm/bin/thumb-simple.gba", "../../tests/asm/logs/thumb-simple.log", 3866);
+}
 
-// @("tests-arm-addressing-mode-1") 
-// unittest {
-//     test_arm_mode("../../tests/asm/bin/arm-addressing-mode-1.gba", "../../tests/asm/logs/arm-addressing-mode-1.log", 1290, 216, true);
-// }
+@("tests-arm-addressing-mode-1") 
+unittest {
+    test_arm_mode("../../tests/asm/bin/arm-addressing-mode-1.gba", "../../tests/asm/logs/arm-addressing-mode-1.log", 1290, 216, true);
+}
 
 @("tests-arm-addressing-mode-2") 
 unittest {
     test_arm_mode("../../tests/asm/bin/arm-addressing-mode-2.gba", "../../tests/asm/logs/arm-addressing-mode-2.log", 1290, 212, true);
 }
 
-// @("tests-arm-addressing-mode-3") 
-// unittest {
-//     test_arm_mode("../../tests/asm/bin/arm-addressing-mode-3.gba", "../../tests/asm/logs/arm-addressing-mode-3.log", 1290, 212, true);
-// }
+@("tests-arm-addressing-mode-3") 
+unittest {
+    test_arm_mode("../../tests/asm/bin/arm-addressing-mode-3.gba", "../../tests/asm/logs/arm-addressing-mode-3.log", 1290, 212, true);
+}
 
-// @("tests-arm-opcodes") 
-// unittest {
-//     test_arm_mode("../../tests/asm/bin/arm-opcodes.gba", "../../tests/asm/logs/arm-opcodes.log", 2100, 276, true);
-// }
+@("tests-arm-opcodes") 
+unittest {
+    test_arm_mode("../../tests/asm/bin/arm-opcodes.gba", "../../tests/asm/logs/arm-opcodes.log", 2100, 276, true);
+}
 
 // @("tests-roms-fountain") 
 // unittest {

@@ -74,6 +74,22 @@ void and(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool writeback = t
     if (writeback) cpu.set_reg(rd, result);
 }
 
+void rsb(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
+    sub(cpu, rd, operand2, operand1, writeback, set_flags);
+}
+
+void rsc(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
+    sbc(cpu, rd, operand2, operand1, writeback, set_flags);
+}
+
+void tst(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool set_flags = true) {
+    and(cpu, rd, operand1, operand2, false, set_flags);
+}
+
+void teq(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool set_flags = true) {
+    eor(cpu, rd, operand1, operand2, false, set_flags);
+}
+
 void eor(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
     Word result = operand1 ^ operand2;
     if (set_flags) cpu.set_flags_NZ(result);
@@ -248,23 +264,38 @@ void ldrsh(IARM7TDMI cpu, Reg rd, Word address) {
 }
 
 void str(IARM7TDMI cpu, Reg rd, Word address) {
-    cpu.write_word(address & ~3, cpu.get_reg(rd), AccessType.NONSEQUENTIAL);
+    Word value = cpu.get_reg(rd);
+    if (unlikely(rd == pc)) value += 4;
+
+    cpu.write_word(address & ~3, value, AccessType.NONSEQUENTIAL);
     cpu.set_pipeline_access_type(AccessType.NONSEQUENTIAL);
 }
 
 void strh(IARM7TDMI cpu, Reg rd, Word address) {
-    cpu.write_half(address & ~1, cast(Half) cpu.get_reg(rd), AccessType.NONSEQUENTIAL);
+    Word value = cpu.get_reg(rd);
+    if (unlikely(rd == pc)) value += 4;
+
+    cpu.write_half(address & ~1, value & 0xFFFF, AccessType.NONSEQUENTIAL);
     cpu.set_pipeline_access_type(AccessType.NONSEQUENTIAL);
 }
 
 void strb(IARM7TDMI cpu, Reg rd, Word address) {
-    cpu.write_byte(address, cpu.get_reg(rd) & 0xFF, AccessType.NONSEQUENTIAL);
+    Word value = cpu.get_reg(rd);
+    if (unlikely(rd == pc)) value += 4;
+
+    cpu.write_byte(address, value & 0xFF, AccessType.NONSEQUENTIAL);
     cpu.set_pipeline_access_type(AccessType.NONSEQUENTIAL);
 }
 
 s32 sext_32(IARM7TDMI cpu, u32 value, u32 size) {
     auto negative = get_nth_bit(value, size - 1);
     if (negative) value |= (((1 << (32 - size)) - 1) << size);
+    return value;
+}
+
+s64 sext_64(IARM7TDMI cpu, u64 value, u64 size) {
+    auto negative = (value >> (size - 1)) & 1;
+    if (negative) value |= (((1UL << (64UL - size)) - 1UL) << size);
     return value;
 }
 
