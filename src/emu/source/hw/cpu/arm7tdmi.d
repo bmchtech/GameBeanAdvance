@@ -20,10 +20,8 @@ import std.conv;
 uint _g_num_log = 0;
 
 class ARM7TDMI : IARM7TDMI {
-    Word[16] regs;
-    
-    Word cpsr;
-    Word spsr;
+    Word[18 * 7] register_file;
+    Word[18]     regs;
 
     Word[2] arm_pipeline;
     Half[2] thumb_pipeline;
@@ -35,10 +33,28 @@ class ARM7TDMI : IARM7TDMI {
     bool enabled = false;
     bool halted  = false; 
 
+    CpuMode current_mode;
+
     AccessType pipeline_access_type;
 
     this(Memory memory) {
         this.memory = memory;
+        current_mode = MODE_SYSTEM;
+        
+        reset();
+        // skip_bios();
+    }
+
+    void reset() {
+        for (int i = 0; i < 7; i++) {
+            register_file[MODES[i].OFFSET + 16] |= MODES[i].CPSR_ENCODING;
+        }
+    }
+
+    void skip_bios() {
+        register_file[MODE_USER.OFFSET       + sp] = 0x03007f00;
+        register_file[MODE_IRQ.OFFSET        + sp] = 0x03007fa0;
+        register_file[MODE_SUPERVISOR.OFFSET + sp] = 0x03007fe0;
     }
 
     pragma(inline, true) T fetch(T)() {
@@ -47,7 +63,7 @@ class ARM7TDMI : IARM7TDMI {
             T result        = arm_pipeline[0];
             arm_pipeline[0] = arm_pipeline[1];
             arm_pipeline[1] = memory.read_word(regs[pc]);
-            writefln("fetching %x %x", regs[pc], arm_pipeline[1]);
+            // writefln("fetching %x %x", regs[pc], arm_pipeline[1]);
             regs[pc] += 4;
             return result;
         }
@@ -80,7 +96,6 @@ class ARM7TDMI : IARM7TDMI {
     void run_instruction() {
         if (instruction_set == InstructionSet.ARM) {
             Word opcode = fetch!Word();
-            writefln("ARM: executing %x", opcode);
             execute!Word(opcode);
         } else {
             Half opcode = fetch!Half();
@@ -88,29 +103,41 @@ class ARM7TDMI : IARM7TDMI {
         }
     }
 
-    pragma(inline, true) Word get_reg(int i) {
-        if (i == pc) {
-            return regs[pc] - (instruction_set == InstructionSet.ARM ? 4 : 2);
-        }
-        
-        return regs[i];
+    pragma(inline, true) Word get_reg(Reg id) {
+        return get_reg__raw(id, &regs);
     }
 
-    pragma(inline, true) void set_reg(int i, Word value) {
-        regs[i] = value;
+    pragma(inline, true) void set_reg(Reg id, Word value) {
+        set_reg__raw(id, value, &regs);
+    }
 
-        if (i == pc) {
-            align_pc();
+    pragma(inline, true) Word get_reg(Reg id, CpuMode mode) {
+        return get_reg__raw(id, cast(Word[18]*) (&register_file[mode.OFFSET]));
+    }
+
+    pragma(inline, true) void set_reg(Reg id, Word value, CpuMode mode) {
+        return set_reg__raw(id, value, cast(Word[18]*) (&register_file[mode.OFFSET]));
+    }
+
+    pragma(inline, true) Word get_reg__raw(Reg id, Word[18]* regs) {
+        if (unlikely(id == pc)) {
+            return (*regs)[pc] - (instruction_set == InstructionSet.ARM ? 4 : 2);
+        }
+        
+        return (*regs)[id];
+    }
+
+    pragma(inline, true) void set_reg__raw(Reg id, Word value, Word[18]* regs) {
+        (*regs)[id] = value;
+
+        if (id == pc) {        
+            (*regs)[pc] &= instruction_set == InstructionSet.ARM ? ~3 : ~1;
             refill_pipeline();
         }
     }
 
-    pragma(inline, true) void align_pc() {
-        regs[pc] &= instruction_set == InstructionSet.ARM ? ~3 : ~1;
-    }
-
-    Word get_cpsr() { 
-        return cpsr; 
+    pragma(inline, true) void align_pc(CpuMode mode) {
+        regs[mode.OFFSET + pc] &= instruction_set == InstructionSet.ARM ? ~3 : ~1;
     }
 
     InstructionSet get_instruction_set() { 
@@ -140,8 +167,61 @@ class ARM7TDMI : IARM7TDMI {
         this.halted = true;
     }
 
-    void set_mode(CpuMode mode) {
+    void set_mode(CpuMode new_mode)() {
+        int mask;
+        mask = current_mode.REGISTER_UNIQUENESS;
+        
+        // writeback
+        for (int i = 0; i < 18; i++) {
+            if (mask & 1) {
+                register_file[MODE_USER   .OFFSET + i] = regs[i];
+            } else {
+                register_file[current_mode.OFFSET + i] = regs[i];
+            }
 
+            mask >>= 1;
+        }
+
+        mask = new_mode.REGISTER_UNIQUENESS;
+        for (int i = 0; i < 18; i++) {
+            if (mask & 1) {
+                regs[i] = register_file[MODE_USER   .OFFSET + i];
+            } else {
+                regs[i] = register_file[new_mode.OFFSET + i];
+            }
+
+            mask >>= 1;
+        }
+
+        bool had_interrupts_disabled = (get_cpsr() >> 7) & 1;
+
+        set_cpsr((get_cpsr() & 0xFFFFFFE0) | new_mode.CPSR_ENCODING);
+        current_mode = new_mode;
+
+        if (had_interrupts_disabled && (get_cpsr() >> 7) && memory.mmio.read(0x4000202)) {
+            exception(CpuException.IRQ);
+        }
+    }
+
+    Word get_cpsr() {
+        return regs[16];
+    }
+
+    // user and system modes dont have spsr. spsr reads return cpsr.
+    Word get_spsr() {
+        if (current_mode == MODE_USER || current_mode == MODE_SYSTEM) {
+            return get_cpsr();
+        }
+
+        return regs[17];
+    }
+
+    void set_cpsr(Word cpsr) {
+        regs[16] = cpsr;
+    }
+
+    void set_spsr(Word spsr) {
+        regs[17] = spsr;
     }
 
     void set_interrupt_manager(InterruptManager m) {
@@ -182,8 +262,8 @@ class ARM7TDMI : IARM7TDMI {
     }
 
     void set_flag(Flag flag, bool value) {
-        auto set   = (uint offset) => cpsr |=  (1 << offset);
-        auto clear = (uint offset) => cpsr &= ~(1 << offset);
+        auto set   = (uint offset) => set_cpsr(get_cpsr() |  (1 << offset));
+        auto clear = (uint offset) => set_cpsr(get_cpsr() & ~(1 << offset));
         auto modify = (uint offset, bool value) => value ? set(offset) : clear(offset);
 
         modify(flag, value);
@@ -194,7 +274,7 @@ class ARM7TDMI : IARM7TDMI {
     }
 
     bool get_flag(Flag flag) {
-        return get_nth_bit(cpsr, flag);
+        return get_nth_bit(get_cpsr(), flag);
     }
 
     void set_pipeline_access_type(AccessType access_type) {
