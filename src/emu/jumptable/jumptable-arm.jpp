@@ -1077,6 +1077,7 @@
 {
     uint result = cpu.get_reg(get_nth_bits(opcode, 12, 16));
     if (get_nth_bits(opcode, 12, 16) == 15) result += 4;
+    
     cpu.memory.write_word(address, result, AccessType.NONSEQUENTIAL);
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
     // _g_cpu_cycles_remaining += 2;
@@ -1088,6 +1089,7 @@
 {
     uint result = cpu.get_reg(get_nth_bits(opcode, 12, 16));
     if (get_nth_bits(opcode, 12, 16) == 15) result += 4;
+
     cpu.memory.write_byte(address, result & 0xFF, AccessType.NONSEQUENTIAL);
     cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
 }

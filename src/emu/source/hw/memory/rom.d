@@ -28,8 +28,6 @@ final class ROM {
             // writefln("%x: %x", i * 2, this.data[i]);
         }
 
-        writefln("%x %x %x %x", rom_data.length, rom_length, this.data[data.length - 1], rom_mask);
-
         this.mirrored = false;
 
     }

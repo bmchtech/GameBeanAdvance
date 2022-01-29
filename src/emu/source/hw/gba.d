@@ -68,7 +68,7 @@ public:
 
         this.enabled = false;
 
-        cpu.set_mode(MODE_SYSTEM);
+        cpu.set_mode!MODE_SYSTEM;
         cpu.set_interrupt_manager(this.interrupt_manager);
 
         // bios
