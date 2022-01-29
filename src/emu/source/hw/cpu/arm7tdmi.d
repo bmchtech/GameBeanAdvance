@@ -39,24 +39,36 @@ class ARM7TDMI : IARM7TDMI {
 
     this(Memory memory) {
         this.memory = memory;
-        current_mode = MODE_SYSTEM;
+        current_mode = MODE_USER;
         
         reset();
         // skip_bios();
     }
 
     void reset() {
+        current_mode = MODES[0];
         for (int i = 0; i < 7; i++) {
             register_file[MODES[i].OFFSET + 16] |= MODES[i].CPSR_ENCODING;
-        }
+        }    
+
+        regs[0 .. 18] = register_file[MODE_USER.OFFSET .. MODE_USER.OFFSET + 18];
     }
 
     void skip_bios() {
+        set_mode!MODE_SYSTEM;
         register_file[MODE_USER.OFFSET       + sp] = 0x03007f00;
         register_file[MODE_IRQ.OFFSET        + sp] = 0x03007fa0;
         register_file[MODE_SUPERVISOR.OFFSET + sp] = 0x03007fe0;
-        set_reg(pc, 0x0800_0000);
+
         set_flag(Flag.T, false);
+
+        for (int i = 0; i < 7; i++) {
+            register_file[MODES[i].OFFSET + 16] |= MODES[i].CPSR_ENCODING;
+        }    
+            
+        regs[0 .. 18] = register_file[MODE_USER.OFFSET .. MODE_USER.OFFSET + 18];
+        
+        set_reg(pc, 0x0800_0000);
     }
 
     pragma(inline, true) T fetch(T)() {
@@ -95,6 +107,8 @@ class ARM7TDMI : IARM7TDMI {
     }
 
     void run_instruction() {
+        if (Logger.instance) Logger.instance.capture_cpu();
+
         if (instruction_set == InstructionSet.ARM) {
             Word opcode = fetch!Word();
             execute!Word(opcode);
@@ -102,6 +116,8 @@ class ARM7TDMI : IARM7TDMI {
             Half opcode = fetch!Half();
             execute!Half(opcode);
         }
+
+        if (regs[pc] >> 28 > 0 || regs[pc] >> 24 == 0) error(format("oh fukc %x", regs[pc]));
     }
 
     pragma(inline, true) Word get_reg(Reg id) {
@@ -175,7 +191,7 @@ class ARM7TDMI : IARM7TDMI {
         // writeback
         for (int i = 0; i < 18; i++) {
             if (mask & 1) {
-                register_file[MODE_USER   .OFFSET + i] = regs[i];
+                register_file[MODE_USER.OFFSET + i] = regs[i];
             } else {
                 register_file[current_mode.OFFSET + i] = regs[i];
             }
@@ -186,7 +202,7 @@ class ARM7TDMI : IARM7TDMI {
         mask = new_mode.REGISTER_UNIQUENESS;
         for (int i = 0; i < 18; i++) {
             if (mask & 1) {
-                regs[i] = register_file[MODE_USER   .OFFSET + i];
+                regs[i] = register_file[MODE_USER.OFFSET + i];
             } else {
                 regs[i] = register_file[new_mode.OFFSET + i];
             }
