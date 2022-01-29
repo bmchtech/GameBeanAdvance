@@ -73,7 +73,6 @@ public:
 
         // bios
         memory.bios[0 .. bios.length] = bios[0 .. bios.length];
-        cpu.set_reg(pc, 0);
     }
 
     void set_frontend_vblank_callback(void delegate() frontend_vblank_callback) {
@@ -85,7 +84,7 @@ public:
     }
 
     void skip_bios_bootscreen() {
-        cpu.set_reg(pc, 0x0800_0000);
+        cpu.skip_bios();
     }
 
     void load_rom(string rom_path) {

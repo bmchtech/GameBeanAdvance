@@ -117,6 +117,9 @@ static void create_data_processing(Word static_opcode)(IARM7TDMI cpu, Word opcod
 
         BarrelShifter shifter = barrel_shift!(shift_type, is_immediate)(cpu, immediate, shift);
         Word operand2 = shifter.result;
+
+        import std.stdio;
+        writefln("the shitter! %x", operand2);
         bool shifter_carry = shifter.carry;
     }
 
