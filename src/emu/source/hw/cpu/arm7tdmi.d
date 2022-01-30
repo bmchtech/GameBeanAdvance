@@ -93,6 +93,9 @@ class ARM7TDMI : IARM7TDMI {
     }
 
     pragma(inline, true) void execute(T)(T opcode) {
+        // writef("executing %x: ", opcode);
+        // for  (int i = 0; i < 16; i++) writef("%08x ", i, regs[i]);
+        // writefln("");
         static if (is(T == Word)) {
             auto cond = get_nth_bits(opcode, 28, 32);
             if (likely(check_cond(cond))) {
@@ -108,6 +111,22 @@ class ARM7TDMI : IARM7TDMI {
 
     void run_instruction() {
         if (Logger.instance) Logger.instance.capture_cpu();
+
+        if (_g_num_log > 0) {
+            _g_num_log--;
+        if (get_flag(Flag.T)) write("THM ");
+        else write("ARM ");
+
+        // write(format("0x%x ", opcode));
+        
+        for (int j = 0; j < 16; j++)
+            write(format("%08x ", regs[j]));
+
+        // write(format("%x ", *cpsr));
+        write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
+        writeln();
+        if (_g_num_log == 0) writeln();
+        }
 
         if (instruction_set == InstructionSet.ARM) {
             Word opcode = fetch!Word();
@@ -216,7 +235,7 @@ class ARM7TDMI : IARM7TDMI {
         current_mode = new_mode;
 
         if (had_interrupts_disabled && (get_cpsr() >> 7) && memory.mmio.read(0x4000202)) {
-            exception(CpuException.IRQ);
+            raise_exception!(CpuException.IRQ);
         }
     }
 
@@ -278,6 +297,77 @@ class ARM7TDMI : IARM7TDMI {
         }
     }
 
+    void raise_exception(CpuException exception)() {
+        // _g_num_log += 10;
+
+        // interrupts not allowed if the cpu itself has interrupts disabled.
+        Word cpsr = regs[16];
+
+        if ((exception == CpuException.IRQ && get_nth_bit(cpsr, 7)) ||
+            (exception == CpuException.FIQ && get_nth_bit(cpsr, 6))) {
+            return;
+        }
+
+        enum mode = get_mode_from_exception!(exception);
+
+        register_file[mode.OFFSET + 14] = regs[pc] - 2 * (get_flag(Flag.T) ? 2 : 4);
+        if (exception == CpuException.IRQ) {
+            register_file[mode.OFFSET + 14] += 4; // in an IRQ, the linkage register must point to the next instruction + 4
+        }
+
+        register_file[mode.OFFSET + 17] = cpsr;
+        set_mode!(mode);
+
+        cpsr |= (1 << 7); // disable normal interrupts
+
+        static if (exception == CpuException.Reset || exception == CpuException.FIQ) {
+            cpsr |= (1 << 6); // disable fast interrupts
+        }
+
+        regs[pc] = get_address_from_exception!(exception);
+        set_flag(Flag.T, false);
+        memory.can_read_from_bios = true;
+        
+        refill_pipeline();
+        halted = false;
+    }
+
+    static uint get_address_from_exception(CpuException exception)() {
+        final switch (exception) {
+            case CpuException.Reset:             return 0x0000_0000;
+            case CpuException.Undefined:         return 0x0000_0004;
+            case CpuException.SoftwareInterrupt: return 0x0000_0008;
+            case CpuException.PrefetchAbort:     return 0x0000_000C;
+            case CpuException.DataAbort:         return 0x0000_0010;
+            case CpuException.IRQ:               return 0x0000_0018;
+            case CpuException.FIQ:               return 0x0000_001C;
+        }
+    }
+
+    static CpuMode get_mode_from_exception(CpuException exception)() {
+        final switch (exception) {
+            case CpuException.Reset:             return MODE_SUPERVISOR;
+            case CpuException.Undefined:         return MODE_UNDEFINED;
+            case CpuException.SoftwareInterrupt: return MODE_SUPERVISOR;
+            case CpuException.PrefetchAbort:     return MODE_ABORT;
+            case CpuException.DataAbort:         return MODE_ABORT;
+            case CpuException.IRQ:               return MODE_IRQ;
+            case CpuException.FIQ:               return MODE_FIQ;
+        }
+    }
+
+    static string get_exception_name(CpuException exception)() {
+        final switch (exception) {
+            case CpuException.Reset:             return "RESET";
+            case CpuException.Undefined:         return "UNDEFINED";
+            case CpuException.SoftwareInterrupt: return "SWI";
+            case CpuException.PrefetchAbort:     return "PREFETCH ABORT";
+            case CpuException.DataAbort:         return "DATA ABORT";
+            case CpuException.IRQ:               return "IRQ";
+            case CpuException.FIQ:               return "FIQ";
+        }
+    }
+
     void set_flag(Flag flag, bool value) {
         auto set   = (uint offset) => set_cpsr(get_cpsr() |  (1 << offset));
         auto clear = (uint offset) => set_cpsr(get_cpsr() & ~(1 << offset));
@@ -301,6 +391,23 @@ class ARM7TDMI : IARM7TDMI {
     void run_idle_cycle() {
         pipeline_access_type = AccessType.NONSEQUENTIAL;
         memory.idle();
+    }
+
+    bool in_a_privileged_mode() {
+        return current_mode != MODE_USER;
+    }
+
+    void update_mode() {
+        int mode_bits = get_nth_bits(get_cpsr(), 0, 5);
+        static foreach (i; 0 .. 7) {
+            if (MODES[i].CPSR_ENCODING == mode_bits) {
+                set_mode!(MODES[i]);
+            }
+        }
+    }
+
+    bool has_spsr() {
+        return !(current_mode == MODE_USER || current_mode == MODE_SYSTEM);
     }
 
     Word read_word(Word address, AccessType access_type) { return memory.read_word(address, access_type, false); }

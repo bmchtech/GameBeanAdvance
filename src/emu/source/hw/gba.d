@@ -123,7 +123,7 @@ public:
             scheduler.process_events();
 
             if (interrupt_manager.has_irq()) {
-                cpu.exception(CpuException.IRQ);
+                cpu.raise_exception!(CpuException.IRQ);
             }
         }
     }

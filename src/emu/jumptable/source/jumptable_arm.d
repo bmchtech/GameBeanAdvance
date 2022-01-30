@@ -15,7 +15,7 @@ static void create_nop(IARM7TDMI cpu, Word opcode) {}
 static void create_branch(Word static_opcode)(IARM7TDMI cpu, Word opcode) {
     enum branch_with_link = get_nth_bit(static_opcode, 24);
     
-    static if (branch_with_link) cpu.set_reg(lr, cpu.get_reg(pc) - 8);
+    static if (branch_with_link) cpu.set_reg(lr, cpu.get_reg(pc) - 4);
     Word offset = cpu.sext_32(get_nth_bits(opcode, 0, 24) * 4, 22);
     cpu.set_reg(pc, cpu.get_reg(pc) + offset);
 }
@@ -34,6 +34,42 @@ static void create_mrs(Word static_opcode)(IARM7TDMI cpu, Word opcode) {
     Reg rd = get_nth_bits(opcode, 12, 16);
     static if (transfer_spsr) cpu.set_reg(rd, cpu.get_spsr());
     else                      cpu.set_reg(rd, cpu.get_cpsr());
+}
+
+static void create_msr(Word static_opcode)(IARM7TDMI cpu, Word opcode) {
+    enum is_immediate  = get_nth_bit(static_opcode, 25);
+    enum transfer_spsr = get_nth_bit(static_opcode, 22);
+
+    static if (is_immediate) {
+        auto immediate = get_nth_bits(opcode, 0, 8);
+        auto shift     = get_nth_bits(opcode, 8, 12) * 2;
+        Word operand = rotate_right(immediate, shift);
+    } else {
+        Word operand = cpu.get_reg(get_nth_bits(opcode, 0, 4));
+    }
+
+    static if (transfer_spsr) {
+        if (cpu.has_spsr()) {
+            if (get_nth_bit(opcode, 16)) cpu.set_spsr((cpu.get_spsr() & 0xFFFFFF00) | (operand & 0x000000FF));
+            if (get_nth_bit(opcode, 17)) cpu.set_spsr((cpu.get_spsr() & 0xFFFF00FF) | (operand & 0x0000FF00));
+            if (get_nth_bit(opcode, 18)) cpu.set_spsr((cpu.get_spsr() & 0xFF00FFFF) | (operand & 0x00FF0000));
+            if (get_nth_bit(opcode, 19)) cpu.set_spsr((cpu.get_spsr() & 0x00FFFFFF) | (operand & 0xFF000000));
+        }
+    } else {
+        if (cpu.in_a_privileged_mode()) {
+            if (get_nth_bit(opcode, 16)) cpu.set_cpsr((cpu.get_cpsr() & 0xFFFFFF00) | (operand & 0x000000FF));
+            if (get_nth_bit(opcode, 17)) cpu.set_cpsr((cpu.get_cpsr() & 0xFFFF00FF) | (operand & 0x0000FF00));
+            if (get_nth_bit(opcode, 18)) cpu.set_cpsr((cpu.get_cpsr() & 0xFF00FFFF) | (operand & 0x00FF0000));
+        }
+            if (get_nth_bit(opcode, 19)) cpu.set_cpsr((cpu.get_cpsr() & 0x00FFFFFF) | (operand & 0xFF000000));
+    
+        bool bit_T_changed = get_nth_bit(operand, 5) ^ cpu.get_flag(Flag.T);
+        if (get_nth_bit(opcode, 16) && cpu.in_a_privileged_mode()) {
+            if (bit_T_changed) cpu.refill_pipeline();
+        }
+
+        cpu.update_mode();
+    }
 }
 
 static void create_multiply(Word static_opcode)(IARM7TDMI cpu, Word opcode) {
@@ -115,11 +151,9 @@ static void create_data_processing(Word static_opcode)(IARM7TDMI cpu, Word opcod
             Word shift = get_nth_bits(opcode, 7, 12);
         }
 
-        BarrelShifter shifter = barrel_shift!(shift_type, is_immediate)(cpu, immediate, shift);
+        BarrelShifter shifter = barrel_shift!(shift_type, !register_shift)(cpu, immediate, shift);
         Word operand2 = shifter.result;
 
-        import std.stdio;
-        writefln("the shitter! %x", operand2);
         bool shifter_carry = shifter.carry;
     }
 
@@ -127,8 +161,8 @@ static void create_data_processing(Word static_opcode)(IARM7TDMI cpu, Word opcod
     enum update_flags = get_nth_bit(static_opcode, 20);
 
     enum operation = get_nth_bits(static_opcode, 21, 25);
-    static if (operation ==  0) { cpu.and(rd, operand1, operand2, true, update_flags && !is_pc); cpu.set_flag(Flag.C, shifter_carry); }
-    static if (operation ==  1) { cpu.eor(rd, operand1, operand2, true, update_flags && !is_pc); cpu.set_flag(Flag.C, shifter_carry); }
+    static if (operation ==  0) { cpu.and(rd, operand1, operand2, true, update_flags && !is_pc); }
+    static if (operation ==  1) { cpu.eor(rd, operand1, operand2, true, update_flags && !is_pc); }
     static if (operation ==  2) { cpu.sub(rd, operand1, operand2, true, update_flags && !is_pc); }
     static if (operation ==  3) { cpu.rsb(rd, operand1, operand2, true, update_flags && !is_pc); }
     static if (operation ==  4) { cpu.add(rd, operand1, operand2, true, update_flags && !is_pc); }
@@ -139,10 +173,18 @@ static void create_data_processing(Word static_opcode)(IARM7TDMI cpu, Word opcod
     static if (operation ==  9) { cpu.teq(rd, operand1, operand2,       update_flags && !is_pc); }
     static if (operation == 10) { cpu.cmp(rd, operand1, operand2,       update_flags && !is_pc); }
     static if (operation == 11) { cpu.cmn(rd, operand1, operand2,       update_flags && !is_pc); }
-    static if (operation == 12) { cpu.orr(rd, operand1, operand2, true, update_flags && !is_pc); cpu.set_flag(Flag.C, shifter_carry); }
-    static if (operation == 13) { cpu.mov(rd,           operand2,       update_flags && !is_pc); cpu.set_flag(Flag.C, shifter_carry); }
-    static if (operation == 14) { cpu.bic(rd, operand1, operand2, true, update_flags && !is_pc); cpu.set_flag(Flag.C, shifter_carry); }
-    static if (operation == 15) { cpu.mvn(rd,           operand2,       update_flags && !is_pc); cpu.set_flag(Flag.C, shifter_carry); }
+    static if (operation == 12) { cpu.orr(rd, operand1, operand2, true, update_flags && !is_pc); }
+    static if (operation == 13) { cpu.mov(rd,           operand2,       update_flags && !is_pc); }
+    static if (operation == 14) { cpu.bic(rd, operand1, operand2, true, update_flags && !is_pc); }
+    static if (operation == 15) { cpu.mvn(rd,           operand2,       update_flags && !is_pc); }
+
+    static if (operation == 0 || operation == 1 || operation >= 12) {
+        if (update_flags && !is_pc) cpu.set_flag(Flag.C, shifter_carry); 
+    }
+
+    if (update_flags && is_pc) {
+        cpu.set_cpsr(cpu.get_spsr());
+    }
 }
 
 static void create_half_data_transfer(Word static_opcode)(IARM7TDMI cpu, Word opcode) {
@@ -179,7 +221,7 @@ static void create_half_data_transfer(Word static_opcode)(IARM7TDMI cpu, Word op
         cpu.strh(rd, address);
     }
 
-    static if (writeback) cpu.set_reg(rn, writeback_value);
+    if (writeback && rd != rn) cpu.set_reg(rn, writeback_value);
 }
 
 static void create_single_data_transfer(Word static_opcode)(IARM7TDMI cpu, Word opcode) {
@@ -198,7 +240,7 @@ static void create_single_data_transfer(Word static_opcode)(IARM7TDMI cpu, Word 
         Reg rm = get_nth_bits(opcode, 0, 4);
 
         auto shift = get_nth_bits(opcode, 7, 12);
-        Word offset = barrel_shift!(shift_type, false)(cpu, cpu.get_reg(rm), shift).result;
+        Word offset = barrel_shift!(shift_type, true)(cpu, cpu.get_reg(rm), shift).result;
     } else { // immediate offset
         Word offset = get_nth_bits(opcode, 0, 12);
     }
@@ -213,7 +255,7 @@ static void create_single_data_transfer(Word static_opcode)(IARM7TDMI cpu, Word 
     static if ( byte_access && !load) cpu.strb(rd, address);
     static if (!byte_access && !load) cpu.str (rd, address);
 
-    static if (writeback) cpu.set_reg(rn, writeback_value);
+    if (writeback && rd != rn) cpu.set_reg(rn, writeback_value);
 }
 
 static void create_swap(Word static_opcode)(IARM7TDMI cpu, Word opcode) {
@@ -352,6 +394,11 @@ static JumptableEntry[4096] create_jumptable()() {
 
         if ((entry & 0b1111_1011_1111) == 0b0001_0000_0000) {
             jumptable[entry] = &create_mrs!static_opcode;
+        } else
+
+        if (((entry & 0b1111_1011_0000) == 0b0011_0010_0000) ||
+            ((entry & 0b1111_1011_1111) == 0b0001_0010_0000)) {
+            jumptable[entry] = &create_msr!static_opcode;
         } else
 
         if ((entry & 0b1111_1111_1111) == 0b0001_0010_0001) {
