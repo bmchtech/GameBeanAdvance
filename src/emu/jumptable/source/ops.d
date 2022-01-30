@@ -4,7 +4,7 @@ import abstracthw.cpu;
 import abstracthw.memory;
 import util;
 
-void add(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
+void add(T : IARM7TDMI)(T cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
     Word result = operand1 + operand2;
 
     if (writeback) cpu.set_reg(rd, result);
@@ -18,7 +18,7 @@ void add(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool writeback = t
     }
 }
 
-void sub(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
+void sub(T : IARM7TDMI)(T cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
     Word result = operand1 - operand2;
 
     if (writeback) cpu.set_reg(rd, result);
@@ -31,7 +31,7 @@ void sub(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool writeback = t
     }
 }
 
-void adc(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
+void adc(T : IARM7TDMI)(T cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
     Word result = operand1 + operand2 + cpu.get_flag(Flag.C);
 
     if (writeback) cpu.set_reg(rd, result);
@@ -44,7 +44,7 @@ void adc(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool writeback = t
     }
 }
 
-void sbc(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
+void sbc(T : IARM7TDMI)(T cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
     u64 operand2_carry = cast(u64) operand2 + cast(u64) (cpu.get_flag(Flag.C) ? 0 : 1);
     Word result = operand1 - cast(u32) operand2_carry;
 
@@ -59,44 +59,44 @@ import std.stdio;
     }
 }
 
-void mov(IARM7TDMI cpu, Reg rd, Word immediate, bool set_flags = true) {
+void mov(T : IARM7TDMI)(T cpu, Reg rd, Word immediate, bool set_flags = true) {
     cpu.set_reg(rd, immediate);
     if (set_flags) cpu.set_flags_NZ(immediate);
 }
 
-void cmp(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool set_flags = true) {
+void cmp(T : IARM7TDMI)(T cpu, Reg rd, Word operand1, Word operand2, bool set_flags = true) {
     sub(cpu, rd, operand1, operand2, false, set_flags);
 }
 
-void and(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
+void and(T : IARM7TDMI)(T cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
     Word result = operand1 & operand2;
     if (set_flags) cpu.set_flags_NZ(result);
     if (writeback) cpu.set_reg(rd, result);
 }
 
-void rsb(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
+void rsb(T : IARM7TDMI)(T cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
     sub(cpu, rd, operand2, operand1, writeback, set_flags);
 }
 
-void rsc(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
+void rsc(T : IARM7TDMI)(T cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
     sbc(cpu, rd, operand2, operand1, writeback, set_flags);
 }
 
-void tst(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool set_flags = true) {
+void tst(T : IARM7TDMI)(T cpu, Reg rd, Word operand1, Word operand2, bool set_flags = true) {
     and(cpu, rd, operand1, operand2, false, set_flags);
 }
 
-void teq(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool set_flags = true) {
+void teq(T : IARM7TDMI)(T cpu, Reg rd, Word operand1, Word operand2, bool set_flags = true) {
     eor(cpu, rd, operand1, operand2, false, set_flags);
 }
 
-void eor(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
+void eor(T : IARM7TDMI)(T cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
     Word result = operand1 ^ operand2;
     if (set_flags) cpu.set_flags_NZ(result);
     if (writeback) cpu.set_reg(rd, result);
 }
 
-void lsl(IARM7TDMI cpu, Reg rd, Word operand, Word shift, bool writeback = true, bool set_flags = true) {
+void lsl(T : IARM7TDMI)(T cpu, Reg rd, Word operand, Word shift, bool writeback = true, bool set_flags = true) {
     Word result;
     bool carry;
 
@@ -122,7 +122,7 @@ void lsl(IARM7TDMI cpu, Reg rd, Word operand, Word shift, bool writeback = true,
     if (writeback) cpu.set_reg(rd, result);
 }
 
-void lsr(IARM7TDMI cpu, Reg rd, Word operand, Word shift, bool writeback = true, bool set_flags = true) {
+void lsr(T : IARM7TDMI)(T cpu, Reg rd, Word operand, Word shift, bool writeback = true, bool set_flags = true) {
     Word result;
     bool carry;
 
@@ -149,7 +149,7 @@ void lsr(IARM7TDMI cpu, Reg rd, Word operand, Word shift, bool writeback = true,
     if (writeback) cpu.set_reg(rd, result);
 }
 
-void asr(IARM7TDMI cpu, Reg rd, Word operand, Word shift, bool writeback = true, bool set_flags = true) {
+void asr(T : IARM7TDMI)(T cpu, Reg rd, Word operand, Word shift, bool writeback = true, bool set_flags = true) {
     Word result;
     bool carry;
 
@@ -172,7 +172,7 @@ void asr(IARM7TDMI cpu, Reg rd, Word operand, Word shift, bool writeback = true,
     if (writeback) cpu.set_reg(rd, result);
 }
 
-void ror(IARM7TDMI cpu, Reg rd, Word operand, Word shift, bool writeback = true, bool set_flags = true) {
+void ror(T : IARM7TDMI)(T cpu, Reg rd, Word operand, Word shift, bool writeback = true, bool set_flags = true) {
     Word result = rotate_right(operand, shift);
 
     if (shift == 0) {
@@ -190,71 +190,71 @@ void ror(IARM7TDMI cpu, Reg rd, Word operand, Word shift, bool writeback = true,
     if (set_flags) cpu.set_flags_NZ(result);
 }
 
-void tst(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2) {
+void tst(T : IARM7TDMI)(T cpu, Reg rd, Word operand1, Word operand2) {
     cpu.and(rd, operand1, operand2, false);
 }
 
-void neg(IARM7TDMI cpu, Reg rd, Word immediate, bool writeback = true, bool set_flags = true) {
+void neg(T : IARM7TDMI)(T cpu, Reg rd, Word immediate, bool writeback = true, bool set_flags = true) {
     sub(cpu, rd, 0, immediate, writeback, set_flags);
 }
 
-void cmn(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool set_flags = true) {
+void cmn(T : IARM7TDMI)(T cpu, Reg rd, Word operand1, Word operand2, bool set_flags = true) {
     cpu.add(rd, operand1, operand2, false, set_flags);
 }
 
-void orr(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
+void orr(T : IARM7TDMI)(T cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
     Word result = operand1 | operand2;
     if (set_flags) cpu.set_flags_NZ(result);
     if (writeback) cpu.set_reg(rd, result);
 }
 
-void mul(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
+void mul(T : IARM7TDMI)(T cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
     Word result = operand1 * operand2;
     if (set_flags) cpu.set_flags_NZ(result);
     if (writeback) cpu.set_reg(rd, result);
 }
 
-void bic(IARM7TDMI cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
+void bic(T : IARM7TDMI)(T cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
     Word result = operand1 & ~operand2;
     if (set_flags) cpu.set_flags_NZ(result);
     if (writeback) cpu.set_reg(rd, result);
 }
 
-void mvn(IARM7TDMI cpu, Reg rd, Word immediate, bool set_flags = true) {
+void mvn(T : IARM7TDMI)(T cpu, Reg rd, Word immediate, bool set_flags = true) {
     cpu.set_reg(rd, ~immediate);
     if (set_flags) cpu.set_flags_NZ(~immediate);
 }
 
-void set_flags_NZ(IARM7TDMI cpu, Word result) {
+void set_flags_NZ(T : IARM7TDMI)(T cpu, Word result) {
     cpu.set_flag(Flag.Z, result == 0);
     cpu.set_flag(Flag.N, get_nth_bit(result, 31));
 }
 
-void ldr(IARM7TDMI cpu, Reg rd, Word address) {
+void ldr(T : IARM7TDMI)(T cpu, Reg rd, Word address) {
     cpu.set_reg(rd, cpu.read_word_and_rotate(address, AccessType.NONSEQUENTIAL));
     cpu.run_idle_cycle();
     cpu.set_pipeline_access_type(AccessType.NONSEQUENTIAL);
 }
 
-void ldrh(IARM7TDMI cpu, Reg rd, Word address) {
+void ldrh(T : IARM7TDMI)(T cpu, Reg rd, Word address) {
     cpu.set_reg(rd, cpu.read_half_and_rotate(address, AccessType.NONSEQUENTIAL));
     cpu.run_idle_cycle();
     cpu.set_pipeline_access_type(AccessType.NONSEQUENTIAL);
 }
 
-void ldrb(IARM7TDMI cpu, Reg rd, Word address) {
+void ldrb(T : IARM7TDMI)(T cpu, Reg rd, Word address) {
     cpu.set_reg(rd, cpu.read_byte(address, AccessType.NONSEQUENTIAL));
     cpu.run_idle_cycle();
     cpu.set_pipeline_access_type(AccessType.NONSEQUENTIAL);
 }
 
-void ldrsb(IARM7TDMI cpu, Reg rd, Word address) {
+void ldrsb(T : IARM7TDMI)(T cpu, Reg rd, Word address) {
     cpu.set_reg(rd, cpu.sext_32(cpu.read_byte(address, AccessType.NONSEQUENTIAL), 8));
     cpu.run_idle_cycle();
     cpu.set_pipeline_access_type(AccessType.NONSEQUENTIAL);
 }
 
-void ldrsh(IARM7TDMI cpu, Reg rd, Word address) {
+void ldrsh(T : IARM7TDMI)(T cpu, Reg rd, Word address) {
     if (address & 1) ldrsb(cpu, rd, address);
     else {
         cpu.set_reg(rd, cpu.sext_32(cpu.read_half(address, AccessType.NONSEQUENTIAL), 16));
@@ -263,7 +263,7 @@ void ldrsh(IARM7TDMI cpu, Reg rd, Word address) {
     }
 }
 
-void str(IARM7TDMI cpu, Reg rd, Word address) {
+void str(T : IARM7TDMI)(T cpu, Reg rd, Word address) {
     Word value = cpu.get_reg(rd);
     if (unlikely(rd == pc)) value += 4;
 
@@ -271,7 +271,7 @@ void str(IARM7TDMI cpu, Reg rd, Word address) {
     cpu.set_pipeline_access_type(AccessType.NONSEQUENTIAL);
 }
 
-void strh(IARM7TDMI cpu, Reg rd, Word address) {
+void strh(T : IARM7TDMI)(T cpu, Reg rd, Word address) {
     Word value = cpu.get_reg(rd);
     if (unlikely(rd == pc)) value += 4;
 
@@ -279,7 +279,7 @@ void strh(IARM7TDMI cpu, Reg rd, Word address) {
     cpu.set_pipeline_access_type(AccessType.NONSEQUENTIAL);
 }
 
-void strb(IARM7TDMI cpu, Reg rd, Word address) {
+void strb(T : IARM7TDMI)(T cpu, Reg rd, Word address) {
     Word value = cpu.get_reg(rd);
     if (unlikely(rd == pc)) value += 4;
 
@@ -287,7 +287,7 @@ void strb(IARM7TDMI cpu, Reg rd, Word address) {
     cpu.set_pipeline_access_type(AccessType.NONSEQUENTIAL);
 }
 
-void swi(IARM7TDMI cpu) {
+void swi(T : IARM7TDMI)(T cpu) {
     cpu.raise_exception!(CpuException.SoftwareInterrupt);
 }
 

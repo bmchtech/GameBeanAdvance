@@ -100,12 +100,12 @@ class ARM7TDMI : IARM7TDMI {
             auto cond = get_nth_bits(opcode, 28, 32);
             if (likely(check_cond(cond))) {
                 auto entry = get_nth_bits(opcode, 4, 8) | (get_nth_bits(opcode, 20, 28) << 4);
-                jumptable_arm.jumptable[entry](this, opcode);
+                jumptable_arm.execute!ARM7TDMI.jumptable[entry](this, opcode);
             }
         }
 
         static if (is(T == Half)) {
-            jumptable_thumb.jumptable[opcode >> 8](this, opcode);
+            jumptable_thumb.execute!ARM7TDMI.jumptable[opcode >> 8](this, opcode);
         }
     }
 
@@ -117,7 +117,7 @@ class ARM7TDMI : IARM7TDMI {
         if (get_flag(Flag.T)) write("THM ");
         else write("ARM ");
 
-        // write(format("0x%x ", opcode));
+        write(format("0x%x ", arm_pipeline[0]));
         
         for (int j = 0; j < 16; j++)
             write(format("%08x ", regs[j]));
@@ -136,7 +136,9 @@ class ARM7TDMI : IARM7TDMI {
             execute!Half(opcode);
         }
 
-        if (regs[pc] >> 28 > 0 || regs[pc] >> 24 == 0) error(format("oh fukc %x", regs[pc]));
+        if (regs[pc] >> 24 == 0) _g_num_log += 20;
+
+        // if (regs[pc] >> 28 > 0 || regs[pc] >> 24 == 0) error(format("oh fukc %x", regs[pc]));
     }
 
     pragma(inline, true) Word get_reg(Reg id) {
