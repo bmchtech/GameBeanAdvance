@@ -316,9 +316,6 @@ static void create_push(bool lr_included)(IARM7TDMI cpu, Half opcode) {
     cpu.set_reg(sp, current_address);
 }
 
-static void create_nop(IARM7TDMI cpu, Half opcode) {}
-
-// store half
 static void create_store_half(IARM7TDMI cpu, Half opcode) {
     Reg rd      = get_nth_bits(opcode, 0, 3);
     Reg rn      = get_nth_bits(opcode, 3, 6);
@@ -327,11 +324,20 @@ static void create_store_half(IARM7TDMI cpu, Half opcode) {
     cpu.strh(rd, cpu.get_reg(rn) + offset);
 }
 
+static void create_swi(IARM7TDMI cpu, Half opcode) {
+    cpu.swi();
+}
+
+static void create_nop(IARM7TDMI cpu, Half opcode) {}
 
 static JumptableEntry[256] create_jumptable()() {
     JumptableEntry[256] jumptable;
 
     static foreach (entry; 0 .. 256) {
+        if ((entry & 0b1111_1111) == 0b1101_1111) {
+            jumptable[entry] = &create_swi;
+        } else
+
         if ((entry & 0b1110_0000) == 0b0010_0000) {
             enum op = get_nth_bits(entry, 3, 5);
             enum rd = get_nth_bits(entry, 0, 3);
@@ -440,7 +446,6 @@ static JumptableEntry[256] create_jumptable()() {
             enum lr_included = get_nth_bit(entry, 0);
             jumptable[entry] = &create_push!lr_included;
         } else
-
 
         if ((entry & 0b1111_1000) == 0b1000_0000) {
             jumptable[entry] = &create_store_half;

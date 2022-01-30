@@ -49,6 +49,11 @@ interface IARM7TDMI {
     void           run_idle_cycle();
     void           set_pipeline_access_type(AccessType access_type);
 
+    bool           in_a_privileged_mode();
+    void           update_mode();
+    bool           has_spsr();
+    
+    void           raise_exception(CpuException exception)();
 }
 
 // CPU modes will be described as the following:
@@ -64,7 +69,7 @@ enum MODE_UNDEFINED  = CpuMode(0b11011, 0b011001111111111111, 18 * 3);
 enum MODE_IRQ        = CpuMode(0b10010, 0b011001111111111111, 18 * 4);
 enum MODE_FIQ        = CpuMode(0b10001, 0b011000000011111111, 18 * 5);
 
-static CpuMode[7] MODES = [
+static immutable CpuMode[7] MODES = [
     MODE_USER, MODE_FIQ, MODE_IRQ, MODE_SUPERVISOR, MODE_ABORT, MODE_UNDEFINED,
     MODE_SYSTEM
 ];

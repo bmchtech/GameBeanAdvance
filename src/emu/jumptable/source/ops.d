@@ -287,6 +287,10 @@ void strb(IARM7TDMI cpu, Reg rd, Word address) {
     cpu.set_pipeline_access_type(AccessType.NONSEQUENTIAL);
 }
 
+void swi(IARM7TDMI cpu) {
+    cpu.raise_exception!(CpuException.SoftwareInterrupt);
+}
+
 s32 sext_32(IARM7TDMI cpu, u32 value, u32 size) {
     auto negative = get_nth_bit(value, size - 1);
     if (negative) value |= (((1 << (32 - size)) - 1) << size);
