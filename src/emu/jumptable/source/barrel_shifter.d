@@ -9,7 +9,7 @@ struct BarrelShifter {
     bool carry;
 }
 
-BarrelShifter barrel_shift(int shift_type, bool is_immediate)(IARM7TDMI cpu, Word operand, Word shift) {
+BarrelShifter barrel_shift(int shift_type, bool is_immediate, T : IARM7TDMI)(T cpu, Word operand, Word shift) {
     Word result;
     bool carry;
 
@@ -21,6 +21,9 @@ BarrelShifter barrel_shift(int shift_type, bool is_immediate)(IARM7TDMI cpu, Wor
         } else if (shift < 32) {
             result = operand << shift;
             carry  = get_nth_bit(operand, 32 - shift);
+        } else if (shift == 32) {
+            result = 0;
+            carry  = get_nth_bit(operand, 0);
         } else {
             result = 0;
             carry  = (result == 32) ? get_nth_bit(operand, 0) : 0;
