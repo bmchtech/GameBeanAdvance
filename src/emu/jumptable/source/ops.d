@@ -100,10 +100,7 @@ void lsl(T : IARM7TDMI)(T cpu, Reg rd, Word operand, Word shift, bool writeback 
     Word result;
     bool carry;
 
-    if        (shift == 0) {
-        result = operand;
-        carry  = cpu.get_flag(Flag.C);
-    } else if (shift < 32) {
+    if (shift < 32) {
         result = operand << shift;
         carry  = get_nth_bit(operand, 32 - shift);
     } else if (shift == 32) {
