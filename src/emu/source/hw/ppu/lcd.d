@@ -762,7 +762,6 @@ public:
             hblank_interval_free       = get_nth_bit (data, 5);
             obj_character_vram_mapping = get_nth_bit (data, 6);
             forced_blank               = get_nth_bit (data, 7);
-            writefln("bg mode: %x", bg_mode);
             update_bg_mode();
         } else { // target_byte == 1
             backgrounds[0].enabled     = get_nth_bit (data, 0);

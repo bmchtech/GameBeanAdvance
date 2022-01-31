@@ -19,7 +19,7 @@ import std.conv;
 
 uint _g_num_log = 0;
 
-class ARM7TDMI : IARM7TDMI {
+final class ARM7TDMI : IARM7TDMI {
     Word[18 * 7] register_file;
     Word[18]     regs;
 
@@ -93,9 +93,6 @@ class ARM7TDMI : IARM7TDMI {
     }
 
     pragma(inline, true) void execute(T)(T opcode) {
-        // writef("executing %x: ", opcode);
-        // for  (int i = 0; i < 16; i++) writef("%08x ", i, regs[i]);
-        // writefln("");
         static if (is(T == Word)) {
             auto cond = get_nth_bits(opcode, 28, 32);
             if (likely(check_cond(cond))) {
@@ -110,23 +107,25 @@ class ARM7TDMI : IARM7TDMI {
     }
 
     void run_instruction() {
-        if (Logger.instance) Logger.instance.capture_cpu();
+        // if (Logger.instance) Logger.instance.capture_cpu();
+        if (interrupt_manager.has_irq()) raise_exception!(CpuException.IRQ);
 
-        if (_g_num_log > 0) {
-            _g_num_log--;
-        if (get_flag(Flag.T)) write("THM ");
-        else write("ARM ");
+        // if (_g_num_log > 0) {
+        //     _g_num_log--;
+        //     // writefln("%x", _g_num_log);
+        //     if (get_flag(Flag.T)) write("THM ");
+        //     else write("ARM ");
 
-        write(format("0x%x ", arm_pipeline[0]));
-        
-        for (int j = 0; j < 16; j++)
-            write(format("%08x ", regs[j]));
+        //     write(format("0x%x ", instruction_set == InstructionSet.ARM ? arm_pipeline[0] : thumb_pipeline[0]));
+            
+        //     for (int j = 0; j < 16; j++)
+        //         write(format("%08x ", regs[j]));
 
-        // write(format("%x ", *cpsr));
-        write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
-        writeln();
-        if (_g_num_log == 0) writeln();
-        }
+        //     // write(format("%x ", *cpsr));
+        //     write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
+        //     writeln();
+        //     if (_g_num_log == 0) writeln();
+        // }
 
         if (instruction_set == InstructionSet.ARM) {
             Word opcode = fetch!Word();
@@ -136,9 +135,9 @@ class ARM7TDMI : IARM7TDMI {
             execute!Half(opcode);
         }
 
-        if (regs[pc] >> 24 == 0) _g_num_log += 20;
+        // if (regs[pc] >> 24 == 0) _g_num_log += 20;
 
-        // if (regs[pc] >> 28 > 0 || regs[pc] >> 24 == 0) error(format("oh fukc %x", regs[pc]));
+        if (regs[pc] >> 28 > 0 ) error(format("oh fukc %x", regs[pc]));
     }
 
     pragma(inline, true) Word get_reg(Reg id) {
@@ -188,10 +187,6 @@ class ARM7TDMI : IARM7TDMI {
             thumb_pipeline[i]; 
     }
 
-    void exception(CpuException exception) {
-
-    }
-
 
     void enable() {
         this.enabled = true;
@@ -234,6 +229,7 @@ class ARM7TDMI : IARM7TDMI {
         bool had_interrupts_disabled = (get_cpsr() >> 7) & 1;
 
         set_cpsr((get_cpsr() & 0xFFFFFFE0) | new_mode.CPSR_ENCODING);
+        instruction_set = get_flag(Flag.T) ? InstructionSet.THUMB : InstructionSet.ARM;
         current_mode = new_mode;
 
         if (had_interrupts_disabled && (get_cpsr() >> 7) && memory.mmio.read(0x4000202)) {
@@ -256,14 +252,16 @@ class ARM7TDMI : IARM7TDMI {
 
     void set_cpsr(Word cpsr) {
         regs[16] = cpsr;
+        instruction_set = get_flag(Flag.T) ? instruction_set.THUMB : instruction_set.ARM;
     }
 
     void set_spsr(Word spsr) {
         regs[17] = spsr;
     }
 
-    void set_interrupt_manager(InterruptManager m) {
-
+    InterruptManager interrupt_manager;
+    void set_interrupt_manager(InterruptManager interrupt_manager) {
+        this.interrupt_manager = interrupt_manager;
     }
 
     void refill_pipeline() {
@@ -300,8 +298,6 @@ class ARM7TDMI : IARM7TDMI {
     }
 
     void raise_exception(CpuException exception)() {
-        // _g_num_log += 10;
-
         // interrupts not allowed if the cpu itself has interrupts disabled.
         Word cpsr = regs[16];
 
@@ -325,6 +321,8 @@ class ARM7TDMI : IARM7TDMI {
         static if (exception == CpuException.Reset || exception == CpuException.FIQ) {
             cpsr |= (1 << 6); // disable fast interrupts
         }
+
+        regs[16] = cpsr;
 
         regs[pc] = get_address_from_exception!(exception);
         set_flag(Flag.T, false);
@@ -371,14 +369,13 @@ class ARM7TDMI : IARM7TDMI {
     }
 
     void set_flag(Flag flag, bool value) {
-        auto set   = (uint offset) => set_cpsr(get_cpsr() |  (1 << offset));
-        auto clear = (uint offset) => set_cpsr(get_cpsr() & ~(1 << offset));
-        auto modify = (uint offset, bool value) => value ? set(offset) : clear(offset);
-
-        modify(flag, value);
+        uint cpsr = get_cpsr();
+        cpsr &= ~(1     << flag);
+        cpsr |=  (value << flag);
+        set_cpsr(cpsr);
 
         if (flag == Flag.T) {
-            instruction_set = value ? instruction_set.THUMB : instruction_set.ARM;
+            instruction_set = value ? InstructionSet.THUMB : InstructionSet.ARM;
         }
     }
 
