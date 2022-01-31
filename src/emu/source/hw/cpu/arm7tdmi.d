@@ -76,16 +76,30 @@ final class ARM7TDMI : IARM7TDMI {
         static if (is(T == Word)) {
             T result        = arm_pipeline[0];
             arm_pipeline[0] = arm_pipeline[1];
-            arm_pipeline[1] = memory.read_word(regs[pc]);
+            arm_pipeline[1] = memory.read_word(regs[pc], pipeline_access_type);
             regs[pc] += 4;
+
+            if (memory.can_start_new_prefetch() && pipeline_access_type == AccessType.NONSEQUENTIAL && regs[pc] >> 24 >= 8) {
+                memory.invalidate_prefetch_buffer();
+                memory.start_new_prefetch(regs[pc] >> 1, AccessSize.WORD);
+            }
+
+            pipeline_access_type = AccessType.SEQUENTIAL; 
             return result;
         }
 
         static if (is(T == Half)) {
             T result          = thumb_pipeline[0];
             thumb_pipeline[0] = thumb_pipeline[1];
-            thumb_pipeline[1] = memory.read_half(regs[pc]);
+            thumb_pipeline[1] = memory.read_half(regs[pc], pipeline_access_type);
             regs[pc] += 2;
+
+            if (memory.can_start_new_prefetch() && pipeline_access_type == AccessType.NONSEQUENTIAL && regs[pc] >> 24 >= 8) {
+                memory.invalidate_prefetch_buffer();
+                memory.start_new_prefetch(regs[pc] >> 1, AccessSize.HALFWORD);
+            }
+
+            pipeline_access_type = AccessType.SEQUENTIAL; 
             return result;
         }
 
@@ -107,7 +121,7 @@ final class ARM7TDMI : IARM7TDMI {
     }
 
     void run_instruction() {
-        // if (Logger.instance) Logger.instance.capture_cpu();
+        if (Logger.instance) Logger.instance.capture_cpu();
         if (interrupt_manager.has_irq()) raise_exception!(CpuException.IRQ);
 
         // if (_g_num_log > 0) {
@@ -169,6 +183,7 @@ final class ARM7TDMI : IARM7TDMI {
 
         if (id == pc) {        
             (*regs)[pc] &= instruction_set == InstructionSet.ARM ? ~3 : ~1;
+            pipeline_access_type = AccessType.NONSEQUENTIAL;
             refill_pipeline();
         }
     }
@@ -189,11 +204,11 @@ final class ARM7TDMI : IARM7TDMI {
 
 
     void enable() {
-        this.enabled = true;
+        this.halted = false;
     }
 
     void disable() {
-        this.enabled = false;
+        this.halted = true;
     }
 
     void halt() {
@@ -409,11 +424,11 @@ final class ARM7TDMI : IARM7TDMI {
         return !(current_mode == MODE_USER || current_mode == MODE_SYSTEM);
     }
 
-    Word read_word(Word address, AccessType access_type) { return memory.read_word(address, access_type, false); }
-    Half read_half(Word address, AccessType access_type) { return memory.read_half(address, access_type, false); }
-    Byte read_byte(Word address, AccessType access_type) { return memory.read_byte(address, access_type, false); }
+    Word read_word(Word address, AccessType access_type) { pipeline_access_type = AccessType.NONSEQUENTIAL; return memory.read_word(address, access_type, false); }
+    Half read_half(Word address, AccessType access_type) { pipeline_access_type = AccessType.NONSEQUENTIAL; return memory.read_half(address, access_type, false); }
+    Byte read_byte(Word address, AccessType access_type) { pipeline_access_type = AccessType.NONSEQUENTIAL; return memory.read_byte(address, access_type, false); }
 
-    void write_word(Word address, Word value, AccessType access_type) { memory.write_word(address, value, access_type, false); }
-    void write_half(Word address, Half value, AccessType access_type) { memory.write_half(address, value, access_type, false); }
-    void write_byte(Word address, Byte value, AccessType access_type) { memory.write_byte(address, value, access_type, false); }
+    void write_word(Word address, Word value, AccessType access_type) { pipeline_access_type = AccessType.NONSEQUENTIAL; memory.write_word(address, value, access_type, false); }
+    void write_half(Word address, Half value, AccessType access_type) { pipeline_access_type = AccessType.NONSEQUENTIAL; memory.write_half(address, value, access_type, false); }
+    void write_byte(Word address, Byte value, AccessType access_type) { pipeline_access_type = AccessType.NONSEQUENTIAL; memory.write_byte(address, value, access_type, false); }
 }

@@ -108,6 +108,11 @@ template execute(T : IARM7TDMI) {
             }
         }
 
+        int idle_cycles = calculate_multiply_cycles(cast(u32) operand2);
+        static if (multiply_long) idle_cycles++;
+        static if (accumulate)    idle_cycles++;
+        for (int i = 0; i < idle_cycles; i++) cpu.run_idle_cycle();
+
         static if (multiply_long) {
             bool modifying_pc = unlikely(rd == pc || rn == pc);
             bool overflow = result >> 63;
