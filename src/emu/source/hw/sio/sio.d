@@ -69,7 +69,7 @@ final class SIO {
     void schedule_next_value() {
         uint cpu_frequency = 16780000;
         uint cycles_to_wait = cpu_frequency / (this.internal_shift_clock ? 2000000 : 256000);
-        // scheduler.add_event_relative_to_clock(&transfer_one_value, cycles_to_wait);
+        scheduler.add_event_relative_to_clock(&transfer_one_value, cycles_to_wait);
     }
 
     void transfer_one_value() {
