@@ -75,7 +75,7 @@ public:
         bool source_beginning_in_rom = (dma_channels[current_channel].source_buf >> 24) >= 8;
         bool dest_beginning_in_rom   = (dma_channels[current_channel].dest_buf   >> 24) >= 8;
         
-        if (memory.prefetch_buffer.prefetch_buffer_has_run) writefln("E");
+        // if (memory.prefetch_buffer.prefetch_buffer_has_run) writefln("E");
         if (memory.prefetch_buffer.prefetch_buffer_has_run && (source_beginning_in_rom || dest_beginning_in_rom)) memory.finish_current_prefetch();
 
         if (num_dmas_running == 0) {

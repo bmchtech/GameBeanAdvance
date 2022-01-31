@@ -231,9 +231,17 @@ template execute(T : IARM7TDMI) {
         Reg rd     = get_nth_bits(opcode, 0, 3);
         Reg rm     = get_nth_bits(opcode, 3, 6);
         auto shift = get_nth_bits(opcode, 6, 11);
-        if (shift == 0) shift = 32;
 
         auto operand = cpu.get_reg(rm);
+
+        if (shift == 0) {
+            static if (!is_lsr) {
+                cpu.set_reg(rd, cpu.get_reg(rm));
+                return;
+            } else {
+                shift = 32;
+            }
+        }
 
         static if (is_lsr) cpu.lsr(rd, operand, shift);
         else               cpu.lsl(rd, operand, shift);

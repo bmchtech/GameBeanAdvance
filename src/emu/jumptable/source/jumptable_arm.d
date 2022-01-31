@@ -109,12 +109,9 @@ template execute(T : IARM7TDMI) {
         }
 
         static if (multiply_long) {
-            cpu.set_reg(rd, result >> 32);
-            cpu.set_reg(rn, result & 0xFFFFFFFF);
             bool modifying_pc = unlikely(rd == pc || rn == pc);
             bool overflow = result >> 63;
         } else {
-            cpu.set_reg(rd, result & 0xFFFFFFFF);
             bool modifying_pc = unlikely(rd == pc);
             bool overflow = (result >> 31) & 1;
         }
@@ -127,6 +124,13 @@ template execute(T : IARM7TDMI) {
                 cpu.set_flag(Flag.Z, result == 0);
                 cpu.set_flag(Flag.N, overflow);
             }
+        }
+
+        static if (multiply_long) {
+            cpu.set_reg(rd, result >> 32);
+            cpu.set_reg(rn, result & 0xFFFFFFFF);
+        } else {
+            cpu.set_reg(rd, result & 0xFFFFFFFF);
         }
     }
 
@@ -170,6 +174,16 @@ template execute(T : IARM7TDMI) {
 
         Word operand1 = get_reg__shift(rn);
         enum operation = get_nth_bits(static_opcode, 21, 25);
+
+        static if (operation == 0 || operation == 1 || operation == 8 || operation == 9 || operation >= 12) {
+            if (update_flags && !is_pc) cpu.set_flag(Flag.C, shifter_carry); 
+        }
+
+        if (update_flags && is_pc) {
+            cpu.set_cpsr(cpu.get_spsr());
+            cpu.update_mode();
+        }
+
         static if (operation ==  0) { cpu.and(rd, operand1, operand2, true, update_flags && !is_pc); }
         static if (operation ==  1) { cpu.eor(rd, operand1, operand2, true, update_flags && !is_pc); }
         static if (operation ==  2) { cpu.sub(rd, operand1, operand2, true, update_flags && !is_pc); }
@@ -186,15 +200,6 @@ template execute(T : IARM7TDMI) {
         static if (operation == 13) { cpu.mov(rd,           operand2,       update_flags && !is_pc); }
         static if (operation == 14) { cpu.bic(rd, operand1, operand2, true, update_flags && !is_pc); }
         static if (operation == 15) { cpu.mvn(rd,           operand2,       update_flags && !is_pc); }
-
-        static if (operation == 0 || operation == 1 || operation == 8 || operation == 9 || operation >= 12) {
-            if (update_flags && !is_pc) cpu.set_flag(Flag.C, shifter_carry); 
-        }
-
-        if (update_flags && is_pc) {
-            cpu.set_cpsr(cpu.get_spsr());
-            cpu.update_mode();
-        }
     }
 
     static void create_half_data_transfer(Word static_opcode)(T cpu, Word opcode) {
