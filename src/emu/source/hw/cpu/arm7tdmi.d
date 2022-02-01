@@ -46,6 +46,10 @@ final class ARM7TDMI : IARM7TDMI {
     }
 
     void reset() {
+        set_mode!MODE_SYSTEM;
+        regs[pc] = 0;
+        memory.can_read_from_bios = true;
+
         current_mode = MODES[0];
         for (int i = 0; i < 7; i++) {
             register_file[MODES[i].OFFSET + 16] |= MODES[i].CPSR_ENCODING;
@@ -124,22 +128,23 @@ final class ARM7TDMI : IARM7TDMI {
         if (Logger.instance) Logger.instance.capture_cpu();
         if (interrupt_manager.has_irq()) raise_exception!(CpuException.IRQ);
 
-        // if (_g_num_log > 0) {
-        //     _g_num_log--;
-        //     // writefln("%x", _g_num_log);
-        //     if (get_flag(Flag.T)) write("THM ");
-        //     else write("ARM ");
+        if (_g_num_log > 0) {
+            _g_num_log--;
+            // writefln("%x", _g_num_log);
+            if (get_flag(Flag.T)) write("THM ");
+            else write("ARM ");
 
-        //     write(format("0x%x ", instruction_set == InstructionSet.ARM ? arm_pipeline[0] : thumb_pipeline[0]));
+            // write(format("0x%x ", instruction_set == InstructionSet.ARM ? arm_pipeline[0] : thumb_pipeline[0]));
             
-        //     for (int j = 0; j < 16; j++)
-        //         write(format("%08x ", regs[j]));
+            for (int j = 0; j < 18; j++)
+            if (j != 15)
+                write(format("%08x ", regs[j]));
 
-        //     // write(format("%x ", *cpsr));
-        //     write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
-        //     writeln();
-        //     if (_g_num_log == 0) writeln();
-        // }
+            // write(format("%x ", *cpsr));
+            // write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
+            writeln();
+            if (_g_num_log == 0) writeln();
+        }
 
         if (instruction_set == InstructionSet.ARM) {
             Word opcode = fetch!Word();
@@ -151,7 +156,7 @@ final class ARM7TDMI : IARM7TDMI {
 
         // if (regs[pc] >> 24 == 0) _g_num_log += 20;
 
-        if (regs[pc] >> 28 > 0 ) error(format("oh fukc %x", regs[pc]));
+        if (regs[pc] <= 0xC) error(format("oh fukc %x", regs[pc]));
     }
 
     pragma(inline, true) Word get_reg(Reg id) {
@@ -244,6 +249,7 @@ final class ARM7TDMI : IARM7TDMI {
         bool had_interrupts_disabled = (get_cpsr() >> 7) & 1;
 
         set_cpsr((get_cpsr() & 0xFFFFFFE0) | new_mode.CPSR_ENCODING);
+        // writefln("setting the sussy cpsr to %x", get_cpsr());
         instruction_set = get_flag(Flag.T) ? InstructionSet.THUMB : InstructionSet.ARM;
         current_mode = new_mode;
 
@@ -328,18 +334,21 @@ final class ARM7TDMI : IARM7TDMI {
             register_file[mode.OFFSET + 14] += 4; // in an IRQ, the linkage register must point to the next instruction + 4
         }
 
+        // register_file[mode.OFFSET + 17] = cpsr;
         register_file[mode.OFFSET + 17] = cpsr;
+        // writefln("setting SPSR to %x", register_file[mode.OFFSET + 17]);
         set_mode!(mode);
+        cpsr = get_cpsr();
 
         cpsr |= (1 << 7); // disable normal interrupts
 
         static if (exception == CpuException.Reset || exception == CpuException.FIQ) {
             cpsr |= (1 << 6); // disable fast interrupts
         }
-
         regs[16] = cpsr;
 
         regs[pc] = get_address_from_exception!(exception);
+
         set_flag(Flag.T, false);
         memory.can_read_from_bios = true;
         
