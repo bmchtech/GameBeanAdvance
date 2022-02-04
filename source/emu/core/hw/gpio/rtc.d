@@ -66,7 +66,6 @@ class RTC_S_35180 {
 
     import std.stdio;
     void write(ubyte value) {
-        writefln("write %b", value);
 
         bool old_SCK = SCK;
         bool old_SIO = SIO;
