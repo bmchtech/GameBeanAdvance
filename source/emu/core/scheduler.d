@@ -93,7 +93,7 @@ final class Scheduler {
     }
 
     pragma(inline, true) void tick(ulong num_cycles) {
-        import host.sdl;
+        import ui.sdl;
         if (_g_num_log > 0) log!(LogSource.DEBUG)("Scheduler ticking for %d cycles", num_cycles);
         current_timestamp += num_cycles;
     }

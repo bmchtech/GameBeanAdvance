@@ -11,7 +11,7 @@ import util;
 import core.sync.mutex;
 import core.stdc.string;
 
-import host.sdl;
+import ui.sdl;
 
 // audiobuffer provides a way of adding sound to the buffer that the gba can use
 // the callback function callback() must be connected to sdl for this to function
