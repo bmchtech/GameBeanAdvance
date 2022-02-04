@@ -37,7 +37,7 @@ public:
         // should be big enough
         // this.audio_buffer            = new ubyte[sample_size * 8];
         this.audio_buffer_size       = 0;
-        this.bias                    = 0x100;
+        this.bias                    = 0;
 
         this.scheduler = scheduler;
 
@@ -129,11 +129,11 @@ private:
             // }
 
             // todo: make this code less repetitive
+        }
+        
 
             mixed_sample_L += bias * 2;
             mixed_sample_R += bias * 2;
-        }
-        
         // short mixed_sample = cast(short) (dma_sample_A + dma_sample_B + bias * 2);
         _audio_data.mutex.lock_nothrow();
         push_to_buffer(Channel.L, [mixed_sample_L]);

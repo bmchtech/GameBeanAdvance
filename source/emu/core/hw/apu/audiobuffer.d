@@ -20,7 +20,7 @@ import host.sdl;
 struct Buffer {
     short[] data;
     ulong   offset;
-    short   last_sample;
+    short   last_sample = 0;
 }
 
 struct AudioData {
@@ -62,7 +62,7 @@ extern (C) {
         AudioData* audio_data = cast(AudioData*) userdata;
         if (audio_data.mutex is null) return;
 
-        short* out_stream = cast(short*) stream;
+        short* out_stream = cast(short*) stream;        
 
         audio_data.mutex.lock_nothrow();
 
@@ -98,6 +98,7 @@ __gshared void push_to_buffer(Channel channel, short[] data) {
     if ((_audio_data.buffer[channel].offset + data.length) >= BUFFER_SIZE) return;
     for (int i = 0; i < data.length; i++) {
         _audio_data.buffer[channel].data[_audio_data.buffer[channel].offset + i] = data[i];
+        // writefln("pushed a sussy %x", data[i]);
     }
     _audio_data.buffer[channel].offset += data.length;
 }

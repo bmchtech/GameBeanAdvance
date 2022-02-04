@@ -128,7 +128,7 @@ final class ARM7TDMI : IARM7TDMI {
         if (Logger.instance) Logger.instance.capture_cpu();
         if (interrupt_manager.has_irq()) raise_exception!(CpuException.IRQ);
 
-        if (_g_num_log > 0) {
+        if (unlikely(_g_num_log > 0)) {
             _g_num_log--;
             // writefln("%x", _g_num_log);
             if (get_flag(Flag.T)) write("THM ");
