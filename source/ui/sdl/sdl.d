@@ -1,4 +1,4 @@
-module host.sdl;
+module ui.sdl;
 
 import hw.gba;
 import hw.apu;

@@ -1,3 +1,5 @@
+module app;
+
 import hw.gba;
 import hw.memory;
 import hw.keyinput;
@@ -15,7 +17,7 @@ import std.algorithm.searching: canFind;
 import bindbc.sdl;
 import bindbc.opengl;
 
-import host.sdl;
+import ui.sdl;
 
 import commandr;
 
