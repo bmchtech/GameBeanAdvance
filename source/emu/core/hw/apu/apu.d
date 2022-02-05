@@ -8,6 +8,8 @@ import hw.apu.channels.noise_channel;
 import hw.apu.channels.wave_channel;
 import hw.apu.channels.tone_channel;
 
+import ui.audio.device;
+
 import util;
 import scheduler;
 
@@ -23,6 +25,7 @@ final class APU {
 public:
 
     Scheduler scheduler;
+    void delegate(Sample) audio_callback;
 
     this(Memory memory, Scheduler scheduler, void delegate(DirectSound) on_fifo_empty) {
         dma_sounds = [
@@ -44,6 +47,10 @@ public:
         noise_channel = new NoiseChannel(scheduler);
         wave_channel  = new WaveChannel ();
         tone_channel  = new ToneChannel ();
+    }
+
+    void set_audio_callback(void delegate(Sample) audio_callback) {
+        this.audio_callback = audio_callback;
     }
 
     void on_timer_overflow(int timer_id) {
@@ -112,9 +119,6 @@ private:
             if (get_nth_bit(analog_channels_enable_L, 3)) mixed_sample_L += noise_channel.sample(sample_rate);
             if (get_nth_bit(analog_channels_enable_R, 3)) mixed_sample_R += noise_channel.sample(sample_rate);
 
-            psg_volume.apply(&mixed_sample_L);
-            psg_volume.apply(&mixed_sample_R);
-
             mixed_sample_L = cast(short) ((mixed_sample_L >> 3) * analog_channels_volume_L);
             mixed_sample_R = cast(short) ((mixed_sample_R >> 3) * analog_channels_volume_R);
 
@@ -135,10 +139,7 @@ private:
             mixed_sample_L += bias * 2;
             mixed_sample_R += bias * 2;
         // short mixed_sample = cast(short) (dma_sample_A + dma_sample_B + bias * 2);
-        _audio_data.mutex.lock_nothrow();
-        push_to_buffer(Channel.L, [mixed_sample_L]);
-        push_to_buffer(Channel.R, [mixed_sample_R]);
-        _audio_data.mutex.unlock_nothrow();
+        audio_callback(Sample(mixed_sample_L, mixed_sample_R));
         
         scheduler.add_event_relative_to_self(&sample, sample_rate);
     }
@@ -160,8 +161,6 @@ private:
 // .RRRR.....RRRR.EEEEEEEEEEEEE...GGGGGGGGG....IIII...SSSSSSSSS.......TTTT......EEEEEEEEEEEEE.RRR.....RRRRR..SSSSSSSSSS...
 
 private:
-    // SOUNDCNT_H
-    VolumeEffect!4 psg_volume = new VolumeEffect!4();
 
     // SOUNDBIAS
     short bias;
@@ -276,8 +275,6 @@ public:
                 psg_volume_index                 = get_nth_bits(data, 0, 2);
                 dma_sounds[DirectSound.A].volume = get_nth_bit (data, 2);
                 dma_sounds[DirectSound.B].volume = get_nth_bit (data, 3);
-
-                psg_volume.volume                = (cast(uint[])[1, 2, 4, 0])[psg_volume_index];
                 break;
                 
             case 0b1:

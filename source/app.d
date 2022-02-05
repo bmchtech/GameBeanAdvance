@@ -17,7 +17,7 @@ import std.algorithm.searching: canFind;
 import bindbc.sdl;
 import bindbc.opengl;
 
-import ui.sdl;
+import ui.video.sdl.sdl;
 
 import commandr;
 

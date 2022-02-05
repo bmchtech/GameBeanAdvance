@@ -14,6 +14,8 @@ import hw.sio.sio;
 import scheduler;
 import util;
 
+import ui.audio.device;
+
 import std.math;
 import std.stdio;
 
@@ -77,6 +79,10 @@ public:
 
     void set_frontend_vblank_callback(void delegate() frontend_vblank_callback) {
         ppu.set_frontend_vblank_callback(frontend_vblank_callback);
+    }
+
+    void set_audio_device(AudioDevice audio_device) {
+        apu.set_audio_callback(&audio_device.push_sample);
     }
 
     void set_internal_sample_rate(uint sample_rate) {

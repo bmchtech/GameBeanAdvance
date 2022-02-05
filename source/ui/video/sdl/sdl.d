@@ -1,4 +1,4 @@
-module ui.sdl;
+module ui.video.sdl.sdl;
 
 import hw.gba;
 import hw.apu;
@@ -19,6 +19,8 @@ import std.stdio;
 import std.conv;
 import std.mmfile;
 import std.file;
+
+import ui.audio.sdl.sdldevice;
 
 import core.sync.mutex;
 
@@ -190,27 +192,13 @@ final class GameBeanSDLHost {
 
         SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest"); // scale with pixel-perfect interpolation
         
-        SDL_AudioSpec wanted;
-        SDL_AudioSpec received;
+        audio_device = new SDLAudioDevice();
+
+        _gba.set_internal_sample_rate(16_780_000 / audio_device.spec.freq);
+        _gba.set_audio_device(audio_device);
         
-        /* Set the audio format */
-        wanted.freq = 44100;
-        wanted.format = AUDIO_S16LSB;
-        wanted.channels = 2;    /* 1 = mono, 2 = stereo */
-        wanted.samples = 1024;  /* Good low-latency value for callback */
-        wanted.userdata = hw.apu.audiobuffer.get_audio_data();
-        wanted.callback = &hw.apu.audiobuffer.callback;
-
-        int output = SDL_OpenAudio(&wanted, &received);
-        if (output < 0) {
-            log!(LogSource.INIT)("Couldn't open audio: %s\n", SDL_GetError());
-        } else {
-            log!(LogSource.INIT)("Established SDL audio connection.");
-        }
-
-        _gba.set_internal_sample_rate(16_780_000 / received.freq);
-        this.sample_rate      = received.freq;
-        _samples_per_callback = received.samples;
+        this.sample_rate      = audio_device.spec.freq;
+        _samples_per_callback = audio_device.spec.samples;
 
 
         // time to detect the savetype
@@ -230,6 +218,7 @@ final class GameBeanSDLHost {
         }
     }
 
+    SDLAudioDevice audio_device;
     int fps = 0;
     bool fast_forward = false;
 
@@ -284,7 +273,7 @@ final class GameBeanSDLHost {
 
             if (_gba.enabled) {
                 if (!fast_forward) {
-                    while (_samples_per_callback * 2 > _audio_data.buffer[Channel.L].offset) {
+                    while (_samples_per_callback * 2 > audio_buffer_offset) {
                         _gba.cycle_at_least_n_times(_cycles_per_batch);
                     }
                 } else {
