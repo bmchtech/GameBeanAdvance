@@ -79,8 +79,9 @@ final class PrefetchBuffer {
         bool was_paused = this.paused;
         this.paused = false;
         run(cycles_till_access_complete);
+
         import ui.video.sdl.sdl;
-        _gba.scheduler.tick(cycles_till_access_complete);
+        memory.scheduler.tick(cycles_till_access_complete);
 
         this.paused = was_paused;
     }

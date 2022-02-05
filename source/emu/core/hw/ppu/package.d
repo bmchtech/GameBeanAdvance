@@ -8,4 +8,6 @@ public {
     import hw.ppu.point;
     import hw.ppu.layer;
     import hw.ppu.palette;
+    
+    import ui.video.device;
 }
