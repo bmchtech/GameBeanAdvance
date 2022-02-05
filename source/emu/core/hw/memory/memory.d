@@ -432,7 +432,6 @@ final class Memory : IMemory {
             static if (is(T == uint))   string size = "word";
             static if (is(T == ushort)) string size = "half";
             static if (is(T == ubyte))  string size = "byte";
-            import ui.sdl;
             log!(LogSource.MEMORY)("Attempted to read a %s from an invalid region of memory: [0x%08x] = 0x%" ~ to!string(T.sizeof) ~ "x", size, address, cast(T) open_bus_value);
         }
 

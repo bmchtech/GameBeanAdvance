@@ -1,0 +1,54 @@
+{
+    "name": "dimgui",
+
+    "description": "dimgui is a D port of the imgui OpenGL GUI library",
+
+    "authors": [
+        "Mikko Mononen",
+        "Adrien Herubel",
+        "Andrej Mitrovic"
+    ],
+
+    "homepage": "https://github.com/d-gamedev-team/dimgui",
+
+    "copyright": "Copyright (c) 2009-2010 Mikko Mononen memon@inside.org",
+
+    "license": "zlib",
+
+    "targetName": "imgui",
+
+    "targetType": "staticLibrary",
+
+    "targetPath" : "bin",
+
+    "sourcePaths": [
+        "src"
+    ],
+
+    "libs-posix": [
+        "dl",
+        "glfw"
+    ],
+
+    "libs-linux": [
+        "GL",
+        "Xrandr",
+        "Xext",
+        "Xxf86vm",
+        "Xi",
+        "Xcursor",
+        "Xinerama",
+        "X11"
+    ],
+
+    "libs-windows": ["glfw3dll"],
+
+    "lflags-windows-x86": ["/LIBPATH:$PACKAGE_DIR\\lib\\x86"],
+    "lflags-windows-x86_64": ["/LIBPATH:$PACKAGE_DIR\\lib\\x86-64"],
+
+    "subPackages": [
+        "examples/colors",
+        "examples/demo",
+        "examples/memory"
+    ]
+}

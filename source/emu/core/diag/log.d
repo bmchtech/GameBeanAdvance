@@ -26,7 +26,7 @@ static ulong get_largest_logsource_length()(){
 
 // thanks https://github.com/dlang/phobos/blob/4239ed8ebd3525206453784908f5d37c82d338ee/std/outbuffer.d
 void log(LogSource log_source, Char, A...)(scope const(Char)[] fmt, A args) {
-    import ui.sdl;
+    import ui.video.sdl.sdl;
     import std.format.write : formattedWrite;
     import std.conv;
 

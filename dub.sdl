@@ -15,6 +15,8 @@ dependency "silly" version="~>1.1.1"
 dependency "gamebean-jumptable" path="jumptable"
 dependency "gamebean-common" path="common"
 
+excludeSourceFiles "source/ui/video/imgui/*"
+
 configuration "default" {
     versions "default"
 }
