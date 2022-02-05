@@ -1,10 +1,6 @@
 module hw.ppu.pixel;
 
-struct Pixel {
-    uint r;
-    uint g;
-    uint b;
-}
+import hw.ppu;
 
 Pixel get_pixel_from_color(ushort color) {
     return Pixel((color >>  0) & 0x1F, 

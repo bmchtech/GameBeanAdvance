@@ -578,10 +578,6 @@ final class Memory : IMemory {
         scheduler.tick(prefetch_buffer.cycles_till_access_complete);
         prefetch_buffer.finish_current_prefetch();
     }
-    
-    pragma(inline, true) void set_rgb(uint x, uint y, ubyte r, ubyte g, ubyte b) {
-        video_buffer[x][y] = (r << 0) | (g << 8) | (b << 16) | (0xff << 24);
-    }
 
     pragma(inline, true) uint calculate_stalls_for_access(T)(uint region, AccessType access_type) {
         static if (is(T == uint  )) return waitstates[region][access_type][AccessSize.WORD];

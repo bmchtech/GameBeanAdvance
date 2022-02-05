@@ -15,6 +15,7 @@ import scheduler;
 import util;
 
 import ui.audio.device;
+import ui.video.device;
 
 import std.math;
 import std.stdio;
@@ -77,12 +78,12 @@ public:
         memory.bios[0 .. bios.length] = bios[0 .. bios.length];
     }
 
-    void set_frontend_vblank_callback(void delegate() frontend_vblank_callback) {
-        ppu.set_frontend_vblank_callback(frontend_vblank_callback);
-    }
-
     void set_audio_device(AudioDevice audio_device) {
         apu.set_audio_callback(&audio_device.push_sample);
+    }
+
+    void set_video_device(VideoDevice video_device) {
+        ppu.set_frontend_vblank_callback(&video_device.render);
     }
 
     void set_internal_sample_rate(uint sample_rate) {

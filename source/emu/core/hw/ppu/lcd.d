@@ -11,9 +11,6 @@ import std.stdio;
 import std.typecons;
 import std.algorithm;
 
-enum SCREEN_WIDTH  = 240;
-enum SCREEN_HEIGHT = 160;
-
 enum AffineParameter {
     A = 0,
     B = 1,
@@ -31,7 +28,7 @@ public:
     void delegate(uint) interrupt_cpu;
     void delegate(uint) on_hblank_callback;
     void delegate()     on_vblank_callback;
-    void delegate()     frontend_vblank_callback;
+    void delegate(Pixel[SCREEN_HEIGHT][SCREEN_WIDTH]) frontend_vblank_callback;
     
     enum Pixel RESET_PIXEL = Pixel(0, 0, 0);
 
@@ -39,7 +36,7 @@ public:
 
     Canvas canvas;
 
-    Pixel[SCREEN_WIDTH][SCREEN_HEIGHT] screen;
+    Pixel[SCREEN_HEIGHT][SCREEN_WIDTH] screen;
 
     Scheduler scheduler;
 
@@ -57,11 +54,11 @@ public:
         scheduler.add_event_relative_to_clock(&on_hblank_start, 240 * 4);
         // scheduler.add_event_relative_to_self(&on_vblank_start, 308 * 160 * 4);
 
-        // background_init(memory);
+        frame_buffer = new Pixel[SCREEN_HEIGHT][SCREEN_WIDTH];
         enabled = true;
     }
 
-    void set_frontend_vblank_callback(void delegate() frontend_vblank_callback) {
+    void set_frontend_vblank_callback(void delegate(Pixel[SCREEN_HEIGHT][SCREEN_WIDTH]) frontend_vblank_callback) {
         this.frontend_vblank_callback = frontend_vblank_callback;
     }
 
@@ -139,8 +136,7 @@ public:
 
     void on_vblank_end() {
         vblank = false;
-        frontend_vblank_callback();
-
+        frontend_vblank_callback(frame_buffer);
         // scheduler.add_event_relative_to_self(&on_vblank_start, 308 * 160 * 4);
     }
 
@@ -154,9 +150,14 @@ public:
 
         for (int x = 0; x < SCREEN_WIDTH;  x++) {
         for (int y = 0; y < SCREEN_HEIGHT; y++) {
-            memory.set_rgb(x, y, 0, 0, 0);
+            draw(x, y, Pixel(0, 0, 0));
         }
         }
+    }
+
+    Pixel[SCREEN_HEIGHT][SCREEN_WIDTH] frame_buffer;
+    void draw(int x, int y, Pixel p) {
+        frame_buffer[x][y] = p;
     }
 
     void render() {
@@ -664,9 +665,7 @@ private:
 
     void display_scanline() {
         for (int x = 0; x < SCREEN_WIDTH;  x++) {
-            memory.set_rgb(x, scanline, cast(ubyte) (canvas.pixels_output[x].r << 3), 
-                                        cast(ubyte) (canvas.pixels_output[x].g << 3), 
-                                        cast(ubyte) (canvas.pixels_output[x].b << 3));
+            draw(x, cast(int) scanline, canvas.pixels_output[x]);
         }
     }
 
