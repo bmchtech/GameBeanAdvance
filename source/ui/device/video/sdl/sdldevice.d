@@ -1,4 +1,4 @@
-module ui.video.sdl.sdldevice;
+module ui.device.video.sdl.sdldevice;
 
 import bindbc.sdl;
 import bindbc.opengl;
@@ -16,6 +16,8 @@ final class SDLVideoDevice : VideoDevice {
     SDL_Texture* screen_tex;
     
     GLuint gl_texture;
+
+    bool fast_forward = false;
 
     this() {
         auto screen_scale = 1;
@@ -132,7 +134,7 @@ final class SDLVideoDevice : VideoDevice {
     }
     
     uint fps = 0;
-    void render(Pixel[SCREEN_HEIGHT][SCREEN_WIDTH] buffer) {
+    override void render(Pixel[SCREEN_HEIGHT][SCREEN_WIDTH] buffer) {
         fps++;
 
         uint[SCREEN_HEIGHT * SCREEN_WIDTH] gl_buffer;
@@ -166,27 +168,24 @@ final class SDLVideoDevice : VideoDevice {
         glEnd();
 
         auto glerror = glGetError();
-        if( glerror != GL_NO_ERROR ) {
+        if (glerror != GL_NO_ERROR) {
             error(format("OpenGL error: %s", glerror));
         }
 
         SDL_GL_SwapWindow(window);
+    }
 
-        // SDL_Event event;
-        // while (SDL_PollEvent(&event)) {
-        //     switch (event.type) {
-        //     case SDL_QUIT:
-        //         exit();
-        //         break;
-        //     case SDL_KEYDOWN:
-        //         on_input(event.key.keysym.sym, true);
-        //         break;
-        //     case SDL_KEYUP:
-        //         on_input(event.key.keysym.sym, false);
-        //         break;
-        //     default:
-        //         break;
-        //     }
-        // }
+    override void notify(Event e) {
+        final switch (e) {
+            case Event.FAST_FORWARD:           break;
+            case Event.UNFAST_FORWARD:         break;
+            case Event.STOP:                   stop(); break;
+            case Event.AUDIO_BUFFER_LOW:       break;
+            case Event.AUDIO_BUFFER_SATURATED: break;
+        }
+    }
+
+    void stop() {
+        SDL_DestroyWindow(window);
     }
 }

@@ -16,6 +16,7 @@ import util;
 
 import ui.audio.device;
 import ui.video.device;
+import ui.input.device;
 
 import std.math;
 import std.stdio;
@@ -84,6 +85,10 @@ public:
 
     void set_video_device(VideoDevice video_device) {
         ppu.set_frontend_vblank_callback(&video_device.render);
+    }
+
+    void set_input_Device(InputDevice input_device) {
+        input_device.set_callbacks(&key_input.set_key, &beancomputer.set_key);
     }
 
     void set_internal_sample_rate(uint sample_rate) {

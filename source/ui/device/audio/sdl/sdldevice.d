@@ -1,4 +1,4 @@
-module ui.audio.sdl.sdldevice;
+module ui.device.audio.sdl.sdldevice;
 
 import ui.audio.device;
 
@@ -38,24 +38,28 @@ final class SDLAudioDevice : AudioDevice {
             log!(LogSource.INIT)("Established SDL audio connection.");
         }
 
+        super(wanted.samples / 4, wanted.samples);
+
         audio_buffer        = new Sample[BUFFER_SIZE];
         audio_buffer_offset = 0;
         audio_mutex         = new Mutex();
     }
 
-    void push_sample(Sample s) {
+    override void push_sample(Sample s) {
         if (audio_buffer_offset >= BUFFER_SIZE) return;
 
         audio_mutex.lock_nothrow();
         audio_buffer[audio_buffer_offset++] = s;
         audio_mutex.unlock_nothrow();
+
+        if (audio_buffer_offset >= super.saturation_point) notify_observers(Event.AUDIO_BUFFER_SATURATED);
     }
 
-    void pause() {
+    override void pause() {
         SDL_PauseAudio(1);
     }
 
-    void play() {
+    override void play() {
         SDL_PauseAudio(0);
     }
 
@@ -78,5 +82,17 @@ final class SDLAudioDevice : AudioDevice {
             }
 
         audio_mutex.unlock_nothrow();
+
+        if (audio_buffer_offset <= super.low_point) notify_observers(Event.AUDIO_BUFFER_LOW);
+    }
+
+    override void notify(Event e) {
+        final switch (e) {
+            case Event.FAST_FORWARD:           break;
+            case Event.UNFAST_FORWARD:         break;
+            case Event.STOP:                   stop(); break;
+            case Event.AUDIO_BUFFER_LOW:       break;
+            case Event.AUDIO_BUFFER_SATURATED: break;
+        }
     }
 }

@@ -22,6 +22,10 @@ import bindbc.opengl;
 
 import ui.video.sdl.sdldevice;
 import ui.audio.sdl.sdldevice;
+import ui.input.sdl.kbm;
+import ui.video.device;
+import ui.audio.device;
+import ui.input.device;
 
 import commandr;
 
@@ -62,8 +66,9 @@ void main(string[] args) {
 	if (is_beancomputer) log!(LogSource.INIT)("BeanComputer enabled");
 
 
-    SDLAudioDevice audio_device;
-    SDLVideoDevice video_device;
+    AudioDevice audio_device;
+    VideoDevice video_device;
+    InputDevice input_device;
 
 	KeyInput key_input = new KeyInput(mem);
 	auto bios_data = load_rom_as_bytes(a.option("bios"));
@@ -101,11 +106,14 @@ void main(string[] args) {
 	gba.set_internal_sample_rate(16_780_000 / audio_device.spec.freq);
 	gba.set_audio_device(audio_device);
 	
-	auto sample_rate      = audio_device.spec.freq;
+	auto sample_rate          = audio_device.spec.freq;
 	auto samples_per_callback = audio_device.spec.samples;
 
 	video_device = new SDLVideoDevice();
 	gba.set_video_device(video_device);
+
+	input_device = new SDLInputDevice_KBM();
+	gba.set_input_device(input_device);
 
 		
 	// auto host = new GameBeanSDLHost(gba, to!int(a.option("scale")));
@@ -187,6 +195,8 @@ void main(string[] args) {
 			// TODO: figure out wtf to do here
 			// video_device.();
 		}
+
+		input_device.handle_input();
 		// frame();
 
 		// if (clockfor_log > msec_per_log) {
