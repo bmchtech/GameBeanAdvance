@@ -13,4 +13,5 @@ struct Pixel {
 
 abstract class VideoDevice : Observer {
     void render(Pixel[SCREEN_HEIGHT][SCREEN_WIDTH] buffer);
+    void reset_fps();
 }
