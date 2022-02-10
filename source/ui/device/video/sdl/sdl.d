@@ -1,161 +1,198 @@
-// module ui.device.video.sdl.sdl;
+module ui.device.video.sdl.sdl;
 
-// import hw.gba;
-// import hw.apu;
-// import hw.cpu;
-// import save;
+import bindbc.sdl;
+import bindbc.opengl;
+import bindbc.sdl.image;
 
-// import diag.cputrace;
-// import diag.logger;
-// import diag.log;
+import std.conv;
 
-// import util;
+import util;
 
-// import bindbc.sdl;
-// import bindbc.opengl;
-// import bindbc.sdl.image;
+import ui.device.video.device;
+import ui.device.event;
 
-// import std.stdio;
-// import std.conv;
-// import std.mmfile;
-// import std.file;
+final class SDLVideoDevice : VideoDevice {
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    SDL_Texture* screen_tex;
+    
+    GLuint gl_texture;
 
-// import ui.device.audio.sdl.sdldevice;
+    bool fast_forward = false;
 
-// import core.sync.mutex;
+    this() {
+        auto screen_scale = 1;
+        window = SDL_CreateWindow(
+            "GameBean Advance", 
+            SDL_WINDOWPOS_CENTERED,
+            SDL_WINDOWPOS_CENTERED, 
+            SCREEN_WIDTH * screen_scale,
+            SCREEN_HEIGHT * screen_scale, 
+            SDL_WINDOW_OPENGL
+        );
 
-// version (Imgui) {
-//     import derelict.imgui.imgui;
-// }
+        if (window == null) error("SDL window init failed!");
 
-// __gshared GBA _gba;
-// __gshared int _samples_per_callback;
-// __gshared int _cycles_per_batch;
+        SDL_GLContext gContext = SDL_GL_CreateContext(window);
+        if (gContext == null) {
+            error(format("OpenGL context couldn't be created! SDL Error: %s", SDL_GetError()));
+        }
 
-// final class GameBeanSDLHost {
-//     Mutex gba_batch_enable_mutex;
-//     bool gba_batch_enable = false;
-
-//     this(GBA gba, int screen_scale) {
-//         _gba = gba;
-//         this.screen_scale = screen_scale;
-//         gba_batch_enable_mutex = new Mutex();
-//     }
-
-//     uint prog_id;
-//     GLint g_AttribLocationVtxColor;
-
-//     void init() {
-
-//     }
-
-//     int fps = 0;
-//     bool fast_forward = false;
-
-//     void exit() {
-//         SDL_DestroyWindow(window);
-//         SDL_Quit();
+        const GLSupport openglLoaded = loadOpenGL();
+        if (openglLoaded != glSupport) {
+            error(format("Error loading OpenGL shared library: %s", to!string(openglLoaded)));
+        }
         
-//         running = false;
-//     }
-
-//     int frame_count;
-//     bool running;
-//     SDL_Window* window;
-//     SDL_Renderer* renderer;
-//     SDL_Texture* screen_tex;
-//     uint[] pixels;
-//     enum GBA_SCREEN_WIDTH = 240;
-//     enum GBA_SCREEN_HEIGHT = 160;
-//     int screen_scale;
-
-//     bool cpu_tracing_enabled = false;
-//     CpuTrace trace;
-
-//     GLuint gl_texture;
-
-//     void enable_cpu_tracing(int trace_length) {
-//         cpu_tracing_enabled = true;
-//         trace = new CpuTrace(_gba.cpu, trace_length);
-//         Logger.singleton(trace);
-//         log!(LogSource.DEBUG)("Enabled CPU trace logging");
-//     }
-
-//     void print_trace() {
-//         if (cpu_tracing_enabled)
-//             trace.print_trace();
-//     }
-
-//     int counter = 0;
-//     float f = 0;
-
-// private:
-//     uint sample_rate;
-
-//     void frame() {
-//         fps++;
-//         // sync from GBA video buffer
-//         for (int j = 0; j < GBA_SCREEN_HEIGHT; j++) {
-//             for (int i = 0; i < GBA_SCREEN_WIDTH; i++) {
-//                 auto p = _gba.memory.video_buffer[i][j];
-//                 pixels[j * (GBA_SCREEN_WIDTH) + i] = p;
-//             }
-//         }
-
-//         // SDL_RenderClear(renderer);
-
-//         // // copy pixel buffer to texture
-//         // auto px_vp = cast(void*) pixels;
-//         // SDL_UpdateTexture(screen_tex, null, px_vp, GBA_SCREEN_WIDTH * 4);
-
-//         // // copy texture to scren
-//         // const SDL_Rect dest = SDL_Rect(0, 0, GBA_SCREEN_WIDTH * screen_scale, GBA_SCREEN_HEIGHT * screen_scale);
-//         // SDL_RenderCopy(renderer, screen_tex, null, &dest);
-
-//         // render present
-//         // SDL_RenderPresent(renderer);
-//         glClearColor(0, 0, 0, 1);
-//         glClear(GL_COLOR_BUFFER_BIT);
-
-//         glActiveTexture(GL_TEXTURE0);
-//         glBindTexture(GL_TEXTURE_2D, gl_texture);
-//         glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,GBA_SCREEN_WIDTH,GBA_SCREEN_HEIGHT,0,GL_RGBA,GL_UNSIGNED_BYTE, cast(void*) pixels);
-
-//         // glBufferData(GL_ARRAY_BUFFER, 240*160*4, cast(void*) pixels, GL_STREAM_DRAW);
+        version(OSX) {
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+        } else {
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+        }
         
-//         glBegin(GL_QUADS);
-//         glTexCoord2f(0.0f, 1.0f);
-//         glVertex2f(-1.0f, -1.0f);
-//         glTexCoord2f(1.0f, 1.0f);
-//         glVertex2f(1.0f, -1.0f);
-//         glTexCoord2f(1.0f, 0.0f);
-//         glVertex2f(1.0f, 1.0f);
-//         glTexCoord2f(0.0f, 0.0f);
-//         glVertex2f(-1.0f, 1.0f);
-//         glEnd();
+        SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-//         auto glerror = glGetError();
-//         if( glerror != GL_NO_ERROR ) {
-//             error(format("open gl error: %s", glerror));
-//         }
+        SDL_GL_SetSwapInterval(0);
 
-//         SDL_GL_SwapWindow(window);
+        glGenTextures(1, &gl_texture);
 
-//         SDL_Event event;
-//         while (SDL_PollEvent(&event)) {
-//             switch (event.type) {
-//             case SDL_QUIT:
-//                 exit();
-//                 break;
-//             case SDL_KEYDOWN:
-//                 on_input(event.key.keysym.sym, true);
-//                 break;
-//             case SDL_KEYUP:
-//                 on_input(event.key.keysym.sym, false);
-//                 break;
-//             default:
-//                 break;
-//             }
-//         }
-//     }
-// }
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        glEnable(GL_TEXTURE_2D);
+        glGenTextures(1, &gl_texture);
+        glBindTexture(GL_TEXTURE_2D, gl_texture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        GLuint sv = glCreateShader(GL_VERTEX_SHADER);
+
+        static import shader.test;
+        const GLchar* codev = shader.test.vertex_shader;
+        glShaderSource(sv, 1, &codev, null);
+        glCompileShader(sv);
+
+        GLint isCompiled = 0;
+        glGetShaderiv(sv, GL_COMPILE_STATUS, &isCompiled);
+        if (isCompiled == GL_FALSE) {
+            GLint maxLength = 300;
+            glGetShaderiv(sv, GL_INFO_LOG_LENGTH, &maxLength);
+            char[300] errorLog;
+
+            glGetShaderInfoLog(sv, maxLength, &maxLength, &errorLog[0]);
+
+            glDeleteShader(sv);
+            error(cast(string) errorLog);
+            return;
+        }
+
+        GLuint sf = glCreateShader(GL_FRAGMENT_SHADER);
+
+        static import shader.test;
+        const GLchar* codef = shader.test.fragment_shader;
+        glShaderSource(sf, 1, &codef, null);
+        glCompileShader(sf);
+
+        isCompiled = 0;
+        glGetShaderiv(sf, GL_COMPILE_STATUS, &isCompiled);
+        if (isCompiled == GL_FALSE) {
+            GLint maxLength = 300;
+            glGetShaderiv(sf, GL_INFO_LOG_LENGTH, &maxLength);
+            char[300] errorLog;
+
+            glGetShaderInfoLog(sf, maxLength, &maxLength, &errorLog[0]);
+
+            glDeleteShader(sf);
+            error(cast(string) errorLog);
+            return;
+        }
+
+        auto prog_id = glCreateProgram();
+        glAttachShader(prog_id, sv);
+        glAttachShader(prog_id, sf);
+
+        glLinkProgram(prog_id);
+
+
+        uint y;
+        glGenBuffers(1, &y);
+
+        glBindBuffer(GL_ARRAY_BUFFER, y);
+
+        glUseProgram(prog_id);
+        
+        glDeleteShader(sv);
+        glDeleteShader(sf);
+
+        SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
+    }
+    
+    uint fps = 0;
+    override void render(Pixel[SCREEN_HEIGHT][SCREEN_WIDTH] buffer) {
+        fps++;
+
+        uint[SCREEN_HEIGHT * SCREEN_WIDTH] gl_buffer;
+        for (int i = 0; i < SCREEN_WIDTH; i++) {
+        for (int j = 0; j < SCREEN_HEIGHT; j++) {
+            Pixel p = buffer[i][j];
+            gl_buffer[j * (SCREEN_WIDTH) + i] = 
+                (0xFF << 24) | 
+                ((p.b << 3) << 16) |
+                ((p.g << 3) << 8)  |
+                ((p.r << 3) << 0);
+        }
+        }
+
+        glClearColor(0, 0, 0, 1);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, gl_texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, cast(void*) gl_buffer);
+        
+        glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 1.0f);
+        glVertex2f(-1.0f, -1.0f);
+        glTexCoord2f(1.0f, 1.0f);
+        glVertex2f(1.0f, -1.0f);
+        glTexCoord2f(1.0f, 0.0f);
+        glVertex2f(1.0f, 1.0f);
+        glTexCoord2f(0.0f, 0.0f);
+        glVertex2f(-1.0f, 1.0f);
+        glEnd();
+
+        auto glerror = glGetError();
+        if (glerror != GL_NO_ERROR) {
+            error(format("OpenGL error: %s", glerror));
+        }
+
+        SDL_GL_SwapWindow(window);
+    }
+
+    override void reset_fps() {
+        SDL_SetWindowTitle(window, cast(char*) ("FPS: " ~ format("%d", fps)));
+        fps = 0;
+    }
+
+    override void notify(Event e) {
+        final switch (e) {
+            case Event.FAST_FORWARD:           break;
+            case Event.UNFAST_FORWARD:         break;
+            case Event.STOP:                   stop(); break;
+            case Event.AUDIO_BUFFER_LOW:       break;
+            case Event.AUDIO_BUFFER_SATURATED: break;
+            case Event.POLL_INPUT:             break;
+        }
+    }
+
+    void stop() {
+        SDL_DestroyWindow(window);
+    }
+}
