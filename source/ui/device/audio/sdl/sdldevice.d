@@ -1,4 +1,4 @@
-module ui.device.audio.sdl.sdldevice;
+module ui.device.audio.sdl.sdl;
 
 import ui.device.audio.device;
 import ui.device.event;
