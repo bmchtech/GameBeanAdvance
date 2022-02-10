@@ -20,7 +20,6 @@ __gshared Sample[] audio_buffer;
 __gshared size_t   audio_buffer_offset;
 __gshared Sample   last_sample = Sample(0, 0);
 __gshared Mutex    audio_mutex;
-__gshared uint     g_low_point;
 
 final class SDLAudioDevice : AudioDevice {
     SDL_AudioSpec spec;
@@ -42,12 +41,9 @@ final class SDLAudioDevice : AudioDevice {
             log!(LogSource.INIT)("Established SDL audio connection.");
         }
 
-        super(wanted.samples / 4, wanted.samples);
-
         audio_buffer        = new Sample[BUFFER_SIZE];
         audio_buffer_offset = 0;
         audio_mutex         = new Mutex();
-        g_low_point         = low_point;
     }
 
     override void push_sample(Sample s) {
@@ -108,5 +104,9 @@ final class SDLAudioDevice : AudioDevice {
 
     override uint get_samples_per_callback() {
         return spec.samples;
+    }
+
+    override size_t get_buffer_size() {
+        return audio_buffer_offset;
     }
 }

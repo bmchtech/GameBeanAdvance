@@ -5,56 +5,87 @@ import ui.device.event;
 
 import hw.gba;
 
+import ui.device.video.device;
+import ui.device.audio.device;
+import ui.device.input.device;
+
+import bindbc.sdl;
+
 import core.sync.mutex;
 
 class Runner : Observer {
     GBA gba;
-    bool fast_forward = true;
+    bool fast_forward = false;
 
     Mutex should_cycle_gba_mutex;
-    bool should_cycle_gba;
+    bool should_cycle_gba = true;
     uint cycles_per_batch;
 
-    this(GBA gba, uint cycles_per_batch) {
+    VideoDevice video_device;
+    AudioDevice audio_device;
+    InputDevice input_device;
+
+    size_t sync_to_audio_lower;
+    size_t sync_to_audio_upper;
+
+    ulong start_timestamp;
+
+    bool running = true;
+
+    this(GBA gba, uint cycles_per_batch, VideoDevice video_device, AudioDevice audio_device, InputDevice input_device) {
         this.gba = gba;
         this.cycles_per_batch = cycles_per_batch;
+
+        this.video_device = video_device;
+        this.audio_device = audio_device;
+        this.input_device = input_device;
+
+        this.should_cycle_gba_mutex = new Mutex();
+
+        this.sync_to_audio_lower = audio_device.get_samples_per_callback() / 2;
+        this.sync_to_audio_upper = audio_device.get_samples_per_callback();
+    }
+
+    void tick() {
+        input_device.handle_input();
+
+        auto buffer_size = audio_device.get_buffer_size();
+        if (buffer_size > sync_to_audio_upper) set_should_cycle_gba(false);
+        if (buffer_size < sync_to_audio_lower) set_should_cycle_gba(true);
+        
+		ulong end_timestamp = SDL_GetTicks();
+		ulong elapsed = end_timestamp - start_timestamp;
+        if (elapsed > 1000) {
+            video_device.reset_fps();
+            start_timestamp = end_timestamp;
+        }
     }
 
     void run() {
-        while (true) {
+        start_timestamp = SDL_GetTicks();
+
+        while (running) {
             if (gba.enabled) {
-                while (fast_forward) {
+                // i separated the ifs so fast fowarding doesn't
+                // incur a mutex call from get_should_cycle_gba
+                if (fast_forward) {
                     gba.cycle_at_least_n_times(cycles_per_batch);
-                    notify_observers(Event.POLL_INPUT);
+                } else {
+                    if (get_should_cycle_gba()) {
+                        gba.cycle_at_least_n_times(cycles_per_batch);
+                    }
                 }
-                
-                should_cycle_gba_mutex.lock_nothrow();
-                while (should_cycle_gba) {
-                    gba.cycle_at_least_n_times(cycles_per_batch);
-                    notify_observers(Event.POLL_INPUT);
-                }
-                should_cycle_gba_mutex.unlock_nothrow();
+
+                tick();
             }
-
-	long clockfor_log = 0;
-	ulong cycles_since_last_log = 0;
-
-	ulong cycle_timestamp = 0;
-
-	ulong start_timestamp = SDL_GetTicks();
-
-	// while (running) {
-	// 	ulong end_timestamp = SDL_GetTicks();
-	// 	ulong elapsed = end_timestamp - start_timestamp;
-	// 	start_timestamp = end_timestamp;
-
-            // if (clockfor_log > msec_per_log) {
-            //     SDL_SetWindowTitle(window, cast(char*) ("FPS: " ~ format("%d", fps)));
-            //     clockfor_log = 0;
-            //     cycles_since_last_log = 0;
-            //     fps = 0;
-            // }
         }
+    }
+
+    bool get_should_cycle_gba() {
+        should_cycle_gba_mutex.lock_nothrow();
+        bool temp = should_cycle_gba;
+        should_cycle_gba_mutex.unlock_nothrow();
+        return temp;
     }
 
     override void notify(Event e) {
@@ -75,6 +106,6 @@ class Runner : Observer {
     }
 
     void stop() {
-
+        running = false;
     }
 }

@@ -14,8 +14,9 @@ src/jumptable/jumptable-thumb.cpp
 src/jumptable/jumptable-thumb.h
 
 src/emu/*.log
+gamebean-emu
 
-.dub/	
+.dub/
 *.dSYM/
 gba_bios.bin
 gba.dSYM/
