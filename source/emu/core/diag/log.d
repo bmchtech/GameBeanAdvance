@@ -26,14 +26,13 @@ static ulong get_largest_logsource_length()(){
 
 // thanks https://github.com/dlang/phobos/blob/4239ed8ebd3525206453784908f5d37c82d338ee/std/outbuffer.d
 void log(LogSource log_source, Char, A...)(scope const(Char)[] fmt, A args) {
-    import ui.video.sdl.sdl;
+    // import ui.device.video.sdl.sdl;
     import std.format.write : formattedWrite;
     import std.conv;
 
-
     static if (log_source == LogSource.DEBUG) return;
     else {
-        ulong timestamp = _gba ? _gba.scheduler.get_current_time_relative_to_cpu() : 0;
+        ulong timestamp = 0; // _gba ? _gba.scheduler.get_current_time_relative_to_cpu() : 0;
         writef("[%016x] %s: ", timestamp, pad_string_right!(to!string(log_source), logsource_padding));
         writefln(fmt, args);
     }

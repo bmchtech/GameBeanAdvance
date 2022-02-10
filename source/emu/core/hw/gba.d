@@ -14,9 +14,9 @@ import hw.sio.sio;
 import scheduler;
 import util;
 
-import ui.audio.device;
-import ui.video.device;
-import ui.input.device;
+import ui.device.audio.device;
+import ui.device.video.device;
+import ui.device.input.device;
 
 import std.math;
 import std.stdio;
@@ -87,7 +87,7 @@ public:
         ppu.set_frontend_vblank_callback(&video_device.render);
     }
 
-    void set_input_Device(InputDevice input_device) {
+    void set_input_device(InputDevice input_device) {
         input_device.set_callbacks(&key_input.set_key, &beancomputer.set_key);
     }
 
@@ -111,8 +111,6 @@ public:
  
     long extra_cycles = 0;
     void cycle_at_least_n_times(int n) {
-
-        // warning(format("Asked to cycle %d times. Extra: %d", n, extra_cycles));
 
         n -= extra_cycles;
 

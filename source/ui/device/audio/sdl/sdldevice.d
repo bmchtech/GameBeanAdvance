@@ -1,6 +1,7 @@
 module ui.device.audio.sdl.sdldevice;
 
-import ui.audio.device;
+import ui.device.audio.device;
+import ui.device.event;
 
 import core.sync.mutex;
 import core.stdc.string;
@@ -13,10 +14,13 @@ import std.algorithm;
 
 enum BUFFER_SIZE = 0x1000;
 
+// im using global variables, sue me.
+// (i kinda have to because of extern(C) and i dont want to mess around with void* rn)
 __gshared Sample[] audio_buffer;
 __gshared size_t   audio_buffer_offset;
 __gshared Sample   last_sample = Sample(0, 0);
 __gshared Mutex    audio_mutex;
+__gshared uint     g_low_point;
 
 final class SDLAudioDevice : AudioDevice {
     SDL_AudioSpec spec;
@@ -43,6 +47,7 @@ final class SDLAudioDevice : AudioDevice {
         audio_buffer        = new Sample[BUFFER_SIZE];
         audio_buffer_offset = 0;
         audio_mutex         = new Mutex();
+        g_low_point         = low_point;
     }
 
     override void push_sample(Sample s) {
@@ -51,8 +56,6 @@ final class SDLAudioDevice : AudioDevice {
         audio_mutex.lock_nothrow();
         audio_buffer[audio_buffer_offset++] = s;
         audio_mutex.unlock_nothrow();
-
-        if (audio_buffer_offset >= super.saturation_point) notify_observers(Event.AUDIO_BUFFER_SATURATED);
     }
 
     override void pause() {
@@ -82,8 +85,6 @@ final class SDLAudioDevice : AudioDevice {
             }
 
         audio_mutex.unlock_nothrow();
-
-        if (audio_buffer_offset <= super.low_point) notify_observers(Event.AUDIO_BUFFER_LOW);
     }
 
     override void notify(Event e) {
@@ -93,6 +94,19 @@ final class SDLAudioDevice : AudioDevice {
             case Event.STOP:                   stop(); break;
             case Event.AUDIO_BUFFER_LOW:       break;
             case Event.AUDIO_BUFFER_SATURATED: break;
+            case Event.POLL_INPUT:             break;
         }
+    }
+
+    void stop() {
+        SDL_CloseAudio();
+    }
+
+    override uint get_sample_rate() {
+        return spec.freq;
+    }
+
+    override uint get_samples_per_callback() {
+        return spec.samples;
     }
 }

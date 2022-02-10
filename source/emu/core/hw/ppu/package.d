@@ -9,5 +9,5 @@ public {
     import hw.ppu.layer;
     import hw.ppu.palette;
     
-    import ui.video.device;
+    import ui.device.video.device;
 }
