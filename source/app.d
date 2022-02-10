@@ -20,8 +20,8 @@ import save;
 import bindbc.sdl;
 import bindbc.opengl;
 
-import ui.device.video.sdl.sdldevice;
-import ui.device.audio.sdl.sdldevice;
+import ui.device.video.sdl.sdl;
+import ui.device.audio.sdl.sdl;
 import ui.device.input.sdl.kbm;
 import ui.device.video.device;
 import ui.device.audio.device;
@@ -67,7 +67,6 @@ void main(string[] args) {
 	bool is_beancomputer = a.option("mod").canFind("beancomputer");
 	if (is_beancomputer) log!(LogSource.INIT)("BeanComputer enabled");
 
-
     AudioDevice audio_device;
     VideoDevice video_device;
     InputDevice input_device;
@@ -102,7 +101,6 @@ void main(string[] args) {
 
 	if (a.flag("bootscreen")) gba.skip_bios_bootscreen();
 	
-
 	audio_device = new SDLAudioDevice();
 
 	gba.set_internal_sample_rate(16_780_000 / audio_device.get_sample_rate());
@@ -128,18 +126,8 @@ void main(string[] args) {
 	Runner runner = new Runner(gba, cycles_per_batch, video_device, audio_device, input_device);
 	device_manager.add_device(runner);
 
-		
-	// auto host = new GameBeanSDLHost(gba, to!int(a.option("scale")));
-
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
 		assert(0, "sdl init failed");
-
-
-
-	// int cpu_trace_length = to!int(a.option("cputrace"));
-	// if (cpu_trace_length != 0) {
-	// 	host.enable_cpu_tracing(cpu_trace_length);
-	// }
 
 	if (a.flag("pause")) {
 		readln();
@@ -160,65 +148,7 @@ void main(string[] args) {
 		}
 	}
 
-	bool running = true;
-
 	SDL_PauseAudio(0);
-
-	// // 16.6666 ms
-	enum nsec_per_frame = 16_666_660;
-	enum msec_per_frame = 16;
-
-	auto stopwatch = new NSStopwatch();
-	// long clockfor_cycle = 0;
-	long clockfor_frame = 0;
-	// auto total_cycles = 0;
-
-	enum sec_per_log = 1;
-	enum nsec_per_log = sec_per_log * 1_000_000_000;
-	enum msec_per_log = sec_per_log * 1_000;
-	enum cycles_per_log = cycles_per_second * sec_per_log;
-	long clockfor_log = 0;
-	ulong cycles_since_last_log = 0;
-
-	ulong cycle_timestamp = 0;
-
-	ulong start_timestamp = SDL_GetTicks();
-
-	// while (running) {
-	// 	ulong end_timestamp = SDL_GetTicks();
-	// 	ulong elapsed = end_timestamp - start_timestamp;
-	// 	start_timestamp = end_timestamp;
-
-	// 	clockfor_log   += elapsed;
-	// 	clockfor_frame += elapsed;
-
-	// 	if (gba.enabled) {
-	// 		// if (!fast_forward) {
-	// 			while (samples_per_callback * 2 > audio_buffer_offset) {
-	// 				gba.cycle_at_least_n_times(cycles_per_batch);
-	// 			}
-	// 		// } else {
-	// 			// gba.cycle_at_least_n_times(cycles_per_batch);
-	// 		// }
-	// 	} else {
-	// 		// TODO: figure out wtf to do here
-	// 		// video_device.();
-	// 	}
-
-	// 	input_device.handle_input();
-	// 	// frame();
-
-	// 	// if (clockfor_log > msec_per_log) {
-	// 	// 	ulong cycles_elapsed = gba.scheduler.get_current_time() - cycle_timestamp;
-	// 	// 	cycle_timestamp = gba.scheduler.get_current_time();
-	// 	// 	double speed = ((cast(double) cycles_elapsed) / (cast(double) cycles_per_second));
-	// 	// 	SDL_SetWindowTitle(window, cast(char*) ("FPS: " ~ format("%d", fps)));
-	// 	// 	// SDL_SetWindowTitle(window, cast(char*) format("Speed: %f", speed));
-	// 	// 	clockfor_log = 0;
-	// 	// 	cycles_since_last_log = 0;
-	// 	// 	fps = 0;
-	// 	// }
-	// }
 	runner.run();
 
 	version (gperf) {
@@ -230,7 +160,4 @@ void main(string[] args) {
 		ProfilerStop();
 		log!(LogSource.DEBUG)("Ended profiler");
 	}
-
-	// scope (failure)
-	// 	host.print_trace();
 }
