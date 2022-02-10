@@ -8,17 +8,10 @@ struct Sample {
 }
 
 abstract class AudioDevice : Observer {
-    uint saturation_point;
-    uint low_point;
-    
-    this(uint saturation_point, uint low_point) {
-        this.saturation_point = saturation_point;
-        this.low_point        = low_point;
-    }
-
     void push_sample(Sample);
     void pause();
     void play();
     uint get_sample_rate();
     uint get_samples_per_callback();
+    size_t get_buffer_size();
 }

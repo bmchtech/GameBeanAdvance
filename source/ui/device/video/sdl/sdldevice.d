@@ -176,6 +176,11 @@ final class SDLVideoDevice : VideoDevice {
         SDL_GL_SwapWindow(window);
     }
 
+    override void reset_fps() {
+        SDL_SetWindowTitle(window, cast(char*) ("FPS: " ~ format("%d", fps)));
+        fps = 0;
+    }
+
     override void notify(Event e) {
         final switch (e) {
             case Event.FAST_FORWARD:           break;
