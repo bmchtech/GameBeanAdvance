@@ -20,12 +20,14 @@ import save;
 import bindbc.sdl;
 import bindbc.opengl;
 
-import ui.video.sdl.sdldevice;
-import ui.audio.sdl.sdldevice;
-import ui.input.sdl.kbm;
-import ui.video.device;
-import ui.audio.device;
-import ui.input.device;
+import ui.device.video.sdl.sdldevice;
+import ui.device.audio.sdl.sdldevice;
+import ui.device.input.sdl.kbm;
+import ui.device.video.device;
+import ui.device.audio.device;
+import ui.device.input.device;
+import ui.device.manager;
+import ui.device.runner.runner;
 
 import commandr;
 
@@ -89,7 +91,7 @@ void main(string[] args) {
 
 		auto rom_data = load_rom_as_bytes(dl_path);
 
-		log!(LogSource.INIT)("DownloaDed %s bytes as %s", rom_data.length, dl_path);
+		log!(LogSource.INIT)("Downloaded %s bytes as %s", rom_data.length, dl_path);
 
 		gba.load_rom(rom_data);
 	} else if (std.file.exists(rom_path)) {
@@ -103,17 +105,28 @@ void main(string[] args) {
 
 	audio_device = new SDLAudioDevice();
 
-	gba.set_internal_sample_rate(16_780_000 / audio_device.spec.freq);
+	gba.set_internal_sample_rate(16_780_000 / audio_device.get_sample_rate());
 	gba.set_audio_device(audio_device);
 	
-	auto sample_rate          = audio_device.spec.freq;
-	auto samples_per_callback = audio_device.spec.samples;
+	auto sample_rate          = audio_device.get_sample_rate();
+	auto samples_per_callback = audio_device.get_samples_per_callback();
 
 	video_device = new SDLVideoDevice();
 	gba.set_video_device(video_device);
 
 	input_device = new SDLInputDevice_KBM();
 	gba.set_input_device(input_device);
+
+	DeviceManager device_manager = new DeviceManager();
+	device_manager.add_device(audio_device);
+	device_manager.add_device(video_device);
+	device_manager.add_device(input_device);
+
+	int num_batches        = sample_rate / samples_per_callback;
+	enum cycles_per_second = 16_780_000;
+	auto cycles_per_batch  = cycles_per_second / num_batches;
+	Runner runner = new Runner(gba, cycles_per_batch);
+	device_manager.add_device(runner);
 
 		
 	// auto host = new GameBeanSDLHost(gba, to!int(a.option("scale")));
@@ -149,10 +162,6 @@ void main(string[] args) {
 
 	bool running = true;
 
-	int num_batches       = sample_rate / samples_per_callback;
-	enum cycles_per_second = 16_780_000;
-	auto cycles_per_batch  = cycles_per_second / num_batches;
-
 	SDL_PauseAudio(0);
 
 	// // 16.6666 ms
@@ -175,41 +184,42 @@ void main(string[] args) {
 
 	ulong start_timestamp = SDL_GetTicks();
 
-	while (running) {
-		ulong end_timestamp = SDL_GetTicks();
-		ulong elapsed = end_timestamp - start_timestamp;
-		start_timestamp = end_timestamp;
+	// while (running) {
+	// 	ulong end_timestamp = SDL_GetTicks();
+	// 	ulong elapsed = end_timestamp - start_timestamp;
+	// 	start_timestamp = end_timestamp;
 
-		clockfor_log   += elapsed;
-		clockfor_frame += elapsed;
+	// 	clockfor_log   += elapsed;
+	// 	clockfor_frame += elapsed;
 
-		if (gba.enabled) {
-			// if (!fast_forward) {
-				while (samples_per_callback * 2 > audio_buffer_offset) {
-					gba.cycle_at_least_n_times(cycles_per_batch);
-				}
-			// } else {
-				// gba.cycle_at_least_n_times(cycles_per_batch);
-			// }
-		} else {
-			// TODO: figure out wtf to do here
-			// video_device.();
-		}
+	// 	if (gba.enabled) {
+	// 		// if (!fast_forward) {
+	// 			while (samples_per_callback * 2 > audio_buffer_offset) {
+	// 				gba.cycle_at_least_n_times(cycles_per_batch);
+	// 			}
+	// 		// } else {
+	// 			// gba.cycle_at_least_n_times(cycles_per_batch);
+	// 		// }
+	// 	} else {
+	// 		// TODO: figure out wtf to do here
+	// 		// video_device.();
+	// 	}
 
-		input_device.handle_input();
-		// frame();
+	// 	input_device.handle_input();
+	// 	// frame();
 
-		// if (clockfor_log > msec_per_log) {
-		// 	ulong cycles_elapsed = gba.scheduler.get_current_time() - cycle_timestamp;
-		// 	cycle_timestamp = gba.scheduler.get_current_time();
-		// 	double speed = ((cast(double) cycles_elapsed) / (cast(double) cycles_per_second));
-		// 	SDL_SetWindowTitle(window, cast(char*) ("FPS: " ~ format("%d", fps)));
-		// 	// SDL_SetWindowTitle(window, cast(char*) format("Speed: %f", speed));
-		// 	clockfor_log = 0;
-		// 	cycles_since_last_log = 0;
-		// 	fps = 0;
-		// }
-	}
+	// 	// if (clockfor_log > msec_per_log) {
+	// 	// 	ulong cycles_elapsed = gba.scheduler.get_current_time() - cycle_timestamp;
+	// 	// 	cycle_timestamp = gba.scheduler.get_current_time();
+	// 	// 	double speed = ((cast(double) cycles_elapsed) / (cast(double) cycles_per_second));
+	// 	// 	SDL_SetWindowTitle(window, cast(char*) ("FPS: " ~ format("%d", fps)));
+	// 	// 	// SDL_SetWindowTitle(window, cast(char*) format("Speed: %f", speed));
+	// 	// 	clockfor_log = 0;
+	// 	// 	cycles_since_last_log = 0;
+	// 	// 	fps = 0;
+	// 	// }
+	// }
+	runner.run();
 
 	version (gperf) {
 		log!(LogSource.DEBUG)("Started profiler");

@@ -1,11 +1,13 @@
 module ui.device.audio.device;
 
+import ui.device.device;
+
 struct Sample {
     short L;
     short R;
 }
 
-abstract class AudioDevice : Device {
+abstract class AudioDevice : Observer {
     uint saturation_point;
     uint low_point;
     
@@ -17,4 +19,6 @@ abstract class AudioDevice : Device {
     void push_sample(Sample);
     void pause();
     void play();
+    uint get_sample_rate();
+    uint get_samples_per_callback();
 }

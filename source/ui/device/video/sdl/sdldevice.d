@@ -8,7 +8,8 @@ import std.conv;
 
 import util;
 
-import ui.video.device;
+import ui.device.video.device;
+import ui.device.event;
 
 final class SDLVideoDevice : VideoDevice {
     SDL_Window* window;
@@ -182,6 +183,7 @@ final class SDLVideoDevice : VideoDevice {
             case Event.STOP:                   stop(); break;
             case Event.AUDIO_BUFFER_LOW:       break;
             case Event.AUDIO_BUFFER_SATURATED: break;
+            case Event.POLL_INPUT:             break;
         }
     }
 

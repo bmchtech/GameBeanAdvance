@@ -5,5 +5,6 @@ enum Event {
     UNFAST_FORWARD,
     AUDIO_BUFFER_LOW,
     AUDIO_BUFFER_SATURATED,
-    STOP
+    STOP,
+    POLL_INPUT
 }

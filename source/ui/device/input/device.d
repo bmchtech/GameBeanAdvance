@@ -1,7 +1,9 @@
-module ui.device.audio.input.device;
+module ui.device.input.device;
 
-abstract class InputDevice : Device {
-    void set_callbacks(void delegate(uint key) set_vanilla_key, void delegate(uint key) set_beancomputer_key) {
+import ui.device.device;
+
+abstract class InputDevice : Observer {
+    void set_callbacks(void delegate(int key, bool value) set_vanilla_key, void delegate(int key, bool value) set_beancomputer_key) {
         this.set_vanilla_key      = set_vanilla_key;
         this.set_beancomputer_key = set_beancomputer_key;
     }
@@ -9,6 +11,6 @@ abstract class InputDevice : Device {
     void handle_input();
 
     // GBA callbacks
-    void delegate(uint key) set_vanilla_key;
-    void delegate(uint key) set_beancomputer_key;
+    void delegate(int key, bool value) set_vanilla_key;
+    void delegate(int key, bool value) set_beancomputer_key;
 }

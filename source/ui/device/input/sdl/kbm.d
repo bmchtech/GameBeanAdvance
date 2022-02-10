@@ -1,16 +1,21 @@
-module ui.device.audio.input.sdl.kbm;
+module ui.device.input.sdl.kbm;
+
+import ui.device.input.device;
+import ui.device.event;
 
 import bindbc.sdl;
 
+import std.conv;
+
 import hw.gba;
 
-final class SDLInputDevice_KBM {
-    void handle_input() {
+final class SDLInputDevice_KBM : InputDevice {
+    override void handle_input() {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
             case SDL_QUIT:
-                exit();
+                notify_observers(Event.STOP);
                 break;
             case SDL_KEYDOWN:
                 on_input(event.key.keysym.sym, true);
@@ -26,7 +31,8 @@ final class SDLInputDevice_KBM {
 
     void on_input(SDL_Keycode key, bool pressed) {
         if (key == SDL_Keycode.SDLK_TAB) {
-            fast_forward = pressed;
+            if (pressed) notify_observers(Event.FAST_FORWARD);
+            else         notify_observers(Event.UNFAST_FORWARD);
         }
 
         if (key in KEYMAP_VANILLA) {
@@ -42,8 +48,12 @@ final class SDLInputDevice_KBM {
 
     override void notify(Event e) {
         final switch (e) {
-            case Event.FAST_FORWARD: break;
-            case Event.STOP: break;
+            case Event.FAST_FORWARD:           break;
+            case Event.UNFAST_FORWARD:         break;
+            case Event.STOP:                   break;
+            case Event.AUDIO_BUFFER_LOW:       break;
+            case Event.AUDIO_BUFFER_SATURATED: break;
+            case Event.POLL_INPUT:             handle_input();
         }
     }
 }

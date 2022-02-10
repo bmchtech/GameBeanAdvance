@@ -8,7 +8,7 @@ import hw.apu.channels.noise_channel;
 import hw.apu.channels.wave_channel;
 import hw.apu.channels.tone_channel;
 
-import ui.audio.device;
+import ui.device.audio.device;
 
 import util;
 import scheduler;

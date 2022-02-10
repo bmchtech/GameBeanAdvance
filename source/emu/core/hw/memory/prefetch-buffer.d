@@ -80,7 +80,7 @@ final class PrefetchBuffer {
         this.paused = false;
         run(cycles_till_access_complete);
 
-        import ui.video.sdl.sdl;
+        // import ui.device.video.sdl.sdl;
         memory.scheduler.tick(cycles_till_access_complete);
 
         this.paused = was_paused;
