@@ -125,7 +125,7 @@ void main(string[] args) {
 	int num_batches        = sample_rate / samples_per_callback;
 	enum cycles_per_second = 16_780_000;
 	auto cycles_per_batch  = cycles_per_second / num_batches;
-	Runner runner = new Runner(gba, cycles_per_batch);
+	Runner runner = new Runner(gba, cycles_per_batch, video_device, audio_device, input_device);
 	device_manager.add_device(runner);
 
 		
