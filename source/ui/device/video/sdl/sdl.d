@@ -24,10 +24,9 @@ final class SDLVideoDevice : VideoDevice {
 
     bool fast_forward = false;
 
-    this(Mutex render_mutex) {
+    this(Mutex render_mutex, int screen_scale) {
         super(render_mutex);
         
-        auto screen_scale = 1;
         window = SDL_CreateWindow(
             "GameBean Advance", 
             SDL_WINDOWPOS_CENTERED,

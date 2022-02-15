@@ -113,7 +113,7 @@ void main(string[] args) {
 	auto samples_per_callback = audio_device.get_samples_per_callback();
 
 	Mutex render_mutex = new Mutex();
-	video_device = new SDLVideoDevice(render_mutex);
+	video_device = new SDLVideoDevice(render_mutex, to!int(a.option("scale")));
 	gba.set_video_device(video_device);
 
 	input_device = new SDLInputDevice_KBM();
