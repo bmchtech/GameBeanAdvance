@@ -106,7 +106,7 @@ final class Memory : IMemory {
 
     ushort waitcnt;
     void write_WAITCNT(uint target_byte, ubyte data) {
-        // log!(LogSource.DEBUG)("Write to WAITCNT: %x %x", target_byte, data);
+        log!(LogSource.DEBUG)("Write to WAITCNT: %x %x", target_byte, data);
         final switch (target_byte) {
             case 0b0:
                 int ws_sram = (cast(int[]) [4, 3, 2, 8])[get_nth_bits(data, 0, 2)];

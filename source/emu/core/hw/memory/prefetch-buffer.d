@@ -46,7 +46,7 @@ final class PrefetchBuffer {
     pragma(inline, true) void run(uint num_cycles) {
         if (!this.enabled || !this.currently_prefetching || this.paused) return;
         if (_g_num_log > 0) log!(LogSource.DEBUG)("Prefetch buffer running for %d cycles. %d remaining till access complete", num_cycles, cycles_till_access_complete);
-        
+
         prefetch_buffer_has_run = true;
         
         while (this.current_buffer_size < 8 && num_cycles >= cycles_till_access_complete) {
@@ -69,9 +69,12 @@ final class PrefetchBuffer {
         //            the prefetch of either half of the full word to complete. this is what the
         //            variable halfway_marker is used for.
         
-        bubble_exists = (num_cycles == 1) && 
+        bubble_exists =
             (this.prefetch_access_size == AccessSize.HALFWORD && (cycles_till_access_complete == 1)) || 
             (this.prefetch_access_size == AccessSize.WORD     && (cycles_till_access_complete == 1 || cycles_till_access_complete == halfway_marker + 1));
+    
+    
+        if (_g_num_log > 0) if (bubble_exists) log!(LogSource.DEBUG)("Blowing a bubble...", num_cycles, cycles_till_access_complete);
     }
 
     pragma(inline, true) void finish_current_prefetch() {
@@ -117,6 +120,7 @@ final class PrefetchBuffer {
         // }
     }
 
+    bool post_bubble_shitter = false;
     pragma(inline, true) T request_data_from_rom(T)(uint address, AccessType access_type, bool instruction_access) {
         // if (address << 1 == GPIO_PORT_DATA) {
         //     return rtc.read();
@@ -126,17 +130,28 @@ final class PrefetchBuffer {
         if (_g_num_log > 0) log!(LogSource.DEBUG)("Requesting data from ROM at address %x. [%s, %s]", address, instruction_access ? "Instruction" : "Data", access_type == AccessType.NONSEQUENTIAL ? "Nonsequential" : "Sequential");
         prefetch_buffer_has_run = false;
 
-        if (!instruction_access && bubble_exists) { 
-            bubble_exists = false; 
-            // memory.scheduler.tick(1);
+        if (!instruction_access && bubble_exists) {  
+            post_bubble_shitter = true;
+            memory.scheduler.tick(1);
+        
+            if (_g_num_log > 0) if (bubble_exists) writefln("sussy tick");
         }
+
+        bubble_exists = false;
 
 
         if ((address & 0xFFFF) == 0) {
             access_type = AccessType.NONSEQUENTIAL;
         } 
 
-        if (!paused && this.enabled) {
+        if (!instruction_access) {
+            this.invalidate();
+            this.start_new_prefetch(current_address + 1, this.prefetch_access_size);
+            this.can_start_new_prefetch = true;
+        }
+
+        if (instruction_access && !paused && this.enabled) {
+            bubble_exists = false; 
             uint address_head = this.current_address - this.current_buffer_size;
 
             // is the requested value currently being prefetched?

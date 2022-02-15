@@ -108,7 +108,7 @@ template execute(T : IARM7TDMI) {
             }
         }
 
-        int idle_cycles = calculate_multiply_cycles(cast(u32) operand2);
+        int idle_cycles = calculate_multiply_cycles!(signed || !multiply_long)(cast(u32) operand2);
         static if (multiply_long) idle_cycles++;
         static if (accumulate)    idle_cycles++;
         for (int i = 0; i < idle_cycles; i++) cpu.run_idle_cycle();
@@ -161,6 +161,7 @@ template execute(T : IARM7TDMI) {
             enum shift_type = get_nth_bits(static_opcode, 5, 7);
             enum register_shift = get_nth_bit(static_opcode, 4);
             static if (register_shift) {
+                cpu.run_idle_cycle();
                 pc_additional_shift_amount = 4;
                 Word shift = get_reg__shift(get_nth_bits(opcode, 8, 12)) & 0xFF;
             } else {
