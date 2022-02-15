@@ -6,6 +6,8 @@ import bindbc.sdl.image;
 
 import std.conv;
 
+import core.sync.mutex;
+
 import util;
 
 import ui.device.video.device;
@@ -18,9 +20,13 @@ final class SDLVideoDevice : VideoDevice {
     
     GLuint gl_texture;
 
+    Mutex render_mutex;
+
     bool fast_forward = false;
 
-    this() {
+    this(Mutex render_mutex) {
+        super(render_mutex);
+        
         auto screen_scale = 1;
         window = SDL_CreateWindow(
             "GameBean Advance", 

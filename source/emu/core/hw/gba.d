@@ -84,7 +84,7 @@ public:
     }
 
     void set_video_device(VideoDevice video_device) {
-        ppu.set_frontend_vblank_callback(&video_device.render);
+        ppu.set_frontend_vblank_callback(&video_device.__render);
     }
 
     void set_input_device(InputDevice input_device) {
@@ -111,7 +111,6 @@ public:
  
     long extra_cycles = 0;
     void cycle_at_least_n_times(int n) {
-
         n -= extra_cycles;
 
         ulong target_time = scheduler.get_current_time() + n;

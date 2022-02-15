@@ -3,36 +3,33 @@ description "gamebeanadvance emu"
 authors "bean"
 copyright "Copyright © 2021, bean"
 license "proprietary"
-targetType "executable"
-
-versions "GL_AllowDeprecated"
-
-dependency "commandr" version="~>0.2.0"
-dependency "bindbc-sdl" version="~>1.0.1"
 dependency "bindbc-opengl" version="~>1.0.0"
 dependency "silly" version="~>1.1.1"
-
+dependency "reng" version="~>0.5.1"
+dependency "bindbc-sdl" version="~>1.0.1"
+dependency "commandr" version="~>0.2.0"
 dependency "gamebean-jumptable" path="jumptable"
 dependency "gamebean-common" path="common"
-
-excludeSourceFiles "source/ui/video/imgui/*"
-
+targetType "executable"
+versions "GL_AllowDeprecated"
 configuration "default" {
-    versions "default"
+	targetType "executable"
+	versions "default"
 }
-
 configuration "gperf" {
-    dependency "gperftools_d" version="~>0.1.0"
-    dflags "-O1" "--boundscheck=off"
-    versions "gperf"
+	dependency "gperftools_d" version="~>0.1.0"
+	targetType "executable"
+	dflags "-O1" "--boundscheck=off"
+	versions "gperf"
 }
-
 configuration "debug" {
-    dependency "derelict-imgui" version="~>0.10.0"
-    versions "Imgui"
-    libs "cimgui"
+	dependency "derelict-imgui" version="~>0.10.0"
+	targetType "executable"
+	libs "cimgui"
+	versions "Imgui"
 }
-
 configuration "optimize" {
-    dflags "--boundscheck=off" "-O3" "-release"
+	targetType "executable"
+	dflags "--boundscheck=off" "-O3" "-release"
 }
+subConfiguration "reng" "lib-minimal"
