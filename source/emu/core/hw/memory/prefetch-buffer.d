@@ -120,7 +120,6 @@ final class PrefetchBuffer {
         // }
     }
 
-    bool post_bubble_shitter = false;
     pragma(inline, true) T request_data_from_rom(T)(uint address, AccessType access_type, bool instruction_access) {
         // if (address << 1 == GPIO_PORT_DATA) {
         //     return rtc.read();
@@ -130,15 +129,11 @@ final class PrefetchBuffer {
         if (_g_num_log > 0) log!(LogSource.DEBUG)("Requesting data from ROM at address %x. [%s, %s]", address, instruction_access ? "Instruction" : "Data", access_type == AccessType.NONSEQUENTIAL ? "Nonsequential" : "Sequential");
         prefetch_buffer_has_run = false;
 
-        if (!instruction_access && bubble_exists) {  
-            post_bubble_shitter = true;
+        if (!instruction_access && bubble_exists) {
             memory.scheduler.tick(1);
-        
-            if (_g_num_log > 0) if (bubble_exists) writefln("sussy tick");
         }
 
         bubble_exists = false;
-
 
         if ((address & 0xFFFF) == 0) {
             access_type = AccessType.NONSEQUENTIAL;
