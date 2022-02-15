@@ -17,9 +17,12 @@ import std.mmfile;
 import std.file;
 import save;
 
+import core.sync.mutex;
+
 import bindbc.sdl;
 import bindbc.opengl;
 
+import ui.device.debugger.debugger;
 import ui.device.video.sdl.sdl;
 import ui.device.audio.sdl.sdl;
 import ui.device.input.sdl.kbm;
@@ -109,7 +112,8 @@ void main(string[] args) {
 	auto sample_rate          = audio_device.get_sample_rate();
 	auto samples_per_callback = audio_device.get_samples_per_callback();
 
-	video_device = new SDLVideoDevice();
+	Mutex render_mutex = new Mutex();
+	video_device = new SDLVideoDevice(render_mutex);
 	gba.set_video_device(video_device);
 
 	input_device = new SDLInputDevice_KBM();
@@ -125,6 +129,8 @@ void main(string[] args) {
 	auto cycles_per_batch  = cycles_per_second / num_batches;
 	Runner runner = new Runner(gba, cycles_per_batch, video_device, audio_device, input_device);
 	device_manager.add_device(runner);
+
+	// device_manager.add_device(new DebuggerDevice(render_mutex));
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
 		assert(0, "sdl init failed");
