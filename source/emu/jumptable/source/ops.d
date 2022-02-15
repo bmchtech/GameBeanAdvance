@@ -208,7 +208,7 @@ void orr(T : IARM7TDMI)(T cpu, Reg rd, Word operand1, Word operand2, bool writeb
 void mul(T : IARM7TDMI)(T cpu, Reg rd, Word operand1, Word operand2, bool writeback = true, bool set_flags = true) {
     Word result = operand1 * operand2;
 
-    int idle_cycles = calculate_multiply_cycles(operand1);
+    int idle_cycles = calculate_multiply_cycles!true(operand1);
     for (int i = 0; i < idle_cycles; i++) cpu.run_idle_cycle();
 
     if (set_flags) cpu.set_flags_NZ(result);
@@ -312,10 +312,17 @@ Word read_half_and_rotate(IARM7TDMI cpu, Word address, AccessType access_type) {
     return rotate_right(value, misalignment * 8);
 }
 
-static int calculate_multiply_cycles(Word operand) {
+static int calculate_multiply_cycles(bool signed)(Word operand) {
     int m = 4;
-    if      ((operand >> 8)  == 0x0 || (operand >>> 8)  == 0xFFFFFF) m = 1;
-    else if ((operand >> 16) == 0x0 || (operand >>> 16) == 0xFFFF)   m = 2;
-    else if ((operand >> 24) == 0x0 || (operand >>> 24) == 0xFF)     m = 3;
+
+    static if (signed) {
+        if      ((operand >>  8) == 0xFFFFFF) m = 1;
+        else if ((operand >> 16) == 0xFFFF)   m = 2;
+        else if ((operand >> 24) == 0xFF)     m = 3;
+    }
+
+    if      ((operand >> 8)  == 0x0) m = 1;
+    else if ((operand >> 16) == 0x0) m = 2;
+    else if ((operand >> 24) == 0x0) m = 3;
     return m;
 }

@@ -70,7 +70,7 @@ template execute(T : IARM7TDMI) {
             case  4: cpu.asr(rd, operand1, operand2 & 0xFF); break; 
             case  5: cpu.adc(rd, operand1, operand2); break;
             case  6: cpu.sbc(rd, operand1, operand2); break;
-            case  7: cpu.ror(rd, operand1, operand2 & 0xFF); break;
+            case  7: cpu.ror(rd, operand1, operand2 & 0xFF); cpu.run_idle_cycle();break;
             case  8: cpu.tst(rd, operand1, operand2); break;
             case  9: cpu.neg(rd, operand2); break;
             case 10: cpu.cmp(rd, operand1, operand2); break;
@@ -245,6 +245,8 @@ template execute(T : IARM7TDMI) {
 
         static if (is_lsr) cpu.lsr(rd, operand, shift);
         else               cpu.lsl(rd, operand, shift);
+        
+        cpu.run_idle_cycle();
     }
 
     static void create_arithmetic_shift(T cpu, Half opcode) {
@@ -255,6 +257,8 @@ template execute(T : IARM7TDMI) {
 
         auto operand = cpu.get_reg(rm);
         cpu.asr(rd, operand, shift);
+        
+        cpu.run_idle_cycle();
     }
 
     static void create_unconditional_branch(T cpu, Half opcode) {

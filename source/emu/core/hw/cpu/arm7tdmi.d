@@ -80,7 +80,7 @@ final class ARM7TDMI : IARM7TDMI {
         static if (is(T == Word)) {
             T result        = arm_pipeline[0];
             arm_pipeline[0] = arm_pipeline[1];
-            arm_pipeline[1] = memory.read_word(regs[pc], pipeline_access_type);
+            arm_pipeline[1] = memory.read_word(regs[pc], pipeline_access_type, true);
             regs[pc] += 4;
 
             if (memory.can_start_new_prefetch() && pipeline_access_type == AccessType.NONSEQUENTIAL && regs[pc] >> 24 >= 8) {
@@ -95,7 +95,7 @@ final class ARM7TDMI : IARM7TDMI {
         static if (is(T == Half)) {
             T result          = thumb_pipeline[0];
             thumb_pipeline[0] = thumb_pipeline[1];
-            thumb_pipeline[1] = memory.read_half(regs[pc], pipeline_access_type);
+            thumb_pipeline[1] = memory.read_half(regs[pc], pipeline_access_type, true);
             regs[pc] += 2;
 
             if (memory.can_start_new_prefetch() && pipeline_access_type == AccessType.NONSEQUENTIAL && regs[pc] >> 24 >= 8) {
@@ -134,7 +134,7 @@ final class ARM7TDMI : IARM7TDMI {
             if (get_flag(Flag.T)) write("THM ");
             else write("ARM ");
 
-            // write(format("0x%x ", instruction_set == InstructionSet.ARM ? arm_pipeline[0] : thumb_pipeline[0]));
+            write(format("0x%08x ", instruction_set == InstructionSet.ARM ? arm_pipeline[0] : thumb_pipeline[0]));
             
             for (int j = 0; j < 18; j++)
             if (j != 15)
