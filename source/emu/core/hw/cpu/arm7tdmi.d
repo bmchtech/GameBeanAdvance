@@ -48,7 +48,6 @@ final class ARM7TDMI : IARM7TDMI {
     void reset() {
         set_mode!MODE_SYSTEM;
         regs[pc] = 0;
-        memory.can_read_from_bios = true;
 
         current_mode = MODES[0];
         for (int i = 0; i < 7; i++) {
@@ -350,7 +349,6 @@ final class ARM7TDMI : IARM7TDMI {
         regs[pc] = get_address_from_exception!(exception);
 
         set_flag(Flag.T, false);
-        memory.can_read_from_bios = true;
         
         refill_pipeline();
         halted = false;

@@ -325,7 +325,7 @@ final class Memory : IMemory {
                     return read_value;
 
                 case Region.BIOS: 
-                    if (can_read_from_bios) {
+                    if (cpu.regs[pc] >> 24 == 0) { // are we in the BIOS range
                         uint word_aligned_address = address & ~3;
 
                         bios_open_bus_latch = *((cast(uint*) (&bios[0] + (word_aligned_address & ~3 & (SIZE_BIOS - 1)))));
