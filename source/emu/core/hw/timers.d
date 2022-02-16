@@ -165,6 +165,7 @@ public:
 
                 // are we enabling the timer?
                 if (!timers[x].enabled && get_nth_bit(data, 7)) {
+                    _g_num_log = 100;
                     timers[x].enabled = true;
 
                     if (timers[x].timer_event != 0) scheduler.remove_event(timers[x].timer_event);
@@ -174,6 +175,7 @@ public:
                 }
 
                 if (!get_nth_bit(data, 7)) {
+                    _g_num_log = 0;
                     timers[x].enabled = false;
                     scheduler.remove_event(timers[x].timer_event);
                 }

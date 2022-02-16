@@ -301,13 +301,13 @@ s64 sext_64(IARM7TDMI cpu, u64 value, u64 size) {
 }
 
 Word read_word_and_rotate(IARM7TDMI cpu, Word address, AccessType access_type) {
-    Word value = cpu.read_word(address, access_type);
+    Word value = cpu.read_word(address & ~3, access_type);
     auto misalignment = address & 0b11;
     return rotate_right(value, misalignment * 8);
 }
 
 Word read_half_and_rotate(IARM7TDMI cpu, Word address, AccessType access_type) {
-    Word value = cpu.read_half(address, access_type);
+    Word value = cpu.read_half(address & ~1, access_type);
     auto misalignment = address & 0b1;
     return rotate_right(value, misalignment * 8);
 }

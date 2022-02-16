@@ -2,7 +2,6 @@ module jumptable_thumb;
 
 import abstracthw.cpu;
 import abstracthw.memory;
-import instruction;
 import ops;
 import util;
 
@@ -70,7 +69,7 @@ template execute(T : IARM7TDMI) {
             case  4: cpu.asr(rd, operand1, operand2 & 0xFF); break; 
             case  5: cpu.adc(rd, operand1, operand2); break;
             case  6: cpu.sbc(rd, operand1, operand2); break;
-            case  7: cpu.ror(rd, operand1, operand2 & 0xFF); cpu.run_idle_cycle();break;
+            case  7: cpu.ror(rd, operand1, operand2 & 0xFF); cpu.run_idle_cycle(); break;
             case  8: cpu.tst(rd, operand1, operand2); break;
             case  9: cpu.neg(rd, operand2); break;
             case 10: cpu.cmp(rd, operand1, operand2); break;
@@ -289,7 +288,7 @@ template execute(T : IARM7TDMI) {
         Word current_address = cpu.get_reg(sp);
         for (int i = 0; i < 8; i++) {
             if (get_nth_bit(register_list, i)) {
-                cpu.set_reg(i, cpu.read_word_and_rotate(current_address, access_type));
+                cpu.set_reg(i, cpu.read_word(current_address & ~3, access_type));
                 current_address += 4;
 
                 access_type = AccessType.SEQUENTIAL;
@@ -299,7 +298,7 @@ template execute(T : IARM7TDMI) {
         cpu.set_pipeline_access_type(AccessType.NONSEQUENTIAL);
 
         static if (lr_included) {
-            cpu.set_reg(pc, cpu.read_word_and_rotate(current_address, access_type));
+            cpu.set_reg(pc, cpu.read_word(current_address & ~3, access_type));
             current_address += 4;
         }
 
@@ -314,13 +313,13 @@ template execute(T : IARM7TDMI) {
 
         static if (lr_included) {
             current_address -= 4;
-            cpu.write_word(current_address, cpu.get_reg(lr), access_type);
+            cpu.write_word(current_address & ~3, cpu.get_reg(lr), access_type);
         }
 
         for (int i = 7; i >= 0; i--) {
             if (get_nth_bit(register_list, i)) {
                 current_address -= 4;
-                cpu.write_word(current_address, cpu.get_reg(i), access_type);
+                cpu.write_word(current_address & ~3, cpu.get_reg(i), access_type);
 
                 access_type = AccessType.SEQUENTIAL;
             }

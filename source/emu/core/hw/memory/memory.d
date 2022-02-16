@@ -221,7 +221,6 @@ final class Memory : IMemory {
         scheduler.tick(1);
         prefetch_buffer.run(1);
         scheduler.process_events();
-        prefetch_buffer.pop_bubble();
     }
 
     pragma(inline, true) uint get_region(uint address) {
@@ -343,9 +342,10 @@ final class Memory : IMemory {
                 case Region.ROM_SRAM_H:
                     if (backup_enabled) {
                         clock(stalls);
-                        static if (is(T == uint  )) read_value = backup.read_word    (address);
+                        static if (is(T == uint  )) read_value = backup.read_word(address);
                         static if (is(T == ushort)) read_value = backup.read_half(address);
-                        static if (is(T == ubyte )) read_value = backup.read_byte    (address); 
+                        static if (is(T == ubyte )) read_value = backup.read_byte(address); 
+                        writefln("sussy read, %x %x %x", T.sizeof, address, read_value);
                         break;
                     }
                     clock(1);
@@ -452,14 +452,12 @@ final class Memory : IMemory {
             if (unlikely(address >> 28 > 0)) { // invalid write
                 clock(1);
                 scheduler.process_events();
-                prefetch_buffer.pop_bubble();
                 return;
             }
 
             // handle waitstates
             uint stalls = calculate_stalls_for_access!T(region, access_type);
             clock(stalls);
-            prefetch_buffer.pop_bubble();
 
             switch ((address >> 24) & 0xF) {
                 case Region.BIOS:         break; // incorrect - implement properly later
@@ -545,9 +543,10 @@ final class Memory : IMemory {
                 case Region.ROM_SRAM_L:
                 case Region.ROM_SRAM_H:
                     if (backup_enabled) {
-                        static if (is(T == uint  )) return backup.write_word    (address, value);
+                        writefln("sussy write, %x %x %x", T.sizeof, address, value);
+                        static if (is(T == uint  )) return backup.write_word(address, value);
                         static if (is(T == ushort)) return backup.write_half(address, value);
-                        static if (is(T == ubyte )) return backup.write_byte    (address, value);
+                        static if (is(T == ubyte )) return backup.write_byte(address, value);
                     }
                     break;
 
