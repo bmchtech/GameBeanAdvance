@@ -45,7 +45,7 @@ final class PrefetchBuffer {
 
     pragma(inline, true) void run(uint num_cycles) {
         if (!this.enabled || !this.currently_prefetching || this.paused) return;
-        if (_g_num_log > 0) log!(LogSource.DEBUG)("Prefetch buffer running for %d cycles. %d remaining till access complete", num_cycles, cycles_till_access_complete);
+        if (_g_num_log > 0) log!(LogSource.DEBUG)("Prefetch buffer running for %d cycles. %d / %d remaining till access complete", num_cycles, cycles_till_access_complete, sussy);
 
         prefetch_buffer_has_run = true;
         
@@ -95,6 +95,8 @@ final class PrefetchBuffer {
         this.current_buffer_size   = 0;
         this.currently_prefetching = false;
     }
+
+    uint sussy = 0;
     
     pragma(inline, true) void start_new_prefetch(uint address, AccessSize prefetch_access_size) {
         if (!enabled || paused) return;
@@ -108,6 +110,7 @@ final class PrefetchBuffer {
 
         this.cycles_till_access_complete = memory.waitstates[current_region][AccessType.SEQUENTIAL][prefetch_access_size];
         this.halfway_marker              = this.cycles_till_access_complete >> 1;
+        this.sussy = this.cycles_till_access_complete;
     }
 
     enum GPIO_PORT_DATA    = 0x0800_00C4;
@@ -130,7 +133,9 @@ final class PrefetchBuffer {
         prefetch_buffer_has_run = false;
 
         if (!instruction_access && bubble_exists) {
+            log!(LogSource.DEBUG)("Popping the bubble...");
             memory.scheduler.tick(1);
+            cycles_till_access_complete--;
         }
 
         bubble_exists = false;
@@ -211,10 +216,16 @@ final class PrefetchBuffer {
     }
 
     void pause() {
+        writefln("pausing! prefetch buffie status:");
+        if (_g_num_log > 0) log!(LogSource.DEBUG)("%d / %d remaining till access complete", cycles_till_access_complete, sussy);
+
         this.paused = true;
     }
 
     void resume() {
+        writefln("resuming! prefetch buffie status:");
+        if (_g_num_log > 0) log!(LogSource.DEBUG)("%d / %d remaining till access complete", cycles_till_access_complete, sussy);
+
         this.paused = false;
     }
 

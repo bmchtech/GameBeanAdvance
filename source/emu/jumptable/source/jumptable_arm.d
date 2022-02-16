@@ -2,7 +2,6 @@ module jumptable_arm;
 
 import abstracthw.cpu;
 import abstracthw.memory;
-import instruction;
 import ops;
 import util;
 import barrel_shifter;
@@ -324,10 +323,10 @@ template execute(T : IARM7TDMI) {
             static if (!up)       address -= 64;
             
             static if (load) {
-                cpu.set_reg(pc, cpu.read_word(address, AccessType.NONSEQUENTIAL));
+                cpu.set_reg(pc, cpu.read_word(address & ~3, AccessType.NONSEQUENTIAL));
                 cpu.run_idle_cycle();
             } else {
-                cpu.write_word(address, cpu.get_reg(pc) + 4, AccessType.NONSEQUENTIAL);
+                cpu.write_word(address & ~3, cpu.get_reg(pc) + 4, AccessType.NONSEQUENTIAL);
             }
 
             static if (up) cpu.set_reg(rn, cpu.get_reg(rn) + 64);

@@ -76,10 +76,12 @@ public:
         bool dest_beginning_in_rom   = (dma_channels[current_channel].dest_buf   >> 24) >= 8;
         
         // if (memory.prefetch_buffer.prefetch_buffer_has_run) writefln("E");
-        if (memory.prefetch_buffer.prefetch_buffer_has_run && (source_beginning_in_rom || dest_beginning_in_rom)) memory.finish_current_prefetch();
+        // if (memory.prefetch_buffer.prefetch_buffer_has_run && (source_beginning_in_rom || dest_beginning_in_rom)) memory.finish_current_prefetch();
 
         if (num_dmas_running == 0) {
-            // memory.prefetch_buffer.pause();
+            memory.clock(1);
+            memory.prefetch_buffer.pause();
+            memory.clock(1);
         }
         num_dmas_running++;
         dmas_running_bitfield |= (1 << current_channel);
@@ -90,13 +92,13 @@ public:
         int  source_increment   = 0;
         int  dest_increment     = 0;
 
-        // if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
-        //          current_channel,
-        //          bytes_to_transfer,
-        //          dma_channels[current_channel].transferring_words ? "words" : "halfwords",
-        //          dma_channels[current_channel].source_buf,
-        //          dma_channels[current_channel].dest_buf,
-        //          read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
+        if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
+                 current_channel,
+                 bytes_to_transfer,
+                 dma_channels[current_channel].transferring_words ? "words" : "halfwords",
+                 dma_channels[current_channel].source_buf,
+                 dma_channels[current_channel].dest_buf,
+                 read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
 
         switch (dma_channels[current_channel].source_addr_control) {
             case SourceAddrMode.Increment:  source_increment =  1; break;
@@ -196,8 +198,8 @@ public:
         num_dmas_running--;
         dmas_running_bitfield &= ~(1 << current_channel);
         if (num_dmas_running == 0) {
-            // memory.prefetch_buffer.resume();
-            memory.clock(idle_cycles);
+            memory.prefetch_buffer.resume();
+            // memory.clock(idle_cycles);
         }
 
         if (dma_channels[current_channel].irq_on_end) {
