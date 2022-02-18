@@ -117,10 +117,38 @@ final class PrefetchBuffer {
     enum GPIO_PORT_DIR     = 0x0800_00C6;
     enum GPIO_PORT_CONTROL = 0x0800_00C8;
 
-    pragma(inline, true) void write(uint address, ushort value) {
-        // if (unlikely(address == GPIO_PORT_DATA)) {
-        //     rtc.write(value & 0xF);
-        // }
+    pragma(inline, true) void write(T)(uint address, T value, AccessType access_type) {
+
+        uint masked_address = address & 0xFF_FFFF;
+        // if (_g_num_log > 0) log!(LogSource.DEBUG)("Requesting data from ROM at address %x. [%s, %s]", address, instruction_access ? "Instruction" : "Data", access_type == AccessType.NONSEQUENTIAL ? "Nonsequential" : "Sequential");
+        prefetch_buffer_has_run = false;
+
+        if (bubble_exists) {
+            log!(LogSource.DEBUG)("Popping the bubble...");
+            memory.scheduler.tick(1);
+            cycles_till_access_complete--;
+        }
+
+        bubble_exists = false;
+
+        if ((address & 0xFFFF) == 0) {
+            access_type = AccessType.NONSEQUENTIAL;
+        } 
+
+        this.invalidate();
+        this.start_new_prefetch(current_address + 1, this.prefetch_access_size);
+        this.can_start_new_prefetch = true;
+
+        uint region = ((address << 1) >> 24) & 0xF;
+
+        AccessSize access_size;
+        static if (is(T == ushort)) access_size = AccessSize.HALFWORD;
+        static if (is(T == uint  )) access_size = AccessSize.WORD;
+
+        memory.scheduler.tick(memory.waitstates[region][access_type][access_size]);
+        // if (!paused && enabled) memory.scheduler.tick(1); // TODO: what the hell is this?
+        
+        this.currently_prefetching = true;
     }
 
     pragma(inline, true) T request_data_from_rom(T)(uint address, AccessType access_type, bool instruction_access) {
