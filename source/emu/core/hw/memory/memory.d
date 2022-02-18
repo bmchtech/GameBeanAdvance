@@ -348,7 +348,6 @@ final class Memory : IMemory {
                         writefln("sussy read, %x %x %x", T.sizeof, address, read_value);
                         break;
                     }
-                    clock(1);
                     goto default;
 
                 default:
@@ -442,6 +441,7 @@ final class Memory : IMemory {
 
     private template write(T) {
         void write(uint address, T value, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
+
             uint region = get_region(address);
 
             uint shift;
@@ -450,14 +450,14 @@ final class Memory : IMemory {
             static if (is(T == ubyte )) shift = 0;
 
             if (unlikely(address >> 28 > 0)) { // invalid write
-                clock(1);
+                clock(1); // TODO: is this proper??
                 scheduler.process_events();
                 return;
             }
 
             // handle waitstates
             uint stalls = calculate_stalls_for_access!T(region, access_type);
-            clock(stalls);
+            if (((address >> 24) & 0xF) < 8) clock(stalls);
 
             switch ((address >> 24) & 0xF) {
                 case Region.BIOS:         break; // incorrect - implement properly later
@@ -551,9 +551,10 @@ final class Memory : IMemory {
                     break;
 
                 default:
-                    static if (is(T == uint  )) prefetch_buffer.write(address, value >> 16); prefetch_buffer.write(address + 1, value & 0xFFFF); 
-                    static if (is(T == ushort)) prefetch_buffer.write(address, value);
-                    static if (is(T == ubyte )) break;
+                    uint aligned_address = (address & ~3); // TODO: check this???
+                    static if (is(T == uint  )) prefetch_buffer.write!Word(aligned_address >> 1, value, access_type);
+                    static if (is(T == ushort)) prefetch_buffer.write!Half(address         >> 1, value, access_type);
+                    static if (is(T == ubyte )) break; // TODO: this too???????
             }
 
             scheduler.process_events();

@@ -72,16 +72,28 @@ public:
 
         dma_channels[current_channel].waiting_to_start = false;
 
-        bool source_beginning_in_rom = (dma_channels[current_channel].source_buf >> 24) >= 8;
-        bool dest_beginning_in_rom   = (dma_channels[current_channel].dest_buf   >> 24) >= 8;
+        bool source_beginning_in_rom = in_rom(dma_channels[current_channel].source_buf);
+        bool dest_beginning_in_rom   = in_rom(dma_channels[current_channel].dest_buf);
         
-        // if (memory.prefetch_buffer.prefetch_buffer_has_run) writefln("E");
-        // if (memory.prefetch_buffer.prefetch_buffer_has_run && (source_beginning_in_rom || dest_beginning_in_rom)) memory.finish_current_prefetch();
+        // theory: i think that, whenever DMA is about to access ROM on its next cycle,
+        // it pauses the prefetch buffer on the cycle leading up to the ROM access...
+        // if you assume that the prefetch buffer takes a cycle to pause, then this makes sense.
+        // the DMA tries to notify the prefetcher ahead of time so DMA doesn't have to
+        // wait around for the prefetcher to pause. some interesting behaviors:
+        // 1) when the DMA is about to begin. we check if we're starting in ROM.
+        //    and if so, we pause the prefetch buffer one cycle into the 2-cycle dma
+        //    starting delay. this allows the prefetch buffer to run only once, which is
+        //    the longest the DMA can afford to give the prefetcher without wasting time
+        // 2) if we're in the middle of a DMA and we're about to perform a write, we need to
+        //    check if the next *read* will be from ROM. if so, stop the prefetcher now, we can't
+        //    afford for it to run during the write. same logic applies for if we're about to
+        //    perform a read
+
+        
 
         if (num_dmas_running == 0) {
-            memory.clock(1);
-            memory.prefetch_buffer.pause();
-            memory.clock(1);
+            // if (source_beginning_in_rom) memory.prefetch_buffer.pause();
+            memory.clock(1); 
         }
         num_dmas_running++;
         dmas_running_bitfield |= (1 << current_channel);
@@ -131,14 +143,20 @@ public:
             bytes_to_transfer *= 4;
             for (int i = 0; i < bytes_to_transfer; i += 4) {
                 uint read_address = dma_channels[current_channel].source_buf + source_offset;
-                if ((read_address >> 24) >= 8 && (read_address >> 24) <= 0xD) source_increment = 4;
+
+                if (in_rom(read_address)) source_increment = 4;
+                if (in_rom(read_address)) {
+                    memory.prefetch_buffer.pause();
+                }
 
                 if (read_address >= 0x0200_0000) { // make sure we are not accessing DMA open bus
                     dma_channels[current_channel].open_bus_latch = memory.read_word(dma_channels[current_channel].source_buf + source_offset, access_type);
                 }
 
                 if (both_in_rom) access_type = AccessType.SEQUENTIAL;
-                
+
+                if (in_rom(dma_channels[current_channel].dest_buf + dest_offset)) memory.prefetch_buffer.pause();
+
                 memory.write_word(dma_channels[current_channel].dest_buf + dest_offset, dma_channels[current_channel].open_bus_latch, access_type);
                 source_offset += source_increment;
                 dest_offset   += dest_increment;
@@ -152,18 +170,25 @@ public:
             for (int i = 0; i < bytes_to_transfer; i += 2) {
                 uint read_address  = dma_channels[current_channel].source_buf + source_offset;
                 uint write_address = dma_channels[current_channel].dest_buf   + dest_offset;
-                if ((read_address >> 24) >= 8 && (read_address >> 24) <= 0xD) source_increment = 2;
                 
                 bool source_is_aligned = (read_address  & 2) != 0;
                 bool dest_is_aligned   = (write_address & 2) != 0;
 
                 if (read_address >= 0x0200_0000) { // make sure we are not accessing DMA open bus
                     auto shift      = source_is_aligned * 16;
+
+                    if (in_rom(read_address)) source_increment = 2;
+                    if (in_rom(read_address)) {
+                        memory.prefetch_buffer.pause();
+                    }
+
                     auto read_value = memory.read_half(read_address, access_type);
 
                     if (both_in_rom) access_type = AccessType.SEQUENTIAL;
 
                     dma_channels[current_channel].open_bus_latch = read_value | (read_value << 16);
+
+                    if (in_rom(write_address)) memory.prefetch_buffer.pause();
                     memory.write_half(write_address, read_value, access_type);
                 } else {
                     auto shift = dest_is_aligned * 16;
@@ -171,6 +196,7 @@ public:
 
                     if (both_in_rom) access_type = AccessType.SEQUENTIAL;
 
+                    if (in_rom(write_address)) memory.prefetch_buffer.pause();
                     memory.write_half(write_address, open_bus_value, access_type);
                 }
 
@@ -198,8 +224,9 @@ public:
         num_dmas_running--;
         dmas_running_bitfield &= ~(1 << current_channel);
         if (num_dmas_running == 0) {
-            memory.prefetch_buffer.resume();
             // memory.clock(idle_cycles);
+            memory.clock(1);
+            memory.prefetch_buffer.resume();
         }
 
         if (dma_channels[current_channel].irq_on_end) {
@@ -256,6 +283,11 @@ public:
             start_dma_channel(dma_id, false);
         }
         else dma_channels[dma_id].waiting_to_start = false;
+    }
+
+    bool in_rom(uint addr) {
+        auto region = (addr >> 24) & 0xF;
+        return region >= 0x8 && region <= 0xD;
     }
 
     pragma(inline, true) void start_dma_channel(int dma_id, bool last) {
