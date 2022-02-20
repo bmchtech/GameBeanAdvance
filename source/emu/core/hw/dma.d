@@ -75,19 +75,7 @@ public:
         bool source_beginning_in_rom = in_rom(dma_channels[current_channel].source_buf);
         bool dest_beginning_in_rom   = in_rom(dma_channels[current_channel].dest_buf);
         
-        // theory: i think that, whenever DMA is about to access ROM on its next cycle,
-        // it pauses the prefetch buffer on the cycle leading up to the ROM access...
-        // if you assume that the prefetch buffer takes a cycle to pause, then this makes sense.
-        // the DMA tries to notify the prefetcher ahead of time so DMA doesn't have to
-        // wait around for the prefetcher to pause. some interesting behaviors:
-        // 1) when the DMA is about to begin. we check if we're starting in ROM.
-        //    and if so, we pause the prefetch buffer one cycle into the 2-cycle dma
-        //    starting delay. this allows the prefetch buffer to run only once, which is
-        //    the longest the DMA can afford to give the prefetcher without wasting time
-        // 2) if we're in the middle of a DMA and we're about to perform a write, we need to
-        //    check if the next *read* will be from ROM. if so, stop the prefetcher now, we can't
-        //    afford for it to run during the write. same logic applies for if we're about to
-        //    perform a read
+        // i no longer have any idea what's going on
 
         memory.dma_cycle_accumulation_state = Memory.DMACycleAccumulationState.ACCUMULATE;
 
