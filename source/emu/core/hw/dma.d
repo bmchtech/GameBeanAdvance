@@ -89,7 +89,7 @@ public:
         //    afford for it to run during the write. same logic applies for if we're about to
         //    perform a read
 
-        
+        memory.dma_cycle_accumulation_state = Memory.DMACycleAccumulationState.ACCUMULATE;
 
         if (num_dmas_running == 0) {
             // if (source_beginning_in_rom) memory.prefetch_buffer.pause();
@@ -104,13 +104,13 @@ public:
         int  source_increment   = 0;
         int  dest_increment     = 0;
 
-        if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
-                 current_channel,
-                 bytes_to_transfer,
-                 dma_channels[current_channel].transferring_words ? "words" : "halfwords",
-                 dma_channels[current_channel].source_buf,
-                 dma_channels[current_channel].dest_buf,
-                 read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
+        // if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
+        //          current_channel,
+        //          bytes_to_transfer,
+        //          dma_channels[current_channel].transferring_words ? "words" : "halfwords",
+        //          dma_channels[current_channel].source_buf,
+        //          dma_channels[current_channel].dest_buf,
+        //          read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
 
         switch (dma_channels[current_channel].source_addr_control) {
             case SourceAddrMode.Increment:  source_increment =  1; break;
@@ -155,7 +155,9 @@ public:
 
                 if (both_in_rom) access_type = AccessType.SEQUENTIAL;
 
-                if (in_rom(dma_channels[current_channel].dest_buf + dest_offset)) memory.prefetch_buffer.pause();
+                if (in_rom(dma_channels[current_channel].dest_buf + dest_offset)) { 
+                    memory.prefetch_buffer.pause(); 
+                }
 
                 memory.write_word(dma_channels[current_channel].dest_buf + dest_offset, dma_channels[current_channel].open_bus_latch, access_type);
                 source_offset += source_increment;
@@ -178,8 +180,8 @@ public:
                     auto shift      = source_is_aligned * 16;
 
                     if (in_rom(read_address)) source_increment = 2;
-                    if (in_rom(read_address)) {
-                        memory.prefetch_buffer.pause();
+                    if (in_rom(read_address)) { 
+                        memory.prefetch_buffer.pause(); 
                     }
 
                     auto read_value = memory.read_half(read_address, access_type);
@@ -188,7 +190,10 @@ public:
 
                     dma_channels[current_channel].open_bus_latch = read_value | (read_value << 16);
 
-                    if (in_rom(write_address)) memory.prefetch_buffer.pause();
+                    if (in_rom(write_address)) { 
+                        memory.prefetch_buffer.pause(); 
+                    }
+
                     memory.write_half(write_address, read_value, access_type);
                 } else {
                     auto shift = dest_is_aligned * 16;
@@ -196,7 +201,10 @@ public:
 
                     if (both_in_rom) access_type = AccessType.SEQUENTIAL;
 
-                    if (in_rom(write_address)) memory.prefetch_buffer.pause();
+                    if (in_rom(write_address)) { 
+                        memory.prefetch_buffer.pause(); 
+                    }
+
                     memory.write_half(write_address, open_bus_value, access_type);
                 }
 
@@ -229,11 +237,11 @@ public:
             memory.prefetch_buffer.resume();
         }
 
+        memory.dma_cycle_accumulation_state = Memory.DMACycleAccumulationState.REIMBURSE;
+        
         if (dma_channels[current_channel].irq_on_end) {
             scheduler.add_event_relative_to_clock(() => interrupt_cpu(Interrupt.DMA_0 << current_channel), 2);
         }
-
-
 
         if (is_dma_channel_fifo(current_channel) || dma_channels[current_channel].repeat) {
             if (interpretted_dest_addr_control == DestAddrMode.IncrementReload) {

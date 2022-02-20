@@ -58,14 +58,21 @@ public:
 
         timers[timer_id].enabled_for_first_time = true;
         timers[timer_id].value = timers[timer_id].reload_value;
+        timers[timer_id].reload_value_buffer = timers[timer_id].reload_value;
         timers[timer_id].timer_event = scheduler.add_event_relative_to_clock(() => timer_overflow(timer_id), 2 + ((0x10000 - timers[timer_id].reload_value) << timers[timer_id].increment));
         timers[timer_id].timestamp = scheduler.get_current_time_relative_to_cpu() + 2;
+        // writefln("Timer %x enabled for the first time at %x", timer_id, timers[timer_id].timestamp - 2);
     }
 
     void timer_overflow(int x) {
+        // writefln("Thes sussy buffer: %x %x", timers[x].reload_value_buffer, timers[x].reload_value);
+        timers[x].reload_value_buffer = timers[x].reload_value;
         reload_timer(x);
         on_timer_overflow(x);
-        if (timers[x].irq_enable) interrupt_cpu(get_interrupt_from_timer_id(x));
+
+        if (timers[x].irq_enable) {interrupt_cpu(get_interrupt_from_timer_id(x));
+        // writefln("Timer %x interrupted at %x", x, scheduler.get_current_time_relative_to_cpu());
+        }
 
         // if the next timer is a slave (countup), then increment it
         if (x < 3 && timers[x + 1].countup) {
@@ -100,14 +107,14 @@ public:
             return timers[x].value;
         }
 
-        if (!timers[x].enabled) return timers[x].value;
         // if (timers[x].enabled_for_first_time) return timers[x].reload_value;
         
         // how many clock cycles has it been since we've been enabled?
         ulong cycles_elapsed = scheduler.get_current_time_relative_to_cpu() - timers[x].timestamp;
 
+        //  writefln("The Sussy Impostor: %x %x", timers[x].reload_value_buffer, (cycles_elapsed >> timers[x].increment) + timers[x].reload_value_buffer);
         // use timer increments to get the relevant bits, and mod by the reload value
-        return cast(ushort) (cycles_elapsed >> timers[x].increment);
+        return cast(ushort) ((cycles_elapsed >> timers[x].increment) + timers[x].reload_value_buffer);
     }
 
     Timer[4] timers;
@@ -118,6 +125,7 @@ private:
 
     struct Timer {
         ushort  reload_value;
+        ushort  reload_value_buffer;
         ushort  value;
         int     increment;
         int     increment_index;
@@ -153,6 +161,7 @@ public:
             case 0b0: timers[x].reload_value = (timers[x].reload_value & 0xFF00) | (data << 0); break;
             case 0b1: timers[x].reload_value = (timers[x].reload_value & 0x00FF) | (data << 8); break;
         }
+        // writefln("SUS! %X %X %X %x %x", x, target_byte, data, timers[x].reload_value, timers[x].reload_value_buffer);
     }
 
     void write_TMXCNT_H(int target_byte, ubyte data, int x) {
@@ -165,7 +174,6 @@ public:
 
                 // are we enabling the timer?
                 if (!timers[x].enabled && get_nth_bit(data, 7)) {
-                    _g_num_log = 100;
                     timers[x].enabled = true;
 
                     if (timers[x].timer_event != 0) scheduler.remove_event(timers[x].timer_event);
@@ -175,8 +183,8 @@ public:
                 }
 
                 if (!get_nth_bit(data, 7)) {
-                    _g_num_log = 0;
                     timers[x].enabled = false;
+                    calculate_timer_value(x);
                     scheduler.remove_event(timers[x].timer_event);
                 }
 
@@ -187,8 +195,7 @@ public:
     }
 
     ubyte read_TMXCNT_L(int target_byte, int x) {
-        timers[x].value = calculate_timer_value(x);
-        _g_num_log = 0;
+        if (timers[x].enabled) timers[x].value = calculate_timer_value(x);
 
         final switch (target_byte) {
             case 0b0: return (timers[x].value >> 0) & 0xFF;

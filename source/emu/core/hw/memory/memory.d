@@ -218,9 +218,13 @@ final class Memory : IMemory {
     }
 
     void idle() {
-        scheduler.tick(1);
-        prefetch_buffer.run(1);
-        scheduler.process_events();
+        if (dma_cycle_accumulation_state == DMACycleAccumulationState.REIMBURSE && accumulated_dma_cycles > 0) {
+            accumulated_dma_cycles--;
+        } else {
+            scheduler.tick(1);
+            prefetch_buffer.run(1);
+            scheduler.process_events();
+        }
     }
 
     pragma(inline, true) uint get_region(uint address) {
@@ -253,6 +257,7 @@ final class Memory : IMemory {
 
     private template read(T) {
         T read(uint address, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
+            if (dma_cycle_accumulation_state == DMACycleAccumulationState.REIMBURSE) accumulated_dma_cycles = 0;
             uint region = get_region(address);
             T read_value;
 
@@ -345,7 +350,6 @@ final class Memory : IMemory {
                         static if (is(T == uint  )) read_value = backup.read_word(address);
                         static if (is(T == ushort)) read_value = backup.read_half(address);
                         static if (is(T == ubyte )) read_value = backup.read_byte(address); 
-                        writefln("sussy read, %x %x %x", T.sizeof, address, read_value);
                         break;
                     }
                     goto default;
@@ -439,8 +443,18 @@ final class Memory : IMemory {
         static if (is(T == ubyte )) return cast(T) (open_bus_value >> 8  * (address & 3));
     }
 
+    enum DMACycleAccumulationState {
+        ACCUMULATE, // accumulate cycles that the DMA is using that the CPU can later use to run idle cycles for "free"
+        PAUSE,      // DMA is still running, but don't accumulate any more cycles. however, don't flush the accumulated cycles on memory access yet either
+        REIMBURSE,  // DMA is no longer running. all idle cycles will decrement "accumulated_dma_cycles" and be spent for "free". flush accumulated cycles on mem access.
+    }
+
+    DMACycleAccumulationState dma_cycle_accumulation_state = DMACycleAccumulationState.REIMBURSE;
+    uint accumulated_dma_cycles = 0;
+
     private template write(T) {
         void write(uint address, T value, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
+            if (dma_cycle_accumulation_state == DMACycleAccumulationState.REIMBURSE) accumulated_dma_cycles = 0;
 
             uint region = get_region(address);
 
@@ -543,7 +557,6 @@ final class Memory : IMemory {
                 case Region.ROM_SRAM_L:
                 case Region.ROM_SRAM_H:
                     if (backup_enabled) {
-                        writefln("sussy write, %x %x %x", T.sizeof, address, value);
                         static if (is(T == uint  )) return backup.write_word(address, value);
                         static if (is(T == ushort)) return backup.write_half(address, value);
                         static if (is(T == ubyte )) return backup.write_byte(address, value);
@@ -561,9 +574,15 @@ final class Memory : IMemory {
         }
     }
 
-    void clock(uint stalls) {
-        prefetch_buffer.run(stalls);
-        scheduler.tick(stalls);
+    void clock(uint cycles) {
+        prefetch_buffer.run(cycles);
+        scheduler.tick(cycles);
+        maybe_accumulate_dma_cycles(cycles);
+    }
+
+    void maybe_accumulate_dma_cycles(uint cycles) {
+        if (dma_cycle_accumulation_state == DMACycleAccumulationState.ACCUMULATE) 
+            accumulated_dma_cycles += cycles;
     }
 
     bool backup_enabled = false;
