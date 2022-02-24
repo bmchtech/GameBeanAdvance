@@ -209,19 +209,13 @@ public:
         bool source_ending_in_rom = (dma_channels[current_channel].source_buf >> 24) >= 8;
         bool dest_ending_in_rom   = (dma_channels[current_channel].dest_buf   >> 24) >= 8;
 
-        // TODO: why do these idle cycles happen? do they happen just if we start out in ROM, or if we touch it at any point?
-        // according to gbatek:
-        // Internal time for DMA processing is 2I (normally), or 4I (if both source and destination are in gamepak memory area).
-        uint idle_cycles = (source_beginning_in_rom || source_ending_in_rom) &&
-                           (dest_beginning_in_rom   || dest_ending_in_rom) ?
-                           2 : 2;
-        // TODO: i have no idea why but idling for 2 cycles in either case makes me pass more dma tests. future me, figure this out.
-
         num_dmas_running--;
         dmas_running_bitfield &= ~(1 << current_channel);
         if (num_dmas_running == 0) {
             // memory.clock(idle_cycles);
             memory.clock(1);
+
+            // whats the exact relationship between the cpu, dma, and the prefetcher?
             memory.prefetch_buffer.resume();
         }
 
