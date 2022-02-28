@@ -9,6 +9,8 @@ import ui.device.video.device;
 import ui.device.audio.device;
 import ui.device.input.device;
 
+import ui.device.frontend.rengfrontend;
+
 import bindbc.sdl;
 
 import core.sync.mutex;
@@ -24,6 +26,7 @@ class Runner : Observer {
     VideoDevice video_device;
     AudioDevice audio_device;
     InputDevice input_device;
+    RengFrontend frontend;
 
     size_t sync_to_audio_lower;
     size_t sync_to_audio_upper;
@@ -39,6 +42,9 @@ class Runner : Observer {
         this.video_device = video_device;
         this.audio_device = audio_device;
         this.input_device = input_device;
+
+        frontend = new RengFrontend();
+        frontend.init();
 
         this.should_cycle_gba_mutex = new Mutex();
 
@@ -59,6 +65,8 @@ class Runner : Observer {
             video_device.reset_fps();
             start_timestamp = end_timestamp;
         }
+
+        frontend.update();
     }
 
     void run() {
