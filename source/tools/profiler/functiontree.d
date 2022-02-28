@@ -1,6 +1,7 @@
 module tools.profiler.functiontree;
 
 import util;
+import util.pointerpool;
 
 alias FunctionID = u32;
 
@@ -30,6 +31,16 @@ final class FunctionTree {
 
     this() {
         pointer_pool = new FunctionPool();
+
+        call_stack[0] = pointer_pool.get_pointer();
+        call_stack[0].cycles = 0;
+        call_stack[0].function_id = -1;
+        call_stack[0].function_call_list = pointer_pool.get_pointer();
+        call_stack[0].function_call_list_length = 0;
+        call_stack[0].entered_before = false;
+        current_function_call = call_stack[0];
+
+        call_stack_size = 1;
     }    
 
     void enter_function(FunctionID function_id) {
@@ -40,17 +51,20 @@ final class FunctionTree {
             add_new_function_call(function_id, search_return.index);
         }
     
-        current_function_call = current_function_call[search_return.index];
+        current_function_call = &current_function_call[search_return.index];
         current_function_call.entered_before = true;
 
         call_stack[call_stack_size++] = current_function_call;
     }
 
     void exit_function() {
+        if (call_stack_size <= 1) return;
         current_function_call = call_stack[--call_stack_size];
     }
 
     void add_new_function_call(FunctionID function_id, int index) {
+        auto function_call_list = current_function_call.function_call_list;
+
         function_call_list[index] = pointer_pool.get_pointer();
         
         function_call_list[index].cycles                    = 0;

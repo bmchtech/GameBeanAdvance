@@ -1,11 +1,10 @@
 module util.pointerpool;
 
 final class PointerPool(T, size_t POOL_SIZE) {
-    alias Pointer = T*;
-    alias Pool    = Pointer[POOL_SIZE];
+    alias Pool = T*;
     
     Pool[] pools;
-    Pool*  current_pool;
+    Pool current_pool;
 
     size_t pointer_index = 0;
 
@@ -14,12 +13,12 @@ final class PointerPool(T, size_t POOL_SIZE) {
     }
 
     void create_new_pool() {
-        pools ~= new Pool;
-        current_pool = &pools[$];
+        pools ~= new T(POOL_SIZE);
+        current_pool = pools[pools.length - 1];
     }
 
-    Pointer get_pointer() {
+    T* get_pointer() {
         if (pointer_index > POOL_SIZE) create_new_pool();
-        return pools[pointer_index++];
+        return &current_pool[pointer_index++];
     }
 }

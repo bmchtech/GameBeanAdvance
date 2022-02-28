@@ -5,6 +5,8 @@ import abstracthw.memory;
 import ops;
 import util;
 
+import hw.gba;
+
 import core.bitop;
 
 template execute(T : IARM7TDMI) {
@@ -95,9 +97,13 @@ template execute(T : IARM7TDMI) {
     }
 
     static void create_branch_exchange(T cpu, Half opcode) {
-        Word address = cpu.get_reg(get_nth_bits(opcode, 3, 7));
+        Reg rm = get_nth_bits(opcode, 3, 7);
+
+        Word address = cpu.get_reg(rm);
         cpu.set_flag(Flag.T, address & 1);
         cpu.set_reg(pc, address);
+
+        if (g_profile_gba) g_profiler.notify__cpu_bx(rm);
     }
 
     static void create_pc_relative_load(Reg reg)(T cpu, Half opcode) {
@@ -224,6 +230,11 @@ template execute(T : IARM7TDMI) {
         
         if (is_subtraction) cpu.set_reg(sp, cpu.get_reg(sp) - immediate);
         else                cpu.set_reg(sp, cpu.get_reg(sp) + immediate);
+
+        if (g_profile_gba) {
+            if (is_subtraction) g_profiler.notify__cpu_decremented_sp(immediate);
+            else                g_profiler.notify__cpu_incremented_sp(immediate);
+        }
     }
 
     static void create_logical_shift(bool is_lsr)(T cpu, Half opcode) {
@@ -289,6 +300,11 @@ template execute(T : IARM7TDMI) {
         for (int i = 0; i < 8; i++) {
             if (get_nth_bit(register_list, i)) {
                 cpu.set_reg(i, cpu.read_word(current_address & ~3, access_type));
+            
+                if (g_profile_gba) {
+                    g_profiler.notify__cpu_popped_stack(i, current_address & ~3);
+                }
+
                 current_address += 4;
 
                 access_type = AccessType.SEQUENTIAL;
@@ -299,6 +315,11 @@ template execute(T : IARM7TDMI) {
 
         static if (lr_included) {
             cpu.set_reg(pc, cpu.read_word(current_address & ~3, access_type));
+            
+            if (g_profile_gba) {
+                g_profiler.notify__cpu_popped_stack(lr, current_address & ~3);
+            }
+
             current_address += 4;
         }
 
@@ -314,12 +335,20 @@ template execute(T : IARM7TDMI) {
         static if (lr_included) {
             current_address -= 4;
             cpu.write_word(current_address & ~3, cpu.get_reg(lr), access_type);
+
+            if (g_profile_gba) {
+                g_profiler.notify__cpu_pushed_stack(lr, current_address & ~3);
+            }
         }
 
         for (int i = 7; i >= 0; i--) {
             if (get_nth_bit(register_list, i)) {
                 current_address -= 4;
                 cpu.write_word(current_address & ~3, cpu.get_reg(i), access_type);
+
+                    if (g_profile_gba) {
+                        g_profiler.notify__cpu_pushed_stack(i, current_address & ~3);
+                    }
 
                 access_type = AccessType.SEQUENTIAL;
             }

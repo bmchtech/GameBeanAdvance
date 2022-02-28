@@ -6,6 +6,7 @@ import hw.interrupts;
 import abstracthw.cpu;
 import abstracthw.memory;
 import hw.cpu;
+import hw.gba;
 
 import diag.logger;
 
@@ -127,7 +128,7 @@ final class ARM7TDMI : IARM7TDMI {
         if (Logger.instance) Logger.instance.capture_cpu();
         if (interrupt_manager.has_irq()) raise_exception!(CpuException.IRQ);
 
-        if (unlikely(_g_num_log > 0)) {
+        if (unlikely(_g_num_log > 0 )) {
             _g_num_log--;
             // writefln("%x", _g_num_log);
             if (get_flag(Flag.T)) write("THM ");
@@ -136,13 +137,18 @@ final class ARM7TDMI : IARM7TDMI {
             write(format("0x%08x ", instruction_set == InstructionSet.ARM ? arm_pipeline[0] : thumb_pipeline[0]));
             
             for (int j = 0; j < 18; j++)
-            if (j != 15)
+            // if (j != 15)
                 write(format("%08x ", regs[j]));
 
             // write(format("%x ", *cpsr));
             // write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
             writeln();
             if (_g_num_log == 0) writeln();
+        }
+
+        if (g_profile_gba) {
+            Word address = regs[pc] - (instruction_set == InstructionSet.ARM ? 8 : 4);
+            g_profiler.notify__cpu_at_address(address);
         }
 
         if (instruction_set == InstructionSet.ARM) {

@@ -7,6 +7,8 @@ import util;
 import barrel_shifter;
 import core.bitop;
 
+import hw.gba;
+
 template execute(T : IARM7TDMI) {
 
     alias JumptableEntry = void function(T cpu, Word opcode);
@@ -24,6 +26,8 @@ template execute(T : IARM7TDMI) {
     static void create_branch_exchange(Word static_opcode)(T cpu, Word opcode) {
         Reg rm = get_nth_bits(opcode, 0, 4);
         Word address = cpu.get_reg(rm);
+
+        if (g_profile_gba) g_profiler.notify__cpu_bx(rm);
 
         cpu.set_flag(Flag.T, address & 1);
         cpu.set_reg(pc, address & ~1);
@@ -353,7 +357,7 @@ template execute(T : IARM7TDMI) {
         AccessType access_type = AccessType.NONSEQUENTIAL;
 
         for (int i = 0; i < 16; i++) {
-            if (opcode & mask) {
+            if (rlist & mask) {
                 static if (s) {
                     static if (load) {
                         if (pc_included) cpu.set_reg(i, cpu.read_word(address, access_type));
@@ -369,6 +373,13 @@ template execute(T : IARM7TDMI) {
                     } else {
                         if (i == pc) cpu.write_word(address, cpu.get_reg(pc) + 4, access_type);
                         else         cpu.write_word(address, cpu.get_reg(i),      access_type);
+                    }
+                }
+
+                if (g_profile_gba) {
+                    if (rn == sp) {
+                        static if (load) g_profiler.notify__cpu_popped_stack(i, address);
+                        else             g_profiler.notify__cpu_pushed_stack(i, address);
                     }
                 }
 
