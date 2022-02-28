@@ -5,12 +5,6 @@ import ui.device.event;
 
 import hw.gba;
 
-import ui.device.video.device;
-import ui.device.audio.device;
-import ui.device.input.device;
-
-import ui.device.frontend.rengfrontend;
-
 import bindbc.sdl;
 
 import core.sync.mutex;
@@ -23,10 +17,7 @@ class Runner : Observer {
     bool should_cycle_gba = true;
     uint cycles_per_batch;
 
-    VideoDevice video_device;
-    AudioDevice audio_device;
-    InputDevice input_device;
-    RengFrontend frontend;
+    MultiMediaDevice frontend;
 
     size_t sync_to_audio_lower;
     size_t sync_to_audio_upper;
@@ -35,38 +26,34 @@ class Runner : Observer {
 
     bool running = true;
 
-    this(GBA gba, uint cycles_per_batch, VideoDevice video_device, AudioDevice audio_device, InputDevice input_device) {
+    this(GBA gba, uint cycles_per_batch, MultiMediaDevice frontend) {
         this.gba = gba;
         this.cycles_per_batch = cycles_per_batch;
 
-        this.video_device = video_device;
-        this.audio_device = audio_device;
-        this.input_device = input_device;
-
-        frontend = new RengFrontend();
-        frontend.init();
-
         this.should_cycle_gba_mutex = new Mutex();
 
-        this.sync_to_audio_lower = audio_device.get_samples_per_callback() / 2;
-        this.sync_to_audio_upper = audio_device.get_samples_per_callback();
+        this.sync_to_audio_lower = frontend.get_samples_per_callback() / 2;
+        this.sync_to_audio_upper = frontend.get_samples_per_callback();
+
+        this.frontend = frontend;
     }
 
     void tick() {
-        input_device.handle_input();
+        frontend.handle_input();
 
-        auto buffer_size = audio_device.get_buffer_size();
+        auto buffer_size = frontend.get_buffer_size();
         if (buffer_size > sync_to_audio_upper) set_should_cycle_gba(false);
         if (buffer_size < sync_to_audio_lower) set_should_cycle_gba(true);
         
 		ulong end_timestamp = SDL_GetTicks();
 		ulong elapsed = end_timestamp - start_timestamp;
         if (elapsed > 1000) {
-            video_device.reset_fps();
+            frontend.reset_fps();
             start_timestamp = end_timestamp;
         }
 
         frontend.update();
+        frontend.draw();
     }
 
     void run() {

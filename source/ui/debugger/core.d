@@ -25,8 +25,6 @@ final class DebuggerCore : Core {
 	}
 
     override protected void draw() {
-        render_mutex.lock_nothrow();
         super.draw();
-        render_mutex.unlock_nothrow();
     }
 }

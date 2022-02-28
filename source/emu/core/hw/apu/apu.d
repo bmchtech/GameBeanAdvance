@@ -25,7 +25,7 @@ final class APU {
 public:
 
     Scheduler scheduler;
-    void delegate(Sample) audio_callback;
+    void delegate(Sample) frontend_audio_callback;
 
     this(Memory memory, Scheduler scheduler, void delegate(DirectSound) on_fifo_empty) {
         dma_sounds = [
@@ -49,8 +49,8 @@ public:
         tone_channel  = new ToneChannel ();
     }
 
-    void set_audio_callback(void delegate(Sample) audio_callback) {
-        this.audio_callback = audio_callback;
+    void set_frontend_audio_callback(void delegate(Sample) audio_callback) {
+        this.frontend_audio_callback = frontend_audio_callback;
     }
 
     void on_timer_overflow(int timer_id) {
@@ -139,7 +139,7 @@ private:
             mixed_sample_L += bias * 2;
             mixed_sample_R += bias * 2;
         // short mixed_sample = cast(short) (dma_sample_A + dma_sample_B + bias * 2);
-        audio_callback(Sample(mixed_sample_L, mixed_sample_R));
+        frontend_audio_callback(Sample(mixed_sample_L, mixed_sample_R));
         
         scheduler.add_event_relative_to_self(&sample, sample_rate);
     }
