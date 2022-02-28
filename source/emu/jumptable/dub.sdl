@@ -1,8 +1,0 @@
-name "gamebean-jumptable"
-description "jumptable"
-authors "bean"
-copyright "Copyright © 2021, bean"
-license "proprietary"
-targetType "library"
-
-dependency "gamebean-common" path="../common"

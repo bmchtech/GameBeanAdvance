@@ -22,6 +22,8 @@ import core.sync.mutex;
 import bindbc.sdl;
 import bindbc.opengl;
 
+import tools.profiler.profiler;
+
 import ui.device.debugger.debugger;
 import ui.device.video.sdl.sdl;
 import ui.device.audio.sdl.sdl;
@@ -45,9 +47,9 @@ void main(string[] args) {
 		.add(new Option("s", "scale", "render scale").optional.defaultValue("1"))
 		.add(new Argument("rompath", "path to rom file"))
 		.add(new Option("b", "bios", "path to bios file").optional.defaultValue("./gba_bios.bin"))
-		.add(new Flag("p", "pause", "pause until enter on stdin"))
 		.add(new Flag("k", "bootscreen", "skips bios bootscreen and starts the rom directly"))
 		.add(new Option("m", "mod", "enable mod/extension"))
+		.add(new Option("p", "profile", "profile the emu (pass in an ELF file here)"))
 		.add(new Option("t", "cputrace", "display cpu trace on crash").optional.defaultValue("0"))
 		.parse(args);
 	// dfmt on
@@ -103,6 +105,12 @@ void main(string[] args) {
 	}
 
 	if (a.flag("bootscreen")) gba.skip_bios_bootscreen();
+
+	auto profile = a.option("profile");
+	if (profile) {
+		g_profile_gba = true;
+		g_profiler    = new Profiler(gba, profile);
+	}
 	
 	audio_device = new SDLAudioDevice();
 
@@ -134,10 +142,6 @@ void main(string[] args) {
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
 		assert(0, "sdl init failed");
-
-	if (a.flag("pause")) {
-		readln();
-	}
 
 	Savetype savetype = detect_savetype(gba.memory.rom.get_bytes());
 	

@@ -18,6 +18,8 @@ import ui.device.audio.device;
 import ui.device.video.device;
 import ui.device.input.device;
 
+import tools.profiler.profiler;
+
 import std.math;
 import std.stdio;
 
@@ -29,6 +31,10 @@ enum GAME_TITLE_SIZE = 12;
 
 // 2 ^ 64 can last for up to 3000 years
 ulong num_cycles = 0;
+
+// globals, sorry
+__gshared bool     g_profile_gba;
+__gshared Profiler g_profiler;
 
 final class GBA {
 public:
