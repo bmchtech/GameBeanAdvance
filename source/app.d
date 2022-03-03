@@ -99,6 +99,8 @@ void main(string[] args) {
 
 	MultiMediaDevice frontend = new RengFrontend();
 	gba.set_frontend(frontend);
+	frontend.push_sample(Sample(69, 69));
+	g_log_gba = gba;
 
 	gba.set_internal_sample_rate(16_780_000 / frontend.get_sample_rate());
 	
