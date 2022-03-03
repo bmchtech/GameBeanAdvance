@@ -7,6 +7,7 @@ class EmuScene : Scene2D {
     override void on_start() {
         auto gba_screen = create_entity("gba_display");
         gba_screen.add_component(new GbaVideo());
+        Core.jar.register(GbaVideo);
     }
 
     override void update() {
