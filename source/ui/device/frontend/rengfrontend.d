@@ -33,6 +33,7 @@ class RengFrontend : MultiMediaDevice {
 
         void draw() {
             // do sussy stuff
+            reng_core.draw_pub();
         }
 
 
