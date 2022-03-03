@@ -116,9 +116,6 @@ void main(string[] args) {
 	device_manager.add_device(runner);
 	device_manager.add_device(frontend);
 
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
-		assert(0, "sdl init failed");
-
 	if (a.flag("pause")) {
 		readln();
 	}
@@ -138,7 +135,6 @@ void main(string[] args) {
 		}
 	}
 
-	SDL_PauseAudio(0);
 	runner.run();
 
 	version (gperf) {
