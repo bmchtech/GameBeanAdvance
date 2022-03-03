@@ -43,21 +43,23 @@ abstract class MultiMediaDevice : Observer {
         this.set_beancomputer_key = set_beancomputer_key;
     }
 
-    abstract void update();
-    abstract void draw();
+    abstract {
+        void update();
+        void draw();
 
-    // video stuffs
-    abstract void receive_videobuffer(Pixel[SCREEN_HEIGHT][SCREEN_WIDTH] buffer);
-    abstract void reset_fps();
+        // video stuffs
+        void receive_videobuffer(Pixel[SCREEN_HEIGHT][SCREEN_WIDTH] buffer);
+        void reset_fps();
 
-    // audio stuffs
-    void push_sample(Sample);
-    void pause();
-    void play();
-    uint get_sample_rate();
-    uint get_samples_per_callback();
-    size_t get_buffer_size();
+        // audio stuffs
+        void push_sample(Sample s);
+        void pause();
+        void play();
+        uint get_sample_rate();
+        uint get_samples_per_callback();
+        size_t get_buffer_size();
 
-    // input stuffs
-    void handle_input();
+        // input stuffs
+        void handle_input();
+    }
 }

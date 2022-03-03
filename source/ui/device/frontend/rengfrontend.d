@@ -14,6 +14,7 @@ class RengFrontend : MultiMediaDevice {
     override {
         // video stuffs
         void receive_videobuffer(Pixel[SCREEN_HEIGHT][SCREEN_WIDTH] buffer) {
+            
             reng_core.draw_pub();
         }
 
@@ -22,7 +23,7 @@ class RengFrontend : MultiMediaDevice {
         }
 
         // audio stuffs
-        void push_sample(Sample) {
+        void push_sample(Sample s) {
 
         }
 

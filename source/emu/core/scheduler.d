@@ -85,13 +85,6 @@ final class Scheduler {
         events_in_queue--;
     }
 
-    pragma(inline, true) void fast_forward() {
-        // if (!is_processing_event) {
-        //     current_timestamp = events[0].timestamp;
-        //     process_event();
-        // }
-    }
-
     pragma(inline, true) void tick(ulong num_cycles) {
         if (_g_num_log > 0) log!(LogSource.DEBUG)("Scheduler ticking for %d cycles", num_cycles);
         current_timestamp += num_cycles;
@@ -107,7 +100,6 @@ final class Scheduler {
 
             if (events[i].id == event_id) {
                 num_events_being_processed++;
-                // writefln("%x", events[i].timestamp);
                 events[i].callback();
                 remove_event(event_id);
                 num_events_being_processed--;
@@ -119,10 +111,6 @@ final class Scheduler {
         bool can_interleave = (num_events_being_processed > 0) ?  events[num_events_being_processed - 1].can_be_interleaved : false;
         while ((can_interleave || num_events_being_processed == 0) && current_timestamp >= events[num_events_being_processed].timestamp) process_event();
     }
-
-    // pragma(inline, true) bool should_cycle() {
-    //     return current_timestamp < events[0].timestamp;
-    // }
 
     pragma(inline, true) ulong get_current_time() {
         return current_timestamp;
@@ -140,17 +128,13 @@ final class Scheduler {
     pragma(inline, true) void process_event() {
         bool can_interleave = (num_events_being_processed > 0) ? events[num_events_being_processed - 1].can_be_interleaved : true;
         if (!can_interleave) return;
-        // if (num_events_being_processed > 0) error("sex");
-        // print_schedule();
 
         num_events_being_processed++;
-                // writefln("%x", events[num_events_being_processed - 1].timestamp);
         events[num_events_being_processed - 1].callback();
 
         for (int i = num_events_being_processed - 1; i < events_in_queue; i++) {
             *events[i] = *events[i + 1];
         }
-        
         
         events_in_queue--;
 
