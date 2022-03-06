@@ -3,7 +3,7 @@
 
 
 # GameBeanAdvance
-WIP Gameboy Advance Emulator written in D. Passes 1988/2020 mGBA timing tests, and fourth software-based emulator to pass the AGS Aging Cartridge test. Currently working on improving GBA accuracy.
+WIP Gameboy Advance Emulator written in D. Passes 2020/2020 mGBA timing tests, and fourth software-based emulator to pass the AGS Aging Cartridge test. Currently working on improving GBA accuracy.
 
 # Demo Videos (Turn audio up)
 
