@@ -15,11 +15,10 @@
 		"elf-d": "0.2.5",
 		"fluent-asserts": "0.13.3",
 		"gamebean-common": {"path":"source/emu/common"},
-		"gamebean-jumptable": {"path":"source/emu/jumptable"},
 		"gperftools_d": "0.1.0",
 		"jar": "0.1.0",
 		"libdparse": "0.14.0",
-		"reng": "0.5.1",
+		"reng": "0.7.2",
 		"silly": "1.1.1",
 		"stdx-allocator": "2.77.5",
 		"witchcraft": "0.1.9"

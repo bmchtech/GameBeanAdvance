@@ -53,7 +53,7 @@ public:
 
 
     void reload_timer_for_the_first_time(int timer_id) {
-        // _g_num_log += 100;
+        _g_num_log += 100;
         if (timer_id != 0 && timers[timer_id].countup) return;
 
         timers[timer_id].enabled_for_first_time = true;
@@ -65,13 +65,12 @@ public:
     }
 
     void timer_overflow(int x) {
-        // writefln("Thes sussy buffer: %x %x", timers[x].reload_value_buffer, timers[x].reload_value);
         timers[x].reload_value_buffer = timers[x].reload_value;
         reload_timer(x);
         on_timer_overflow(x);
 
-        if (timers[x].irq_enable) {interrupt_cpu(get_interrupt_from_timer_id(x));
-        // writefln("Timer %x interrupted at %x", x, scheduler.get_current_time_relative_to_cpu());
+        if (timers[x].irq_enable) {
+            interrupt_cpu(get_interrupt_from_timer_id(x));
         }
 
         // if the next timer is a slave (countup), then increment it
@@ -79,8 +78,6 @@ public:
             if (timers[x + 1].value == 0xFFFF) timer_overflow(x + 1);
             else timers[x + 1].value++;
         }
-
-        // timers[x].timer_event = scheduler.add_event_relative_to_clock(() => timer_overflow(x), 2 + ((0x10000 - timers[x].reload_value) << timers[x].increment));
     }
 
     Interrupt get_interrupt_from_timer_id(int x) {
@@ -112,7 +109,6 @@ public:
         // how many clock cycles has it been since we've been enabled?
         ulong cycles_elapsed = scheduler.get_current_time_relative_to_cpu() - timers[x].timestamp;
 
-        //  writefln("The Sussy Impostor: %x %x", timers[x].reload_value_buffer, (cycles_elapsed >> timers[x].increment) + timers[x].reload_value_buffer);
         // use timer increments to get the relevant bits, and mod by the reload value
         return cast(ushort) ((cycles_elapsed >> timers[x].increment) + timers[x].reload_value_buffer);
     }
@@ -161,7 +157,6 @@ public:
             case 0b0: timers[x].reload_value = (timers[x].reload_value & 0xFF00) | (data << 0); break;
             case 0b1: timers[x].reload_value = (timers[x].reload_value & 0x00FF) | (data << 8); break;
         }
-        // writefln("SUS! %X %X %X %x %x", x, target_byte, data, timers[x].reload_value, timers[x].reload_value_buffer);
     }
 
     void write_TMXCNT_H(int target_byte, ubyte data, int x) {
@@ -184,8 +179,10 @@ public:
 
                 if (!get_nth_bit(data, 7)) {
                     timers[x].enabled = false;
-                    calculate_timer_value(x);
+                    timers[x].value = calculate_timer_value(x);
+                    writefln("Disabled. Timer's value is %x", timers[x].value);
                     scheduler.remove_event(timers[x].timer_event);
+                    _g_num_log = 0;
                 }
 
                 break;

@@ -1,6 +1,7 @@
 module diag.log;
 
 import std.stdio;
+import hw.gba;
 
 enum LogSource {
     INIT,
@@ -9,6 +10,8 @@ enum LogSource {
     DEBUG,
     SAVE
 }
+
+GBA g_log_gba;
 
 static immutable ulong logsource_padding = get_largest_logsource_length!();
 
@@ -30,12 +33,12 @@ void log(LogSource log_source, Char, A...)(scope const(Char)[] fmt, A args) {
     import std.format.write : formattedWrite;
     import std.conv;
 
-    static if (log_source == LogSource.DEBUG) return;
-    else {
-        ulong timestamp = 0; // _gba ? _gba.scheduler.get_current_time_relative_to_cpu() : 0;
+    // static if (log_source == LogSource.DEBUG) return;
+    // else {
+        ulong timestamp = g_log_gba ? g_log_gba.scheduler.get_current_time_relative_to_cpu() : 0;
         writef("[%016x] %s: ", timestamp, pad_string_right!(to!string(log_source), logsource_padding));
         writefln(fmt, args);
-    }
+    // }
 }
 
 static string pad_string_right(string s, ulong pad)() {
