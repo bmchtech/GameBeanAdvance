@@ -14,9 +14,7 @@ import hw.sio.sio;
 import scheduler;
 import util;
 
-import ui.device.audio.device;
-import ui.device.video.device;
-import ui.device.input.device;
+import ui.device.device;
 
 import tools.profiler.profiler;
 
@@ -85,16 +83,11 @@ public:
         memory.bios[0 .. bios.length] = bios[0 .. bios.length];
     }
 
-    void set_audio_device(AudioDevice audio_device) {
-        apu.set_audio_callback(&audio_device.push_sample);
-    }
+    void set_frontend(MultiMediaDevice frontend) {
+        ppu.set_frontend_vblank_callback(&frontend.receive_videobuffer);
+        apu.set_frontend_audio_callback (&frontend.push_sample);
 
-    void set_video_device(VideoDevice video_device) {
-        ppu.set_frontend_vblank_callback(&video_device.__render);
-    }
-
-    void set_input_device(InputDevice input_device) {
-        input_device.set_callbacks(&key_input.set_key, &beancomputer.set_key);
+        frontend.set_callbacks(&key_input.set_key, &beancomputer.set_key);
     }
 
     void set_internal_sample_rate(uint sample_rate) {

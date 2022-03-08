@@ -23,14 +23,10 @@ import bindbc.sdl;
 import bindbc.opengl;
 
 import tools.profiler.profiler;
+import ui.device.frontend.rengfrontend;
 
 import ui.device.debugger.debugger;
-import ui.device.video.sdl.sdl;
-import ui.device.audio.sdl.sdl;
-import ui.device.input.sdl.kbm;
-import ui.device.video.device;
-import ui.device.audio.device;
-import ui.device.input.device;
+import ui.device.device;
 import ui.device.manager;
 import ui.device.runner.runner;
 
@@ -56,25 +52,10 @@ void main(string[] args) {
 
 	util.verbosity_level = a.occurencesOf("verbose");
 
-	auto ret_SDL = loadSDL();
-	if (ret_SDL != sdlSupport) {
-		if (ret_SDL == SDLSupport.badLibrary) {
-			error("bad sdl library");
-		} else if (ret_SDL == SDLSupport.noLibrary) {
-			error("no sdl library");
-		}
-	}
-	log!(LogSource.INIT)("SDL loaded successfully");
-
-
 	auto mem = new Memory();
 
 	bool is_beancomputer = a.option("mod").canFind("beancomputer");
 	if (is_beancomputer) log!(LogSource.INIT)("BeanComputer enabled");
-
-    AudioDevice audio_device;
-    VideoDevice video_device;
-    InputDevice input_device;
 
 	KeyInput key_input = new KeyInput(mem);
 	auto bios_data = load_rom_as_bytes(a.option("bios"));
@@ -111,37 +92,24 @@ void main(string[] args) {
 		g_profile_gba = true;
 		g_profiler    = new Profiler(gba, profile);
 	}
+	MultiMediaDevice frontend = new RengFrontend(to!int(a.option("scale")));
+	gba.set_frontend(frontend);
+	frontend.push_sample(Sample(69, 69));
+	g_log_gba = gba;
+
+	gba.set_internal_sample_rate(16_780_000 / frontend.get_sample_rate());
 	
-	audio_device = new SDLAudioDevice();
-
-	gba.set_internal_sample_rate(16_780_000 / audio_device.get_sample_rate());
-	gba.set_audio_device(audio_device);
-	
-	auto sample_rate          = audio_device.get_sample_rate();
-	auto samples_per_callback = audio_device.get_samples_per_callback();
-
-	Mutex render_mutex = new Mutex();
-	video_device = new SDLVideoDevice(render_mutex, to!int(a.option("scale")));
-	gba.set_video_device(video_device);
-
-	input_device = new SDLInputDevice_KBM();
-	gba.set_input_device(input_device);
-
-	DeviceManager device_manager = new DeviceManager();
-	device_manager.add_device(audio_device);
-	device_manager.add_device(video_device);
-	device_manager.add_device(input_device);
+	auto sample_rate          = frontend.get_sample_rate();
+	auto samples_per_callback = frontend.get_samples_per_callback();
 
 	int num_batches        = sample_rate / samples_per_callback;
 	enum cycles_per_second = 16_780_000;
-	auto cycles_per_batch  = cycles_per_second / num_batches;
-	Runner runner = new Runner(gba, cycles_per_batch, video_device, audio_device, input_device);
+	auto cycles_per_batch  = 16_780_000 / 60; // cycles_per_second / num_batches;
+	Runner runner = new Runner(gba, cycles_per_batch, frontend);
+
+	DeviceManager device_manager = new DeviceManager();
 	device_manager.add_device(runner);
-
-	// device_manager.add_device(new DebuggerDevice(render_mutex));
-
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
-		assert(0, "sdl init failed");
+	device_manager.add_device(frontend);
 
 	Savetype savetype = detect_savetype(gba.memory.rom.get_bytes());
 	
@@ -158,7 +126,6 @@ void main(string[] args) {
 		}
 	}
 
-	SDL_PauseAudio(0);
 	runner.run();
 
 	version (gperf) {

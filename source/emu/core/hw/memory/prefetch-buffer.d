@@ -43,6 +43,7 @@ final class PrefetchBuffer {
     }
 
 
+    uint sussy;
     pragma(inline, true) void run(uint num_cycles) {
         if (!this.enabled || !this.currently_prefetching || this.paused) return;
         if (_g_num_log > 0) log!(LogSource.DEBUG)("Prefetch buffer running for %d cycles. %d / %d remaining till access complete", num_cycles, cycles_till_access_complete, sussy);
@@ -84,7 +85,7 @@ final class PrefetchBuffer {
         run(cycles_till_access_complete);
 
         // import ui.device.video.sdl.sdl;
-        memory.scheduler.tick(cycles_till_access_complete);
+        tick(cycles_till_access_complete);
         memory.maybe_accumulate_dma_cycles(cycles_till_access_complete);
 
         this.paused = was_paused;
@@ -92,15 +93,15 @@ final class PrefetchBuffer {
 
     pragma(inline, true) void invalidate() {
         if (this.paused) return;
+        if (_g_num_log > 0) writefln("invalidated");
 
         this.current_buffer_size   = 0;
         this.currently_prefetching = false;
     }
-
-    uint sussy = 0;
     
-    pragma(inline, true) void start_new_prefetch(uint address, AccessSize prefetch_access_size) {
+    pragma(inline, true) void start_new_prefetch(uint address, AccessSize prefetch_access_size, bool first = false) {
         if (!enabled || paused) return;
+        writefln("Starting new prefetch...");
 
         this.currently_prefetching = true;
         this.new_prefetch = true;
@@ -109,9 +110,9 @@ final class PrefetchBuffer {
         this.current_address      = address;
         this.prefetch_access_size = prefetch_access_size;
 
-        this.cycles_till_access_complete = memory.waitstates[current_region][AccessType.SEQUENTIAL][prefetch_access_size];
+        this.cycles_till_access_complete = memory.waitstates[current_region][first ? AccessType.NONSEQUENTIAL : AccessType.SEQUENTIAL][prefetch_access_size];
         this.halfway_marker              = this.cycles_till_access_complete >> 1;
-        this.sussy = this.cycles_till_access_complete;
+        sussy = this.cycles_till_access_complete;
     }
 
     enum GPIO_PORT_DATA    = 0x0800_00C4;
@@ -126,7 +127,7 @@ final class PrefetchBuffer {
 
         if (bubble_exists) {
             log!(LogSource.DEBUG)("Popping the bubble...");
-            memory.scheduler.tick(1);
+            tick(1);
             memory.maybe_accumulate_dma_cycles(1);
             cycles_till_access_complete--;
         }
@@ -147,16 +148,16 @@ final class PrefetchBuffer {
         static if (is(T == ushort)) access_size = AccessSize.HALFWORD;
         static if (is(T == uint  )) access_size = AccessSize.WORD;
 
-        memory.scheduler.tick(memory.waitstates[region][access_type][access_size]);
+        tick(memory.waitstates[region][access_type][access_size]);
         memory.maybe_accumulate_dma_cycles(memory.waitstates[region][access_type][access_size]);
-        
-        this.currently_prefetching = true;
     }
 
+    bool sussy_baka = false;
     pragma(inline, true) T request_data_from_rom(T)(uint address, AccessType access_type, bool instruction_access) {
         // if (address << 1 == GPIO_PORT_DATA) {
         //     return rtc.read();
         // }
+        sussy_baka = true;
         
         uint masked_address = address & 0xFF_FFFF;
         if (_g_num_log > 0) log!(LogSource.DEBUG)("Requesting data from ROM at address %x. [%s, %s]", address, instruction_access ? "Instruction" : "Data", access_type == AccessType.NONSEQUENTIAL ? "Nonsequential" : "Sequential");
@@ -164,7 +165,7 @@ final class PrefetchBuffer {
 
         if (!instruction_access && bubble_exists) {
             log!(LogSource.DEBUG)("Popping the bubble...");
-            memory.scheduler.tick(1);
+            tick(1);
             memory.maybe_accumulate_dma_cycles(1);
             cycles_till_access_complete--;
         }
@@ -185,40 +186,47 @@ final class PrefetchBuffer {
             bubble_exists = false; 
             uint address_head = this.current_address - this.current_buffer_size;
 
-            // is the requested value currently being prefetched?
-            if (address == this.current_address) {
-                if (_g_num_log > 0) log!(LogSource.DEBUG)("Obtaining data from current prefetch.");
-                memory.scheduler.tick(this.cycles_till_access_complete);
-                memory.maybe_accumulate_dma_cycles(this.cycles_till_access_complete);
+            if (currently_prefetching) {
+                // is the requested value currently being prefetched?
+                if (address == this.current_address) {
+                    if (_g_num_log > 0) log!(LogSource.DEBUG)("Obtaining data from current prefetch.");
+                    tick(this.cycles_till_access_complete);
+                    memory.maybe_accumulate_dma_cycles(this.cycles_till_access_complete);
 
-                this.invalidate();
-                if (this.prefetch_access_size == AccessSize.HALFWORD) {
-                    this.start_new_prefetch(current_address + 1, this.prefetch_access_size);
-                } else { //                   == AccessSize.WORD
-                    this.start_new_prefetch(current_address + 2, this.prefetch_access_size);
+                    this.invalidate();
+                    if (this.prefetch_access_size == AccessSize.HALFWORD) {
+                        this.start_new_prefetch(current_address + 1, this.prefetch_access_size);
+                    } else { //                   == AccessSize.WORD
+                        this.start_new_prefetch(current_address + 2, this.prefetch_access_size);
+                    }
+                    this.can_start_new_prefetch = false;
+
+                    sussy_baka = false;
+                    return read!T(masked_address);
                 }
-                this.can_start_new_prefetch = false;
 
-                return read!T(masked_address);
-            }
+                // is the requested value at the head of the prefetch buffer?
+                if (this.current_buffer_size > 0 && address == address_head) {
+                    if (_g_num_log > 0) log!(LogSource.DEBUG)("Obtaining data from prefetch head.");
+                    this.current_buffer_size -= this.prefetch_access_size == AccessSize.HALFWORD ? 1 : 2;
+                    run(1);
+                    tick(1);
+                    memory.maybe_accumulate_dma_cycles(1);
+                    this.can_start_new_prefetch = false;
 
-            // is the requested value at the head of the prefetch buffer?
-            if (this.current_buffer_size > 0 && address == address_head) {
-                if (_g_num_log > 0) log!(LogSource.DEBUG)("Obtaining data from prefetch head.");
-                this.current_buffer_size -= this.prefetch_access_size == AccessSize.HALFWORD ? 1 : 2;
-                run(1);
-                memory.scheduler.tick(1);
-                memory.maybe_accumulate_dma_cycles(1);
-                this.can_start_new_prefetch = false;
+                    sussy_baka = false;
+                    return read!T(masked_address);
+                }
 
-                return read!T(masked_address);
-            }
-
-            // oh, ok. it's not in the prefetch buffer
+                // oh, ok. it's not in the prefetch buffer
                 if (_g_num_log > 0) log!(LogSource.DEBUG)("Data missing from prefetch buffer.");
-            this.invalidate();
-            this.start_new_prefetch(current_address + 1, this.prefetch_access_size);
-            this.can_start_new_prefetch = true;
+                this.invalidate();
+                this.start_new_prefetch(current_address + 1, this.prefetch_access_size);
+                this.can_start_new_prefetch = true;
+            } else {
+                writefln("firster");
+                this.start_new_prefetch(current_address + 1, this.prefetch_access_size, true);
+            }
         }
 
         uint region = ((address << 1) >> 24) & 0xF;
@@ -227,11 +235,10 @@ final class PrefetchBuffer {
         static if (is(T == ushort)) access_size = AccessSize.HALFWORD;
         static if (is(T == uint  )) access_size = AccessSize.WORD;
 
-        memory.scheduler.tick(memory.waitstates[region][access_type][access_size]);
+        tick(memory.waitstates[region][access_type][access_size]);
         memory.maybe_accumulate_dma_cycles(memory.waitstates[region][access_type][access_size]);
-        
-        this.currently_prefetching = true;
 
+        sussy_baka = false;
         return read!T(masked_address);
     }
 
@@ -250,17 +257,16 @@ final class PrefetchBuffer {
     }
 
     void pause() {
-        // writefln("pausing! prefetch buffie status:");
-        // if (_g_num_log > 0) log!(LogSource.DEBUG)("%d / %d remaining till access complete", cycles_till_access_complete, sussy);
-
         this.paused = true;
     }
 
     void resume() {
-        // writefln("resuming! prefetch buffie status:");
-        // if (_g_num_log > 0) log!(LogSource.DEBUG)("%d / %d remaining till access complete", cycles_till_access_complete, sussy);
-
         this.paused = false;
+    }
+
+    int cycles_ticked = 0;
+    void tick(int num_cycles) {
+        memory.scheduler.tick(num_cycles);
     }
 
     pragma(inline, true) void pop_bubble() {
