@@ -77,32 +77,38 @@ final class ARM7TDMI : IARM7TDMI {
     pragma(inline, true) T fetch(T)() {
 
         static if (is(T == Word)) {
+            // must update the pipeline access type before the mem access
+            AccessType old_access_type = pipeline_access_type;
+            pipeline_access_type = AccessType.SEQUENTIAL; 
+
             T result        = arm_pipeline[0];
             arm_pipeline[0] = arm_pipeline[1];
-            arm_pipeline[1] = memory.read_word(regs[pc], pipeline_access_type, true);
+            arm_pipeline[1] = memory.read_word(regs[pc], old_access_type, true);
             regs[pc] += 4;
 
-            if (memory.can_start_new_prefetch() && pipeline_access_type == AccessType.NONSEQUENTIAL && regs[pc] >> 24 >= 8) {
+            if (memory.prefetch_buffer.currently_prefetching && memory.can_start_new_prefetch() && old_access_type == AccessType.NONSEQUENTIAL && regs[pc] >> 24 >= 8) {
                 memory.invalidate_prefetch_buffer();
                 memory.start_new_prefetch(regs[pc] >> 1, AccessSize.WORD);
             }
 
-            pipeline_access_type = AccessType.SEQUENTIAL; 
             return result;
         }
 
         static if (is(T == Half)) {
+            // must update the pipeline access type before the mem access
+            AccessType old_access_type = pipeline_access_type;
+            pipeline_access_type = AccessType.SEQUENTIAL; 
+
             T result          = thumb_pipeline[0];
             thumb_pipeline[0] = thumb_pipeline[1];
-            thumb_pipeline[1] = memory.read_half(regs[pc], pipeline_access_type, true);
+            thumb_pipeline[1] = memory.read_half(regs[pc], old_access_type, true);
             regs[pc] += 2;
 
-            if (memory.can_start_new_prefetch() && pipeline_access_type == AccessType.NONSEQUENTIAL && regs[pc] >> 24 >= 8) {
+            if (memory.prefetch_buffer.currently_prefetching && memory.can_start_new_prefetch() && old_access_type == AccessType.NONSEQUENTIAL && regs[pc] >> 24 >= 8) {
                 memory.invalidate_prefetch_buffer();
                 memory.start_new_prefetch(regs[pc] >> 1, AccessSize.HALFWORD);
             }
 
-            pipeline_access_type = AccessType.SEQUENTIAL; 
             return result;
         }
 
@@ -248,7 +254,7 @@ final class ARM7TDMI : IARM7TDMI {
         bool had_interrupts_disabled = (get_cpsr() >> 7) & 1;
 
         set_cpsr((get_cpsr() & 0xFFFFFFE0) | new_mode.CPSR_ENCODING);
-        // writefln("setting the sussy cpsr to %x", get_cpsr());
+        
         instruction_set = get_flag(Flag.T) ? InstructionSet.THUMB : InstructionSet.ARM;
         current_mode = new_mode;
 

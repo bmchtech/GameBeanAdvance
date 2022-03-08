@@ -45,7 +45,7 @@ class Runner : Observer {
         if (buffer_size > sync_to_audio_upper) set_should_cycle_gba(false);
         if (buffer_size < sync_to_audio_lower) set_should_cycle_gba(true);
         
-		ulong end_timestamp = SDL_GetTicks();
+		ulong end_timestamp = 0;
 		ulong elapsed = end_timestamp - start_timestamp;
         if (elapsed > 1000) {
             frontend.reset_fps();
@@ -57,13 +57,13 @@ class Runner : Observer {
     }
 
     void run() {
-        start_timestamp = SDL_GetTicks();
+        start_timestamp = 0;
 
         while (running) {
             if (gba.enabled) {
                 // i separated the ifs so fast fowarding doesn't
                 // incur a mutex call from get_should_cycle_gba
-                if (fast_forward) {
+                if (true) {
                     gba.cycle_at_least_n_times(cycles_per_batch);
                 } else {
                     if (get_should_cycle_gba()) {

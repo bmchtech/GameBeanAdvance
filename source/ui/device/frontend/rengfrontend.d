@@ -5,26 +5,33 @@ import ui.device.device;
 import ui.device.event;
 import ui.device.frontend.gbavideo;
 
+import re;
+
+import hw.gba;
+
 class RengFrontend : MultiMediaDevice {
     RengCore reng_core;
+    GbaVideo gba_video;
 
-    this() {
-        reng_core = new RengCore();
+    this(int screen_scale) {
+        Core.target_fps = 999_999;
+        reng_core = new RengCore(screen_scale);
     }
 
     override {
         // video stuffs
         void receive_videobuffer(Pixel[SCREEN_HEIGHT][SCREEN_WIDTH] buffer) {
             // reng_core.draw_pub();
-            auto gbavid = Core.jar.resolve!GbaVideo();
-            assert(gbavid, "gba video renderer was null");
+            gba_video = Core.jar.resolve!GbaVideo().get; 
 
-            // do stuff here
-            // gbavid.frame_buffer
-            for (int i = 0; i < SCREEN_HEIGHT; i++) {
-                for (int j = 0; j < SCREEN_WIDTH; j++) {
-                    gbavid.frame_buffer[i * SCREEN_WIDTH + j] = buffer[i][j];
-                }
+            for (int y = 0; y < SCREEN_HEIGHT; y++) {
+            for (int x = 0; x < SCREEN_WIDTH;  x++) {
+                    gba_video.frame_buffer[y * SCREEN_WIDTH + x] = 
+                        (buffer[x][y].r << 3 <<  0) |
+                        (buffer[x][y].g << 3 <<  8) |
+                        (buffer[x][y].b << 3 << 16) |
+                        0xFF000000;
+            }
             }
         }
 
@@ -38,11 +45,11 @@ class RengFrontend : MultiMediaDevice {
         }
 
         void update() {
+            handle_input();
             reng_core.update_pub();
         }
 
         void draw() {
-            // do sussy stuff
             reng_core.draw_pub();
         }
 
@@ -66,10 +73,26 @@ class RengFrontend : MultiMediaDevice {
 
         // input stuffs
         void handle_input() {
+            static foreach (re_key, gba_key; keys) {
+                set_vanilla_key(gba_key, Input.is_key_down(re_key));
+            }
         }
 
         void notify(Event e) {
         }
 
     }
+
+    enum keys = [
+        Keys.KEY_Z     : GBAKeyVanilla.A,
+        Keys.KEY_X     : GBAKeyVanilla.B,
+        Keys.KEY_SPACE : GBAKeyVanilla.SELECT,
+        Keys.KEY_ENTER : GBAKeyVanilla.START,
+        Keys.KEY_RIGHT : GBAKeyVanilla.RIGHT,
+        Keys.KEY_LEFT  : GBAKeyVanilla.LEFT,
+        Keys.KEY_UP    : GBAKeyVanilla.UP,
+        Keys.KEY_DOWN  : GBAKeyVanilla.DOWN,
+        Keys.KEY_S     : GBAKeyVanilla.R,
+        Keys.KEY_A     : GBAKeyVanilla.L
+    ];
 }
