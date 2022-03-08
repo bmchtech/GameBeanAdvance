@@ -51,17 +51,6 @@ void main(string[] args) {
 
 	util.verbosity_level = a.occurencesOf("verbose");
 
-	auto ret_SDL = loadSDL();
-	if (ret_SDL != sdlSupport) {
-		if (ret_SDL == SDLSupport.badLibrary) {
-			error("bad sdl library");
-		} else if (ret_SDL == SDLSupport.noLibrary) {
-			error("no sdl library");
-		}
-	}
-	log!(LogSource.INIT)("SDL loaded successfully");
-
-
 	auto mem = new Memory();
 
 	bool is_beancomputer = a.option("mod").canFind("beancomputer");
@@ -97,7 +86,7 @@ void main(string[] args) {
 
 	if (a.flag("bootscreen")) gba.skip_bios_bootscreen();
 
-	MultiMediaDevice frontend = new RengFrontend();
+	MultiMediaDevice frontend = new RengFrontend(to!int(a.option("scale")));
 	gba.set_frontend(frontend);
 	frontend.push_sample(Sample(69, 69));
 	g_log_gba = gba;
@@ -109,7 +98,7 @@ void main(string[] args) {
 
 	int num_batches        = sample_rate / samples_per_callback;
 	enum cycles_per_second = 16_780_000;
-	auto cycles_per_batch  = 69; // cycles_per_second / num_batches;
+	auto cycles_per_batch  = 16_780_000 / 60; // cycles_per_second / num_batches;
 	Runner runner = new Runner(gba, cycles_per_batch, frontend);
 
 	DeviceManager device_manager = new DeviceManager();

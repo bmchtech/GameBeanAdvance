@@ -53,6 +53,8 @@ public:
         return bsf(dmas_running_bitfield | 0x10);
     }
 
+    uint excess_cycles = 0;
+
     void handle_dma() {
         // get the channel with highest priority that wants to start dma
         int current_channel = -1;
@@ -78,27 +80,28 @@ public:
         // i no longer have any idea what's going on
 
         memory.dma_cycle_accumulation_state = Memory.DMACycleAccumulationState.ACCUMULATE;
-
         if (num_dmas_running == 0) {
             // if (source_beginning_in_rom) memory.prefetch_buffer.pause();
+            if (memory.prefetch_buffer.sussy_baka) {
+                excess_cycles = memory.prefetch_buffer.cycles_ticked;
+                writefln("stole %x", excess_cycles);
+            }
             memory.clock(1); 
         }
         num_dmas_running++;
         dmas_running_bitfield |= (1 << current_channel);
 
-        uint excess_cycles = memory.cycles;
-
         uint bytes_to_transfer  = dma_channels[current_channel].size_buf;
         int  source_increment   = 0;
         int  dest_increment     = 0;
 
-        // if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
-        //          current_channel,
-        //          bytes_to_transfer,
-        //          dma_channels[current_channel].transferring_words ? "words" : "halfwords",
-        //          dma_channels[current_channel].source_buf,
-        //          dma_channels[current_channel].dest_buf,
-        //          read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
+        if (!is_dma_channel_fifo(current_channel)) writefln("DMA Channel %x running: Transferring %x %s from %x to %x (Control: %x)",
+                 current_channel,
+                 bytes_to_transfer,
+                 dma_channels[current_channel].transferring_words ? "words" : "halfwords",
+                 dma_channels[current_channel].source_buf,
+                 dma_channels[current_channel].dest_buf,
+                 read_DMAXCNT_H(0, current_channel) | (read_DMAXCNT_H(1, current_channel) << 8));
 
         switch (dma_channels[current_channel].source_addr_control) {
             case SourceAddrMode.Increment:  source_increment =  1; break;
@@ -135,6 +138,7 @@ public:
                 if (in_rom(read_address)) source_increment = 4;
                 if (in_rom(read_address)) {
                     memory.prefetch_buffer.pause();
+                    memory.prefetch_buffer.invalidate();
                 }
 
                 if (read_address >= 0x0200_0000) { // make sure we are not accessing DMA open bus
@@ -145,6 +149,7 @@ public:
 
                 if (in_rom(dma_channels[current_channel].dest_buf + dest_offset)) { 
                     memory.prefetch_buffer.pause(); 
+                    memory.prefetch_buffer.invalidate();
                 }
 
                 memory.write_word(dma_channels[current_channel].dest_buf + dest_offset, dma_channels[current_channel].open_bus_latch, access_type);
@@ -170,6 +175,7 @@ public:
                     if (in_rom(read_address)) source_increment = 2;
                     if (in_rom(read_address)) { 
                         memory.prefetch_buffer.pause(); 
+                        memory.prefetch_buffer.invalidate();
                     }
 
                     auto read_value = memory.read_half(read_address, access_type);
@@ -180,6 +186,7 @@ public:
 
                     if (in_rom(write_address)) { 
                         memory.prefetch_buffer.pause(); 
+                        memory.prefetch_buffer.invalidate();
                     }
 
                     memory.write_half(write_address, read_value, access_type);
@@ -191,6 +198,7 @@ public:
 
                     if (in_rom(write_address)) { 
                         memory.prefetch_buffer.pause(); 
+                        memory.prefetch_buffer.invalidate();
                     }
 
                     memory.write_half(write_address, open_bus_value, access_type);
@@ -223,7 +231,11 @@ public:
             // memory.clock(idle_cycles);
             memory.clock(1);
             memory.prefetch_buffer.resume();
+            // memory.clock(excess_cycles);
+            excess_cycles = 0;
+            memory.cpu.pipeline_access_type = AccessType.NONSEQUENTIAL;
         }
+
 
         memory.dma_cycle_accumulation_state = Memory.DMACycleAccumulationState.REIMBURSE;
         
@@ -290,7 +302,7 @@ public:
         dma_channels[dma_id].waiting_to_start = true;
         dmas_available++;
         scheduler.add_event_relative_to_clock(&check_dma, 2, true);
-        if (_g_num_log > 0) log!(LogSource.DEBUG)("DMA enabled. Scheduled to happen in 2 cycles", num_cycles);
+        if (_g_num_log > 0) log!(LogSource.DEBUG)("DMA enabled. Scheduled to happen in 2 cycles [%x]", scheduler.get_current_time_relative_to_cpu());
 
         dma_channels[dma_id].last = last;
     }

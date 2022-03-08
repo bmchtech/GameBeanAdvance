@@ -137,7 +137,6 @@ public:
     void on_vblank_end() {
         vblank = false;
         frontend_vblank_callback(frame_buffer);
-        // scheduler.add_event_relative_to_self(&on_vblank_start, 308 * 160 * 4);
     }
 
     bool enabled;

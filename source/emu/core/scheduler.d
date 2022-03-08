@@ -108,7 +108,7 @@ final class Scheduler {
     }
 
     pragma(inline, true) void process_events() {
-        bool can_interleave = (num_events_being_processed > 0) ?  events[num_events_being_processed - 1].can_be_interleaved : false;
+        bool can_interleave = (num_events_being_processed > 0) ? events[num_events_being_processed - 1].can_be_interleaved : false;
         while ((can_interleave || num_events_being_processed == 0) && current_timestamp >= events[num_events_being_processed].timestamp) process_event();
     }
 
