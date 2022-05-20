@@ -324,5 +324,8 @@ static int calculate_multiply_cycles(bool signed)(Word operand) {
     if      ((operand >> 8)  == 0x0) m = 1;
     else if ((operand >> 16) == 0x0) m = 2;
     else if ((operand >> 24) == 0x0) m = 3;
+
+    import std.stdio;
+    writefln("SUSSY BAKA: %x", m);
     return m;
 }

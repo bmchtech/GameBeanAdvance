@@ -11,7 +11,7 @@ dependency "bindbc-sdl" version="~>1.0.1"
 dependency "commandr" version="~>0.2.0"
 dependency "gamebean-common" path="common"
 targetType "executable"
-subConfiguration "reng" "lib-minimal"
+
 versions "GL_AllowDeprecated"
 configuration "default" {
 	targetType "executable"
