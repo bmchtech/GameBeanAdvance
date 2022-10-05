@@ -76,7 +76,9 @@ final class ARM7TDMI : IARM7TDMI {
     }
 
     pragma(inline, true) T fetch(T)() {
-
+        if (regs[pc] == 0x03000880) {
+            _g_num_log = 5000;
+        }
         static if (is(T == Word)) {
             // must update the pipeline access type before the mem access
             AccessType old_access_type = pipeline_access_type;
@@ -133,6 +135,12 @@ final class ARM7TDMI : IARM7TDMI {
     void run_instruction() {
         if (Logger.instance) Logger.instance.capture_cpu();
         if (interrupt_manager.has_irq()) raise_exception!(CpuException.IRQ);
+
+        if (regs[pc] >> 24 != 0) writefln("fuck!");
+
+        if (regs[pc] == 0x0800_07B0) {
+            _g_num_log = 30;
+        }
 
         if (unlikely(_g_num_log > 0 )) {
             _g_num_log--;
@@ -336,6 +344,9 @@ final class ARM7TDMI : IARM7TDMI {
         if ((exception == CpuException.IRQ && get_nth_bit(cpsr, 7)) ||
             (exception == CpuException.FIQ && get_nth_bit(cpsr, 6))) {
             return;
+        }
+
+        if (exception == CpuException.IRQ) {
         }
 
         enum mode = get_mode_from_exception!(exception);

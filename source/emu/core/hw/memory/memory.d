@@ -255,6 +255,8 @@ final class Memory : IMemory {
         write!uint(address, value, access_type, instruction_access);
     }
 
+    int fuck = 0;
+
     private template read(T) {
         T read(uint address, AccessType access_type = AccessType.SEQUENTIAL, bool instruction_access = false) {
             if (dma_cycle_accumulation_state == DMACycleAccumulationState.REIMBURSE) accumulated_dma_cycles = 0;
@@ -305,6 +307,33 @@ final class Memory : IMemory {
                 case Region.PALETTE_RAM:  read_value = (cast(T*) palette_ram)[(address & (SIZE_PALETTE_RAM - 1)) >> shift]; break;
                 
                 case Region.VRAM:
+                    import std.stdio;
+                    if (scheduler.get_current_time_relative_to_cpu() - vcount_update == 40 ||
+                        scheduler.get_current_time_relative_to_cpu() - vcount_update == 44 ||
+                        scheduler.get_current_time_relative_to_cpu() - vcount_update == 48 ||
+                        scheduler.get_current_time_relative_to_cpu() - vcount_update == 52   
+                    ) {
+                        scheduler.tick(1);
+                        _g_num_log = 10;
+                        writefln("TICK!");
+                    } else {
+
+                        writefln("NO TICK! %d", scheduler.get_current_time_relative_to_cpu() - vcount_update);
+                    }
+                    // if (address == 0x0600_0000 && is(T == ubyte)) {
+                        
+                    //     import std.stdio;
+                    //     if (fuck < 3) {
+                    //          writefln("incr + %x", scheduler.get_current_time_relative_to_cpu());
+                    //     }
+                    //     if (fuck == 3) {                           
+                    //         writefln("fuck + %x", scheduler.get_current_time_relative_to_cpu());
+
+                    //         scheduler.tick(1);
+                    //     }
+
+                    //     fuck++;
+                    // }
                     uint wrapped_address = address & (SIZE_VRAM - 1);
                     if (wrapped_address >= 0x18000) wrapped_address -= 0x8000;
                     read_value = (cast(T*) vram)[wrapped_address >> shift]; break;
@@ -353,8 +382,20 @@ final class Memory : IMemory {
                         break;
                     }
                     goto default;
+                
+                case Region.ROM_WAITSTATE_2_H:
+                    if (backup.get_backup_type() == BackupType.EEPROM) {
+                        read_value = backup.read_byte(address);
+                    } else {
+                        goto case Region.ROM_WAITSTATE_0_L;
+                    }
+                    break;
 
-                default:
+                case Region.ROM_WAITSTATE_0_L:
+                case Region.ROM_WAITSTATE_0_H:
+                case Region.ROM_WAITSTATE_1_L:
+                case Region.ROM_WAITSTATE_1_H:
+                case Region.ROM_WAITSTATE_2_L:
                     static if (is(T == uint  )) {
                         uint aligned_address = (address & ~3) >> 1;
                         read_value = prefetch_buffer.request_data_from_rom!T(aligned_address, access_type, instruction_access);
@@ -367,6 +408,9 @@ final class Memory : IMemory {
                     static if (is(T == ubyte )) {
                         read_value = cast(ubyte) (prefetch_buffer.request_data_from_rom!ushort(address >> 1, access_type, instruction_access) >> (8 * (address & 1)));
                     }
+                    break;
+                
+                default: error("not possible");
             }
             
             dma_recently = false;
@@ -476,7 +520,11 @@ final class Memory : IMemory {
             switch ((address >> 24) & 0xF) {
                 case Region.BIOS:         break; // incorrect - implement properly later
                 case 0x1:                 break; // nothing is mapped here
-                case Region.WRAM_BOARD:   (cast(T*) wram_board) [(address & (SIZE_WRAM_BOARD  - 1)) >> shift] = value; break;
+                case Region.WRAM_BOARD:   
+                    (cast(T*) wram_board) [(address & (SIZE_WRAM_BOARD  - 1)) >> shift] = value; 
+                    import std.stdio;
+                    writefln("Writing %x to wram_board at %x", value, address);
+                    break;
                 case Region.WRAM_CHIP:    
                     (cast(T*) wram_chip)  [(address & (SIZE_WRAM_CHIP   - 1)) >> shift] = value; 
                     
@@ -553,6 +601,13 @@ final class Memory : IMemory {
                     }
 
                     return;
+                
+                case Region.ROM_WAITSTATE_2_H:
+                    writefln("Writing %x to ROM_WAITSTATE_2_H at %x", value, address);
+                    if (backup.get_backup_type() == BackupType.EEPROM) {
+                        backup.write_byte(address, value & 1);
+                    }
+                    break;
 
                 case Region.ROM_SRAM_L:
                 case Region.ROM_SRAM_H:

@@ -8,13 +8,13 @@ import util;
 
 import diag.log;
 
-import std.stdio;
 import std.conv;
 import std.file;
 import std.uri;
 import std.algorithm.searching: canFind;
 import std.mmfile;
 import std.file;
+import std.path;
 import save;
 
 import core.sync.mutex;
@@ -117,13 +117,17 @@ void main(string[] args) {
 		Backup save = create_savetype(savetype);
 		gba.memory.add_backup(save);
 
-		bool file_exists = "test.beansave".exists;
-
-		if (file_exists) {
-			MmFile mm_file = new MmFile("test.beansave", MmFile.Mode.readWrite, save.get_backup_size(), null, 0);
-			save.deserialize(cast(ubyte[]) mm_file[]);
-			save.set_backup_file(mm_file);
+		auto save_path = rom_path.stripExtension().setExtension(".bsv");
+		if (!save_path.exists()) {
+			ubyte[] save_data = new ubyte[save.get_backup_size()];
+			save_data[0..save.get_backup_size()] = 0xFF;
+			write(save_path, save_data);
 		}
+
+		MmFile mm_file = new MmFile(save_path, MmFile.Mode.readWrite, save.get_backup_size(), null, 0);
+
+		save.deserialize(cast(ubyte[]) mm_file[]);
+		save.set_backup_file(mm_file);
 	}
 
 	runner.run();

@@ -18,6 +18,8 @@ enum AffineParameter {
     D = 3
 }
 
+__gshared ulong vcount_update;
+
 final class PPU {
     // General information:
     // - Contains 227 scanlines, 160+ is VBLANK. VBLANK is not set on scanline 227.
@@ -98,6 +100,8 @@ public:
         hblank = false;
 
         scanline++;
+        vcount_update = scheduler.get_current_time_relative_to_self();
+
         if (scanline == 160) {
             vblank = true;
             on_vblank_start();
@@ -213,27 +217,9 @@ public:
 
         int bg_scanline = background.is_mosaic ? apparent_bg_scanline : scanline;
 
-        // the coordinates at the topleft of the background that we are drawing
-        long texture_point_x = background.internal_reference_x;
-        long texture_point_y = background.internal_reference_y;
-
         for (int x = 0; x < 240; x++) {
-            // truncate the decimal because texture_point is 8-bit fixed point
-            Point truncated_texture_point = Point(cast(int) texture_point_x >> 8,
-                                                  cast(int) texture_point_y >> 8);
-
-            int map_x = truncated_texture_point.x;
-            int map_y = truncated_texture_point.y;
-            if (((0 <= map_x && map_x < SCREEN_WIDTH) &&
-                 (0 <= map_y && map_y < SCREEN_HEIGHT))) {
-                Pixel color = get_pixel_color_from_point(map_x, map_y);
-                canvas.pixels_output[x] = color;
-            } else {
-                canvas.pixels_output[x] = get_color(0);
-            }
-
-            texture_point_x += background.p[AffineParameter.A];
-            texture_point_y += background.p[AffineParameter.C];
+            Pixel color = get_pixel_color_from_point(x, bg_scanline);
+            canvas.pixels_output[x] = color;
         }
     }
 
@@ -754,6 +740,9 @@ private:
 
 public:
     void write_DISPCNT(int target_byte, ubyte data) {
+        import std.stdio;
+        writefln("shitter ppu! %x %x", target_byte, data);
+        
         if (target_byte == 0) {
             bg_mode                    = get_nth_bits(data, 0, 3);
             disp_frame_select          = get_nth_bit (data, 4);

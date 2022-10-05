@@ -53,8 +53,8 @@ public:
 
 
     void reload_timer_for_the_first_time(int timer_id) {
-        _g_num_log += 100;
-    writefln("BAKA");
+        // _g_num_log += 100;
+    // writefln("BAKA");
         if (timer_id != 0 && timers[timer_id].countup) return;
 
         timers[timer_id].enabled_for_first_time = true;
@@ -183,7 +183,7 @@ public:
                     timers[x].value = calculate_timer_value(x);
                     writefln("Disabled. Timer's value is %x", timers[x].value);
                     scheduler.remove_event(timers[x].timer_event);
-                    _g_num_log = 0;
+                    // _g_num_log = 0;
                 }
 
                 break;
