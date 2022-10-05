@@ -16,7 +16,10 @@ public Backup create_savetype(Savetype savetype) {
         case Savetype.Flash_1M_Sanyo_RTC:       return new Flash(65536 * 2, true,  2, 0x62, 0x13);
         case Savetype.Flash_1M_Sanyo:           return new Flash(65536 * 2, true,  2, 0x62, 0x13);
         case Savetype.SRAM_256K:                return new SRAM (32768);
-
+        case Savetype.EEPROM_4k:                return new EEPROM(65536);
+        case Savetype.EEPROM_4k_alt:            return new EEPROM(65536);
+        case Savetype.EEPROM_8k:                return new EEPROM(512);
+        case Savetype.EEPROM_8k_alt:            return new EEPROM(512);
         default:                                return new Backup(); // this will never trigger when all saves are finally implemented
     }
 }

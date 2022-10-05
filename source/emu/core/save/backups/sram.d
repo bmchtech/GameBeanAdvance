@@ -39,7 +39,9 @@ final class SRAM : Backup {
         write(address, written_data);
     }
 
-    override void write_byte(uint address, ubyte data) { 
+    override void write_byte(uint address, ubyte data) {
+        import std.stdio;
+        writefln("SRAM write_byte: %x to %x", data, address);
         write(address, data);
     }
 
