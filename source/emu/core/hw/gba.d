@@ -14,7 +14,7 @@ import hw.sio.sio;
 import scheduler;
 import util;
 
-import ui.device.device;
+import ui.device;
 
 import tools.profiler.profiler;
 
@@ -83,11 +83,11 @@ public:
         memory.bios[0 .. bios.length] = bios[0 .. bios.length];
     }
 
-    void set_frontend(MultiMediaDevice frontend) {
-        ppu.set_frontend_vblank_callback(&frontend.receive_videobuffer);
-        apu.set_frontend_audio_callback (&frontend.push_sample);
+    void set_frontend(MultiMediaDevice device) {
+        ppu.set_frontend_vblank_callback(&device.present_videobuffers);
+        apu.set_frontend_audio_callback(&device.push_sample);
 
-        frontend.set_callbacks(&key_input.set_key, &beancomputer.set_key);
+        device.set_update_key_callback(&key_input.set_key);
     }
 
     void set_internal_sample_rate(uint sample_rate) {
@@ -184,19 +184,6 @@ private:
     bool dma_cycle = false;
     uint idle_cycles = 0;
     
-}
-
-enum GBAKeyVanilla {
-    A      = 0,
-    B      = 1,
-    SELECT = 2,
-    START  = 3,
-    RIGHT  = 4,
-    LEFT   = 5,
-    UP     = 6,
-    DOWN   = 7,
-    R      = 8,
-    L      = 9
 }
 
 enum GBAKeyBeanComputer {

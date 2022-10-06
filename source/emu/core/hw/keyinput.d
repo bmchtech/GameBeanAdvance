@@ -8,6 +8,19 @@ import std.stdio;
 
 import util;
 
+enum GBAKeyVanilla {
+    A      = 0,
+    B      = 1,
+    SELECT = 2,
+    START  = 3,
+    RIGHT  = 4,
+    LEFT   = 5,
+    UP     = 6,
+    DOWN   = 7,
+    R      = 8,
+    L      = 9
+}
+
 final class KeyInput {
     Memory memory;
     void delegate(uint) interrupt_cpu;
@@ -61,7 +74,7 @@ final class KeyInput {
         }
     }
 
-    void set_key(int code, bool pressed) {
+    void set_key(GBAKeyVanilla code, bool pressed) {
         if (pressed) {
             keyinput &= ~(0b1 << code);
         } else {

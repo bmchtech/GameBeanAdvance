@@ -181,7 +181,7 @@ public:
                 if (!get_nth_bit(data, 7)) {
                     timers[x].enabled = false;
                     timers[x].value = calculate_timer_value(x);
-                    writefln("Disabled. Timer's value is %x", timers[x].value);
+                    // writefln("Disabled. Timer's value is %x", timers[x].value);
                     scheduler.remove_event(timers[x].timer_event);
                     // _g_num_log = 0;
                 }

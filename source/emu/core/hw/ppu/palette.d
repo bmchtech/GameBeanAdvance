@@ -2,6 +2,8 @@ module hw.ppu.palette;
 
 import hw.ppu;
 
+import ui.device;
+
 import std.stdio;
 
 Pixel[] color_palette = new Pixel[0x200];

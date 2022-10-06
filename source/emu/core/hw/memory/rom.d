@@ -25,7 +25,6 @@ final class ROM {
         // this.data = new ushort[this.rom_mask + 1];
         for (int i = 0; i < rom_data.length / 2; i++) {
             this.data[i] = (cast(ushort[]) rom_data)[i];
-            // writefln("%x: %x", i * 2, this.data[i]);
         }
 
         this.mirrored = false;

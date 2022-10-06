@@ -44,11 +44,11 @@ final class NoiseChannel {
         shift_register = reload_value;
         cycles_elapsed = 0;
 
-        // if (shifter_event) scheduler.remove_event(shifter_event);
-        // if (enabled)       shifter_event = scheduler.add_event_relative_to_clock(&shift, interval);
+        if (shifter_event) scheduler.remove_event(shifter_event);
+        if (enabled)       shifter_event = scheduler.add_event_relative_to_clock(&shift, interval);
 
-        // if (envelope_event)   scheduler.remove_event(envelope_event);
-        // if (envelope_enabled) envelope_event = scheduler.add_event_relative_to_self(&tick_envelope, envelope_length); 
+        if (envelope_event)   scheduler.remove_event(envelope_event);
+        if (envelope_enabled) envelope_event = scheduler.add_event_relative_to_clock(&tick_envelope, envelope_length); 
     }
 
     short sample(int delta_cycles) {
@@ -71,13 +71,13 @@ final class NoiseChannel {
             current_shifter_out = -1;
         }
 
-        // shifter_event = scheduler.add_event_relative_to_self(&shift, interval);
+        shifter_event = scheduler.add_event_relative_to_self(&shift, interval);
     }
 
     void tick_envelope() {
         this.volume = clamp(this.volume + this.envelope_multiplier, 0, 15);
 
-        // envelope_event = scheduler.add_event_relative_to_self(&tick_envelope, envelope_length); 
+        if (envelope_enabled) envelope_event = scheduler.add_event_relative_to_self(&tick_envelope, envelope_length); 
     }
 
     void set_counter_width(int counter_width) {
@@ -111,7 +111,7 @@ final class NoiseChannel {
     }
 
     void set_envelope_length(int n) {
-        envelope_enabled = n != 0;
+        envelope_enabled = false;// n != 0;
         this.envelope_length = 262144 * n;
     }
 

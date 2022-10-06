@@ -8,12 +8,12 @@ import hw.apu.channels.noise_channel;
 import hw.apu.channels.wave_channel;
 import hw.apu.channels.tone_channel;
 
-import ui.device.audio.device;
-
 import util;
 import scheduler;
 
 import std.stdio;
+
+import ui.device;
 
 enum DirectSound {
     A = 0,
@@ -135,10 +135,9 @@ private:
             // todo: make this code less repetitive
         }
         
-
-            mixed_sample_L += bias * 2;
-            mixed_sample_R += bias * 2;
-        frontend_audio_callback(Sample(mixed_sample_L, mixed_sample_R));
+        // mixed_sample_L += bias * 2;
+        // mixed_sample_R += bias * 2;
+        frontend_audio_callback(Sample(cast(short) (mixed_sample_L * 8), cast(short) (mixed_sample_R * 8)));
         
         scheduler.add_event_relative_to_self(&sample, sample_rate);
     }

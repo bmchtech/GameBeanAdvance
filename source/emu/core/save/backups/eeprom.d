@@ -27,8 +27,6 @@ final class EEPROM : Backup {
 
     uint size;
 
-    bool first_write = true;
-
     this(uint size) {
         assert((size & (size - 1)) == 0); // size must be a power of 2
 
@@ -54,15 +52,6 @@ final class EEPROM : Backup {
 
     import std.stdio;
     void write(int bit) {
-        if (first_write) {
-            first_write = false;
-            for (int i = 0; i < size; i++) {
-                this.data[i] = 0xFF;
-                backup_file[i] = 0xFF;
-            }
-        }
-        writefln("shitty bit %d. data: %d %d %d %s", bit, command, index, address, state);
-
         final switch (state) {
         case State.IDLE:  
             command |= bit << ((address_length + 1) - index++);
@@ -76,8 +65,6 @@ final class EEPROM : Backup {
                 }
 
                 address = cast(int) (command & ((1 << address_length) - 1)) * 8;
-
-                writefln("calculating address as %d", address);
                 index = 0;
             }
             break;
@@ -87,8 +74,6 @@ final class EEPROM : Backup {
             
         case State.WRITE:
             if (index == 64) {
-                writefln("writing to addresses %d to %d", address, address + 7);
-
                 data[address .. address + 8] = write_buf[0 .. 8];
                 
                 // don't ask
@@ -114,13 +99,11 @@ final class EEPROM : Backup {
 
         if (index <= 3) {
             index++;
-            writefln("reading uwu, returning dummy");
             return 0;
         }
 
         int byte_index = (index - 4) / 8;
         int offset     = (index - 4) % 8;
-        writefln("reading uwu [%d], returning %d", index, (data[address + byte_index] >> (7 - offset)) & 1);
 
         index++;
 
