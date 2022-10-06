@@ -46,7 +46,7 @@ final class InterruptManager {
 
     pragma(inline, true) bool has_irq() {
         import std.stdio;
-        if (_g_num_log > 0) writefln("IRQ: %x %x %x, ", interrupt_master_enable, interrupt_enable, interrupt_request);
+        // if (_g_num_log > 0) writefln("IRQ: %x %x %x, ", interrupt_master_enable, interrupt_enable, interrupt_request);
         return interrupt_master_enable && ((interrupt_enable & interrupt_request) != 0);
     }
 

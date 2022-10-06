@@ -11,6 +11,11 @@ import std.stdio;
 import std.typecons;
 import std.algorithm;
 
+import ui.device;
+
+enum SCREEN_WIDTH  = 240;
+enum SCREEN_HEIGHT = 160;
+
 enum AffineParameter {
     A = 0,
     B = 1,
@@ -741,7 +746,6 @@ private:
 public:
     void write_DISPCNT(int target_byte, ubyte data) {
         import std.stdio;
-        writefln("shitter ppu! %x %x", target_byte, data);
         
         if (target_byte == 0) {
             bg_mode                    = get_nth_bits(data, 0, 3);

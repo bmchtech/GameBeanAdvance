@@ -23,12 +23,7 @@ import bindbc.sdl;
 import bindbc.opengl;
 
 import tools.profiler.profiler;
-import ui.device.frontend.rengfrontend;
-
-import ui.device.debugger.debugger;
-import ui.device.device;
-import ui.device.manager;
-import ui.device.runner.runner;
+import ui;
 
 import commandr;
 
@@ -92,24 +87,12 @@ void main(string[] args) {
 		g_profile_gba = true;
 		g_profiler    = new Profiler(gba, profile);
 	}
-	MultiMediaDevice frontend = new RengFrontend(to!int(a.option("scale")));
+	MultiMediaDevice frontend = new RengMultimediaDevice(to!int(a.option("scale")));
 	gba.set_frontend(frontend);
-	frontend.push_sample(Sample(69, 69));
 	g_log_gba = gba;
 
-	gba.set_internal_sample_rate(16_780_000 / frontend.get_sample_rate());
-	
-	auto sample_rate          = frontend.get_sample_rate();
-	auto samples_per_callback = frontend.get_samples_per_callback();
-
-	int num_batches        = sample_rate / samples_per_callback;
-	enum cycles_per_second = 16_780_000;
-	auto cycles_per_batch  = 16_780_000 / 60; // cycles_per_second / num_batches;
-	Runner runner = new Runner(gba, cycles_per_batch, frontend);
-
-	DeviceManager device_manager = new DeviceManager();
-	device_manager.add_device(runner);
-	device_manager.add_device(frontend);
+	gba.set_internal_sample_rate(16_780_000 / 48000);
+	Runner runner = new Runner(gba, frontend);
 
 	Savetype savetype = detect_savetype(gba.memory.rom.get_bytes());
 	

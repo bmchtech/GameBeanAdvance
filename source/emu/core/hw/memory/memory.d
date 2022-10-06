@@ -307,19 +307,6 @@ final class Memory : IMemory {
                 case Region.PALETTE_RAM:  read_value = (cast(T*) palette_ram)[(address & (SIZE_PALETTE_RAM - 1)) >> shift]; break;
                 
                 case Region.VRAM:
-                    import std.stdio;
-                    if (scheduler.get_current_time_relative_to_cpu() - vcount_update == 40 ||
-                        scheduler.get_current_time_relative_to_cpu() - vcount_update == 44 ||
-                        scheduler.get_current_time_relative_to_cpu() - vcount_update == 48 ||
-                        scheduler.get_current_time_relative_to_cpu() - vcount_update == 52   
-                    ) {
-                        scheduler.tick(1);
-                        _g_num_log = 10;
-                        writefln("TICK!");
-                    } else {
-
-                        writefln("NO TICK! %d", scheduler.get_current_time_relative_to_cpu() - vcount_update);
-                    }
                     // if (address == 0x0600_0000 && is(T == ubyte)) {
                         
                     //     import std.stdio;
@@ -522,8 +509,6 @@ final class Memory : IMemory {
                 case 0x1:                 break; // nothing is mapped here
                 case Region.WRAM_BOARD:   
                     (cast(T*) wram_board) [(address & (SIZE_WRAM_BOARD  - 1)) >> shift] = value; 
-                    import std.stdio;
-                    writefln("Writing %x to wram_board at %x", value, address);
                     break;
                 case Region.WRAM_CHIP:    
                     (cast(T*) wram_chip)  [(address & (SIZE_WRAM_CHIP   - 1)) >> shift] = value; 

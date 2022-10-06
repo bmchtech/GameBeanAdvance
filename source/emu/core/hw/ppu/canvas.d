@@ -10,6 +10,8 @@ import std.algorithm;
 
 import core.stdc.string;
 
+import ui.device;
+
 // okay so the rules here go like this:
 // an empty pixel is invalid. renders the background pixel.
 // a single pixel contains one valid pixel in indices_a. 

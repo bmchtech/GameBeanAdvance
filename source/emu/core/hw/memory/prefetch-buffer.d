@@ -93,7 +93,7 @@ final class PrefetchBuffer {
 
     pragma(inline, true) void invalidate() {
         if (this.paused) return;
-        if (_g_num_log > 0) writefln("invalidated");
+        // if (_g_num_log > 0) writefln("invalidated");
 
         this.current_buffer_size   = 0;
         this.currently_prefetching = false;
@@ -101,7 +101,6 @@ final class PrefetchBuffer {
     
     pragma(inline, true) void start_new_prefetch(uint address, AccessSize prefetch_access_size, bool first = false) {
         if (!enabled || paused) return;
-        writefln("Starting new prefetch...");
 
         this.currently_prefetching = true;
         this.new_prefetch = true;
@@ -207,7 +206,7 @@ final class PrefetchBuffer {
 
                 // is the requested value at the head of the prefetch buffer?
                 if (this.current_buffer_size > 0 && address == address_head) {
-                    if (_g_num_log > 0) log!(LogSource.DEBUG)("Obtaining data from prefetch head.");
+                    // if (_g_num_log > 0) log!(LogSource.DEBUG)("Obtaining data from prefetch head.");
                     this.current_buffer_size -= this.prefetch_access_size == AccessSize.HALFWORD ? 1 : 2;
                     run(1);
                     tick(1);
@@ -219,12 +218,11 @@ final class PrefetchBuffer {
                 }
 
                 // oh, ok. it's not in the prefetch buffer
-                if (_g_num_log > 0) log!(LogSource.DEBUG)("Data missing from prefetch buffer.");
+                // if (_g_num_log > 0) log!(LogSource.DEBUG)("Data missing from prefetch buffer.");
                 this.invalidate();
                 this.start_new_prefetch(current_address + 1, this.prefetch_access_size);
                 this.can_start_new_prefetch = true;
             } else {
-                writefln("firster");
                 this.start_new_prefetch(current_address + 1, this.prefetch_access_size, true);
             }
         }

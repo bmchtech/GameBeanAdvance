@@ -136,7 +136,7 @@ final class ARM7TDMI : IARM7TDMI {
         if (Logger.instance) Logger.instance.capture_cpu();
         if (interrupt_manager.has_irq()) raise_exception!(CpuException.IRQ);
 
-        if (regs[pc] >> 24 != 0) writefln("fuck!");
+        // if (regs[pc] >> 24 != 0) writefln("fuck!");
 
         if (regs[pc] == 0x0800_07B0) {
             _g_num_log = 30;
