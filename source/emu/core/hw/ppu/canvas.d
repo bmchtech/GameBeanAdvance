@@ -252,7 +252,8 @@ final class Canvas {
             // now that we know which window type we're in, let's calculate the color index for this pixel
 
             int[2] index    = [0, 0];
-            int    priority = 4;
+            int priority = 4;
+            bool[2] blendable = [false, false];
 
             int blendable_pixels = 0;
             int total_pixels     = 0;
@@ -271,6 +272,7 @@ final class Canvas {
 
                     processed_obj = true;
                     if (obj_target_pixel[total_pixels] || obj_semitransparent[x]) {
+                        blendable[total_pixels] = true;
                         blendable_pixels++;
                         force_blend = obj_semitransparent[x] && total_pixels == 0;
                     }
@@ -287,6 +289,7 @@ final class Canvas {
 
                         if (bg_target_pixel[total_pixels][current_bg_id]) {
                             blendable_pixels++;
+                            blendable[total_pixels] = true;
                             total_pixels++;
                             continue;
                         }
@@ -304,6 +307,7 @@ final class Canvas {
                 if (obj_target_pixel[total_pixels] || obj_semitransparent[x]) {
                     blendable_pixels++;
                     force_blend = obj_semitransparent[x] && total_pixels == 0;
+                    blendable[total_pixels] = true;
                 }
                 total_pixels++;
             }
@@ -312,11 +316,28 @@ final class Canvas {
             if (total_pixels < 2) {
                 // total_pixels++; we can increment this, but it wont affect the rest of the loop
                 if (backdrop_target_pixel[blendable_pixels]) {
+                    blendable[total_pixels] = true;
                     blendable_pixels++;
                 }
             }
-            
-            Blending effective_blending_type = is_blended(current_window_type) ? blending_type : Blending.NONE;
+
+            Blending effective_blending_type = Blending.NONE;
+            if (is_blended(current_window_type)) {
+                if (blending_type == Blending.ALPHA) {
+                    if (blendable[0] && blendable[1]) {
+                        effective_blending_type = Blending.ALPHA;
+                    }
+                } else if (blending_type == Blending.NONE) {
+                    effective_blending_type = Blending.NONE;
+                } else if (blendable[0] || blendable[1]) {
+                    if (blendable[0]) {
+                        effective_blending_type = blending_type;
+                    }
+                } else {
+                    effective_blending_type = Blending.NONE;
+                }
+            }
+
             if (force_blend) { effective_blending_type = Blending.ALPHA; }
             // now to blend the two values together
             pixels_output[x] = blend(index, blendable_pixels, effective_blending_type);
