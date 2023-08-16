@@ -9,7 +9,6 @@ dependency "silly" version="~>1.1.1"
 dependency "reng" version="~>0.8.10"
 dependency "bindbc-sdl" version="~>1.0.1"
 dependency "commandr" version="~>0.2.0"
-dependency "gamebean-common" path="common"
 targetType "executable"
 
 versions "GL_AllowDeprecated"
