@@ -17,7 +17,5 @@ class EmuConsole {
 
     void cmd_gamebean(string[] args) {
         Core.log.info("GameBeanAdvance Emulator Console");
-        // exit this process
-        Core.exit();
     }
 }
