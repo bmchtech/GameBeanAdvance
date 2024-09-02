@@ -142,22 +142,24 @@ final class ARM7TDMI : IARM7TDMI {
             _g_num_log = 30;
         }
 
-        if (unlikely(_g_num_log > 0 )) {
-            _g_num_log--;
-            // writefln("%x", _g_num_log);
-            if (get_flag(Flag.T)) write("THM ");
-            else write("ARM ");
+        version (diag) {
+            if (unlikely(_g_num_log > 0 )) {
+                _g_num_log--;
+                // writefln("%x", _g_num_log);
+                if (get_flag(Flag.T)) write("THM ");
+                else write("ARM ");
 
-            write(format("0x%08x ", instruction_set == InstructionSet.ARM ? arm_pipeline[0] : thumb_pipeline[0]));
-            
-            for (int j = 0; j < 18; j++)
-            // if (j != 15)
-                write(format("%08x ", regs[j]));
+                write(format("0x%08x ", instruction_set == InstructionSet.ARM ? arm_pipeline[0] : thumb_pipeline[0]));
+                
+                for (int j = 0; j < 18; j++)
+                // if (j != 15)
+                    write(format("%08x ", regs[j]));
 
-            // write(format("%x ", *cpsr));
-            // write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
-            writeln();
-            if (_g_num_log == 0) writeln();
+                // write(format("%x ", *cpsr));
+                // write(format("%x", register_file[MODE_SYSTEM.OFFSET + 17]));
+                writeln();
+                if (_g_num_log == 0) writeln();
+            }
         }
 
         if (g_profile_gba) {

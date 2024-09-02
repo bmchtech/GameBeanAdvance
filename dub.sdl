@@ -14,23 +14,32 @@ targetType "executable"
 subConfiguration "reng" "lib-minimal"
 
 versions "GL_AllowDeprecated"
+
 configuration "default" {
 	targetType "executable"
 	versions "default"
 }
+
 configuration "gperf" {
 	dependency "gperftools_d" version="~>0.1.0"
 	targetType "executable"
 	dflags "-O1" "--boundscheck=off"
 	versions "gperf"
 }
+
 configuration "debug" {
 	dependency "derelict-imgui" version="~>0.10.0"
 	targetType "executable"
 	libs "cimgui"
 	versions "Imgui"
 }
+
+configuration "diag" {
+	targetType "executable"
+	versions "diag"
+}
+
 configuration "optimize" {
 	targetType "executable"
-	dflags "--boundscheck=off" "-O3" "-release"
+	dflags "--boundscheck=off" "-O3"
 }
