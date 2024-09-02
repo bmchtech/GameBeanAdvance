@@ -1,16 +1,20 @@
 module ui.reng.rengcore;
 
+import hw.gba;
+
 import ui.reng;
 
 import re;
 import re.math;
 
 class RengCore : Core {
+    GBA gba;
     int width;
     int height;
     int screen_scale;
 
-    this(int screen_scale) {
+    this(GBA gba, int screen_scale) {
+        this.gba = gba;
         this.width  = 240 * screen_scale;
         this.height = 160 * screen_scale;
         this.screen_scale = screen_scale;
@@ -19,6 +23,9 @@ class RengCore : Core {
     }
 
     override void initialize() {
+        // store gba in jar
+        Core.jar.register(gba);
+
 		// use custom console
 		this.inspector_overlay.enabled = true;
 		this.inspector_overlay.console.reset();

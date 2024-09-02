@@ -20,6 +20,7 @@ class RengMultimediaDevice : MultiMediaDevice {
 
     enum FAST_FOWARD_KEY        = Keys.KEY_TAB;
 
+    GBA gba;
     RengCore reng_core;
     GBAVideo  gba_video;
     AudioStream stream;
@@ -29,9 +30,11 @@ class RengMultimediaDevice : MultiMediaDevice {
     string rom_title;
     int fps;
 
-    this(int screen_scale) {
+    this(GBA gba, int screen_scale) {
+        this.gba = gba;
+
         Core.target_fps = 60;
-        reng_core = new RengCore(screen_scale);
+        reng_core = new RengCore(gba, screen_scale);
 
         InitAudioDevice();
         SetAudioStreamBufferSizeDefault(SAMPLES_PER_UPDATE);
