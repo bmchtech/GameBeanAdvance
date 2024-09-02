@@ -35,9 +35,9 @@ void log(LogSource log_source, Char, A...)(scope const(Char)[] fmt, A args) {
 
     // static if (log_source == LogSource.DEBUG) return;
     // else {
-        ulong timestamp = g_log_gba ? g_log_gba.scheduler.get_current_time_relative_to_cpu() : 0;
-        writef("[%016x] %s: ", timestamp, pad_string_right!(to!string(log_source), logsource_padding));
-        writefln(fmt, args);
+        // ulong timestamp = g_log_gba ? g_log_gba.scheduler.get_current_time_relative_to_cpu() : 0;
+        // writef("[%016x] %s: ", timestamp, pad_string_right!(to!string(log_source), logsource_padding));
+        // writefln(fmt, args);
     // }
 }
 
