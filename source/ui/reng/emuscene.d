@@ -1,6 +1,7 @@
 module ui.reng.emuscene;
 
 import ui.reng;
+import ui.reng.console;
 
 import re;
 import re.gfx;
@@ -9,10 +10,13 @@ import re.util.hotreload;
 
 class EmuScene : Scene2D {
     int screen_scale;
+    EmuConsole console;
 
     this(int screen_scale) {
         this.screen_scale = screen_scale;
         super();
+
+        console = new EmuConsole();
     }
 
     override void on_start() {
@@ -24,6 +28,13 @@ class EmuScene : Scene2D {
         auto shd_draw = new FragEffect(this, new ReloadableShader(null, draw_shd_path));
         auto draw_p = new PostProcessor(resolution, shd_draw);
         postprocessors ~= draw_p;
+
+        // set up console
+        console.register();
+    }
+
+    override void on_unload() {
+        console.unregister();
     }
 
     override void update() {

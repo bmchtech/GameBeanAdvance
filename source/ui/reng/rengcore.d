@@ -19,6 +19,10 @@ class RengCore : Core {
     }
 
     override void initialize() {
+		// use custom console
+		this.inspector_overlay.enabled = true;
+		this.inspector_overlay.console.reset();
+
         default_resolution = Vector2(width, height);
         content.paths ~= ["../content/", "content/"];
 
