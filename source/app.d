@@ -87,7 +87,7 @@ void main(string[] args) {
 		g_profile_gba = true;
 		g_profiler    = new Profiler(gba, profile);
 	}
-	MultiMediaDevice frontend = new RengMultimediaDevice(to!int(a.option("scale")));
+	MultiMediaDevice frontend = new RengMultimediaDevice(gba, to!int(a.option("scale")));
 	gba.set_frontend(frontend);
 	g_log_gba = gba;
 
