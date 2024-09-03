@@ -100,6 +100,9 @@ class RengMultimediaDevice : MultiMediaDevice {
         }
 
         void handle_input() {
+            // ignore input if console is open
+            if (Core.inspector_overlay.console.open) return;
+            
             static foreach (re_key, gba_key; keys) {
                 update_key(gba_key, Input.is_key_down(re_key));
             }
