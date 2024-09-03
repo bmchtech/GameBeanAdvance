@@ -39,6 +39,11 @@ configuration "diag" {
 	versions "diag"
 }
 
+configuration "coverage" {
+	targetType "executable"
+	versions "coverage"
+}
+
 configuration "optimize" {
 	targetType "executable"
 	dflags "--boundscheck=off" "-O3"

@@ -1,5 +1,7 @@
 roms/
 
+*.cov
+
 gba
 test
 

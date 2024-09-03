@@ -38,12 +38,22 @@ final class ARM7TDMI : IARM7TDMI {
 
     AccessType pipeline_access_type;
 
+    version (coverage) {
+        import emu.core.diag.coverage;
+
+        CpuCoverage coverage;
+    }
+
     this(Memory memory) {
         this.memory = memory;
         current_mode = MODE_USER;
         
         reset();
         // skip_bios();
+
+        version (coverage) {
+            coverage = new CpuCoverage();
+        }
     }
 
     void reset() {
@@ -205,6 +215,21 @@ final class ARM7TDMI : IARM7TDMI {
     }
 
     pragma(inline, true) void set_reg__raw(Reg id, Word value, Word[18]* regs) {
+        version (coverage) {
+            if (id == pc) {
+                Word old_pc = (*regs)[pc];
+                Word new_pc = value;
+
+                // if coverage is tracing, we need to record the block hit
+                if (coverage.tracing) {
+                    coverage.curr_trace.hit(new_pc);
+                    
+                    // import re.core;
+                    // Core.log.debug_(format("cov: branch, old_pc=%08x, new_pc=%08x", old_pc, new_pc));
+                }
+            }
+        }
+
         (*regs)[id] = value;
 
         if (id == pc) {        
