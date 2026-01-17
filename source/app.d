@@ -27,13 +27,17 @@ import ui;
 
 import commandr;
 
+version (gdbstub) {
+	import debugger.gdbstub;
+}
+
 version (gperf) {
 	import gperftools_d.profiler;
 }
 
 void main(string[] args) {
 	// dfmt off
-	auto a = new Program("gamebean-emu", "0.1").summary("GameBean Advance")
+	auto program = new Program("gamebean-emu", "0.1").summary("GameBean Advance")
 		.add(new Flag("v", "verbose", "turns on more verbose output").repeating)
 		.add(new Option("s", "scale", "render scale").optional.defaultValue("1"))
 		.add(new Argument("rompath", "path to rom file"))
@@ -41,8 +45,12 @@ void main(string[] args) {
 		.add(new Flag("k", "bootscreen", "skips bios bootscreen and starts the rom directly"))
 		.add(new Option("m", "mod", "enable mod/extension"))
 		.add(new Option("p", "profile", "profile the emu (pass in an ELF file here)"))
-		.add(new Option("t", "cputrace", "display cpu trace on crash").optional.defaultValue("0"))
-		.parse(args);
+		.add(new Option("t", "cputrace", "display cpu trace on crash").optional.defaultValue("0"));
+	version (gdbstub) {
+		program.add(new Option("g", "gdb", "start gdbstub server (host:port)").optional);
+	}
+
+	auto a = program.parse(args);
 	// dfmt on
 
 	util.verbosity_level = a.occurencesOf("verbose");
@@ -81,6 +89,14 @@ void main(string[] args) {
 	}
 
 	if (a.flag("bootscreen")) gba.skip_bios_bootscreen();
+
+	version (gdbstub) {
+		auto gdb_address = a.option("gdb");
+		if (gdb_address) {
+			start_gdbstub(gba, gdb_address);
+			log!(LogSource.INIT)("GDB stub listening on %s", gdb_address);
+		}
+	}
 
 	auto profile = a.option("profile");
 	if (profile) {

@@ -55,6 +55,21 @@ Specify path to rom. You can also optionally use `-s` to specify window scaling 
 ./gamebean-emu [rom]
 ```
 
+### GDB stub
+
+Use the optional gdbstub integration:
+```sh
+git submodule update --init --recursive
+dub build -c gdbstub
+./gamebean-emu [rom] --gdb 127.0.0.1:5555
+```
+
+Then connect with lldb:
+
+```sh
+lldb -O "gdb-remote 127.0.0.1:5555"
+```
+
 ## Tests
 
 To run the tests, run `dub test`. This will test the ARM CPU by running it through the GBA files located in __/tests/asm/bin/__. If the cpu states after every cycle matches the expected states found in the log files in __/tests/asm/log__, then the tests will pass. These roms are written in ARM assembly and are located in __/tests/asm/src__. These tests have their own makefile that produces a .gba file as well as a log file. Logfile production requires having an editted version of NanoBoyAdvance, and having the command `NanoBoyAdvance` added to PATH.

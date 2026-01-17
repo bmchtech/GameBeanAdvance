@@ -21,6 +21,10 @@ import tools.profiler.profiler;
 import std.math;
 import std.stdio;
 
+version (gdbstub) {
+    import debugger.gdbstub;
+}
+
 enum CART_SIZE = 0x1000000;
 
 enum ROM_ENTRY_POINT = 0x000;
@@ -113,11 +117,31 @@ public:
         n -= extra_cycles;
 
         ulong target_time = scheduler.get_current_time() + n;
+        version (gdbstub) bool stopped_early = false;
         while (target_time > scheduler.get_current_time()) {
+            version (gdbstub) {
+                if (maybe_stop_before(cpu)) {
+                    stopped_early = true;
+                    break;
+                }
+            }
             cycle_components();
+            version (gdbstub) {
+                if (maybe_stop_after(cpu)) {
+                    stopped_early = true;
+                    break;
+                }
+            }
         }
 
         // warning(format("Cycled to %d.", scheduler.get_current_time()));
+
+        version (gdbstub) {
+            if (stopped_early) {
+                extra_cycles = 0;
+                return;
+            }
+        }
 
         extra_cycles = scheduler.get_current_time() - target_time;
     }

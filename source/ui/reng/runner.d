@@ -9,6 +9,10 @@ import std.datetime.stopwatch;
 
 import core.sync.mutex;
 
+version (gdbstub) {
+    import debugger.gdbstub;
+}
+
 final class Runner {
     GBA gba;
     bool fast_forward;
@@ -54,6 +58,12 @@ final class Runner {
 
         while (running) {
             if (frontend.should_cycle_gba() || frontend.should_fast_forward()) {
+                version (gdbstub) {
+                    if (is_active() && !should_run()) {
+                        tick();
+                        continue;
+                    }
+                }
                 if (gba.enabled) {
                     gba.cycle_at_least_n_times(16_780_000 / 60);
                 }

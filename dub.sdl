@@ -20,6 +20,12 @@ configuration "default" {
 	versions "default"
 }
 
+configuration "gdbstub" {
+	dependency "gdbstub_cpp" path="ext/gdbstub_cpp/bindings/dlang/gdbstub_cpp-d"
+	targetType "executable"
+	versions "default" "gdbstub"
+}
+
 configuration "gperf" {
 	dependency "gperftools_d" version="~>0.1.0"
 	targetType "executable"
