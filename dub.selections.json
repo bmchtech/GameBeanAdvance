@@ -13,6 +13,7 @@
 		"dray": "5.0.0-r5",
 		"elf-d": "0.2.5",
 		"fluent-asserts": "0.13.3",
+		"gdbstub_cpp": {"path":"ext/gdbstub_cpp/bindings/dlang/gdbstub_cpp-d"},
 		"gperftools_d": "0.1.0",
 		"libdparse": "0.14.0",
 		"minlog": "2.0.0",
